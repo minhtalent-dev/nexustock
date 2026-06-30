@@ -4,7 +4,7 @@ Phase này phân tích chuyên sâu (Reindex) mã nguồn của các module nghi
 
 ---
 
-## 🔍 1. REINDEX & PHÂN TÍCH CHUYÊN SÂU C CÁC MODULES CŨ
+## 🔍 1. REINDEX & PHÂN TÍCH CHUYÊN SÂU CÁC MODULES CŨ
 
 ### 📥 Phân hệ Nhập kho (Kế thừa từ quy trình Nhập kho cũ)
 * **Hành vi cũ**: 
@@ -14,6 +14,8 @@ Phase này phân tích chuyên sâu (Reindex) mã nguồn của các module nghi
 * **Giải pháp chuẩn hóa Flexible**:
   * Đưa cấu hình phân loại hàng (`IsWafer`, `IqcCheckType`) về PostgreSQL cấu hình theo sản phẩm.
   * Việc kiểm tra chênh lệch số lượng và trùng lặp hóa đơn được xử lý triệt để ở **Database Transaction Level** của Backend thông qua cơ chế khóa (Pessimistic Locking hoặc Serialized Transaction) để ngăn chặn tuyệt đối tình trạng race condition khi nhiều máy quét đồng thời lưu.
+  * **Đóng băng kiểm kê**: Trước khi nhập hoặc chuyển kệ, API bắt buộc phải kiểm tra trạng thái khóa `is_locked` của Vị trí kệ (`StorageLocations`) và Vùng kho (`StorageZones`). Nếu đang bị khóa kiểm kê, chặn cứng thao tác nhập/di chuyển để tránh lệch tồn.
+  * **Slotting theo dung tích thô**: Thuật toán Slotting ở Backend đối chiếu kích thước hình học (`length`, `width`, `height`) của sản phẩm nhân với số lượng để đảm bảo không vượt quá thể tích tối đa `max_volume` còn trống của kệ.
 
 ### 🔬 Phân hệ Kiểm QC (Kế thừa từ quy trình QC cũ)
 * **Hành vi cũ**:
@@ -28,11 +30,13 @@ Phase này phân tích chuyên sâu (Reindex) mã nguồn của các module nghi
   * Trên API Backend, thiết kế luồng tự động điền `MakerInnerLotNo` từ Lot cha nếu cấu hình của sản phẩm cho phép thừa kế mã Lot nhà sản xuất. Giao diện Web SPA sẽ hiển thị chính xác giá trị thừa kế này trên bảng dữ liệu để người dùng kiểm tra trước khi xác nhận.
 
 ### 📤 Phân hệ Xuất kho & Kiểm FIFO (Kế thừa từ quy trình Xuất kho cũ)
-* **Hành vi cũ**:
+* **Hành vi cũ**: 
   * Kiểm tra FIFO bằng cách so sánh ngày sản xuất của các Lot đang lưu trong kho cũ. Logic kiểm tra cứng nhắc, dễ gây tắc nghẽn dây chuyền nếu nhà máy muốn xuất lô hàng mới trước vì lý do đặc biệt (Ví dụ: Yêu cầu khẩn cấp từ khách hàng).
 * **Giải pháp chuẩn hóa Flexible**:
   * Bổ sung trường cấu hình `FifoPolicyLevel` (0: Tắt kiểm tra, 1: Cảnh báo nhưng cho phép ghi đè bằng mã OTP/Quyền Admin, 2: Chặn cứng).
   * API kiểm tra FIFO sẽ trả về mã trạng thái chi tiết. Frontend căn cứ vào cấu hình để hiển thị hộp thoại yêu cầu quyền phê duyệt (Bypass) của Quản lý nếu nhà máy muốn xuất phá quy trình FIFO.
+  * **Đóng băng khi kiểm kê**: Chặn cứng hoạt động lấy hàng xuất kho tại các vị trí đang bị khóa `is_locked`.
+  * **Dự phòng cân thủ công**: Khi đóng gói vận đơn, nếu phần cứng cân điện tử mất kết nối (lỗi WebSocket), cho phép API tiếp nhận dữ liệu cân nhập tay thủ công nhưng bắt buộc truyền kèm cờ `is_manual_weight = true`, lý do ghi đè `manual_weight_reason` và kiểm tra quyền phê duyệt của Manager.
 
 ---
 
@@ -86,10 +90,17 @@ public class PartInputController : ControllerBase
             return BadRequest(validationResult.ErrorMessage);
         }
 
+        // Kiểm tra vị trí kho được chỉ định có bị khóa không
+        if (await _inputService.IsLocationOrZoneLockedAsync(request.TargetLocationId))
+        {
+            return BadRequest("Vị trí hoặc vùng kho đích đang bị khóa kiểm kê.");
+        }
+
         try
         {
             var lotInfo = await _inputService.ProcessAcceptanceAsync(request);
-            var proposedLocations = await _slottingService.GetPutawayProposalsAsync(lotInfo.Id, request.TenantId);
+            // Thuật toán đề xuất vị trí cất hàng lọc theo dung tích thô max_volume và kích thước sản phẩm
+            var proposedLocations = await _slottingService.GetPutawayProposalsWithVolumeAsync(lotInfo.Id, request.TenantId);
             var crossDockingMatched = await _inputService.CheckCrossDockingMatchAsync(lotInfo.ProductId, lotInfo.OriginalQty);
 
             return Ok(new { 
@@ -188,6 +199,8 @@ public class TaskInterleavingService : ITaskInterleavingService
 
         return null;
     }
+    // ponytail: Dynamic coordinate-based path optimization. Hiện tại dùng mã kệ tĩnh OrderBy.
+    // Nâng cấp lên thuật toán đồ thị TSP (Traveling Salesman Problem) dựa trên tọa độ X, Y, Z khi số lượng vị trí > 10,000.
 }
 ```
 
@@ -239,5 +252,47 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
     modelBuilder.Entity<Warehouse>().HasQueryFilter(w => w.TenantId == _currentTenantService.TenantId);
     modelBuilder.Entity<StockImport>().HasQueryFilter(i => i.TenantId == _currentTenantService.TenantId);
     modelBuilder.Entity<StockExport>().HasQueryFilter(e => e.TenantId == _currentTenantService.TenantId);
+
+    // ponytail: DB performance ceiling. Hiện tại cách ly logic qua Global Query Filter dùng chung 1 database.
+    // Khi số lượng Tenants > 50 hoặc dung lượng DB > 500GB, nâng cấp lên mô hình Database-per-tenant hoặc PostgreSQL Table Partitioning theo tenant_id.
 }
+
+### E. Controller Quản lý Đóng gói & Ghi đè Cân thủ công: `ShipmentController.cs`
+```csharp
+[ApiController]
+[Route("api/shipment")]
+[Authorize]
+public class ShipmentController : ControllerBase
+{
+    private readonly IShipmentService _shipmentService;
+
+    public ShipmentController(IShipmentService shipmentService)
+    {
+        _shipmentService = shipmentService;
+    }
+
+    [HttpPost("pack-item")]
+    [HasPermission("shipment.manage")]
+    public async Task<IActionResult> PackShipmentItem([FromBody] PackItemDto dto)
+    {
+        // Nếu nhập cân tay thủ công, kiểm tra quyền Manager phê duyệt
+        if (dto.IsManualWeight)
+        {
+            var hasManagerPermission = User.HasClaim(c => c.Type == "Permission" && c.Value == "fifo.bypass");
+            if (!hasManagerPermission)
+            {
+                return Forbid("Tài khoản không có quyền phê duyệt cân tay thủ công.");
+            }
+            if (string.IsNullOrWhiteSpace(dto.ManualWeightReason))
+            {
+                return BadRequest("Bắt buộc phải nhập lý do cân tay thủ công.");
+            }
+        }
+
+        var success = await _shipmentService.PackItemAsync(dto);
+        if (!success) return BadRequest("Lỗi đóng gói sản phẩm.");
+        return Ok("Đóng gói thành công.");
+    }
+}
+```
 ```

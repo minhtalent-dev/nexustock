@@ -112,6 +112,13 @@ Sử dụng thư viện `Microsoft.AspNetCore.Mvc.Testing` để chạy Web Serv
   * Nhân viên hoàn thành cất hàng nhập tại kệ A-01. Có tác vụ pick hàng xuất ở kệ A-02 đang PENDING.
   * Gọi API check task tiếp theo.
   * Kết quả mong muốn: Hệ thống tự động gán và chuyển trạng thái task pick xuất tại kệ A-02 sang IN_PROGRESS cho chính nhân viên này.
+* **Kịch bản Test 10: Chặn xuất nhập tại vị trí bị khóa kiểm kê (Location Lock)**
+  * Chuyển trạng thái `is_locked = true` cho kệ `A-01-01`.
+  * Gọi API nhập hàng hoặc API di chuyển Pallet LPN tới vị trí `A-01-01`.
+  * Kết quả mong muốn: API trả về lỗi `400 Bad Request` hoặc `Conflict`, các bản ghi tồn kho không thay đổi.
+* **Kịch bản Test 11: Phê duyệt cân thô nhập tay ghi log**
+  * Gửi request đóng gói sản phẩm qua API `POST /api/shipment/pack-item` với tham số `IsManualWeight = true` và `ManualWeightReason = 'Cân đứt cáp RS232'`.
+  * Kết quả mong muốn: API lưu thành công bản ghi `ShipmentItem` với cờ `is_manual_weight = true` và lưu đúng lý do vào cột `manual_weight_reason`.
 
 ---
 
@@ -129,16 +136,18 @@ Sử dụng công cụ **Playwright** để viết các kịch bản kiểm th�
   2. Vào màn hình "Đóng gói & Xuất hàng".
   3. Quét một Lot mới sản xuất trong khi Lot cũ cùng loại vẫn còn tồn $\rightarrow$ Popup cảnh báo vi phạm FIFO hiển thị, nút "Đóng gói" bị khóa.
   4. Nhập mã phê duyệt của Manager $\rightarrow$ Khóa được mở để tiếp tục.
-* **Kịch bản E2E 3: Luồng kiểm kê và phê duyệt chênh lệch**
-  1. Đăng nhập bằng tài khoản Manager, tạo đợt kiểm kê.
-  2. Đăng nhập bằng tài khoản Operator, vào màn hình "Kiểm kê", quét vị trí kệ và quét Lot hàng thực tế $\rightarrow$ Hệ thống tự động so khớp hiển thị hàng lệch màu đỏ.
-  3. Đăng nhập lại bằng tài khoản Manager, click nút "Phê duyệt & Tự động cân bằng kho".
-  4. Xác nhận số lượng tồn trong bảng `Inventories` đã được cập nhật bằng số thực tế.
-* **Kịch bản E2E 4: Tự động hóa cân điện tử khi đóng gói**
+* **Kịch bản E2E 3: Luồng kiểm kê, đóng băng kệ và phê duyệt chênh lệch**
+  1. Đăng nhập bằng tài khoản Manager, vào màn hình kiểm kê, click "Đóng băng" để khóa vị trí kệ `A-01-01`.
+  2. Đăng nhập tài khoản Operator, thử di chuyển LPN tới `A-01-01` $\rightarrow$ Xác nhận hệ thống hiển thị thông báo lỗi bị chặn do đang kiểm kê.
+  3. Vào màn hình "Kiểm kê", quét vị trí kệ và quét Lot hàng thực tế $\rightarrow$ Hệ thống tự động so khớp hiển thị hàng lệch màu đỏ.
+  4. Đăng nhập lại bằng tài khoản Manager, click nút "Phê duyệt & Tự động cân bằng kho", đồng thời hệ thống tự động mở khóa vị trí kệ `A-01-01` (`is_locked = false`).
+  5. Xác nhận số lượng tồn trong bảng `Inventories` đã được cập nhật bằng số thực tế.
+* **Kịch bản E2E 4: Tự động hóa cân điện tử và dự phòng cân tay khi đóng gói**
   1. Vào màn hình đóng gói vận đơn xuất kho.
   2. Trình duyệt thiết lập kết nối WebSocket với Local Agent.
-  3. Mô phỏng Local Agent gửi message trọng lượng `15.80 kg`.
-  4. Xác nhận ô nhập liệu trọng lượng trên Web SPA tự động điền giá trị `15.80` và chuyển sang trạng thái Read-only khóa chỉnh sửa thủ công.
+  3. Mô phỏng mất kết nối WebSocket (cân điện tử tắt nguồn) $\rightarrow$ Trình duyệt hiển thị cảnh báo đỏ "Mất kết nối cân".
+  4. Operator click "Nhập cân tay" $\rightarrow$ Hiển thị ô nhập số cân và ô bắt buộc nhập lý do.
+  5. Nhập số cân `15.80` và lý do "Cân đứt cáp", xác nhận đóng gói $\rightarrow$ Gửi thành công request kèm log và mở khóa lưu database.
 * **Kịch bản E2E 5: Luồng gom hàng xuất Wave Picking**
   1. Đăng nhập tài khoản Manager, vào màn hình Wave Picking, chọn 5 đơn hàng xuất kho của ngày, click "Tạo đợt gom".
   2. Đăng nhập tài khoản Operator, mở màn hình đợt gom tương ứng, xem Pick List tổng hợp và thực hiện quét mã lấy hàng hàng loạt.

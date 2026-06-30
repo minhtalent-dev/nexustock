@@ -381,6 +381,221 @@ export default function RmaPage() {
 }
 ```
 
+### D. Màn hình đóng gói & tích hợp cân điện tử dự phòng: `src/app/packaging/page.tsx`
+Giao diện đóng gói sản phẩm kết nối WebSocket nhận trọng lượng từ cân điện tử, hỗ trợ cơ chế nhập thủ công ghi log khi mất kết nối:
+
+```tsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Scale, AlertTriangle, Lock, ShieldCheck } from 'lucide-react';
+import HasPermission from '@/components/HasPermission';
+
+export default function PackagingPage() {
+  const [lotNo, setLotNo] = useState('');
+  const [weight, setWeight] = useState('0.00');
+  const [isManual, setIsManual] = useState(false);
+  const [reason, setReason] = useState('');
+  const [wsStatus, setWsStatus] = useState('DISCONNECTED');
+
+  useEffect(() => {
+    // Giả lập kết nối WebSocket với Local Agent
+    const socket = new WebSocket('ws://localhost:9000');
+    
+    socket.onopen = () => setWsStatus('CONNECTED');
+    socket.onclose = () => setWsStatus('DISCONNECTED');
+    socket.onmessage = (event) => {
+      if (!isManual) {
+        setWeight(event.data); // Nhận cân nặng thời gian thực từ cân điện tử
+      }
+    };
+
+    return () => socket.close();
+  }, [isManual]);
+
+  const handlePack = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isManual && !reason) {
+      alert('Bắt buộc nhập lý do cân tay!');
+      return;
+    }
+    // Gửi API đóng gói
+    console.log('Packing request:', { lotNo, weight, isManual, reason });
+  };
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-slate-100">Đóng gói hàng xuất</h1>
+
+      <div className="max-w-2xl bg-[#18181f] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+        {/* Trạng thái kết nối cân */}
+        <div className="flex justify-between items-center bg-[#0f0f12] p-4 rounded-xl border border-slate-800">
+          <div className="flex items-center gap-3">
+            <Scale className={`w-5 h-5 ${wsStatus === 'CONNECTED' ? 'text-emerald-400' : 'text-rose-500'}`} />
+            <div>
+              <h3 className="font-semibold text-slate-200">Cân điện tử</h3>
+              <p className="text-xs text-slate-500">Kết nối: {wsStatus}</p>
+            </div>
+          </div>
+          
+          {wsStatus === 'DISCONNECTED' && !isManual && (
+            <div className="flex items-center gap-2 text-amber-500 text-xs font-semibold bg-amber-500/10 px-3 py-1.5 rounded-lg">
+              <AlertTriangle className="w-4 h-4" /> Mất kết nối cân
+            </div>
+          )}
+        </div>
+
+        <form onSubmit={handlePack} className="space-y-4">
+          <div className="space-y-2">
+            <label className="block text-sm text-slate-400">Mã Lot quét xuất</label>
+            <input
+              type="text"
+              placeholder="Quét mã Lot..."
+              value={lotNo}
+              onChange={(e) => setLotNo(e.target.value)}
+              className="w-full px-4 py-2 bg-[#0f0f12] border border-slate-800 rounded-lg text-slate-100 focus:outline-none"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="block text-sm text-slate-400">Trọng lượng (kg)</label>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                disabled={!isManual}
+                value={weight}
+                onChange={(e) => setWeight(e.target.value)}
+                className="flex-1 px-4 py-2 bg-[#0f0f12] border border-slate-800 rounded-lg text-slate-100 font-mono text-xl focus:outline-none disabled:opacity-50"
+              />
+              
+              {!isManual ? (
+                <button
+                  type="button"
+                  onClick={() => setIsManual(true)}
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg flex items-center gap-1.5"
+                >
+                  <Lock className="w-4 h-4" /> Nhập cân tay
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => { setIsManual(false); setReason(''); }}
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+                >
+                  Dùng cân tự động
+                </button>
+              )}
+            </div>
+          </div>
+
+          {isManual && (
+            <div className="space-y-2 pt-2 border-t border-slate-800/50">
+              <label className="block text-sm text-slate-400 flex items-center gap-1.5 text-amber-500">
+                <ShieldCheck className="w-4 h-4" /> Lý do nhập cân tay thủ công (Yêu cầu Manager phê duyệt)
+              </label>
+              <textarea
+                placeholder="Nhập lý do chi tiết..."
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="w-full px-4 py-2 bg-[#0f0f12] border border-slate-800 rounded-lg text-slate-100 focus:outline-none h-20 text-sm"
+              />
+            </div>
+          )}
+
+          <div className="flex justify-end pt-4 border-t border-slate-800/50">
+            <button type="submit" className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-lg">
+              Xác nhận đóng gói
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+```
+
+### E. Màn hình quản lý đóng băng kệ kiểm kê: `src/app/stocktake/lock/page.tsx`
+Giao diện quản lý hỗ trợ đóng băng (khóa) các vị trí kệ và vùng kho để đảm bảo tính chính xác số liệu trong suốt quá trình kiểm đếm thực tế:
+
+```tsx
+'use client';
+
+import { useState } from 'react';
+import { ShieldAlert, Unlock, Lock } from 'lucide-react';
+import HasPermission from '@/components/HasPermission';
+
+interface StorageLocation {
+  id: string;
+  code: string;
+  zoneName: string;
+  isLocked: boolean;
+}
+
+export default function StocktakeLockPage() {
+  const [locations, setLocations] = useState<StorageLocation[]>([
+    { id: '1', code: 'A-01-01', zoneName: 'Khu A - Nhiệt độ phòng', isLocked: false },
+    { id: '2', code: 'A-01-02', zoneName: 'Khu A - Nhiệt độ phòng', isLocked: true },
+    { id: '3', code: 'B-03-01', zoneName: 'Khu B - Kho lạnh', isLocked: false },
+  ]);
+
+  const toggleLockLocation = (id: string) => {
+    setLocations(locations.map(loc => 
+      loc.id === id ? { ...loc, isLocked: !loc.isLocked } : loc
+    ));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-slate-100">Đóng băng vị trí (Kiểm kê định kỳ)</h1>
+        <div className="flex items-center gap-2 text-rose-400 text-xs font-semibold bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/20">
+          <ShieldAlert className="w-4 h-4" /> Vị trí bị khóa sẽ chặn mọi thao tác Nhập/Xuất/Di chuyển
+        </div>
+      </div>
+
+      <div className="bg-[#18181f] border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-800 text-slate-400 text-sm font-medium">
+                <th className="py-3 px-4">Mã Vị trí kệ</th>
+                <th className="py-3 px-4">Vùng kho bảo quản</th>
+                <th className="py-3 px-4 text-center">Trạng thái khóa</th>
+                <th className="py-3 px-4 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/50 text-sm">
+              {locations.map((loc) => (
+                <tr key={loc.id} className="hover:bg-slate-800/20 transition-colors">
+                  <td className="py-3.5 px-4 font-mono text-indigo-400 font-semibold">{loc.code}</td>
+                  <td className="py-3.5 px-4 text-slate-300">{loc.zoneName}</td>
+                  <td className="py-3.5 px-4 text-center">
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${loc.isLocked ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                      {loc.isLocked ? 'Đã khóa' : 'Sẵn sàng'}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <HasPermission code="stocktake.manage">
+                      <button
+                        onClick={() => toggleLockLocation(loc.id)}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 ml-auto transition-colors ${loc.isLocked ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-red-600 hover:bg-red-700 text-white'}`}
+                      >
+                        {loc.isLocked ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                        {loc.isLocked ? 'Mở khóa' : 'Đóng băng'}
+                      </button>
+                    </HasPermission>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
 ---
 
 ## 📝 5. QUY TRÌNH KIỂM TRA GIAO DIỆN (UI VERIFICATION)

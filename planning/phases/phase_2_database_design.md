@@ -130,6 +130,10 @@ erDiagram
 | `weight_class` | VARCHAR(20) | DEFAULT 'MEDIUM'| Phân loại trọng lượng phục vụ Slotting (`HEAVY`, `MEDIUM`, `LIGHT`) |
 | `rotation_speed` | VARCHAR(20) | DEFAULT 'SLOW' | Tốc độ luân chuyển phục vụ Slotting (`FAST`, `MEDIUM`, `SLOW`) |
 | `track_serial` | BOOLEAN | DEFAULT false | Có quản lý chi tiết đến từng số Serial sản phẩm |
+| `length` | NUMERIC(8,2) | DEFAULT 0.00 | Chiều dài vật lý sản phẩm (phục vụ Slotting) |
+| `width` | NUMERIC(8,2) | DEFAULT 0.00 | Chiều rộng vật lý sản phẩm |
+| `height` | NUMERIC(8,2) | DEFAULT 0.00 | Chiều cao vật lý sản phẩm |
+| `weight` | NUMERIC(8,2) | DEFAULT 0.00 | Trọng lượng tịnh sản phẩm |
 
 #### 10. Bảng `Partners` (Danh sách Đối tác - Vendor & Customer)
 * `id` (UUID, PK), `tenant_id` (UUID, FK -> Tenants), `name` (VARCHAR(150), NOT NULL), `code` (VARCHAR(50), UNIQUE, NOT NULL), `type` (VARCHAR(20), NOT NULL), `address` (TEXT), `created_at` (TIMESTAMP).
@@ -138,10 +142,10 @@ erDiagram
 * `id` (UUID, PK), `tenant_id` (UUID, FK -> Tenants), `name` (VARCHAR(100), NOT NULL), `description` (TEXT).
 
 #### 12. Bảng `StorageZones` (Phân hoạch Vùng bảo quản trong kho)
-* `id` (UUID, PK), `warehouse_id` (UUID, FK -> Warehouses), `name` (VARCHAR(100), NOT NULL), `code` (VARCHAR(50), UNIQUE, NOT NULL), `temperature_limit` (NUMERIC(5,2)), `description` (TEXT).
+* `id` (UUID, PK), `warehouse_id` (UUID, FK -> Warehouses), `name` (VARCHAR(100), NOT NULL), `code` (VARCHAR(50), UNIQUE, NOT NULL), `temperature_limit` (NUMERIC(5,2)), `description` (TEXT), `is_locked` (BOOLEAN, DEFAULT false - đóng băng toàn vùng kho để kiểm kê).
 
 #### 13. Bảng `StorageLocations` (Vị trí Kệ hàng)
-* `id` (UUID, PK), `warehouse_id` (UUID, FK -> Warehouses), `zone_id` (UUID, FK -> StorageZones), `code` (VARCHAR(50), NOT NULL), `max_capacity` (NUMERIC(12,3)).
+* `id` (UUID, PK), `warehouse_id` (UUID, FK -> Warehouses), `zone_id` (UUID, FK -> StorageZones), `code` (VARCHAR(50), NOT NULL), `max_capacity` (NUMERIC(12,3)), `is_locked` (BOOLEAN, DEFAULT false - đóng băng vị trí kệ để kiểm kê), `x_coord` (INT - Tọa độ X phục vụ định tuyến), `y_coord` (INT - Tọa độ Y), `z_coord` (INT - Tọa độ Z / tầng kệ), `length` (NUMERIC(8,2) - Chiều dài kệ), `width` (NUMERIC(8,2) - Chiều rộng kệ), `height` (NUMERIC(8,2) - Chiều cao kệ), `max_volume` (NUMERIC(12,3) - Thể tích tối đa cho phép).
 
 ---
 
@@ -221,7 +225,7 @@ erDiagram
 * `id` (UUID, PK), `tenant_id` (UUID, FK -> Tenants), `customer_id` (UUID, FK -> Partners), `shipment_no` (VARCHAR(50), UNIQUE, NOT NULL), `destination` (VARCHAR(150)), `shipped_at` (TIMESTAMP), `status` (VARCHAR(20)).
 
 #### 27. Bảng `ShipmentItems` (Chi tiết các lô hàng xuất)
-* `id` (UUID, PK), `shipment_id` (UUID, FK -> Shipments), `wave_id` (UUID, FK -> PickingWaves), `lot_id` (UUID, FK -> Lots), `quantity` (NUMERIC(12,3)).
+* `id` (UUID, PK), `shipment_id` (UUID, FK -> Shipments), `wave_id` (UUID, FK -> PickingWaves), `lot_id` (UUID, FK -> Lots), `quantity` (NUMERIC(12,3)), `is_manual_weight` (BOOLEAN, DEFAULT false - cờ xác nhận cân tay thủ công khi mất kết nối cân điện tử), `manual_weight_reason` (TEXT - lý do nhập cân tay).
 
 ---
 
