@@ -82,6 +82,7 @@ Sử dụng thư viện `Microsoft.AspNetCore.Mvc.Testing` để chạy Web Serv
 * **Kịch bản Test 1: Kiểm thử Xác thực và Phân quyền API**
   * Gửi request `POST /api/part-input/accept` không đính kèm JWT Token $\rightarrow$ Kết quả mong muốn: `401 Unauthorized`.
   * Gửi request đính kèm Token có vai trò `OPERATOR` nhưng không có quyền `material.accept` $\rightarrow$ Kết quả mong muốn: `403 Forbidden`.
+  * Gửi request với đầy đủ quyền $\rightarrow$ Kết quả mong muốn: `200 OK`.
 * **Kịch bản Test 2: Kiểm thử Concurrency Lock (Khóa đồng thời chống race condition)**
   * Chạy đồng thời 5 luồng (Thread) gửi yêu cầu xuất kho cùng 1 Lot hàng có số lượng tồn là 10. Mỗi luồng yêu cầu xuất 3 sản phẩm.
   * Kết quả mong muốn: Chỉ có 3 luồng đầu tiên xuất kho thành công (Số lượng tồn giảm về 1). 2 luồng cuối cùng bị chặn lại và nhận mã lỗi `409 Conflict` (Lỗi tranh chấp tồn kho) hoặc `400 Bad Request` (Không đủ số lượng tồn). Giao dịch rollback an toàn, không có hiện tượng âm kho.
@@ -103,6 +104,14 @@ Sử dụng thư viện `Microsoft.AspNetCore.Mvc.Testing` để chạy Web Serv
 * **Kịch bản Test 7: Kiểm thử Ghi nhận thời gian Năng suất lao động (Labor Tracking)**
   * Gọi API `POST /api/labor/start-task` và sau 3 giây gọi API `POST /api/labor/end-task/{id}`.
   * Kết quả mong muốn: Bản ghi Task trong Database được lưu với thời gian hoàn thành hợp lệ và trạng thái `COMPLETED`.
+* **Kịch bản Test 8: Kiểm thử đóng gói và di chuyển Pallet LPN**
+  * Tạo LPN mới, gán 10 Lot hàng vào LPN đó.
+  * Gửi request di chuyển LPN sang vị trí kệ mới `B-05-05`.
+  * Kết quả mong muốn: API thực thi Transaction cập nhật thành công vị trí của cả LPN và vị trí của cả 10 Lot hàng bên trong trong bảng `Inventories`.
+* **Kịch bản Test 9: Kiểm thử thuật toán đan xen tác vụ (Task Interleaving)**
+  * Nhân viên hoàn thành cất hàng nhập tại kệ A-01. Có tác vụ pick hàng xuất ở kệ A-02 đang PENDING.
+  * Gọi API check task tiếp theo.
+  * Kết quả mong muốn: Hệ thống tự động gán và chuyển trạng thái task pick xuất tại kệ A-02 sang IN_PROGRESS cho chính nhân viên này.
 
 ---
 
@@ -137,6 +146,12 @@ Sử dụng công cụ **Playwright** để viết các kịch bản kiểm th�
   1. Vào màn hình Gia phả, nhập mã Lot bị lỗi chất lượng.
   2. Xác nhận Sơ đồ phả hệ hiển thị đúng Lot gốc và các Lot con cùng nhánh.
   3. Đăng nhập tài khoản QC Inspector, click "Khóa khẩn cấp toàn bộ nhánh gia phả" $\rightarrow$ Xác nhận tất cả các Lot con cùng nhánh trong kho tự động chuyển sang trạng thái `hold_status = true`.
+* **Kịch bản E2E 7: Đóng gói và quét LPN Pallet**
+  1. Vào màn hình LPN Pallet, tạo mã Pallet mới, quét 5 mã Lot để đóng Pallet.
+  2. Vào màn hình Chuyển kho, quét mã Pallet LPN, quét vị trí kệ mới $\rightarrow$ Hệ thống cập nhật thành công, không cần quét lại 5 mã Lot.
+* **Kịch bản E2E 8: Nhận hàng trả lại RMA & QC phân loại**
+  1. Vào màn hình RMA, quét nhận mã hàng trả lại từ khách hàng.
+  2. QC chọn phán quyết "Scrap" (Hủy bỏ) $\rightarrow$ Xác nhận số tồn không tăng và tạo bản ghi lịch sử hủy hàng thành công.
 
 ---
 
@@ -144,7 +159,7 @@ Sử dụng công cụ **Playwright** để viết các kịch bản kiểm th�
 
 Hệ thống Nexustock chỉ được phép phát hành lên production khi vượt qua toàn bộ các tiêu chí kiểm thử sau:
 
-| STT | Loại kiểm tra | Tiêu chuẩn đạt | Phương pháp xác nhận |
+| STT | Loại kiểm tra | Tiêu chuẩn đạt | Phượng pháp xác nhận |
 |---|---|---|---|
 | 1 | Unit Test Coverage | Đạt tối thiểu **80%** độ bao phủ dòng code của phần core nghiệp vụ | Chạy công cụ đo lường coverage trong CI/CD pipeline |
 | 2 | Concurrency Test | Không xảy ra lỗi âm kho hoặc lệch số dư khi chạy tải đồng thời | Chạy bộ test tích hợp API với 50 luồng giả lập |

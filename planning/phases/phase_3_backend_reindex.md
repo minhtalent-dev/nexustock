@@ -1,10 +1,10 @@
 # PHASE 3: REINDEX MODULES CŨ & PHÁT TRIỂN CORE API BACKEND (REINDEX & BACKEND SERVICES)
 
-Phase này phân tích chuyên sâu (Reindex) mã nguồn của các module nghiệp vụ trong các dự án cũ để sàng lọc, loại bỏ logic hardcode, khắc phục các bug lịch sử, tích hợp hệ thống phân quyền tài khoản chi tiết, quy trình kiểm kê định kỳ, phân hoạch vùng kho bảo quản, thuật toán cất hàng tối ưu (Putaway Slotting), quy trình chuyển tiếp trực tiếp (Cross-Docking), gom đơn hàng xuất kho (Wave Picking), cây gia phả truy vết chất lượng (Material Genealogy), đo lường năng suất lao động (Labor Tracking), lịch hẹn cửa kho (Dock Scheduling), cấu hình cảnh báo thông minh và phát triển hệ thống Core Web API trên ASP.NET Core theo quy trình chuẩn linh hoạt (Flexible Flow) phù hợp cho mọi nhà máy sử dụng **PostgreSQL** làm cơ sở dữ liệu duy nhất.
+Phase này phân tích chuyên sâu (Reindex) mã nguồn của các module nghiệp vụ trong các dự án cũ để sàng lọc, loại bỏ logic hardcode, khắc phục các bug lịch sử, tích hợp hệ thống phân quyền tài khoản chi tiết, quy trình kiểm kê định kỳ, phân hoạch vùng kho bảo quản, thuật toán cất hàng tối ưu (Putaway Slotting), quy trình chuyển tiếp trực tiếp (Cross-Docking), gom đơn hàng xuất kho (Wave Picking), cây gia phả truy vết chất lượng (Material Genealogy), đo lường năng suất lao động (Labor Tracking), lịch hẹn cửa kho (Dock Scheduling), định danh Pallet/Container (LPN), quản lý Số Serial riêng lẻ, quy trình hàng trả về (RMA), thuật toán đan xen tác vụ (Task Interleaving), cấu hình cảnh báo thông minh và phát triển hệ thống Core Web API trên ASP.NET Core theo quy trình chuẩn linh hoạt (Flexible Flow) phù hợp cho mọi nhà máy sử dụng **PostgreSQL** làm cơ sở dữ liệu duy nhất.
 
 ---
 
-## 🔍 1. REINDEX & PHÂN TÍCH CHUYÊN SÂU CÁC MODULES CŨ
+## 🔍 1. REINDEX & PHÂN TÍCH CHUYÊN SÂU C CÁC MODULES CŨ
 
 ### 📥 Phân hệ Nhập kho (Kế thừa từ quy trình Nhập kho cũ)
 * **Hành vi cũ**: 
@@ -107,100 +107,123 @@ public class PartInputController : ControllerBase
 }
 ```
 
-### B. Controller Đợt Gom Hàng Xuất: `WavePickingController.cs`
-Gom nhiều yêu cầu xuất hàng lẻ thành các đợt (Wave) để tối ưu hóa quãng đường di chuyển lấy hàng:
+### B. Controller Quản lý Pallet (LPN): `LicensePlateController.cs`
+Gộp và di chuyển toàn bộ Lot hàng trên cùng một LPN chỉ bằng 1 lần quét:
 ```csharp
 [ApiController]
-[Route("api/wave-picking")]
+[Route("api/lpn")]
 [Authorize]
-public class WavePickingController : ControllerBase
+public class LicensePlateController : ControllerBase
 {
-    private readonly IWavePickingService _waveService;
+    private readonly ILpnService _lpnService;
 
-    public WavePickingController(IWavePickingService waveService)
+    public LicensePlateController(ILpnService lpnService)
     {
-        _waveService = waveService;
+        _lpnService = lpnService;
     }
 
-    [HttpPost("create")]
-    [HasPermission("wave.manage")]
-    public async Task<IActionResult> CreateWave([FromBody] CreateWaveDto dto)
+    [HttpPost("consolidate")]
+    [HasPermission("lpn.manage")]
+    public async Task<IActionResult> ConsolidateLotsToPallet([FromBody] ConsolidateLpnDto dto)
     {
-        var waveId = await _waveService.CreatePickingWaveAsync(dto);
-        return Ok(new { Message = "Tạo đợt gom hàng xuất thành công", WaveId = waveId });
-    }
-
-    [HttpGet("{id}/pick-list")]
-    [HasPermission("shipment.manage")]
-    public async Task<IActionResult> GetOptimizedPickList(Guid id)
-    {
-        // Trích xuất danh sách lấy hàng tối ưu: nhóm cùng mặt hàng, cùng vị trí kệ
-        var pickList = await _waveService.GetOptimizedPickListAsync(id);
-        return Ok(pickList);
-    }
-}
-```
-
-### C. Controller Gia Phả Vật Tư: `LotTraceabilityController.cs`
-API truy xuất gia phả Lot cha $\rightarrow$ Lot con (Kowake Tree) phục vụ kiểm toán chất lượng và khoanh vùng sự cố:
-```csharp
-[ApiController]
-[Route("api/lot-traceability")]
-[Authorize]
-public class LotTraceabilityController : ControllerBase
-{
-    private readonly ILotTraceabilityService _traceService;
-
-    public LotTraceabilityController(ILotTraceabilityService traceService)
-    {
-        _traceService = traceService;
-    }
-
-    [HttpGet("{lotNo}/genealogy")]
-    public async Task<IActionResult> GetLotGenealogy(string lotNo)
-    {
-        // Trả về cấu trúc cây phân cấp (Hierarchical Tree) của Lot từ Lot cha gốc tới các Lot con kowake
-        var genealogyTree = await _traceService.GetLotGenealogyTreeAsync(lotNo);
-        if (genealogyTree == null)
-        {
-            return NotFound("Không tìm thấy thông tin Lot hàng");
-        }
-        return Ok(genealogyTree);
-    }
-}
-```
-
-### D. Controller Đo lường Năng suất Lao động: `LaborController.cs`
-```csharp
-[ApiController]
-[Route("api/labor")]
-[Authorize]
-public class LaborController : ControllerBase
-{
-    private readonly ILaborTrackingService _laborService;
-
-    public LaborController(ILaborTrackingService laborService)
-    {
-        _laborService = laborService;
-    }
-
-    [HttpPost("start-task")]
-    public async Task<IActionResult> StartTask([FromBody] StartTaskDto dto)
-    {
-        var currentUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-        var taskId = await _laborService.StartLaborTaskAsync(currentUserId, dto.TaskType, dto.ReferenceId);
-        return Ok(new { TaskId = taskId });
-    }
-
-    [HttpPost("end-task/{id}")]
-    public async Task<IActionResult> EndTask(Guid id)
-    {
-        var success = await _laborService.CompleteLaborTaskAsync(id);
+        var success = await _lpnService.ConsolidateLotsAsync(dto.LpnCode, dto.LotIds, dto.TenantId);
         if (!success)
         {
-            return BadRequest("Không thể hoàn thành tác vụ.");
+            return BadRequest("Gộp Lot vào Pallet thất bại.");
         }
-        return Ok("Ghi nhận hoàn thành tác vụ thành công.");
+        return Ok("Đóng gói Pallet (LPN) thành công.");
+    }
+
+    [HttpPost("move")]
+    [HasPermission("stock.move")]
+    public async Task<IActionResult> MovePalletLocation([FromBody] MoveLpnDto dto)
+    {
+        // Di chuyển toàn bộ các Lot nằm trên Pallet sang vị trí mới qua 1 Transaction
+        var success = await _lpnService.MovePalletAsync(dto.LpnCode, dto.TargetLocationId);
+        if (!success)
+        {
+            return BadRequest("Di chuyển Pallet thất bại.");
+        }
+        return Ok("Di chuyển Pallet thành công.");
+    }
+}
+```
+
+### C. Controller Điều phối Đan xen Tác vụ: `TaskInterleavingService.cs`
+Tự động gán tác vụ gần vị trí kệ khi vừa cất hàng để giảm thiểu quãng đường chạy xe không:
+```csharp
+public class TaskInterleavingService : ITaskInterleavingService
+{
+    private readonly NexustockDbContext _context;
+
+    public TaskInterleavingService(NexustockDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<Guid?> GetNextInterleavedTaskAsync(Guid userId, Guid completedLocationId, Guid tenantId)
+    {
+        // 1. Tìm vị trí kệ vừa hoàn thành
+        var currentLocation = await _context.StorageLocations.FindAsync(completedLocationId);
+        if (currentLocation == null) return null;
+
+        // 2. Tìm tác vụ lấy hàng xuất (PICK) đang chờ trong Task Queue
+        var pendingTask = await _context.LaborTasks
+            .Where(t => t.TenantId == tenantId && t.Status == "PENDING" && t.TaskType == "PICK")
+            .Join(_context.ShipmentItems, t => t.ReferenceId, s => s.Id, (t, s) => new { Task = t, ShipmentItem = s })
+            .Join(_context.Inventories, s => s.ShipmentItem.LotId, i => i.LotId, (s, i) => new { s.Task, Inventory = i })
+            .Where(x => x.Inventory.Location.WarehouseId == currentLocation.WarehouseId) // Cùng nhà kho
+            .OrderBy(x => x.Inventory.Location.Code) // Sắp xếp theo mã kệ để tìm vị trí gần nhất
+            .FirstOrDefaultAsync();
+
+        if (pendingTask != null)
+        {
+            // Tự động gán tác vụ này cho công nhân hiện tại
+            pendingTask.Task.UserId = userId;
+            pendingTask.Task.Status = "IN_PROGRESS";
+            pendingTask.Task.StartTime = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            return pendingTask.Task.Id;
+        }
+
+        return null;
+    }
+}
+```
+
+### D. Controller Khách hàng Trả hàng (RMA): `RmaController.cs`
+```csharp
+[ApiController]
+[Route("api/rma")]
+[Authorize]
+public class RmaController : ControllerBase
+{
+    private readonly IRmaService _rmaService;
+
+    public RmaController(IRmaService rmaService)
+    {
+        _rmaService = rmaService;
+    }
+
+    [HttpPost("receive")]
+    [HasPermission("rma.manage")]
+    public async Task<IActionResult> ReceiveRmaItem([FromBody] ReceiveRmaDto dto)
+    {
+        var result = await _rmaService.ProcessRmaReceiptAsync(dto);
+        return Ok(result);
+    }
+
+    [HttpPost("judge")]
+    [HasPermission("material.hold")]
+    public async Task<IActionResult> JudgeRmaItem([FromBody] JudgeRmaDto dto)
+    {
+        // Thực hiện phân loại: Tái nhập kho (RESTOCK), Sửa chữa (REWORK), Hủy bỏ (SCRAP)
+        var success = await _rmaService.JudgeAndRouteItemAsync(dto.RmaItemId, dto.Judgement, dto.TargetLocationId);
+        if (!success)
+        {
+            return BadRequest("Cập nhật quyết định QC thất bại.");
+        }
+        return Ok("Cập nhật quyết định QC thành công.");
     }
 }
 ```

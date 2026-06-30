@@ -1,6 +1,6 @@
 # PHASE 4: PHÁT TRIỂN GIAO DIỆN WEB NEXT.JS SPA (FRONTEND UI/UX)
 
-Phase này hướng dẫn xây dựng giao diện người dùng (UI/UX) cho hệ thống **Nexustock** trên nền tảng Next.js SPA, áp dụng phong cách thiết kế **Fluent Design / WinUI 3** với giao diện tối (Dark Theme) làm chủ đạo, tích hợp cơ chế bảo mật phân quyền hiển thị phía Client, màn hình quản trị Đối tác, Kiểm kê quét mã, Đóng gói nhận số cân tự động, Sơ đồ kho trực quan, Quản lý đợt gom hàng Wave Picking, Sơ đồ cây gia phả truy vết chất lượng, Lịch hẹn bến bãi Dock Door và Dashboard cảnh báo thông minh.
+Phase này hướng dẫn xây dựng giao diện người dùng (UI/UX) cho hệ thống **Nexustock** trên nền tảng Next.js SPA, áp dụng phong cách thiết kế **Fluent Design / WinUI 3** với giao diện tối (Dark Theme) làm chủ đạo, tích hợp cơ chế bảo mật phân quyền hiển thị phía Client, màn hình quản trị Đối tác, Kiểm kê quét mã, Đóng gói nhận số cân tự động, Sơ đồ kho trực quan, Quản lý đợt gom hàng Wave Picking, Sơ đồ cây gia phả truy vết chất lượng, Đóng gói Pallet (LPN), Tiếp nhận hàng trả về RMA, Lịch hẹn bến bãi Dock Door và Dashboard cảnh báo thông minh.
 
 ---
 
@@ -228,68 +228,82 @@ export default function MaterialAcceptanceForm() {
 }
 ```
 
-### B. Màn hình quản lý đợt gom hàng xuất: `src/app/wave-picking/page.tsx`
-Hiển thị danh sách Pick List tối ưu hóa để đi lấy hàng một lần duy nhất cho nhiều đơn hàng:
+### B. Màn hình quản lý đóng gói Pallet LPN: `src/app/lpn/page.tsx`
+Cho phép gộp các Lot hàng lẻ vào Pallet LPN để thực hiện di chuyển vị trí hàng loạt bằng 1 lần quét duy nhất:
 
 ```tsx
 'use client';
 
 import { useState } from 'react';
-import { Layers, CheckCircle2 } from 'lucide-react';
+import { Box, Scan, ArrowRight } from 'lucide-react';
+import HasPermission from '@/components/HasPermission';
 
-interface PickItem {
-  locationCode: string;
-  productCode: string;
-  quantity: number;
-  totalLots: number;
-}
+export default function LpnPalletPage() {
+  const [lpnCode, setLpnCode] = useState('');
+  const [scannedLots, setScannedLots] = useState<string[]>([]);
+  const [lotInput, setLotInput] = useState('');
 
-export default function WavePickingPage() {
-  const [pickList] = useState<PickItem[]>([
-    { locationCode: 'A-01-01', productCode: 'RESN-01-A', quantity: 150.000, totalLots: 3 },
-    { locationCode: 'B-02-05', productCode: 'ALUM-4040', quantity: 20.000, totalLots: 1 },
-  ]);
+  const handleAddLot = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (lotInput) {
+      setScannedLots([...scannedLots, lotInput]);
+      setLotInput('');
+    }
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-100">Đợt gom hàng xuất (Wave Picking)</h1>
-        <span className="px-3 py-1 bg-indigo-500/10 text-indigo-400 text-sm font-medium rounded-full">
-          Đợt ID: WAVE-20260630-01
-        </span>
-      </div>
+      <h1 className="text-2xl font-bold text-slate-100">Đóng gói Pallet (LPN Management)</h1>
 
-      <div className="bg-[#18181f] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-        <h2 className="text-lg font-semibold text-slate-200">Danh sách lấy hàng gom (Pick List) tối ưu</h2>
-        <p className="text-xs text-slate-500">Hệ thống tự động gom các Lot cùng loại và cùng vị trí để rút ngắn 90% quãng đường di chuyển.</p>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-800 text-slate-400 text-sm font-medium">
-                <th className="py-3 px-4">Vị trí kệ lấy</th>
-                <th className="py-3 px-4">Mã Vật tư</th>
-                <th className="py-3 px-4 text-right">Tổng số lượng cần lấy</th>
-                <th className="py-3 px-4 text-center">Tổng số Lot gom</th>
-                <th className="py-3 px-4">Hành động</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/50">
-              {pickList.map((item, idx) => (
-                <tr key={idx} className="hover:bg-slate-800/20 transition-colors text-sm">
-                  <td className="py-3.5 px-4 font-mono text-indigo-400 font-semibold">{item.locationCode}</td>
-                  <td className="py-3.5 px-4 font-medium text-slate-300">{item.productCode}</td>
-                  <td className="py-3.5 px-4 text-right text-slate-200 font-semibold">{item.quantity.toFixed(3)}</td>
-                  <td className="py-3.5 px-4 text-center text-slate-300">{item.totalLots} Lô</td>
-                  <td className="py-3.5 px-4">
-                    <button className="px-4 py-1.5 bg-indigo-600/10 hover:bg-indigo-600/20 active:bg-indigo-600/30 text-indigo-400 text-xs font-semibold rounded-lg transition-colors">
-                      Xác nhận đã lấy
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Form đóng gói Pallet */}
+        <div className="bg-[#18181f] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h2 className="text-lg font-semibold text-slate-200">Cấu hình Pallet</h2>
+          <div className="space-y-3">
+            <label className="block text-sm text-slate-400">Mã Pallet (LPN Code)</label>
+            <input
+              type="text"
+              placeholder="Nhập hoặc quét mã Pallet..."
+              value={lpnCode}
+              onChange={(e) => setLpnCode(e.target.value)}
+              className="w-full max-w-sm px-4 py-2 bg-[#0f0f12] border border-slate-800 rounded-lg text-slate-100 focus:outline-none"
+            />
+          </div>
+
+          <form onSubmit={handleAddLot} className="space-y-3 pt-4 border-t border-slate-800/50">
+            <label className="block text-sm text-slate-400">Quét mã Lot gom vào Pallet</label>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                placeholder="Quét mã Lot..."
+                value={lotInput}
+                onChange={(e) => setLotInput(e.target.value)}
+                className="flex-1 max-w-xs px-4 py-2 bg-[#0f0f12] border border-slate-800 rounded-lg text-slate-100 focus:outline-none"
+              />
+              <button type="submit" className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg">Gộp</button>
+            </div>
+          </form>
+        </div>
+
+        {/* Danh sách Lot trong Pallet */}
+        <div className="bg-[#18181f] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+          <h2 className="text-lg font-semibold text-slate-200">Danh sách Lot đã gộp ({scannedLots.length})</h2>
+          <div className="divide-y divide-slate-800/50 max-h-60 overflow-y-auto">
+            {scannedLots.map((lot, idx) => (
+              <div key={idx} className="py-2.5 flex items-center gap-3 text-sm">
+                <Box className="w-4 h-4 text-indigo-400" />
+                <span className="font-mono text-slate-300">{lot}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex justify-end pt-4 border-t border-slate-800/50">
+            <HasPermission code="lpn.manage">
+              <button className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-lg transition-colors">
+                Xác nhận hoàn tất Pallet (LPN)
+              </button>
+            </HasPermission>
+          </div>
         </div>
       </div>
     </div>
@@ -297,77 +311,71 @@ export default function WavePickingPage() {
 }
 ```
 
-### C. Màn hình sơ đồ cây gia phả truy vết chất lượng: `src/app/traceability/page.tsx`
-Sử dụng cấu trúc hình cây hiển thị phả hệ các đời Lot để phục vụ kiểm toán sự cố chất lượng:
+### C. Màn hình tiếp nhận hàng trả về RMA: `src/app/rma/page.tsx`
+Giao diện quét nhận hàng trả lại và phân loại QC đưa ra quyết định xử lý:
 
 ```tsx
 'use client';
 
 import { useState } from 'react';
-import { Search, GitFork, ShieldAlert } from 'lucide-react';
+import { ArrowLeftRight, CheckCircle, Ban, RefreshCw } from 'lucide-react';
+import HasPermission from '@/components/HasPermission';
 
-export default function GenealogyPage() {
-  const [lotInput, setLotInput] = useState('');
-  const [showTree, setShowTree] = useState(false);
+interface RmaItem {
+  id: string;
+  productCode: string;
+  quantity: number;
+  customerName: string;
+}
+
+export default function RmaPage() {
+  const [items] = useState<RmaItem[]>([
+    { id: '1', productCode: 'RESN-01-A', quantity: 5.000, customerName: 'Intel Corp.' },
+  ]);
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-100">Truy vết Gia phả Vật tư (Material Genealogy)</h1>
+      <h1 className="text-2xl font-bold text-slate-100">Tiếp nhận Hàng trả về (RMA Management)</h1>
 
-      {/* Form tra cứu */}
-      <form onSubmit={(e) => { e.preventDefault(); if (lotInput) setShowTree(true); }} className="bg-[#18181f] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
-        <label className="block text-sm font-medium text-slate-300">Nhập mã Lot con hoặc Lot cha để truy vết ngược</label>
-        <div className="flex gap-4">
-          <input
-            type="text"
-            placeholder="Ví dụ: LOT-KOWAKE-002"
-            value={lotInput}
-            onChange={(e) => setLotInput(e.target.value)}
-            className="flex-1 max-w-sm px-4 py-2 bg-[#0f0f12] border border-slate-800 rounded-lg text-slate-100 focus:outline-none focus:border-indigo-500"
-          />
-          <button type="submit" className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center gap-2">
-            <Search className="w-4 h-4" /> Truy vết
-          </button>
+      <div className="bg-[#18181f] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+        <h2 className="text-lg font-semibold text-slate-200">Danh sách sản phẩm khách hàng trả về chờ QC phân loại</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-slate-800 text-slate-400 text-sm font-medium">
+                <th className="py-3 px-4">Mã Sản phẩm</th>
+                <th className="py-3 px-4">Khách hàng</th>
+                <th className="py-3 px-4 text-right">Số lượng trả</th>
+                <th className="py-3 px-4 text-center">Phán quyết QC</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/50 text-sm">
+              {items.map((item) => (
+                <tr key={item.id} className="hover:bg-slate-800/20 transition-colors">
+                  <td className="py-3.5 px-4 font-mono text-indigo-400 font-semibold">{item.productCode}</td>
+                  <td className="py-3.5 px-4 text-slate-300">{item.customerName}</td>
+                  <td className="py-3.5 px-4 text-right text-slate-200">{item.quantity.toFixed(3)}</td>
+                  <td className="py-3.5 px-4">
+                    <HasPermission code="rma.manage">
+                      <div className="flex gap-2 justify-center">
+                        <button className="px-3 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold rounded-lg flex items-center gap-1 transition-colors">
+                          <CheckCircle className="w-3.5 h-3.5" /> Re-stock (Nhập kho)
+                        </button>
+                        <button className="px-3 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-semibold rounded-lg flex items-center gap-1 transition-colors">
+                          <RefreshCw className="w-3.5 h-3.5" /> Rework (Sửa)
+                        </button>
+                        <button className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-semibold rounded-lg flex items-center gap-1 transition-colors">
+                          <Ban className="w-3.5 h-3.5" /> Scrap (Hủy)
+                        </button>
+                      </div>
+                    </HasPermission>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </form>
-
-      {/* Sơ đồ cây Gia phả giả lập */}
-      {showTree && (
-        <div className="bg-[#18181f] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6 overflow-x-auto">
-          <h2 className="text-lg font-semibold text-slate-200">Sơ đồ phả hệ của Lot: {lotInput}</h2>
-          
-          <div className="flex flex-col items-center gap-6 min-w-[600px] py-4">
-            {/* Cấp 1: Lot cha gốc */}
-            <div className="p-4 bg-[#0f0f12] border border-indigo-500 rounded-2xl text-center shadow-lg w-64">
-              <span className="text-[10px] uppercase font-bold text-indigo-400">Lot Cha Gốc (Outer Lot)</span>
-              <p className="font-mono font-bold text-slate-200 mt-1">LOT-20260630-999</p>
-              <p className="text-xs text-slate-500 mt-1">PO: PO-9876543 | Vendor: SUMCO Inc.</p>
-              <span className="inline-block px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded-full mt-2 font-medium">IQC Pass</span>
-            </div>
-
-            <div className="w-0.5 h-8 bg-slate-700 relative">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#18181f] text-slate-500 text-[10px] px-1 font-semibold">KOWAKE (Chia tách)</div>
-            </div>
-
-            {/* Cấp 2: Các Lot con */}
-            <div className="flex gap-12">
-              <div className="p-4 bg-[#0f0f12] border border-slate-800 rounded-2xl text-center shadow-lg w-60 relative border-red-500/50">
-                <span className="text-[10px] uppercase font-bold text-red-400">Lot Con 1 (Đang chọn)</span>
-                <p className="font-mono font-bold text-slate-200 mt-1">{lotInput}</p>
-                <p className="text-xs text-slate-500 mt-1">Qty: 25.000 Kg | Vị trí: A-01-02</p>
-                <span className="inline-block px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] rounded-full mt-2 font-medium flex items-center justify-center gap-1"><ShieldAlert className="w-3 h-3" /> QC HOLD</span>
-              </div>
-
-              <div className="p-4 bg-[#0f0f12] border border-slate-800 rounded-2xl text-center shadow-lg w-60">
-                <span className="text-[10px] uppercase font-bold text-slate-500">Lot Con 2</span>
-                <p className="font-mono font-bold text-slate-200 mt-1">LOT-KOWAKE-003</p>
-                <p className="text-xs text-slate-500 mt-1">Qty: 25.000 Kg | Vị trí: B-02-01</p>
-                <span className="inline-block px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded-full mt-2 font-medium">Sẵn sàng</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }
