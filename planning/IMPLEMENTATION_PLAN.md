@@ -1,6 +1,6 @@
 # KẾ HOẠCH TỔNG THỂ TRIỂN KHAI DỰ ÁN NEXUSTOCK
 
-Dự án **Nexustock** là giải pháp quản lý - vận hành kho thế hệ mới, thay thế hệ thống desktop cũ bằng nền tảng Web SPA hiện đại, PostgreSQL độc lập và roadmap triển khai theo chuẩn WMS production.
+Dự án **Nexustock** là giải pháp quản lý - vận hành kho thế hệ mới, thay thế hệ thống desktop cũ bằng nền tảng Web SPA Next.js hiện đại (kết hợp Tailwind CSS, Shadcn UI), PostgreSQL độc lập, hỗ trợ Redis Cache (optional, recommended) cho backend và roadmap triển khai theo chuẩn WMS production.
 
 Roadmap dùng mô hình **4 stage / 30 phase nhỏ**. Mỗi phase là một deliverable độc lập, có đủ setup, database, backend/API, frontend/RF/mobile, execution flow, validation, exception, observability, test, acceptance, maintenance, extension và rollback.
 

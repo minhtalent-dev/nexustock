@@ -71,7 +71,7 @@ Không tạo bảng CRUD mới cho user. Sử dụng các bảng hệ thống đ
 
 * UI text dùng Sentence case.
 * Không dùng inline style.
-* Tách CSS/JS riêng nếu là web truyền thống; với SPA dùng component/style module nhất quán.
+* Sử dụng Next.js, Tailwind CSS và Shadcn UI. Không dùng inline style, tuân thủ component/style nhất quán.
 * Mọi action nguy hiểm có confirm rõ ràng.
 * Mọi màn hình có loading, empty, error, unauthorized state.
 * Bảng dữ liệu có filter, pagination và trạng thái no result.

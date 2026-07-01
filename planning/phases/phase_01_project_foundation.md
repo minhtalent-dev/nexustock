@@ -1,4 +1,4 @@
-﻿# PHASE 01: Project foundation
+# PHASE 01: Project foundation
 
 ## Execution spec maturity
 
@@ -46,10 +46,17 @@ Repository Nexustock đã sẵn sàng và roadmap được duyệt.
 
 ## 4. Setup
 
-* Tạo cấu trúc backend, frontend, local-agent, planning, docs
-* Chuẩn hóa .env.example và appsettings template
-* Tạo Docker Compose local cho PostgreSQL và Redis tùy chọn
-* Thiết lập convention naming branch, migration, API route, permission
+* Tạo cấu trúc monorepo: `backend/`, `frontend/`, `local-agent/`, `planning/`, `docs/`.
+* Khởi tạo dự án Frontend Next.js SPA:
+  ```bash
+  npx -y create-next-app@latest frontend --typescript --tailwind --app --src-dir --eslint --import-alias "@/*"
+  cd frontend
+  npm install lucide-react axios clsx tailwind-merge
+  npx shadcn-ui@latest init
+  ```
+* Chuẩn hóa `.env.example` và `appsettings` template.
+* Tạo Docker Compose local chạy PostgreSQL (dữ liệu chính) và Redis (cache backend - optional, recommended).
+* Thiết lập convention naming branch, migration, API route, permission.
 * Viết README first-run và troubleshooting.
 
 ### Cấu trúc module đề xuất
@@ -127,7 +134,7 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 * UI text dùng Sentence case.
 * Không dùng inline style.
-* Tách CSS/JS riêng nếu là web truyền thống; với SPA dùng component/style module nhất quán.
+* Sử dụng Next.js, Tailwind CSS và Shadcn UI. Không dùng inline style, tuân thủ component/style nhất quán.
 * Mọi action nguy hiểm có confirm rõ ràng.
 * Mọi màn hình có loading, empty, error, unauthorized state.
 * Bảng dữ liệu có filter, pagination và trạng thái no result.
