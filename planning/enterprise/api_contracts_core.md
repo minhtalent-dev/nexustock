@@ -255,3 +255,84 @@ public static class WebhookSigner
 }
 ```
 *Giao thức bắt tay bảo mật:* Đối tác nhận webhook bắt buộc phải tự tính lại chữ ký trên và so sánh với giá trị header `X-Nexustock-Signature` để đảm bảo dữ liệu không bị giả mạo trên đường truyền.
+
+---
+
+## 3. API Versioning Strategy
+
+### 3.1 Chiến lược phiên bản (URL-based versioning)
+
+Nexustock WMS sử dụng **URL path versioning** — phiên bản nhúng vào path, không dùng header versioning hay query param versioning.
+
+```
+/api/v1/inbound/orders
+/api/v1/outbound/shipments
+/api/v1/inventory/balances
+/api/v2/inbound/orders   -- khi có breaking change
+```
+
+**Lý do chọn URL-based:** Dễ debug (Postman, curl, browser), dễ đọc log, tương thích với mọi HTTP client không cần thêm header.
+
+### 3.2 Quy tắc backward compatibility
+
+Các thay đổi **KHÔNG cần bump version** (additive-only, backward compatible):
+- Thêm field mới vào response JSON (client cũ bỏ qua)
+- Thêm query parameter mới (optional, có default)
+- Thêm endpoint mới hoàn toàn
+- Mở rộng enum value (thêm value mới)
+
+Các thay đổi **BẮT BUỘC bump version** (breaking changes):
+- Đổi tên field trong request/response
+- Xóa field bắt buộc
+- Thay đổi kiểu dữ liệu field
+- Thay đổi HTTP method của endpoint
+- Thay đổi nghĩa của error code
+
+### 3.3 Deprecation policy
+
+```
+v1 (current) --> v2 ra mắt
+  |
+  +--> v1 tiếp tục hoạt động song song TỐI THIỂU 30 ngày
+  |
+  +--> Header cảnh báo: Deprecation: "Sun, 01 Aug 2026 00:00:00 GMT"
+  |                     Sunset: "Sun, 31 Aug 2026 00:00:00 GMT"
+  |
+  +--> Sau 30 ngày: v1 trả 410 Gone với message migration guide
+```
+
+**Chính sách hỗ trợ đa phiên bản:** Tối đa 2 version hoạt động đồng thời. Khi v3 ra, v1 phải được sunset.
+
+### 3.4 Routing configuration (ASP.NET Core)
+
+```csharp
+// Program.cs
+app.MapControllerRoute(
+    name: "v1",
+    pattern: "api/v1/{controller}/{action=Index}/{id?}");
+
+// Controller attribute
+[ApiController]
+[Route("api/v1/[controller]")]
+public class InboundOrdersController : ControllerBase { }
+
+// Version 2 khi cần
+[ApiController]
+[Route("api/v2/[controller]")]
+public class InboundOrdersV2Controller : ControllerBase { }
+```
+
+### 3.5 ERP integration versioning
+
+API dùng cho ERP integration (Phase 23) phải pin version trong config:
+
+```json
+{
+  "ErpIntegration": {
+    "WmsApiBaseUrl": "https://wms.nexustock.io/api/v1",
+    "ApiVersion": "v1"
+  }
+}
+```
+
+Khi bump version, SAP team phải được thông báo trước 30 ngày và contract validation test phải pass trên version mới trước khi sunset version cũ.
