@@ -1,75 +1,150 @@
-# KẾ HOẠCH TỔNG THỂ TRIỂN KHAI DỰ ÁN NEXUSTOCK
+﻿# KẾ HOẠCH TỔNG THỂ TRIỂN KHAI DỰ ÁN NEXUSTOCK
 
-Dự án **Nexustock** là giải pháp hệ thống quản lý kho tích hợp thế hệ mới, thay thế và nâng cấp toàn bộ các hệ thống Desktop cũ và tích hợp hệ thống quản lý kho chính hiện tại thành một nền tảng Web SPA hiện đại, chạy trên một cơ sở dữ liệu **PostgreSQL** độc lập hoàn toàn, hỗ trợ quy trình vận hành linh hoạt (Flexible Flow), hệ thống phân quyền chi tiết (RBAC), kiểm kê định kỳ tự động, phân hoạch Vùng kho, thuật toán cất hàng tối ưu (Slotting), quy trình chuyển tiếp trực tiếp (Cross-Docking), đợt gom hàng xuất (Wave Picking), cây gia phả truy vết chất lượng (Material Genealogy), đo lường năng suất lao động (Labor Tracking), lịch hẹn bến bãi (Dock Scheduling), quản lý Pallet/LPN (License Plate Number), theo dõi Số Serial riêng lẻ, quy trình hàng trả về (RMA), thuật toán đan xen tác vụ (Task Interleaving) và tích hợp cân điện tử tự động cho tất cả các nhà máy/chi nhánh sau này.
+Dự án **Nexustock** là giải pháp quản lý - vận hành kho thế hệ mới, thay thế hệ thống desktop cũ bằng nền tảng Web SPA hiện đại, PostgreSQL độc lập và roadmap triển khai theo chuẩn WMS production.
+
+Roadmap đã được tách lại thành **4 stage / 30 phase nhỏ**. Mỗi phase là một deliverable độc lập, có đủ setup, database, backend/API, frontend/RF/mobile, execution flow, validation, exception, observability, test và acceptance criteria.
 
 ---
 
-## 📅 LỘ TRÌNH TRIỂN KHAI CHI TIẾT (PROJECT ROADMAP)
+## Nguyên tắc phase chuẩn
 
-Lộ trình được chia làm 7 Phase độc lập, có tài liệu hướng dẫn kỹ thuật chi tiết đi kèm cho từng giai đoạn:
+Mỗi phase mới trong [planning/phases](file:///d:/1_Project/48_Nexustock/planning/phases) dùng cùng cấu trúc:
+
+1. Mục tiêu
+2. Phạm vi
+3. Điều kiện đầu vào
+4. Setup
+5. Database
+6. Backend/API
+7. Frontend/RF/mobile
+8. Execution flow
+9. Validation & business rules
+10. Exception handling
+11. Observability
+12. Test plan
+13. Acceptance criteria
+14. Out of scope
+15. Dependencies
+
+---
+
+## Lộ trình triển khai
 
 ```mermaid
 gantt
-    title Lộ trình triển khai Nexustock
+    title Nexustock - 30 phase production roadmap
     dateFormat  YYYY-MM-DD
-    section Chuẩn bị & Thiết kế
-    Phase 1: Setup Môi trường & Monorepo :active, p1, 2026-07-01, 3d
-    Phase 2: Thiết kế DB PostgreSQL & RBAC  : p2, after p1, 4d
-    section Phát triển Core
-    Phase 3: Reindex, API & Auth           : p3, after p2, 7d
-    Phase 4: Giao diện Web & Phân quyền UI : p4, after p3, 6d
-    section Tích hợp & Đóng gói
-    Phase 5: Kết nối Phần cứng (Local Agent) : p5, after p4, 5d
-    Phase 6: Dockerize & Triển khai      : p6, after p5, 3d
-    section Kiểm thử & Nghiệm thu
-    Phase 7: Kiểm thử Toàn diện & Xác thực : p7, after p6, 4d
+    section MVP vận hành chắc
+    Phase 01: Project foundation :active, p01, 2026-07-01, 3d
+    Phase 02: Master data foundation : p02, after p01, 4d
+    Phase 03: User, RBAC & audit foundation : p03, after p02, 4d
+    Phase 04: Inbound receiving : p04, after p03, 5d
+    Phase 05: QC hold/release : p05, after p04, 4d
+    Phase 06: Inventory by location & movement : p06, after p05, 5d
+    Phase 07: Outbound picking & packing basic : p07, after p06, 6d
+    Phase 08: Cycle count & stock adjustment : p08, after p07, 5d
+    Phase 09: RF/mobile core scan : p09, after p08, 6d
+    Phase 10: Exception framework MVP : p10, after p09, 4d
+    section Advanced WMS
+    Phase 11: Rule engine foundation : p11, after p10, 5d
+    Phase 12: Putaway slotting : p12, after p11, 5d
+    Phase 13: Allocation & reservation : p13, after p12, 5d
+    Phase 14: Replenishment : p14, after p13, 4d
+    Phase 15: LPN pallet management : p15, after p14, 5d
+    Phase 16: Serial tracking : p16, after p15, 4d
+    Phase 17: RMA return flow : p17, after p16, 5d
+    Phase 18: Wave picking : p18, after p17, 5d
+    Phase 19: Material genealogy : p19, after p18, 5d
+    section Enterprise integration
+    Phase 20: Local Agent foundation : p20, after p19, 4d
+    Phase 21: Scale integration : p21, after p20, 4d
+    Phase 22: Label printing : p22, after p21, 4d
+    Phase 23: ERP/WMS legacy contract : p23, after p22, 6d
+    Phase 24: Webhook & integration reliability : p24, after p23, 5d
+    Phase 25: Operational observability : p25, after p24, 5d
+    Phase 26: Production deployment : p26, after p25, 5d
+    section Optimization & automation
+    Phase 27: Cross-docking : p27, after p26, 5d
+    Phase 28: Labor tracking : p28, after p27, 4d
+    Phase 29: Task interleaving : p29, after p28, 5d
+    Phase 30: Hardening & production acceptance : p30, after p29, 7d
 ```
 
 ---
 
-## 📑 MỤC LỤC TÀI LIỆU KỸ THUẬT CHI TIẾT THEO PHASE
+## 6 khối năng lực bắt buộc xuyên suốt
 
-Vui lòng nhấp vào các liên kết bên dưới để xem hướng dẫn thực hiện chi tiết cho từng Phase:
+| Khối | Phase chính | Mục tiêu |
+|---|---|---|
+| RF/mobile operation design | Phase 09 | Mọi thao tác kho quan trọng có flow scan handheld/mobile |
+| Exception framework | Phase 10 | Chuẩn hóa sai mã, sai Lot, sai vị trí, thiếu/dư hàng, mất mạng, cân lỗi, in lỗi |
+| Rule engine | Phase 11-14 | Putaway, allocation, picking, replenishment, FEFO/FIFO, zone constraint |
+| Integration layer | Phase 20-24 | Local Agent, ERP/WMS legacy, API contract, webhook, import/export |
+| Operational observability | Phase 25 | Audit log, activity timeline, dashboard KPI, alert, trace ID |
+| Master data governance | Phase 02-03 | Item, UOM, package, location, zone, partner, reason code, permission catalog |
 
-### 🛠️ [PHASE 1: Khởi Tạo Môi Trường & Monorepo](file:///d:/1_Project/48_Nexustock/phases/phase_1_setup.md)
-* Thiết lập cấu trúc Monorepo (`backend/`, `frontend/`, `local-agent/`).
-* Thiết lập file `docker-compose.yml` để chạy PostgreSQL và Redis phục vụ local development.
-* Khởi tạo dự án ASP.NET Core API (chỉ dùng Npgsql) và Next.js App Router.
+---
 
-### 🗂️ [PHASE 2: Thiết Kế Database PostgreSQL, RBAC, Đối Tác & Các Phân Hệ Tối Thượng](file:///d:/1_Project/48_Nexustock/phases/phase_2_database_design.md)
-* Thiết kế mô hình ERD độc lập chuẩn hóa 3NF trên PostgreSQL với 36 bảng quản lý nghiệp vụ Nhập - Xuất - QC - Vị trí kho (bổ sung cột `is_locked` trạng thái khóa kiểm kê, kích thước vật lý `length`, `width`, `height`, `max_volume` và tọa độ không gian `x_coord`, `y_coord`, `z_coord`) - Đối tác - Kiểm kê định kỳ - Vùng kho bảo quản - Đợt gom hàng xuất (Wave Picking) - Hiệu suất lao động - Lịch hẹn bến bãi - Pallet/LPN - Số Serial - Hàng trả về RMA.
-* Thiết lập cấu hình đặc tính sản phẩm (bổ sung kích thước `length`, `width`, `height`, `weight`, và các đặc tính cũ `weight_class`, `rotation_speed`, `track_serial`) phục vụ thuật toán cất hàng tối ưu (Slotting) và cấu hình ngưỡng cảnh báo tồn tối thiểu/tối đa cho từng mã vật tư.
-* Thiết lập hệ thống phân quyền chi tiết RBAC gồm các bảng: `Users`, `Roles`, `Permissions`, `UserRoles`, `RolePermissions`.
-* Xây dựng công cụ chuyển đổi dữ liệu lịch sử (Migration Script) từ hệ thống cũ sang PostgreSQL độc lập.
+## Stage 1: MVP vận hành chắc
 
-### ⚙️ [PHASE 3: Reindex Nghiệp Vụ Cũ, Viết API & Xác Thực JWT](file:///d:/1_Project/48_Nexustock/phases/phase_3_backend_reindex.md)
-* Phân tích chuyên sâu (Reindex) logic các module cũ: Nhập kho, kiểm QC, chia nhỏ Lot, kiểm FIFO.
-* Nhận diện và sửa các bug lịch sử (Bug rỗng cột Maker Lot trong màn hình chia nhỏ, cache trùng lặp Invoice).
-* Xây dựng API Quản lý đối tác, API kiểm kê quét mã (tự động kiểm tra trạng thái khóa `is_locked` của vị trí kệ và vùng kho để ngăn chặn xuất/nhập/chuyển vị trí trái phép) và tự động tạo phiếu điều chỉnh cân bằng kho, API cảnh báo thông minh (Lot sắp hết hạn, tồn kho vượt ngưỡng).
-* Thiết lập thuật toán Slotting cất hàng tối ưu đề xuất 3 vị trí kệ trống khuyên dùng (tích hợp kiểm tra thô giới hạn thể tích vật lý vị trí kệ dựa trên kích thước sản phẩm và `max_volume` kệ) và luồng Cross-Docking tự động đề xuất chuyển tiếp trực tiếp khi khớp đơn hàng xuất gấp.
-* Xây dựng API LPN (License Plate Number) di chuyển hàng loạt, API Serial Numbers quản lý từng sản phẩm, API RMA xử lý tiếp nhận phân loại hàng trả lại và thuật toán đan xen tác vụ Task Interleaving tối ưu quãng đường chạy xe không tải của công nhân.
-* Hỗ trợ API đóng gói nhận tham số trọng lượng nhập tay thủ công khi mất kết nối cân, kiểm tra phân quyền phê duyệt của quản lý và lưu log lý do ghi đè cân thô.
-* Xây dựng Middleware xác thực JWT Bearer và cơ chế kiểm soát quyền chi tiết `HasPermissionAttribute`.
-* Cách ly dữ liệu Multi-tenant bằng EF Core Global Query Filter dựa trên `tenant_id`. Ghi nhận chú thích kỹ thuật `ponytail` về giải pháp phân mảnh dữ liệu (DB Partitioning) và tối ưu hóa lộ trình di chuyển 3D theo tọa độ XYZ khi hệ thống mở rộng quy mô.
+| Phase | Tài liệu | Deliverable |
+|---|---|---|
+| 01 | [Project foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_01_project_foundation.md) | Monorepo, Docker local, API/UI shell |
+| 02 | [Master data foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_02_master_data_foundation.md) | Item, UOM, Package, Warehouse, Zone, Location, Partner, Reason Code |
+| 03 | [User, RBAC & audit foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_03_user_rbac_audit_foundation.md) | User, Role, Permission, JWT, audit log |
+| 04 | [Inbound receiving](file:///d:/1_Project/48_Nexustock/planning/phases/phase_04_inbound_receiving.md) | Nhận hàng, tạo Lot, transaction nhập |
+| 05 | [QC hold/release](file:///d:/1_Project/48_Nexustock/planning/phases/phase_05_qc_hold_release.md) | QC, hold, release, reject |
+| 06 | [Inventory by location & movement](file:///d:/1_Project/48_Nexustock/planning/phases/phase_06_inventory_location_movement.md) | Tồn theo vị trí, movement, location lock |
+| 07 | [Outbound picking & packing basic](file:///d:/1_Project/48_Nexustock/planning/phases/phase_07_outbound_picking_packing_basic.md) | Đơn xuất, picking FIFO/FEFO, packing |
+| 08 | [Cycle count & stock adjustment](file:///d:/1_Project/48_Nexustock/planning/phases/phase_08_cycle_count_stock_adjustment.md) | Kiểm kê, khóa vị trí, điều chỉnh tồn |
+| 09 | [RF/mobile core scan](file:///d:/1_Project/48_Nexustock/planning/phases/phase_09_rf_mobile_core_scan.md) | Scan handheld/mobile cho core flow |
+| 10 | [Exception framework MVP](file:///d:/1_Project/48_Nexustock/planning/phases/phase_10_exception_framework_mvp.md) | Khung xử lý ngoại lệ vận hành |
 
-### 🎨 [PHASE 4: Phát Triển Giao Diện Web & Phân Quyền UI Client](file:///d:/1_Project/48_Nexustock/phases/phase_4_frontend_ui.md)
-* Thiết lập hệ thống mã màu Dark Theme mặc định, bo góc mềm mại chuẩn Fluent Design / WinUI 3.
-* Viết hook `useAuth` và component `HasPermission` để kiểm soát ẩn/hiện các nút bấm, biểu mẫu và các route điều hướng dựa trên danh sách Claim của tài khoản.
-* Phát triển các thành phần UI: Form tiếp nhận quét mã hiển thị đề xuất Slotting và Cross-Docking, màn hình sơ đồ kho trực quan 2D/3D phân vùng nhiệt độ, màn hình đóng gói tích hợp WebSocket tự động lấy cân nặng từ cân điện tử và hỗ trợ nút bấm mở khóa nhập tay trọng lượng thủ công kèm trường nhập lý do khi đứt kết nối WebSocket (giới hạn hiển thị theo quyền Manager), màn hình quét kiểm kê định kỳ đối chiếu real-time (tích hợp nút bấm chuyển trạng thái khóa/mở khóa đóng băng vị trí kệ kiểm kê), màn hình gom hàng xuất Wave Picking, màn hình sơ đồ cây gia phả Lot cha -> Lot con trực quan, màn hình gộp Pallet LPN và màn hình tiếp nhận hàng trả về RMA kiểm định QC.
+---
 
-### 🔌 [PHASE 5: Tích Hợp Thiết Bị Ngoại Vi (Local Agent)](file:///d:/1_Project/48_Nexustock/phases/phase_5_hardware_integration.md)
-* Viết Windows Worker Service (C#) để đọc cổng COM ảo và giám sát thư mục file quét mã cầm tay.
-* Tích hợp cổng Serial kết nối cân điện tử, đọc số cân thực tế và truyền thời gian thực qua WebSocket Server (`ws://localhost:9000`) đẩy lên trình duyệt Web.
-* Giải pháp in thô ZPL/TSPL trực tiếp đến máy in nhãn mã vạch không qua Print Preview.
+## Stage 2: Advanced WMS
 
-### 🐋 [PHASE 6: Đóng Gói Docker & Kịch Bản Triển Khai Production](file:///d:/1_Project/48_Nexustock/phases/phase_6_docker_deployment.md)
-* Viết Multi-stage Build Dockerfile (nén SPA tĩnh vào thư mục `wwwroot` của Web API).
-* Cấu hình định tuyến Fallback trên ASP.NET Core để hỗ trợ Client-side Routing.
-* Kịch bản deploy bằng Docker Compose chạy duy nhất container ASP.NET Core kết nối PostgreSQL Production.
+| Phase | Tài liệu | Deliverable |
+|---|---|---|
+| 11 | [Rule engine foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_11_rule_engine_foundation.md) | Rule set, condition, action, execution log |
+| 12 | [Putaway slotting](file:///d:/1_Project/48_Nexustock/planning/phases/phase_12_putaway_slotting.md) | Đề xuất vị trí cất hàng |
+| 13 | [Allocation & reservation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_13_allocation_reservation.md) | Giữ hàng theo đơn xuất |
+| 14 | [Replenishment](file:///d:/1_Project/48_Nexustock/planning/phases/phase_14_replenishment.md) | Bổ sung pick face |
+| 15 | [LPN pallet management](file:///d:/1_Project/48_Nexustock/planning/phases/phase_15_lpn_pallet_management.md) | Pallet/LPN, di chuyển hàng loạt |
+| 16 | [Serial tracking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_16_serial_tracking.md) | Truy vết serial |
+| 17 | [RMA return flow](file:///d:/1_Project/48_Nexustock/planning/phases/phase_17_rma_return_flow.md) | Hàng trả về, QC phân loại |
+| 18 | [Wave picking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_18_wave_picking.md) | Gom đơn xuất |
+| 19 | [Material genealogy](file:///d:/1_Project/48_Nexustock/planning/phases/phase_19_material_genealogy.md) | Cây Lot cha/con, khoanh vùng lỗi |
 
-### 🧪 [PHASE 7: Kế Hoạch Kiểm Thử Toàn Diện & Xác Thực Hệ Thống](file:///d:/1_Project/48_Nexustock/planning/phases/phase_7_testing_validation.md)
-* Thiết lập tầng Unit Testing bằng xUnit cho Backend (kiểm FIFO, sinh Lot No, validate Regex) và Jest cho Frontend (phân quyền giao diện, chuyển đổi đơn vị).
-* Thiết lập tầng Integration Testing kiểm thử kiểm soát truy cập API, concurrency lock chống race condition, thuật toán Slotting cất hàng, luồng Cross-Docking tự động, luồng phê duyệt chênh lệch kiểm kê (tự động tạo `StockAdjustment` và đồng bộ tồn kho), luồng gom đơn xuất Wave Picking, API phả hệ Lot (Genealogy Tree), đo lường thời gian năng suất lao động (Labor Tracking), LPN Pallet di chuyển hàng loạt, phán quyết QC RMA, kiểm tra chặn xuất nhập tại kệ bị khóa kiểm kê, chấp nhận cân thô nhập tay ghi log, và thuật toán đan xen tác vụ (Task Interleaving).
-* Thiết lập tầng End-to-End (E2E) Testing bằng Playwright giả lập hành vi người dùng quét nhận hàng gợi ý Slotting, kiểm QC, hold vật tư, quét xuất chặn FIFO, tự động lấy số cân đóng gói (bao gồm kịch bản đứt WebSocket và nhập tay ghi log), thực thi trọn vẹn luồng kiểm kê chênh lệch đóng băng vị trí kệ, tạo đợt gom hàng xuất picking, tra cứu cây gia phả, đóng gói LPN và QC nhận hàng RMA.
-* Định nghĩa bảng tiêu chí nghiệm thu đầu ra (Acceptance Criteria) để đưa hệ thống vào vận hành sản xuất.
+---
 
+## Stage 3: Enterprise integration
+
+| Phase | Tài liệu | Deliverable |
+|---|---|---|
+| 20 | [Local Agent foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_20_local_agent_foundation.md) | Windows service, WebSocket local, device health |
+| 21 | [Scale integration](file:///d:/1_Project/48_Nexustock/planning/phases/phase_21_scale_integration.md) | Cân điện tử, fallback cân tay |
+| 22 | [Label printing](file:///d:/1_Project/48_Nexustock/planning/phases/phase_22_label_printing.md) | ZPL/TSPL, print log, reprint |
+| 23 | [ERP/WMS legacy contract](file:///d:/1_Project/48_Nexustock/planning/phases/phase_23_erp_wms_legacy_contract.md) | API contract, import/export |
+| 24 | [Webhook & integration reliability](file:///d:/1_Project/48_Nexustock/planning/phases/phase_24_webhook_integration_reliability.md) | Retry, idempotency, dead-letter |
+| 25 | [Operational observability](file:///d:/1_Project/48_Nexustock/planning/phases/phase_25_operational_observability.md) | Audit, timeline, KPI, alert, trace ID |
+| 26 | [Production deployment](file:///d:/1_Project/48_Nexustock/planning/phases/phase_26_production_deployment.md) | Docker, health check, backup, rollback |
+
+---
+
+## Stage 4: Optimization & automation
+
+| Phase | Tài liệu | Deliverable |
+|---|---|---|
+| 27 | [Cross-docking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_27_cross_docking.md) | Chuyển tiếp trực tiếp hàng vừa nhận sang đơn xuất |
+| 28 | [Labor tracking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_28_labor_tracking.md) | Đo năng suất theo task |
+| 29 | [Task interleaving](file:///d:/1_Project/48_Nexustock/planning/phases/phase_29_task_interleaving.md) | Gợi ý task kế tiếp |
+| 30 | [Hardening & production acceptance](file:///d:/1_Project/48_Nexustock/planning/phases/phase_30_hardening_production_acceptance.md) | Security, load, UAT, cutover, rollback rehearsal |
+
+---
+
+## Tài liệu phase cũ
+
+Các phase cũ đã được chuyển vào thư mục tạm:
+
+[planning/phases/temp](file:///d:/1_Project/48_Nexustock/planning/phases/temp)
