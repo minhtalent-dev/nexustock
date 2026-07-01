@@ -61,3 +61,45 @@ Tài liệu định nghĩa các chỉ số chất lượng, bảo mật, hiệu 
 - **Giám sát hoạt động (APM & Health check):**
   - API cung cấp hai endpoint kiểm tra trạng thái: `/health/live` (tiến trình đang sống) và `/health/ready` (các kết nối DB, Redis, máy in sẵn sàng).
   - Các endpoint này không được trả thông tin cấu hình nhạy cảm và được giám sát bởi hệ thống monitoring bên ngoài để tự động gửi cảnh báo (Telegram/Slack/Email) cho đội vận hành WMS khi có sự cố.
+
+---
+
+## 5. SLO/SLA Sign-off & Approval
+
+Tài liệu này là cam kết chính thức (Service Level Agreement) giữa FOUNDER và Dev chính của dự án Nexustock WMS. Các chỉ số dưới đây phải được ký duyệt trước khi bắt đầu Phase 26 (Production Deployment).
+
+### 5.1 Bảng SLO đã cam kết
+
+| # | Chỉ số | Mục tiêu | Tham chiếu |
+|---|---|---|---|
+| SLO-01 | System Uptime (hàng tháng) | ≥ 99.9% | §2 Reliability |
+| SLO-02 | API latency — query thường (p95) | < 200ms | §1 Performance |
+| SLO-03 | API latency — mutation nghiệp vụ (p95) | < 500ms | §1 Performance |
+| SLO-04 | RF Scanner scan response (p95, Wifi LAN) | < 300ms | §1 Performance |
+| SLO-05 | Recovery Time Objective (RTO) | ≤ 2 giờ | §2 Reliability |
+| SLO-06 | Recovery Point Objective (RPO) | ≤ 1 giờ | §2 Reliability |
+| SLO-07 | Batch import 1,000 dòng — commit DB | ≤ 5 giây | §1 Performance |
+
+### 5.2 Bảng SLA Escalation
+
+| Level | Điều kiện kích hoạt | Response target | Escalation |
+|---|---|---|---|
+| L1 | Device offline, barcode error, print fail | 15 phút | Dev chính tự xử |
+| L2 | Webhook stuck, DLQ full, ghost reservation | 30 phút | Dev chính → FOUNDER nếu > 30 phút |
+| L3 Critical | DB crash, server down, data corruption | 15 phút | Dev chính → FOUNDER ngay lập tức |
+| L3 High | DB slow > 30s, backup fail | 30 phút | Dev chính → FOUNDER nếu > 30 phút |
+
+> **Tham chiếu chi tiết:** [disaster_recovery_runbook.md](./disaster_recovery_runbook.md) — [support_runbook.md](./support_runbook.md)
+
+### 5.3 Sign-off Block
+
+> [!IMPORTANT]
+> Cả FOUNDER và Dev chính phải ký tên vào mục này trước ngày go-live Phase 26. Không được bắt đầu triển khai Production khi chưa có chữ ký đầy đủ.
+
+| Vai trò | Họ tên | Ngày ký | Chữ ký |
+|---|---|---|---|
+| FOUNDER / Product Owner | | _______/_______ | _________________ |
+| Dev chính / Tech Lead | | _______/_______ | _________________ |
+
+**Phiên bản tài liệu đã ký:** NFR v1.0  
+**Điều kiện xem xét lại:** Khi thêm warehouse mới, thay đổi hạ tầng cloud hoặc sau mỗi L3 incident.

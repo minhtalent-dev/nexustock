@@ -1,4 +1,4 @@
-﻿# PHASE 26: DevOps & platform deployment
+# PHASE 26: DevOps & platform deployment
 
 ## Execution spec maturity
 
@@ -140,4 +140,76 @@ Khi phát hiện phiên bản mới bị lỗi nghiêm trọng trên production:
 - Chạy cụm container bằng docker-compose lên sạch, `/health/live` trả về 200.
 - File backup DB tạo ra đúng lịch, khôi phục thành công trên môi trường diễn tập (Staging).
 - Tuyệt đối không có bất kỳ file backend/frontend nghiệp vụ nào có logic code liên quan đến tác vụ deploy (Phase deployment sạch 100% code nghiệp vụ).
+- Feature flag hoạt động cho ít nhất 5 phase core (P04, P06, P07, P13, P18): bật/tắt không cần redeploy.
+
+## 14. Feature Flag & Progressive Rollout
+
+Phase này thiết lập cơ chế kiểm soát tính năng theo từng giai đoạn để giảm rủi ro khi go-live. Đây là **infra flag** (không phải business data) — không áp dụng multi-tenant scope, không cần audit log per-row.
+
+### 14.1 Feature Flag Architecture
+
+Lưu trữ đơn giản nhất: DB table + env variable override (không cần thư viện bên ngoài).
+
+```sql
+CREATE TABLE "FeatureFlags" (
+    "name"               VARCHAR(100) PRIMARY KEY,
+    "enabled"            BOOLEAN NOT NULL DEFAULT FALSE,
+    "rolloutPercentage"  INTEGER NOT NULL DEFAULT 0,  -- 0-100
+    "whitelistUserIds"   TEXT,                         -- JSON array, nullable
+    "description"        TEXT,
+    "updatedAt"          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+**Ưu tiên đánh giá flag (thấp → cao):**
+1. Default: `enabled = false`
+2. DB row: `enabled` + `rolloutPercentage`
+3. Env variable override: `FF_<NAME>=true/false` (dùng khi cần kill switch khẩn cấp không cần vào DB)
+
+### 14.2 Flag Categories
+
+| Category | Mục đích | Ví dụ | Lifecycle |
+|---|---|---|---|
+| `release` | Dark launch tính năng mới | `FF_ALLOCATION_V2` | Create → Rollout → Full → Cleanup |
+| `ops` | Kill switch khẩn cấp | `FF_DISABLE_ERP_SYNC` | Create → Toggle → Cleanup nhanh |
+| `experiment` | A/B test nhỏ nội bộ | `FF_NEW_SCAN_UI` | Create → Measure → Decision → Cleanup |
+
+### 14.3 Progressive Rollout Flow
+
+```
+Bước 1: Internal (5%)
+  └─ Chỉ bật cho Dev + FOUNDER account
+  └─ Quan sát 24-48h: error rate, latency, user feedback
+
+Bước 2: Power Users (25%)
+  └─ Thêm whitelist: thủ kho trưởng + QC lead
+  └─ Quan sát 3-5 ngày: nghiệp vụ edge case
+
+Bước 3: One Warehouse (50%)
+  └─ rolloutPercentage = 50 cho 1 kho pilot
+  └─ Quan sát 1 tuần: load thực tế
+
+Bước 4: Full Launch (100%)
+  └─ rolloutPercentage = 100, xóa whitelistUserIds
+  └─ Lên kế hoạch cleanup flag sau 2 sprint
+```
+
+### 14.4 Rollback via Flag
+
+Tắt flag = instant rollback, **không cần redeploy, không cần migration DB**.
+
+```bash
+# Tắt khẩn cấp qua env (không cần vào DB):
+export FF_ALLOCATION_V2=false
+docker-compose restart api
+
+# Hoặc update DB:
+UPDATE "FeatureFlags" SET "enabled" = false WHERE "name" = 'FF_ALLOCATION_V2';
+```
+
+### 14.5 Flag Lifecycle — Cleanup Rule
+
+Flag phải được xóa khỏi codebase và DB trong vòng **2 sprint** sau khi Full Launch để tránh technical debt. Dev chính chịu trách nhiệm track lifecycle trong issue tracker.
+
+
 

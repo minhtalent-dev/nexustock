@@ -1,4 +1,4 @@
-﻿# PHASE 30: Production Readiness Gate
+# PHASE 30: Production Readiness Gate
 
 ## Execution spec maturity
 
@@ -192,7 +192,24 @@ Không tạo bảng CRUD mới cho user. Sử dụng các bảng hệ thống đ
 
 ## 13. Acceptance criteria
 
-* Có signoff và rollback đã diễn tập
+Tất cả 14 criteria dưới đây phải đạt PASS trước khi FOUNDER ký go-live. Mỗi criteria phải có evidence (bằng chứng) cụ thể đính kèm.
+
+| ID | Criteria | Evidence |
+|---|---|---|
+| AC-01 | Không có lỗi Critical hoặc High nào chưa được vá trong issue tracker | Screenshot issue board tại thời điểm go-live |
+| AC-02 | Rollback rehearsal hoàn tất thành công, RTO thực tế < 2 giờ | Video screen recording toàn bộ quy trình |
+| AC-03 | Backup restore rehearsal hoàn tất, RPO thực tế < 1 giờ (timestamp diff DB) | Output SQL query: `MAX(createdAt)` vs thời điểm incident giả lập |
+| AC-04 | UAT 4 scenario pass 100%: Inbound, QC, Pack+Scale, Print Error | Video walkthrough + biên bản UAT có chữ ký thủ kho |
+| AC-05 | Load test 50 RF scanner đồng thời pass, p95 < 300ms | APM report hoặc k6/Locust output log |
+| AC-06 | Allocation engine test 5,000 dòng hoàn thành < 1,000ms | Log file timestamp từ đầu đến cuối request |
+| AC-07 | Security audit pass: tenant isolation, IDOR, Local Agent origin allowlist | Test report (manual hoặc tự động) theo test_strategy.md |
+| AC-08 | ERP contract test 5 case pass: happy path, missing field, wrong type, duplicate key, oversized payload | xUnit test run log xanh toàn bộ |
+| AC-09 | Observability dashboard hoạt động, hiển thị trace ID đầy đủ cho mọi request | Screenshot dashboard với trace ID sample |
+| AC-10 | Feature flag bật/tắt hoạt động cho 5 phase core (P04, P06, P07, P13, P18) không cần redeploy | Manual test record: toggle flag → verify behavior |
+| AC-11 | DB constraint pass: tồn kho không âm, idempotency key không duplicate | SQL query: `SELECT MIN(qty) FROM InventoryBalances` ≥ 0; duplicate key test |
+| AC-12 | Code signing certificate Local Agent MSIX đã cài thành công trên máy trạm test | Output: `signtool verify /pa NexustockLocalAgent.msix` — No error |
+| AC-13 | Cutover runbook có timeline từng giờ (T-4h đến T+2h), FOUNDER đã ký | Signed PDF document đính kèm |
+| AC-14 | Không có hardcoded secret trong repo | `gitleaks detect --source .` — 0 findings |
 
 ### Definition of done
 
@@ -203,6 +220,8 @@ Không tạo bảng CRUD mới cho user. Sử dụng các bảng hệ thống đ
 * Exception path chính được test.
 * README hoặc phase note đủ để executor tiếp theo hiểu dependency.
 * Không còn placeholder generic trong phần triển khai phase.
+
+
 
 ## 14. Out of scope
 
