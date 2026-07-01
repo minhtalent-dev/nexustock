@@ -73,3 +73,28 @@ Với mỗi phase phát triển, Developer chính phải cung cấp đầy đủ
 - **Bằng chứng Test Tự động:** Log chạy xUnit/Jest thành công (`100% pass` và code coverage tối thiểu 70% cho phần domain/business logic).
 - **Bằng chứng UAT:** Video hoặc file gif ghi màn hình thao tác chạy thành công luồng nghiệp vụ trên môi trường local/staging.
 - **Log giao dịch:** Ảnh chụp query SQL bảng `InventoryTransactions` chứng minh ghi nhận đúng ledger giao dịch sau mutation.
+
+---
+
+### 3.3 Kiểm thử contract tích hợp ERP (ERP Contract Testing)
+
+**Vấn đề:** Khi SAP hoặc WMS legacy thay đổi payload format (thêm/xóa trường, đổi kiểu dữ liệu), integration test nội bộ vẫn pass nhưng môi trường production bị lỗi do contract drift.
+
+**Giải pháp:** Áp dụng Schema-based Contract Validation thay vì full Pact (do tích hợp 1 chiều từ ERP → Nexustock):
+
+1. **JSON Schema Contract File:** Lưu tại `tests/contracts/erp_inbound_order_schema.json` — định nghĩa cấu trúc payload hợp lệ nhận từ ERP (required fields, types, enum values, format).
+2. **Contract Validation Test:** Mỗi Integration Test cho Phase 23 phải:
+   - Load JSON Schema từ file contract
+   - Validate payload mẫu (từ [erp_mock_payloads.md](file:///d:/1_Project/48_Nexustock/planning/enterprise/erp_mock_payloads.md)) bằng thư viện `JsonSchema.Net` (C#)
+   - Assert mọi required field có đúng type và range
+3. **CI Gate:** CI pipeline bắt buộc chạy contract test trước khi merge bất kỳ thay đổi nào vào Phase 23/24 code path.
+4. **Version Control:** Mỗi khi SAP team thông báo thay đổi format, Developer phải cập nhật schema contract và tạo migration test case trước khi viết adapter code mới.
+
+**Ownership & Trigger:**
+- **Owner:** Dev chính (R — Responsible), FOUNDER review schema (A — Accountable)
+- **Trigger — DoR requirement bắt buộc cho Phase 23:** Schema contract file `erp_inbound_order_schema.json` phải tồn tại và được FOUNDER approve TRƯỚC KHI bắt đầu code Phase 23. Không có schema = không được start Phase 23.
+- **Maintenance SLA:** Khi SAP team gửi changelog format mới, Dev phải cập nhật schema trong vòng **1 ngày làm việc** và run contract test để confirm không break.
+
+**Acceptance Criteria cho Phase 23 (Contract layer):**
+- Contract schema file tồn tại và được commit vào repo
+- Ít nhất 5 test case: happy path, thiếu required field, sai kiểu dữ liệu, duplicate idempotency key, payload quá lớn (> 1MB)

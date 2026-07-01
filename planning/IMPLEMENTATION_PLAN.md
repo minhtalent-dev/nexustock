@@ -1,4 +1,4 @@
-﻿# KẾ HOẠCH TỔNG THỂ TRIỂN KHAI DỰ ÁN NEXUSTOCK
+# KẾ HOẠCH TỔNG THỂ TRIỂN KHAI DỰ ÁN NEXUSTOCK
 
 Dự án **Nexustock** là giải pháp quản lý - vận hành kho thế hệ mới, thay thế hệ thống desktop cũ bằng nền tảng Web SPA hiện đại, PostgreSQL độc lập và roadmap triển khai theo chuẩn WMS production.
 
@@ -40,27 +40,27 @@ gantt
     axisFormat  %m-%d
     
     section Core WMS Workstream
-    Phase 02: Master data foundation     :p02, 2026-07-04, 4d
-    Phase 04: Inbound receiving          :p04, after p03, 5d
-    Phase 05: QC hold/release            :p05, after p04, 4d
-    Phase 06: Inventory & movement       :p06, after p05, 5d
-    Phase 07: Outbound picking/packing   :p07, after p06, 6d
-    Phase 08: Cycle count                :p08, after p07, 5d
-    Phase 12: Putaway slotting           :p12, after p11, 5d
-    Phase 13: Allocation & reservation   :p13, after p12, 5d
+    Phase 02: Master data foundation     :crit, p02, 2026-07-04, 4d
+    Phase 04: Inbound receiving          :crit, p04, after p03, 5d
+    Phase 05: QC hold/release            :crit, p05, after p04, 4d
+    Phase 06: Inventory & movement       :crit, p06, after p05, 5d
+    Phase 07: Outbound picking/packing   :crit, p07, after p06, 6d
+    Phase 08: Cycle count                :crit, p08, after p07, 5d
+    Phase 12: Putaway slotting           :crit, p12, after p11, 5d
+    Phase 13: Allocation & reservation   :crit, p13, after p12, 5d
     Phase 14: Replenishment              :p14, after p13, 4d
     Phase 15: LPN pallet management      :p15, after p14, 5d
     Phase 16: Serial tracking            :p16, after p15, 4d
     Phase 17: RMA return flow            :p17, after p16, 5d
-    Phase 18: Wave picking               :p18, after p17, 5d
-    Phase 19: Material genealogy         :p19, after p18, 5d
+    Phase 18: Wave picking               :crit, p18, after p17, 5d
+    Phase 19: Material genealogy         :crit, p19, after p18, 5d
     Phase 27: Cross-docking              :p27, after p26, 5d
     
     section Platform & Logic Workstream
-    Phase 01: Project foundation         :active, p01, 2026-07-01, 3d
-    Phase 03: User, RBAC & audit         :p03, after p02, 4d
+    Phase 01: Project foundation         :crit, active, p01, 2026-07-01, 3d
+    Phase 03: User, RBAC & audit         :crit, p03, after p02, 4d
     Phase 10: Exception framework MVP    :p10, after p09, 4d
-    Phase 11: Rule engine foundation     :p11, after p10, 5d
+    Phase 11: Rule engine foundation     :crit, p11, after p10, 5d
     Phase 25: Operational observability  :p25, after p24, 5d
     Phase 26: Production deployment       :p26, after p25, 5d
     
@@ -77,6 +77,34 @@ gantt
     Phase 29: Task interleaving          :p29, after p28, 5d
     Phase 30: Readiness Gate             :p30, after p29, 7d
 ```
+
+### Critical Path
+
+> **Ghi chú:** Tag `crit` trong Gantt hiển thị màu đỏ trong VS Code Mermaid Preview / Mermaid Live Editor. Trên GitHub/Gitea, các task dưới đây cần được ưu tiên theo dõi thủ công.
+
+Critical path là chuỗi phase dài nhất quyết định ngày go-live sớm nhất. Mọi trễ trên chuỗi này lan trực tiếp sang Phase 30.
+
+**Chuỗi Critical Path:**
+`P01 → P02 → P03 → P04 → P05 → P06 → P07 → P08 → P11 → P12 → P13 → P18 → P19 → P30`
+
+| Phase | Tên | Dev-days (mid) | Impact nếu trễ 1 tuần |
+|---|---|:---:|---|
+| 01 | Project foundation | 3 | Toàn bộ 30 phase bị delay |
+| 02 | Master data | 4 | FK, validation mọi module bị block |
+| 03 | RBAC & audit | 4 | Security gate, menu rule bị block |
+| 04 | Inbound receiving | 5 | Lot source of truth, P23/P27 bị delay |
+| 05 | QC hold/release | 3.5 | Stock promise sai, P06 bị block |
+| 06 | Inventory & movement | 5 | Ledger integrity, P07-P19 bị block |
+| 07 | Outbound picking | 6 | Outbound flow + P20/P23 bị delay |
+| 08 | Cycle count | 4.5 | P09 bị block |
+| **11** | **Rule engine** | **5** | **P12, P13, P18 toàn bộ bị block** |
+| **12** | **Putaway slotting** | **5** | **P13 bị block** |
+| **13** | **Allocation & reservation** | **6** | **P18, P27, P29 — tổng 3+ phase trễ** |
+| **18** | **Wave picking** | **5** | **P19, P29 bị delay** |
+| 19 | Material genealogy | 5 | P30 UAT bị thiếu recall feature |
+| 30 | Readiness Gate | 7 | Go-live bị trễ tương đương |
+
+> **⚠️ Phase 13 (Allocation) là nút thắt cao nhất:** Trễ 1 tuần tại P13 gây trễ tối thiểu 3 tuần cho P18 → P19 → P30. Deep spec Allocation phải hoàn tất TRƯỚC KHI bắt đầu code P13.
 
 ### Các mốc Milestone chính
 

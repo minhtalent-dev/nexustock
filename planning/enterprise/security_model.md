@@ -26,6 +26,14 @@ Cấu trúc Payload bắt buộc của JWT như sau:
 }
 ```
 
+> **Ghi chú thuật toán ký JWT:**  
+> Phiên bản MVP sử dụng **HS256** (HMAC SHA-256 với shared secret) — phù hợp khi chỉ có 1 API server instance và không chia sẻ khóa xác thực với bên thứ ba.  
+> **Upgrade sang RS256** (RSA asymmetric) bắt buộc khi xảy ra ít nhất 1 trong 3 điều kiện sau:  
+> - Hệ thống scale lên từ 2 API node trở lên (cần chia sẻ public key thay vì shared secret giữa các node).  
+> - Tích hợp SSO/OAuth2 với Identity Provider bên ngoài (Keycloak, Azure AD, Google Workspace).  
+> - Cho phép hệ thống của đối tác (ERP/3PL) tự verify JWT token mà không cần gọi lại Nexustock API (federation).  
+> *ponytail: RS256 migration không cần thay đổi database hay business logic — chỉ cần thay JWT signing config và phân phối public key endpoint. Ước tính 0.5 dev-day.*
+
 ### 1.2 Ma trận phân quyền chi tiết (RBAC Matrix)
 
 Dưới đây là bảng phân quyền chi tiết cho 4 vai trò cốt lõi trong vận hành nhà kho:
