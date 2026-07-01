@@ -170,6 +170,56 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 28 | [Labor tracking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_28_labor_tracking.md) | Đo năng suất theo task, user, ca, zone và loại thao tác. |
 | 29 | [Task interleaving](file:///d:/1_Project/48_Nexustock/planning/phases/phase_29_task_interleaving.md) | Gợi ý task kế tiếp để giảm di chuyển rỗng nhưng không phá rule vận hành. |
 | 30 | [Readiness Gate](file:///d:/1_Project/48_Nexustock/planning/phases/phase_30_hardening_production_acceptance.md) | Kiểm thử tổng thể, hardening, UAT, cutover và rollback rehearsal trước go-live. |
+
+---
+
+## Bảng theo dõi tiến độ triển khai
+
+> **Hướng dẫn:** Khi hoàn thành một phase, cập nhật trạng thái thành `✅ Hoàn thành`, điền ngày hoàn thành và tóm tắt thông tin đã thực hiện vào cột tương ứng.
+
+| # | Phase | Trạng thái | Thông tin đã thực hiện | Ngày hoàn thành | Ghi chú |
+|---|-------|:----------:|------------------------|:---------------:|---------|
+| 01 | Project foundation | ⬜ Chưa bắt đầu | — | — | — |
+| 02 | Master data foundation | ⬜ Chưa bắt đầu | — | — | — |
+| 03 | User, RBAC & audit foundation | ⬜ Chưa bắt đầu | — | — | — |
+| 04 | Inbound receiving | ⬜ Chưa bắt đầu | — | — | — |
+| 05 | QC hold/release | ⬜ Chưa bắt đầu | — | — | — |
+| 06 | Inventory by location & movement | ⬜ Chưa bắt đầu | — | — | — |
+| 07 | Outbound picking & packing basic | ⬜ Chưa bắt đầu | — | — | — |
+| 08 | Cycle count & stock adjustment | ⬜ Chưa bắt đầu | — | — | — |
+| 09 | RF/mobile core scan | ⬜ Chưa bắt đầu | — | — | — |
+| 10 | Exception framework MVP | ⬜ Chưa bắt đầu | — | — | — |
+| 11 | Rule engine foundation | ⬜ Chưa bắt đầu | — | — | — |
+| 12 | Putaway slotting | ⬜ Chưa bắt đầu | — | — | — |
+| 13 | Allocation & reservation | ⬜ Chưa bắt đầu | — | — | — |
+| 14 | Replenishment | ⬜ Chưa bắt đầu | — | — | — |
+| 15 | LPN pallet management | ⬜ Chưa bắt đầu | — | — | — |
+| 16 | Serial tracking | ⬜ Chưa bắt đầu | — | — | — |
+| 17 | RMA return flow | ⬜ Chưa bắt đầu | — | — | — |
+| 18 | Wave picking | ⬜ Chưa bắt đầu | — | — | — |
+| 19 | Material genealogy | ⬜ Chưa bắt đầu | — | — | — |
+| 20 | Local Agent foundation | ⬜ Chưa bắt đầu | — | — | — |
+| 21 | Scale integration | ⬜ Chưa bắt đầu | — | — | — |
+| 22 | Label printing | ⬜ Chưa bắt đầu | — | — | — |
+| 23 | ERP/WMS legacy contract | ⬜ Chưa bắt đầu | — | — | — |
+| 24 | Webhook & integration reliability | ⬜ Chưa bắt đầu | — | — | — |
+| 25 | Operational observability | ⬜ Chưa bắt đầu | — | — | — |
+| 26 | Production deployment | ⬜ Chưa bắt đầu | — | — | — |
+| 27 | Cross-docking | ⬜ Chưa bắt đầu | — | — | — |
+| 28 | Labor tracking | ⬜ Chưa bắt đầu | — | — | — |
+| 29 | Task interleaving | ⬜ Chưa bắt đầu | — | — | — |
+| 30 | Readiness Gate | ⬜ Chưa bắt đầu | — | — | — |
+
+### Quy ước trạng thái
+
+| Ký hiệu | Ý nghĩa |
+|:-------:|---------|
+| ⬜ | Chưa bắt đầu |
+| 🔄 | Đang thực hiện |
+| ✅ | Hoàn thành |
+| ⏸️ | Tạm dừng |
+| ❌ | Hủy bỏ |
+
 ---
 
 ## Critical deep-spec backlog
