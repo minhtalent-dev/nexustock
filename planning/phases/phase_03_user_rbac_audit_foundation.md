@@ -2,330 +2,214 @@
 
 ## 1. Mục tiêu
 
-Thiết lập bảo mật nền: user, role, permission, JWT/session và audit log cho mọi thay đổi dữ liệu.
+Thiết lập nền bảo mật cho Nexustock WMS: user, role, permission, tenant/warehouse scope, session/JWT và audit log cho mọi thay đổi quan trọng.
 
-Phase này thuộc stage **MVP vận hành chắc** và phải tạo ra deliverable có thể kiểm thử độc lập. Nội dung phải đủ rõ để executor triển khai mà không cần suy đoán nghiệp vụ chính.
+Phase này là cổng kiểm soát bắt buộc cho toàn bộ mutation API từ phase 04 trở đi.
 
 ## 2. Phạm vi
 
-Identity API, permission catalog, role assignment, audit middleware, menu visibility theo quyền.
-
 ### In scope
 
-* Tạo module Identity
-* Seed admin role và permission catalog
-* Chuẩn hóa policy name module.action
-* Cấu hình password policy
-* Cấu hình JWT issuer/audience/expiry từ env.
+* Tạo module Identity/RBAC/Audit.
+* Tạo user, role, permission catalog, user-role, role-permission.
+* Seed admin role và permission catalog nền.
+* Chuẩn hóa policy name `{domain}.{action}`.
+* Cấu hình password policy và JWT/session từ env.
+* Tạo audit middleware/service cho mutation.
+* Tạo menu visibility theo quyền.
+* Enforce tenant scope và warehouse scope.
 
-### Non-negotiable output
+### Out of scope
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
-* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
-* Có execution flow end-to-end.
-* Có validation, exception, observability và test plan.
+* SSO.
+* MFA.
+* Fine-grained row-level security phức tạp.
+* Device pairing security.
+* Approval workflow nâng cao.
 
-## 3. Điều kiện đầu vào
+## 3. Dependency
 
-Phase 01-02 hoàn tất.
+| Loại | Chi tiết |
+|---|---|
+| Upstream | Phase 01-02 |
+| Downstream trực tiếp | Phase 04-30 |
+| Contract tạo ra | Auth/session, permission catalog, tenant/warehouse scope, audit log, security error behavior |
+| Enterprise reference | [Security model](../enterprise/security_model.md), [API contracts core](../enterprise/api_contracts_core.md), [Measurable acceptance criteria](../enterprise/measurable_acceptance_criteria.md) |
 
-### Readiness checklist
+## 4. Security baseline
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
-* Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
+### Tenancy and warehouse scope
 
-## 4. Setup
+* `tenantId` bắt buộc trong user context.
+* User có thể được cấp nhiều `warehouseId` trong cùng tenant.
+* API warehouse-scoped phải kiểm tra user có quyền trên `warehouseId` đó.
+* Cross-tenant access trả 404 hoặc 403 theo policy, không leak record tồn tại.
+* Không tin `tenantId` từ client nếu token/session đã có tenant context.
 
-* Tạo module Identity
-* Seed admin role và permission catalog
-* Chuẩn hóa policy name module.action
-* Cấu hình password policy
-* Cấu hình JWT issuer/audience/expiry từ env.
+### Permission convention
 
-### Cấu trúc module đề xuất
-
-```text
-backend/modules/user_rbac_audit_foundation/
-frontend/features/user_rbac_audit_foundation/
-planning/phases/phase_03_user_rbac_audit_foundation.md
-```
-
-### Permission seed đề xuất
-
-* user_rbac_audit_foundation.read
-* user_rbac_audit_foundation.create
-* user_rbac_audit_foundation.update
-* user_rbac_audit_foundation.approve
-* user_rbac_audit_foundation.export
-
-Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
+| Pattern | Ví dụ |
+|---|---|
+| `{domain}.read` | `inventory.read` |
+| `{domain}.create` | `inboundReceiving.create` |
+| `{domain}.update` | `masterData.item.update` |
+| `{domain}.approve` | `cycleCount.approve` |
+| `{domain}.export` | `masterData.export` |
+| `{domain}.admin` | `rbac.admin` |
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `Users` | Tài khoản người dùng | Unique tenantId+userName/email, passwordHash, status |
-| `Roles` | Vai trò | Unique tenantId+roleCode |
-| `Permissions` | Catalog quyền | Unique permissionCode dạng module.action |
-| `UserRoles` | Gán role | Unique userId+roleId |
-| `RolePermissions` | Gán quyền | Unique roleId+permissionId |
-| `AuditLogs` | Nhật ký thay đổi | entityName, entityId, action, oldValue, newValue, traceId |
+| Table | Required fields | Main constraints | Indexes |
+|---|---|---|---|
+| `Users` | id, tenantId, userName, email, passwordHash, displayName, status, lastLoginAt | unique tenantId+userName, unique tenantId+email | tenantId+status |
+| `Roles` | id, tenantId, roleCode, roleName, status, isSystemRole | unique tenantId+roleCode | tenantId+status |
+| `Permissions` | id, permissionCode, module, action, description, status | unique permissionCode | module+action |
+| `UserRoles` | id, tenantId, userId, roleId | unique userId+roleId | tenantId+userId |
+| `RolePermissions` | id, tenantId, roleId, permissionId | unique roleId+permissionId | tenantId+roleId |
+| `UserWarehouseAccess` | id, tenantId, userId, warehouseId, status | unique userId+warehouseId | tenantId+warehouseId |
+| `Sessions` | id, tenantId, userId, tokenHash, expiresAt, revokedAt | tokenHash unique | userId+expiresAt |
+| `AuditLogs` | id, tenantId, warehouseId, actorUserId, entityName, entityId, action, oldValue, newValue, reasonCode, traceId, createdAt | append-only | tenantId+entityName+entityId, tenantId+traceId |
+| `SecurityEvents` | id, tenantId, userId, eventType, ipHash, userAgentHash, traceId, createdAt | append-only | tenantId+eventType+createdAt |
 
-### Chuẩn database áp dụng
+### Database rules
 
-* Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
-* Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
-* Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
-* Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
-
-### Transaction boundary
-
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
+* Password/token lưu hash, không lưu raw value.
+* Audit log append-only.
+* `Permissions.permissionCode` immutable sau khi seed.
+* `AuditLogs.oldValue/newValue` phải mask secret và dữ liệu nhạy cảm.
+* Role system không được xóa; chỉ inactive nếu có migration/control rõ.
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `POST /api/auth/login` | Đăng nhập | Không log password |
-| `POST /api/auth/logout` | Đăng xuất | Thu hồi session nếu có |
-| `GET /api/users` | Danh sách user | Yêu cầu user.read |
-| `POST /api/users` | Tạo user | Yêu cầu user.create |
-| `POST /api/roles/{id}/permissions` | Gán quyền | Yêu cầu role.assign-permission |
-| `GET /api/me/permissions` | Lấy quyền hiện tại | Dùng cho UI menu |
+| API | Mục đích | Permission/Auth | Ghi chú |
+|---|---|---|---|
+| `POST /api/auth/login` | Đăng nhập | Public | Không log password; trả lỗi chung |
+| `POST /api/auth/logout` | Đăng xuất | Auth | Revoke session nếu có |
+| `GET /api/me` | User context | Auth | tenantId, warehouse access, displayName |
+| `GET /api/me/permissions` | Lấy quyền hiện tại | Auth | Dùng cho UI menu |
+| `GET /api/users` | Danh sách user | `user.read` | Paging/filter |
+| `POST /api/users` | Tạo user | `user.create` | Audit |
+| `PATCH /api/users/{id}/status` | Active/inactive user | `user.update` | Requires reason |
+| `POST /api/roles` | Tạo role | `role.create` | Audit |
+| `POST /api/roles/{id}/permissions` | Gán quyền | `role.assignPermission` | Audit old/new |
+| `POST /api/users/{id}/warehouses` | Gán kho cho user | `user.assignWarehouse` | Same tenant only |
+| `GET /api/audit-logs` | Tra cứu audit | `audit.read` | Filter entity/user/time |
 
-### Quy chuẩn API
+### API rules
 
 * Request/response dùng camelCase.
-* Mutation API bắt buộc auth và permission.
+* Mutation API bắt buộc auth, permission và audit.
+* 401 cho chưa đăng nhập; 403 cho thiếu quyền.
+* Không trả `passwordHash`, `tokenHash`, raw token hoặc secret.
 * Response lỗi chuẩn gồm `errorCode`, `message`, `details`, `traceId`.
-* Query API có pagination mặc định và max page size.
-* Command API validate input tại boundary trước khi vào domain logic.
 * Không trả dữ liệu tenant khác, kể cả khi biết id.
-
-### Service layer
-
-* Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
 
 ## 7. Frontend/RF/mobile
 
 | Màn hình/Control | Mục đích | Yêu cầu UX |
 |---|---|---|
 | Login page | Đăng nhập | Hiển thị lỗi chung, không lộ user tồn tại |
-| User management | Quản lý người dùng | Status, role assignment |
-| Role management | Quản lý vai trò | Permission matrix |
-| Audit viewer | Tra cứu audit | Filter user, entity, action, time |
+| User management | Quản lý người dùng | Status, role assignment, warehouse access |
+| Role management | Quản lý vai trò | Permission matrix theo module/action |
+| Audit viewer | Tra cứu audit | Filter user, entity, action, time, traceId |
+| Unauthorized state | Chặn truy cập | Message rõ, không crash route |
 
-### Chuẩn UI áp dụng
+### UI rules
 
 * UI text dùng Sentence case.
 * Không dùng inline style.
-* Tách CSS/JS riêng nếu là web truyền thống; với SPA dùng component/style module nhất quán.
-* Mọi action nguy hiểm có confirm rõ ràng.
-* Mọi màn hình có loading, empty, error, unauthorized state.
-* Bảng dữ liệu có filter, pagination và trạng thái no result.
-* RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
-
-### State cần hiển thị
-
-* Draft/open/in progress/completed/cancelled nếu phase có workflow.
-* Locked/blocked/exception nếu thao tác bị chặn.
-* Last updated và actor cho dữ liệu quan trọng.
-* Trace ID hoặc reference ID khi cần hỗ trợ vận hành.
+* Không kiểm quyền chỉ ở UI; UI chỉ ẩn/disable để UX tốt hơn.
+* Permission matrix phải có search/filter theo module.
+* Action đổi quyền/user status phải có confirm.
 
 ## 8. Execution flow
 
-1. Admin tạo role
-2. Gán permission
-3. Tạo user
-4. User đăng nhập
-5. Frontend lấy permission
-6. API enforce policy
-7. Audit ghi thay đổi
-
-### Flow guardrails
-
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+1. System seed permission catalog.
+2. System seed admin role.
+3. Admin tạo role nghiệp vụ.
+4. Admin gán permission vào role.
+5. Admin tạo user và gán role + warehouse access.
+6. User đăng nhập.
+7. Frontend lấy `/api/me/permissions` để dựng menu.
+8. API enforce policy cho mỗi mutation.
+9. Audit log ghi actor, entity, action, old/new, traceId.
 
 ## 9. Validation & business rules
 
-* Mọi API mutation phải auth
-* 401 cho chưa đăng nhập, 403 cho thiếu quyền
-* Password hash an toàn
-* Không log token/password
-* Permission code immutable sau khi seed
-
-### Validation nền bắt buộc
-
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
-* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
-* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
-* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
+* Mọi API mutation phải auth.
+* Mọi API mutation phải enforce permission ở backend.
+* Password policy đọc từ config, có minimum length và complexity tối thiểu.
+* Sai credential trả lỗi chung, không nói user hay password sai.
+* User inactive không được login.
+* Token hết hạn hoặc revoked không dùng được.
+* Permission code immutable sau khi seed.
+* User chỉ được thao tác warehouse đã được cấp.
+* Không cho admin tự remove quyền cuối cùng làm hệ thống mất admin nếu không có break-glass plan.
+* Audit không được chứa password/token/secret.
 
 ## 10. Exception handling
 
-* Sai credential
-* User inactive
-* Role thiếu permission
-* Token hết hạn
-* Tampering entityId ngoài tenant
-
-### Mapping lỗi chuẩn
-
-| Nhóm lỗi | Hành vi hệ thống |
+| Lỗi | Hành vi hệ thống |
 |---|---|
-| Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit nếu cần |
-| Dữ liệu stale | Trả conflict, yêu cầu reload |
-| Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
-| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
-| Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
-
-### Nguyên tắc exception
-
-* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
-* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
-* Không nuốt lỗi âm thầm.
-* Mọi override phải có reason và audit.
+| Sai credential | Trả lỗi chung, ghi security event |
+| User inactive | Trả lỗi chung hoặc account disabled message theo policy |
+| Role thiếu permission | Trả 403 |
+| Token hết hạn | Trả 401 |
+| Cross-tenant entityId | Trả 404/403, ghi security event nếu nghi ngờ tampering |
+| Dữ liệu stale khi đổi role | Trả 409, yêu cầu reload |
+| Permission không tồn tại | Trả validation error |
 
 ## 11. Observability
 
-* Audit login/logout thất bại/thành công
-* Audit đổi quyền
-* Trace ID trên mọi request
-* Security alert nếu login fail nhiều lần
-
-### Log và trace
-
-* Mỗi request có trace ID.
-* Command quan trọng ghi audit log.
-* Entity nghiệp vụ chính ghi activity timeline.
-* Job nền và integration event truyền trace ID khi liên quan flow gốc.
+* Audit login/logout thành công và thất bại.
+* Audit đổi role, đổi permission, đổi warehouse access, đổi user status.
+* Trace ID trên mọi request.
+* Security event khi login fail nhiều lần hoặc cross-tenant probing.
 * Log không chứa password, token, secret hoặc dữ liệu nhạy cảm không mask.
-
-### KPI đề xuất
-
-* Throughput theo ngày/ca/user nếu phase có thao tác vận hành.
-* Aging của task mở hoặc exception mở.
-* Tỷ lệ lỗi validation/rule block.
-* Tỷ lệ retry/failure nếu phase có tích hợp.
-* Độ chính xác tồn kho nếu phase ảnh hưởng inventory.
 
 ## 12. Test plan
 
-* Login success/fail
-* API 401/403/200
-* Menu ẩn theo quyền
-* Audit ghi old/new value
-* Không trả passwordHash
-
-### Test matrix bắt buộc
-
 | Nhóm test | Nội dung |
 |---|---|
-| Unit | Rule nghiệp vụ, status transition, validation helper |
-| Integration | API + DB transaction + permission + concurrency |
-| E2E | Luồng người dùng chính từ UI/RF/mobile |
-| Negative | Sai quyền, sai trạng thái, dữ liệu stale, duplicate request |
-| Regression | Không phá phase trước và dependency downstream |
+| Unit | Permission resolution, password policy, audit masking |
+| Integration | Login, 401/403/200, role assignment, audit write |
+| Security | Không trả passwordHash/tokenHash, cross-tenant blocked |
+| E2E | Login, menu visibility, unauthorized route |
+| Negative | Inactive user, expired token, stale role update |
+| Regression | Phase 01-02 health/master data vẫn hoạt động |
 
-### Dữ liệu test
+## 13. Measurable acceptance criteria
 
-* Tenant demo.
-* User đủ quyền và user thiếu quyền.
-* Master data hợp lệ và master data inactive.
-* Bản ghi đang open/completed/cancelled để test transition.
-* Dữ liệu conflict/concurrency nếu phase ghi transaction.
+* Unauthorized mutation returns 401/403 đúng trường hợp.
+* User thiếu permission không thể gọi mutation API dù UI bị bypass.
+* Role permission change writes audit row with old/new value masked.
+* `/api/me/permissions` trả permission đúng role và dùng camelCase.
+* User chỉ thấy/thao tác warehouse được cấp.
+* API không bao giờ trả passwordHash, tokenHash hoặc raw secret.
+* Login fail nhiều lần được ghi security event.
+* Audit query filter được theo actor, entity, action, traceId và time range.
 
-## 13. Acceptance criteria
-
-* RBAC chặn được mutation trái quyền
-* Audit đủ truy vết ai sửa gì lúc nào
-
-### Definition of done
+## 14. Definition of done
 
 * Database migration chạy sạch trên database trống.
-* API chính có test integration pass.
-* UI/RF/mobile flow chính thao tác được end-to-end.
+* API auth/RBAC/audit có integration test pass.
+* UI login/user/role/audit flow thao tác được end-to-end.
 * Audit/trace hoạt động cho command quan trọng.
-* Exception path chính được test.
-* README hoặc phase note đủ để executor tiếp theo hiểu dependency.
+* Security negative path chính được test.
+* README hoặc phase note đủ để executor phase 04 dùng permission/audit.
 * Không còn placeholder generic trong phần triển khai phase.
 
-## 14. Out of scope
+## 15. Maintenance notes
 
-* SSO
-* MFA
-* Fine-grained row-level security phức tạp
+* Permission mới phải thêm vào catalog và phase tương ứng.
+* Không kiểm quyền chỉ ở UI.
+* Audit schema không chứa dữ liệu nhạy cảm không mask.
+* Nếu đổi permission convention, cập nhật toàn bộ phase downstream.
+* Nếu thêm auth mode mới, cập nhật security model.
 
-Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu phát hiện scope mới bắt buộc, cập nhật roadmap tổng trước khi triển khai.
+## 16. Rollback notes
 
-## 15. Dependencies
-
-* Phase 01-02
-
-### Downstream impact
-
-* Phase sau được phép dùng API/status/data contract của phase này.
-* Nếu đổi contract sau khi phase đã hoàn tất, phải cập nhật phase phụ thuộc.
-* Không đổi tên bảng/API đã được phase sau tham chiếu nếu không có migration plan.
-
-## 16. Maintenance notes
-
-* Permission mới phải thêm vào catalog và plan phase tương ứng
-* Không kiểm quyền chỉ ở UI
-* Audit schema không chứa dữ liệu nhạy cảm không mask
-
-### Maintenance contract
-
-* Giữ section tài liệu này đồng bộ với migration/API thực tế.
-* Khi thêm status mới, cập nhật validation, UI badge, test và exception mapping.
-* Khi thêm permission mới, cập nhật seed, UI visibility và API policy.
-* Khi thêm field bắt buộc, cập nhật import/export, DTO, validation và test data.
-
-## 17. Extension points
-
-* Thêm SSO
-* Thêm MFA
-* Thêm approval workflow đổi quyền
-
-### Nguyên tắc mở rộng
-
-* Mở rộng bằng module hoặc service rõ ràng, không nhét logic vào controller.
-* Ưu tiên cấu hình/rule trước khi hardcode nghiệp vụ mới.
-* Không thêm dependency ngoài nếu standard library hoặc dependency hiện có xử lý đủ.
-* Feature nâng cao nên có permission hoặc feature flag riêng.
-
-## 18. Rollback notes
-
-* Disable user/role thay vì xóa
-* Rollback permission seed bằng migration
-* Khôi phục role assignment từ audit nếu gán sai
-
-### Rollback safety
-
-* Không xóa transaction đã phát sinh trong production.
-* Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
-* Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
-* Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
+* Disable user/role thay vì xóa khi có dữ liệu liên quan.
+* Rollback permission seed bằng migration nếu chưa được dùng.
+* Khôi phục role assignment từ audit nếu gán sai.
+* Không xóa audit/security event production.

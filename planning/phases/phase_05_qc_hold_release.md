@@ -2,317 +2,209 @@
 
 ## 1. Mục tiêu
 
-Kiểm soát chất lượng Lot sau nhận: hold, release, reject, quarantine.
+Kiểm soát chất lượng Lot sau receiving: hold, release, reject và quarantine trước khi tồn kho được phép move, allocate hoặc pick.
 
-Phase này thuộc stage **MVP vận hành chắc** và phải tạo ra deliverable có thể kiểm thử độc lập. Nội dung phải đủ rõ để executor triển khai mà không cần suy đoán nghiệp vụ chính.
+Phase này bảo vệ inventory khỏi việc dùng nhầm hàng chưa đạt QC hoặc đang bị khóa chất lượng.
 
 ## 2. Phạm vi
 
-Kiểm soát chất lượng Lot sau nhận: hold, release, reject, quarantine.
-
 ### In scope
 
-* Tạo module QC hold/release
-* Seed permission và reason code liên quan
-* Cấu hình route/API/menu
-* Chuẩn hóa DTO camelCase
+* Tạo module QC hold/release.
+* Tạo QC request, QC result và material hold.
+* Cập nhật `Lots.qcStatus` theo state machine.
+* Chặn move/pick/allocate đối với lot hoặc balance đang hold/rejected.
+* Seed permission và reason code liên quan.
+* Tạo QC queue, result form, hold/release panel.
+* Ghi audit và timeline cho mọi quyết định QC.
 
-### Non-negotiable output
+### Out of scope
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
-* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
-* Có execution flow end-to-end.
-* Có validation, exception, observability và test plan.
+* RMA QC.
+* Genealogy branch hold.
+* Lab integration.
+* Sampling engine nâng cao.
+* Destructive test costing.
 
-## 3. Điều kiện đầu vào
+## 3. Dependency
 
-Các phase phụ thuộc đã hoàn tất và dữ liệu nền liên quan đã sẵn sàng.
+| Loại | Chi tiết |
+|---|---|
+| Upstream | Phase 01-04 |
+| Downstream trực tiếp | Phase 06, 07, 12, 13, 17, 19 |
+| Contract tạo ra | Lot QC lifecycle, material hold contract, QC audit timeline |
+| Enterprise reference | [Domain state machines](../enterprise/domain_state_machines.md), [Core ERD/schema](../enterprise/core_erd_schema.md), [Measurable acceptance criteria](../enterprise/measurable_acceptance_criteria.md) |
 
-### Readiness checklist
+## 4. State machine
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
-* Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
-
-## 4. Setup
-
-* Tạo module QC hold/release
-* Seed permission và reason code liên quan
-* Cấu hình route/API/menu
-* Chuẩn hóa DTO camelCase
-
-### Cấu trúc module đề xuất
-
-```text
-backend/modules/qc_hold_release/
-frontend/features/qc_hold_release/
-planning/phases/phase_05_qc_hold_release.md
+```mermaid
+stateDiagram-v2
+    [*] --> qcPending
+    qcPending --> released: passQc
+    qcPending --> hold: hold
+    hold --> released: release
+    hold --> rejected: reject
+    released --> hold: qualityIssue
+    rejected --> scrap: dispose
+    released --> [*]
+    scrap --> [*]
 ```
-
-### Permission seed đề xuất
-
-* qc_hold_release.read
-* qc_hold_release.create
-* qc_hold_release.update
-* qc_hold_release.approve
-* qc_hold_release.export
-
-Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `QcRequests` | Yêu cầu QC | LotId, samplePlan, status |
-| `QcResults` | Kết quả QC | Pass/fail metrics, attachment refs |
-| `MaterialHolds` | Khóa vật tư | Lot/location/reason/status |
-| `Lots.qcStatus` | Trạng thái QC | Pending, passed, failed, held |
-
-### Chuẩn database áp dụng
-
-* Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
-* Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
-* Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
-* Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
+| Table/Field | Required fields | Main constraints | Indexes |
+|---|---|---|---|
+| `QcRequests` | id, tenantId, warehouseId, lotId, samplePlan, status, requestedBy, requestedAt | one open request per lot by type | tenantId+warehouseId+status |
+| `QcResults` | id, tenantId, qcRequestId, result, metricsJson, attachmentRefs, approvedBy, approvedAt | approved result immutable | qcRequestId+result |
+| `MaterialHolds` | id, tenantId, warehouseId, lotId, locationId, inventoryBalanceId, holdType, reasonCode, status, releasedBy, releasedAt | active hold blocks usable inventory | tenantId+warehouseId+status |
+| `Lots.qcStatus` | qcPending, released, hold, rejected, scrap | enum only | tenantId+itemId+qcStatus |
+| `InventoryTransactions` | transactionType HOLD, RELEASE, SCRAP optional | append-only if quantity status changes | tenantId+sourceType+sourceId |
 
 ### Transaction boundary
 
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
+QC command must commit atomically:
+
+1. Validate lot, warehouse and tenant scope.
+2. Validate current QC state.
+3. Write QC result or material hold.
+4. Update `Lots.qcStatus`.
+5. If inventory status changes, write immutable transaction.
+6. Write audit/activity timeline.
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `GET /api/qc/queue` | Lot chờ QC | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/qc/{lotId}/result` | Ghi kết quả QC | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/qc/{lotId}/hold` | Hold Lot | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/qc/{lotId}/release` | Release Lot | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/qc/{lotId}/reject` | Reject Lot | Có auth, validation, trace ID và response lỗi chuẩn. |
+| API | Mục đích | Permission | Ghi chú |
+|---|---|---|---|
+| `GET /api/qc/queue` | Lot chờ QC | `qc.read` | Filter warehouse/status/age |
+| `POST /api/qc/lots/{lotId}/result` | Ghi kết quả QC | `qc.result.create` | Requires result payload |
+| `POST /api/qc/lots/{lotId}/hold` | Hold Lot | `qc.hold` | Requires reason |
+| `POST /api/qc/lots/{lotId}/release` | Release Lot | `qc.release` | Requires permission |
+| `POST /api/qc/lots/{lotId}/reject` | Reject Lot | `qc.reject` | Requires reason + approval when configured |
+| `GET /api/qc/lots/{lotId}/timeline` | Timeline QC | `qc.read` | Includes audit references |
 
-### Quy chuẩn API
+### Hold request mẫu
 
-* Request/response dùng camelCase.
-* Mutation API bắt buộc auth và permission.
-* Response lỗi chuẩn gồm `errorCode`, `message`, `details`, `traceId`.
-* Query API có pagination mặc định và max page size.
-* Command API validate input tại boundary trước khi vào domain logic.
-* Không trả dữ liệu tenant khác, kể cả khi biết id.
+```json
+{
+  "warehouseId": "wh_001",
+  "reasonCode": "QC_DAMAGE",
+  "description": "Outer carton damaged during receiving.",
+  "holdScope": "lot"
+}
+```
 
-### Service layer
+### Result request mẫu
 
-* Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
+```json
+{
+  "warehouseId": "wh_001",
+  "result": "passed",
+  "metrics": {
+    "sampleQty": 5,
+    "failedQty": 0
+  },
+  "attachmentRefs": []
+}
+```
 
 ## 7. Frontend/RF/mobile
 
 | Màn hình/Control | Mục đích | Yêu cầu UX |
 |---|---|---|
-| QC queue | Danh sách Lot chờ | Có loading, empty, error, filter, pagination và quyền theo action. |
-| QC result form | Nhập kết quả | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Hold/release panel | Lý do và quyền duyệt | Có loading, empty, error, filter, pagination và quyền theo action. |
+| QC queue | Danh sách lot chờ | Filter warehouse, item, age, status |
+| QC result form | Nhập kết quả | Validate required metrics, attachment refs |
+| Hold/release panel | Lý do và quyền duyệt | Reason required, confirm dangerous action |
+| Lot QC timeline | Truy vết QC | Actor, state, reason, traceId |
 
-### Chuẩn UI áp dụng
+### UI rules
 
 * UI text dùng Sentence case.
 * Không dùng inline style.
-* Tách CSS/JS riêng nếu là web truyền thống; với SPA dùng component/style module nhất quán.
-* Mọi action nguy hiểm có confirm rõ ràng.
-* Mọi màn hình có loading, empty, error, unauthorized state.
-* Bảng dữ liệu có filter, pagination và trạng thái no result.
-* RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
-
-### State cần hiển thị
-
-* Draft/open/in progress/completed/cancelled nếu phase có workflow.
-* Locked/blocked/exception nếu thao tác bị chặn.
-* Last updated và actor cho dữ liệu quan trọng.
-* Trace ID hoặc reference ID khi cần hỗ trợ vận hành.
+* Hold/reject phải có confirm.
+* Release hiển thị rõ current hold reason và actor.
+* Unauthorized action không hiển thị hoặc disabled nhưng backend vẫn enforce.
 
 ## 8. Execution flow
 
-1. Lot nhập xong
-2. Tạo QC request
-3. Inspector kiểm
-4. Pass/reject/hold
-5. Cập nhật qcStatus
-6. Ghi timeline
-
-### Flow guardrails
-
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+1. Lot được tạo từ receiving với `qcPending` nếu item cần QC.
+2. System hoặc inspector tạo QC request.
+3. Inspector kiểm hàng và nhập result.
+4. Nếu pass, lot chuyển `released`.
+5. Nếu issue, lot chuyển `hold` hoặc `rejected` với reason.
+6. Release/reject ghi audit và timeline.
+7. Downstream inventory/allocation chỉ dùng lot `released`.
 
 ## 9. Validation & business rules
 
-* Lot hold không được move/pick
-* Reject cần reason
-* Release cần quyền
-* Không sửa result sau approve
-
-### Validation nền bắt buộc
-
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
-* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
-* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
-* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
+* Lot `hold` không được move/pick/allocate trừ permission override có reason.
+* Lot `rejected` không được usable; chỉ được scrap/return theo phase sau.
+* Reject bắt buộc reason code.
+* Release cần permission.
+* Không sửa QC result sau approve; correction phải tạo result mới hoặc reversal có audit.
+* Không release lot đã shipped.
+* Hold scope phải rõ: lot, location hoặc inventory balance.
+* QC state transition sai trả 409.
 
 ## 10. Exception handling
 
-* Thiếu reason
-* Lot không tồn tại
-* Lot đã ship
-* Thiếu quyền release
-
-### Mapping lỗi chuẩn
-
-| Nhóm lỗi | Hành vi hệ thống |
+| Lỗi | Hành vi hệ thống |
 |---|---|
-| Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit nếu cần |
-| Dữ liệu stale | Trả conflict, yêu cầu reload |
-| Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
-| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
-| Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
-
-### Nguyên tắc exception
-
-* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
-* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
-* Không nuốt lỗi âm thầm.
-* Mọi override phải có reason và audit.
+| Thiếu reason | Trả validation error |
+| Lot không tồn tại | Trả 404/403 theo tenant policy |
+| Lot đã shipped | Block action |
+| Thiếu quyền release | Trả 403 |
+| Dữ liệu stale | Trả 409, yêu cầu reload |
+| Result đã approve | Block update, yêu cầu correction path |
 
 ## 11. Observability
 
-* Timeline QC
-* Audit hold/release
-* KPI pending QC aging
-
-### Log và trace
-
-* Mỗi request có trace ID.
-* Command quan trọng ghi audit log.
-* Entity nghiệp vụ chính ghi activity timeline.
-* Job nền và integration event truyền trace ID khi liên quan flow gốc.
-* Log không chứa password, token, secret hoặc dữ liệu nhạy cảm không mask.
-
-### KPI đề xuất
-
-* Throughput theo ngày/ca/user nếu phase có thao tác vận hành.
-* Aging của task mở hoặc exception mở.
-* Tỷ lệ lỗi validation/rule block.
-* Tỷ lệ retry/failure nếu phase có tích hợp.
-* Độ chính xác tồn kho nếu phase ảnh hưởng inventory.
+* Timeline QC cho mỗi lot.
+* Audit hold/release/reject/result.
+* KPI pending QC aging.
+* KPI hold aging theo reason.
+* Trace ID liên kết receiving transaction và QC decision.
 
 ## 12. Test plan
 
-* Pass
-* Hold chặn pick
-* Release mở khóa
-* Reject không usable
-
-### Test matrix bắt buộc
-
 | Nhóm test | Nội dung |
 |---|---|
-| Unit | Rule nghiệp vụ, status transition, validation helper |
-| Integration | API + DB transaction + permission + concurrency |
-| E2E | Luồng người dùng chính từ UI/RF/mobile |
-| Negative | Sai quyền, sai trạng thái, dữ liệu stale, duplicate request |
-| Regression | Không phá phase trước và dependency downstream |
+| Unit | QC state transition, hold/release rules |
+| Integration | Hold blocks allocation/move/pick contract |
+| Negative | Missing reason, no permission, stale state, shipped lot |
+| E2E | Inspector pass/hold/release/reject từ UI |
+| Regression | Phase 04 receiving still creates lot correctly |
 
-### Dữ liệu test
+## 13. Measurable acceptance criteria
 
-* Tenant demo.
-* User đủ quyền và user thiếu quyền.
-* Master data hợp lệ và master data inactive.
-* Bản ghi đang open/completed/cancelled để test transition.
-* Dữ liệu conflict/concurrency nếu phase ghi transaction.
+* Lot mới cần QC xuất hiện trong QC queue.
+* QC hold blocks allocation, move and pick for affected stock.
+* QC release makes lot usable for downstream inventory flows.
+* QC reject requires reason and audit.
+* Approved QC result cannot be edited silently.
+* Lot timeline shows receiving source, QC decision, actor, reason and traceId.
+* Unauthorized release returns 403 even if UI action is manually called.
+* Pending QC aging KPI can be calculated from stored timestamps.
 
-## 13. Acceptance criteria
-
-* QC kiểm soát được Lot trước khi tồn usable
-
-### Definition of done
+## 14. Definition of done
 
 * Database migration chạy sạch trên database trống.
-* API chính có test integration pass.
-* UI/RF/mobile flow chính thao tác được end-to-end.
-* Audit/trace hoạt động cho command quan trọng.
+* QC API có integration test pass.
+* UI QC queue/result/hold/release flow thao tác được end-to-end.
+* Audit/trace hoạt động cho QC command.
 * Exception path chính được test.
-* README hoặc phase note đủ để executor tiếp theo hiểu dependency.
+* Phase note đủ để phase 06-07 dùng QC contract.
 * Không còn placeholder generic trong phần triển khai phase.
 
-## 14. Out of scope
+## 15. Maintenance notes
 
-* RMA QC
-* Genealogy branch hold
+* Khi thêm QC status mới, cập nhật validation, UI badge, downstream allocation/move checks.
+* Không bỏ qua audit và permission khi thêm action mới.
+* Giữ transaction boundary rõ nếu QC thay đổi inventory status.
+* Nếu thay đổi hold semantics, cập nhật phase 06, 07, 13.
 
-Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu phát hiện scope mới bắt buộc, cập nhật roadmap tổng trước khi triển khai.
+## 16. Rollback notes
 
-## 15. Dependencies
-
-* Xem roadmap tổng
-
-### Downstream impact
-
-* Phase sau được phép dùng API/status/data contract của phase này.
-* Nếu đổi contract sau khi phase đã hoàn tất, phải cập nhật phase phụ thuộc.
-* Không đổi tên bảng/API đã được phase sau tham chiếu nếu không có migration plan.
-
-## 16. Maintenance notes
-
-* Không bỏ qua audit và permission khi thêm action mới
-* Giữ transaction boundary rõ
-* Cập nhật phase phụ thuộc nếu đổi status lifecycle
-
-### Maintenance contract
-
-* Giữ section tài liệu này đồng bộ với migration/API thực tế.
-* Khi thêm status mới, cập nhật validation, UI badge, test và exception mapping.
-* Khi thêm permission mới, cập nhật seed, UI visibility và API policy.
-* Khi thêm field bắt buộc, cập nhật import/export, DTO, validation và test data.
-
-## 17. Extension points
-
-* Mở rộng bằng module nâng cao ở stage sau
-* Thêm rule engine khi nghiệp vụ cần cấu hình động
-* Thêm dashboard khi dữ liệu đủ ổn định
-
-### Nguyên tắc mở rộng
-
-* Mở rộng bằng module hoặc service rõ ràng, không nhét logic vào controller.
-* Ưu tiên cấu hình/rule trước khi hardcode nghiệp vụ mới.
-* Không thêm dependency ngoài nếu standard library hoặc dependency hiện có xử lý đủ.
-* Feature nâng cao nên có permission hoặc feature flag riêng.
-
-## 18. Rollback notes
-
-* Revert migration nếu chưa có dữ liệu thật
-* Nếu đã có transaction, dùng corrective transaction thay vì sửa tay
-* Tắt permission/menu để rollback chức năng
-
-### Rollback safety
-
-* Không xóa transaction đã phát sinh trong production.
-* Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
-* Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
-* Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
+* Revert migration nếu chưa có dữ liệu thật.
+* Nếu đã có QC decision, không xóa; tạo correction/release/reject mới có audit.
+* Có thể tạm ẩn menu/permission QC nếu UI lỗi.
+* Không xóa transaction hoặc audit production.
