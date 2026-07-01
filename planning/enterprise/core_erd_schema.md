@@ -1,4 +1,4 @@
-﻿# Core ERD and schema
+# Core ERD and schema
 
 ## ERD
 

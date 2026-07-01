@@ -1,310 +1,149 @@
-﻿# PHASE 24: Webhook & integration reliability
+# PHASE 24: Webhook & integration reliability
 
 ## 1. Mục tiêu
 
-Webhook tin cậy với retry, backoff, dead-letter và replay.
-
-Phase này thuộc stage **Enterprise integration** và phải tạo ra deliverable có thể kiểm thử độc lập. Nội dung phải đủ rõ để executor triển khai mà không cần suy đoán nghiệp vụ chính.
+Xây dựng hệ thống gửi tin Webhook và cơ chế tích hợp tin cậy (Integration Reliability). Đảm bảo các thông báo sự kiện kho (như xuất kho thành công, nhập kho hoàn tất) luôn được chuyển đến bên thứ ba thành công ít nhất một lần (At-least-once Delivery) thông qua Outbox Pattern, cơ chế tự động thử lại (Retry with Backoff), hàng đợi tin lỗi (Dead-Letter Queue - DLQ), và tính năng gửi lại (Replay) thủ công.
 
 ## 2. Phạm vi
 
-Webhook tin cậy với retry, backoff, dead-letter và replay.
-
 ### In scope
 
-* Tạo module Webhook & integration reliability
-* Cấu hình env an toàn
-* Seed permission/menu
+- Xây dựng bảng đăng ký nhận tin Webhook (`WebhookSubscriptions`) cô lập theo Tenant.
+- Triển khai cơ chế Transactional Outbox Pattern: Đảm bảo chèn bản ghi Outbox và thay đổi nghiệp vụ kho nằm trong một Database Transaction.
+- Xây dựng Background Worker (Outbox Worker) quét và phát đi các sự kiện Webhook.
+- Ký bảo mật nội dung tin nhắn gửi đi bằng thuật toán HMAC SHA-256.
+- Áp dụng chính sách Retry tự động với Exponential Backoff & Jitter cho các lỗi mạng/HTTP lỗi tạm thời.
+- Chuyển tiếp các tin nhắn thất bại liên tục vào Dead-Letter Queue (DLQ) để xử lý thủ công.
 
 ### Non-negotiable output
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
-* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
-* Có execution flow end-to-end.
-* Có validation, exception, observability và test plan.
+- Sự kiện kho (như `shipment.confirmed`) tự động kích hoạt tạo dòng Outbox tương ứng.
+- Webhook gửi đi đính kèm chữ ký bảo mật ở Header `X-Nexustock-Signature`.
+- Giao diện Admin quản trị có thể theo dõi tỷ lệ gửi lỗi, xem danh mục DLQ và thực hiện Replay (gửi lại) từng tin nhắn hoặc hàng loạt.
 
 ## 3. Điều kiện đầu vào
 
-Core WMS ổn định và có dữ liệu để tích hợp.
-
 ### Readiness checklist
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
-* Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
+- Module ERP integration contract (Phase 23) đã định nghĩa.
+- Hệ thống log tập trung (Phase 25) đã có khung mẫu.
 
 ## 4. Setup
 
-* Tạo module Webhook & integration reliability
-* Cấu hình env an toàn
-* Seed permission/menu
-
 ### Cấu trúc module đề xuất
 
-```text
-backend/modules/webhook_integration_reliability/
-frontend/features/webhook_integration_reliability/
-planning/phases/phase_24_webhook_integration_reliability.md
-```
+- Backend module: `backend/modules/webhook_reliability/`
+- Background worker: `backend/workers/WebhookOutboxWorker/`
+- Frontend module: `frontend/features/webhook_reliability/`
 
 ### Permission seed đề xuất
 
-* webhook_integration_reliability.read
-* webhook_integration_reliability.create
-* webhook_integration_reliability.update
-* webhook_integration_reliability.approve
-* webhook_integration_reliability.export
-
-Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
+- `webhook.manage`: Đăng ký, sửa cấu hình URL nhận tin Webhook.
+- `webhook.replay`: Thực hiện replay các tin nhắn lỗi trong DLQ.
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `WebhookSubscriptions` | Đăng ký webhook | Event,url,secret,status |
-| `WebhookDeliveries` | Lần gửi | Status,retryCount,nextRetry |
-| `DeadLetters` | Message lỗi | Reason,resolution |
+### Bảng đăng ký nhận tin Webhook (`WebhookSubscriptions`)
 
-### Chuẩn database áp dụng
+| Tên cột | Kiểu dữ liệu | Nullable | Ràng buộc chính | Ý nghĩa |
+|---|---|---|---|---|
+| `id` | uuid | No | Primary Key | ID đăng ký |
+| `tenantId` | varchar(50) | No | FK | Định danh tenant |
+| `targetUrl` | varchar(255) | No | | URL nhận webhook |
+| `secretKey` | varchar(100) | No | | Khóa bí mật dùng để ký HMAC |
+| `eventTypes` | varchar(250) | No | | Chuỗi chứa các sự kiện đăng ký (ví dụ: `shipment.*,inbound.completed`) |
+| `isActive` | boolean | No | Mặc định: true | Trạng thái hoạt động |
 
-* Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
-* Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
-* Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
-* Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
+### Bảng hàng đợi gửi tin Webhook (`WebhookDeliveries` / Outbox)
 
-### Transaction boundary
-
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
+| Tên cột | Kiểu dữ liệu | Nullable | Ràng buộc chính | Ý nghĩa |
+|---|---|---|---|---|
+| `id` | uuid | No | Primary Key | ID lần gửi |
+| `tenantId` | varchar(50) | No | FK | Định danh tenant |
+| `subscriptionId`| uuid | No | FK | Liên kết subscription |
+| `eventType` | varchar(50) | No | | Loại sự kiện phát sinh |
+| `payload` | text | No | | JSON body dữ liệu tin nhắn |
+| `status` | varchar(20) | No | | Trạng thái: `pending`, `sending`, `delivered`, `deadLetter` |
+| `retryCount` | integer | No | Mặc định: 0 | Số lần đã thử lại |
+| `nextAttemptAt` | timestamp | No | | Lịch thử lại kế tiếp |
+| `traceId` | varchar(50) | No | | Trace ID liên kết |
+| `lastResponseCode`| integer | Yes | | HTTP code phản hồi gần nhất |
+| `lastError` | text | Yes | | Lỗi kết nối gần nhất |
+| `createdAt` | timestamp | No | | Thời gian tạo sự kiện |
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `POST /api/webhooks/subscriptions` | Tạo subscription | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/webhooks/deliveries/{id}/replay` | Replay | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `GET /api/webhooks/deliveries` | Log delivery | Có auth, validation, trace ID và response lỗi chuẩn. |
+### 6.1 API Đăng ký Webhook mới
+- **Method & Path:** `POST /api/webhooks/subscriptions`
+- **Permission:** `webhook.manage`
+- **Request:**
+  ```json
+  {
+    "targetUrl": "https://api.erp-customer.com/wms-receiver",
+    "eventTypes": "shipment.confirmed,inbound.completed"
+  }
+  ```
+- **Response (Success):** `{ "subscriptionId": "uuid-sub-11", "secretKey": "whsec_abc123xyz" }`
+- *Ghi chú:* Hệ thống tự sinh `secretKey` ngẫu nhiên có độ dài entropy tối thiểu 32 ký tự.
 
-### Quy chuẩn API
-
-* Request/response dùng camelCase.
-* Mutation API bắt buộc auth và permission.
-* Response lỗi chuẩn gồm `errorCode`, `message`, `details`, `traceId`.
-* Query API có pagination mặc định và max page size.
-* Command API validate input tại boundary trước khi vào domain logic.
-* Không trả dữ liệu tenant khác, kể cả khi biết id.
-
-### Service layer
-
-* Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
+### 6.2 API Gửi lại tin nhắn lỗi (Replay Webhook Delivery)
+- **Method & Path:** `POST /api/webhooks/deliveries/{id}/replay`
+- **Permission:** `webhook.replay`
+- **Response (Success):** `{ "success": true, "status": "pending", "nextAttemptAt": "2026-07-01T09:30:00Z" }`
+- *Ghi chú:* Chuyển trạng thái bản ghi từ `deadLetter` về `pending` và reset `retryCount = 0` để Outbox Worker quét và gửi lại.
 
 ## 7. Frontend/RF/mobile
 
-| Màn hình/Control | Mục đích | Yêu cầu UX |
-|---|---|---|
-| Webhook admin | Quản lý webhook | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Delivery log | Retry/replay | Có loading, empty, error, filter, pagination và quyền theo action. |
-| DLQ screen | Xử lý lỗi | Có loading, empty, error, filter, pagination và quyền theo action. |
-
-### Chuẩn UI áp dụng
-
-* UI text dùng Sentence case.
-* Không dùng inline style.
-* Tách CSS/JS riêng nếu là web truyền thống; với SPA dùng component/style module nhất quán.
-* Mọi action nguy hiểm có confirm rõ ràng.
-* Mọi màn hình có loading, empty, error, unauthorized state.
-* Bảng dữ liệu có filter, pagination và trạng thái no result.
-* RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
-
-### State cần hiển thị
-
-* Draft/open/in progress/completed/cancelled nếu phase có workflow.
-* Locked/blocked/exception nếu thao tác bị chặn.
-* Last updated và actor cho dữ liệu quan trọng.
-* Trace ID hoặc reference ID khi cần hỗ trợ vận hành.
+### Màn hình Webhook Admin (Webhook Logs & DLQ UI)
+- Cho phép xem danh sách các Subscription hiện có, xem biểu đồ tỷ lệ gửi tin lỗi theo thời gian.
+- Trang chi tiết hiển thị toàn bộ Log lịch sử gửi (`WebhookDeliveries`) kèm payload JSON, HTTP Response Code, số lần retry.
+- Bảng hiển thị riêng các tin đang nằm trong DLQ (`status = 'deadLetter'`) kèm nút bấm "Gửi lại" (Replay).
 
 ## 8. Execution flow
 
-1. Event phát sinh
-2. Enqueue delivery
-3. Send
-4. Retry backoff
-5. DLQ nếu quá giới hạn
-6. Replay sau fix
+### Quy trình tạo và ký Webhook (HMAC Signature Process)
 
-### Flow guardrails
-
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+1. Nghiệp vụ kho hoàn tất (ví dụ: xác nhận xuất kho) -> Chèn bản ghi Outbox vào bảng `WebhookDeliveries` trong cùng DB transaction.
+2. Background Job quét các bản ghi có `status = 'pending'` hoặc `nextAttemptAt <= CURRENT_TIMESTAMP`.
+3. Chuẩn bị payload và ký số:
+   - Đọc `secretKey` từ subscription liên quan.
+   - Tính toán chữ ký HMAC SHA-256: `signature = HMAC-SHA256(secretKey, timestamp + "." + payload)`.
+4. Gửi HTTP POST request đến `targetUrl` đính kèm các Header:
+   - `X-Nexustock-Event`: `shipment.confirmed`
+   - `X-Nexustock-Delivery-Id`: `id` của bản ghi gửi.
+   - `X-Nexustock-Timestamp`: Timestamp thời điểm gửi.
+   - `X-Nexustock-Signature`: Chữ ký HMAC đã tính.
+5. Xử lý kết quả trả về từ URL đối tác:
+   - Nếu HTTP Response trả về dạng `2xx` -> Cập nhật `status = 'delivered'`.
+   - Nếu lỗi mạng hoặc HTTP `428/429/5xx` -> Tăng `retryCount`, tính toán `nextAttemptAt` theo chính sách Exponential Backoff (1m, 5m, 15m, 1h, 6h).
+   - Nếu số lần thử lại vượt quá 5 lần -> Cập nhật `status = 'deadLetter'` và gửi Alert.
 
 ## 9. Validation & business rules
 
-* Không block core transaction
-* Mask secret
-* Idempotency key trong header
-
-### Validation nền bắt buộc
-
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
-* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
-* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
-* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
+- **Bảo mật Webhook:** Bên nhận webhook bắt buộc phải xác thực tính hợp lệ của Header `X-Nexustock-Signature` để đảm bảo tin nhắn không bị thay đổi hoặc giả mạo.
+- **Idempotency bên nhận:** WMS bắt buộc truyền `X-Nexustock-Delivery-Id` làm khóa Idempotency duy nhất để bên nhận không xử lý đơn trùng lặp khi WMS gửi lại tin do timeout.
 
 ## 10. Exception handling
 
-* Timeout
-* 500
-* Auth fail
-* DLQ đầy
-
-### Mapping lỗi chuẩn
-
-| Nhóm lỗi | Hành vi hệ thống |
-|---|---|
-| Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit nếu cần |
-| Dữ liệu stale | Trả conflict, yêu cầu reload |
-| Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
-| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
-| Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
-
-### Nguyên tắc exception
-
-* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
-* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
-* Không nuốt lỗi âm thầm.
-* Mọi override phải có reason và audit.
+- **Đổi địa chỉ URL hoặc IP bị chặn:** Nếu đối tác thay đổi DNS hoặc IP và gây lỗi kết nối liên tục, job sẽ thử lại theo lịch và tự động chuyển vào DLQ sau khi hết số lượt retry.
+- **Tránh nghẽn hàng đợi (Queue Isolation):** Các tin nhắn lỗi liên tục không được làm chặn đường truyền của các tin nhắn mới. Do đó, chỉ quét các tin có `nextAttemptAt` hợp lệ, các tin chưa đến lịch retry sẽ bị bỏ qua để xử lý sau.
 
 ## 11. Observability
 
-* Delivery success rate
-* DLQ alert
-
-### Log và trace
-
-* Mỗi request có trace ID.
-* Command quan trọng ghi audit log.
-* Entity nghiệp vụ chính ghi activity timeline.
-* Job nền và integration event truyền trace ID khi liên quan flow gốc.
-* Log không chứa password, token, secret hoặc dữ liệu nhạy cảm không mask.
-
-### KPI đề xuất
-
-* Throughput theo ngày/ca/user nếu phase có thao tác vận hành.
-* Aging của task mở hoặc exception mở.
-* Tỷ lệ lỗi validation/rule block.
-* Tỷ lệ retry/failure nếu phase có tích hợp.
-* Độ chính xác tồn kho nếu phase ảnh hưởng inventory.
+- Ghi log chi tiết mỗi lượt gửi: `[Webhook Outbox] Sending event {eventType} to {url} - Trace ID: {traceId}`.
+- KPI giám sát: Tỷ lệ webhook gửi thành công lần đầu (First-pass Success Rate), số lượng tin nhắn trong DLQ.
 
 ## 12. Test plan
 
-* Success
-* Timeout retry
-* DLQ
-* Replay
-
-### Test matrix bắt buộc
-
-| Nhóm test | Nội dung |
-|---|---|
-| Unit | Rule nghiệp vụ, status transition, validation helper |
-| Integration | API + DB transaction + permission + concurrency |
-| E2E | Luồng người dùng chính từ UI/RF/mobile |
-| Negative | Sai quyền, sai trạng thái, dữ liệu stale, duplicate request |
-| Regression | Không phá phase trước và dependency downstream |
-
-### Dữ liệu test
-
-* Tenant demo.
-* User đủ quyền và user thiếu quyền.
-* Master data hợp lệ và master data inactive.
-* Bản ghi đang open/completed/cancelled để test transition.
-* Dữ liệu conflict/concurrency nếu phase ghi transaction.
+- **Unit Test:**
+  - Logic tính chữ ký HMAC SHA-256 chính xác.
+  - Thuật toán tính Exponential Backoff thời gian chờ tăng dần.
+- **Integration Test:**
+  - Kích hoạt sự kiện nghiệp vụ kho -> Verify dòng dữ liệu Outbox được tạo chính xác cùng transaction.
+  - Sử dụng Webhook.site hoặc mock server để nhận webhook từ WMS -> Verify nhận đủ Headers và chữ ký chính xác.
 
 ## 13. Acceptance criteria
 
-* Webhook lỗi không làm gãy core
-
-### Definition of done
-
-* Database migration chạy sạch trên database trống.
-* API chính có test integration pass.
-* UI/RF/mobile flow chính thao tác được end-to-end.
-* Audit/trace hoạt động cho command quan trọng.
-* Exception path chính được test.
-* README hoặc phase note đủ để executor tiếp theo hiểu dependency.
-* Không còn placeholder generic trong phần triển khai phase.
-
-## 14. Out of scope
-
-* Kafka/event streaming
-
-Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu phát hiện scope mới bắt buộc, cập nhật roadmap tổng trước khi triển khai.
-
-## 15. Dependencies
-
-* Stage 1-2 tùy integration
-
-### Downstream impact
-
-* Phase sau được phép dùng API/status/data contract của phase này.
-* Nếu đổi contract sau khi phase đã hoàn tất, phải cập nhật phase phụ thuộc.
-* Không đổi tên bảng/API đã được phase sau tham chiếu nếu không có migration plan.
-
-## 16. Maintenance notes
-
-* Tất cả tích hợp phải idempotent
-* Không để lỗi ngoại vi phá core transaction
-* Log phải mask secret
-
-### Maintenance contract
-
-* Giữ section tài liệu này đồng bộ với migration/API thực tế.
-* Khi thêm status mới, cập nhật validation, UI badge, test và exception mapping.
-* Khi thêm permission mới, cập nhật seed, UI visibility và API policy.
-* Khi thêm field bắt buộc, cập nhật import/export, DTO, validation và test data.
-
-## 17. Extension points
-
-* Thêm partner mới
-* Thêm adapter mới
-* Thêm dashboard nâng cao
-
-### Nguyên tắc mở rộng
-
-* Mở rộng bằng module hoặc service rõ ràng, không nhét logic vào controller.
-* Ưu tiên cấu hình/rule trước khi hardcode nghiệp vụ mới.
-* Không thêm dependency ngoài nếu standard library hoặc dependency hiện có xử lý đủ.
-* Feature nâng cao nên có permission hoặc feature flag riêng.
-
-## 18. Rollback notes
-
-* Disable integration partner/subscription
-* Replay sau khi fix
-* Rollback image nếu deployment lỗi
-
-### Rollback safety
-
-* Không xóa transaction đã phát sinh trong production.
-* Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
-* Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
-* Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
+- Sự kiện kho phát sinh tự động tạo dòng Outbox tương ứng.
+- Webhook được ký HMAC đầy đủ và gửi thành công sang mock server.
+- Lỗi kết nối giả lập tự kích hoạt retry theo đúng khoảng thời gian cấu hình và chuyển vào DLQ sau khi hết lượt.

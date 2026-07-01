@@ -1,4 +1,4 @@
-﻿# Measurable acceptance criteria
+# Measurable acceptance criteria
 
 ## Standard
 

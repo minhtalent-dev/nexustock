@@ -1,4 +1,4 @@
-﻿# Domain state machines
+# Domain state machines
 
 ## Global rules
 

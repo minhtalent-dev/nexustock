@@ -1,312 +1,138 @@
-﻿# PHASE 23: ERP/WMS legacy contract
+# PHASE 23: ERP/WMS legacy contract
 
 ## 1. Mục tiêu
 
-Chuẩn hóa API contract, import/export và mapping với ERP/WMS cũ.
-
-Phase này thuộc stage **Enterprise integration** và phải tạo ra deliverable có thể kiểm thử độc lập. Nội dung phải đủ rõ để executor triển khai mà không cần suy đoán nghiệp vụ chính.
+Thiết lập các giao thức truyền nhận dữ liệu (API Contract) chuẩn hóa và cơ chế nhập/xuất dữ liệu (Import/Export Wizard) tích hợp để liên kết Nexustock WMS với hệ thống ERP hiện tại (như SAP, Oracle, Odoo) hoặc hệ thống quản lý kho cũ (Legacy WMS).
 
 ## 2. Phạm vi
 
-Chuẩn hóa API contract, import/export và mapping với ERP/WMS cũ.
-
 ### In scope
 
-* Tạo module ERP/WMS legacy contract
-* Cấu hình env an toàn
-* Seed permission/menu
+- Xây dựng API tích hợp (Integration API) nhận đơn PO/SO từ ERP.
+- Triển khai cơ chế kiểm tra tính trùng lặp dữ liệu tích hợp thông qua `Idempotency-Key` và đối chiếu Payload Hash.
+- Thiết lập cơ chế import dữ liệu lớn bằng Excel/CSV qua luồng 2 bước: Preview lỗi (không ghi DB) và Commit an toàn (Atomic Batch Commit).
+- Viết adapter ánh xạ (mapping) mã vật tư, mã kho, mã đối tác giữa ERP và WMS, đồng thời xuất báo cáo lỗi ánh xạ chi tiết (Mapping Error Report).
+- Quản lý phiên bản hợp đồng dữ liệu tích hợp (Contract Versioning: `v1.0`, `v1.1`, vv).
 
 ### Non-negotiable output
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
-* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
-* Có execution flow end-to-end.
-* Có validation, exception, observability và test plan.
+- API Endpoint nhận đơn từ ERP trả về response đồng bộ ngay lập tức chứa trạng thái tiếp nhận và `traceId`.
+- Giao diện Import Wizard cho phép kéo thả file Excel, hiển thị bảng preview phân loại dòng hợp lệ/dòng lỗi rõ ràng trước khi ghi.
+- Bản ghi log tích hợp lưu đầy đủ payload gửi/nhận, trạng thái xử lý, trace ID để hỗ trợ L1/L2 support đối soát.
 
 ## 3. Điều kiện đầu vào
 
-Core WMS ổn định và có dữ liệu để tích hợp.
-
 ### Readiness checklist
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
-* Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
+- Module Inbound receiving (Phase 04) và Outbound picking (Phase 07) đã hoàn tất.
+- Danh mục lỗi chuẩn và Exception framework (Phase 10) hoạt động tốt.
 
 ## 4. Setup
 
-* Tạo module ERP/WMS legacy contract
-* Cấu hình env an toàn
-* Seed permission/menu
-
 ### Cấu trúc module đề xuất
 
-```text
-backend/modules/erp_wms_legacy_contract/
-frontend/features/erp_wms_legacy_contract/
-planning/phases/phase_23_erp_wms_legacy_contract.md
-```
+- Backend module: `backend/modules/erp_integration/` (chứa Controllers, Mapping Services, Import/Export Engine)
+- Frontend feature: `frontend/features/erp_integration/`
 
 ### Permission seed đề xuất
 
-* erp_wms_legacy_contract.read
-* erp_wms_legacy_contract.create
-* erp_wms_legacy_contract.update
-* erp_wms_legacy_contract.approve
-* erp_wms_legacy_contract.export
-
-Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
+- `integration.view`: Xem log tích hợp và trạng thái đồng bộ đơn hàng.
+- `integration.import`: Thực hiện import dữ liệu thủ công từ file Excel.
+- `integration.export`: Xuất dữ liệu tồn kho, danh mục để đồng bộ thủ công.
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `IntegrationPartners` | Đối tác tích hợp | Code,type,authMode |
-| `IntegrationMessages` | Message log | Direction,status,idempotencyKey |
-| `ImportJobs` | Import batch | Preview,commit,rollbackReport |
-| `ExportJobs` | Export batch | Type,status,fileRef |
+### Bảng ghi log tin nhắn tích hợp (`IntegrationMessages`)
 
-### Chuẩn database áp dụng
-
-* Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
-* Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
-* Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
-* Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
-
-### Transaction boundary
-
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
+| Tên cột | Kiểu dữ liệu | Nullable | Ràng buộc chính | Ý nghĩa |
+|---|---|---|---|---|
+| `id` | uuid | No | Primary Key | ID log |
+| `tenantId` | varchar(50) | No | FK | Định danh tenant |
+| `idempotencyKey`| varchar(100) | No | Unique per tenant | Khóa chống trùng |
+| `payloadHash` | varchar(64) | No | | Hash SHA-256 của payload body |
+| `externalSystem`| varchar(50) | No | | Tên hệ thống gửi (ví dụ: `SAP`) |
+| `direction` | varchar(10) | No | | Chiều tin nhắn: `inbound`, `outbound` |
+| `messageType` | varchar(50) | No | | Loại tin: `purchaseOrder`, `salesOrder`, `stockUpdate` |
+| `payload` | text | No | | JSON payload chi tiết |
+| `status` | varchar(20) | No | | Trạng thái: `success`, `failed`, `pending_retry` |
+| `errorMessage` | text | Yes | | Chi tiết lỗi hệ thống |
+| `traceId` | varchar(50) | No | Index | Trace ID của request |
+| `createdAt` | timestamp | No | | Thời gian ghi nhận |
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `POST /api/integration/inbound-orders` | Nhận phiếu nhập | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/integration/outbound-orders` | Nhận đơn xuất | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `GET /api/integration/inventory-balances` | Xuất tồn | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/import/{type}/preview` | Preview import | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/import/{id}/commit` | Commit | Có auth, validation, trace ID và response lỗi chuẩn. |
+### 6.1 Giao thức đồng bộ Đơn Nhập kho (`POST /api/integration/inbound-orders`)
+- **Yêu cầu:** Header `Idempotency-Key` bắt buộc.
+- **Request payload:** Xem mẫu chi tiết tại [erp_mock_payloads.md](file:///d:/1_Project/48_Nexustock/planning/enterprise/erp_mock_payloads.md#L23-L45).
+- **Quy tắc xử lý:**
+  1. Tính hash SHA-256 của JSON body. Đối chiếu `idempotencyKey` trong bảng `IntegrationMessages`.
+  2. Nếu trùng key và trùng hash: Trả về kết quả đã xử lý trước đó (HTTP 200).
+  3. Nếu trùng key nhưng khác hash: Trả lỗi `409 Conflict` (idempotency key đã dùng cho dữ liệu khác).
+  4. Nếu là key mới: Validate định dạng, ánh xạ mã sản phẩm từ hệ thống cũ sang mã của Nexustock. Nếu hợp lệ, lưu DB và trả về `201 Created`.
 
-### Quy chuẩn API
-
-* Request/response dùng camelCase.
-* Mutation API bắt buộc auth và permission.
-* Response lỗi chuẩn gồm `errorCode`, `message`, `details`, `traceId`.
-* Query API có pagination mặc định và max page size.
-* Command API validate input tại boundary trước khi vào domain logic.
-* Không trả dữ liệu tenant khác, kể cả khi biết id.
-
-### Service layer
-
-* Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
+### 6.2 API Import Wizard (Preview & Commit)
+- **POST `/api/import/{type}/preview`**: Nhận file Excel, chạy qua bộ lọc validation, trả về danh sách dòng lỗi mà không ghi DB.
+- **POST `/api/import/{importJobId}/commit`**: Chỉ khi 100% dòng trong Preview hợp lệ, cho phép gửi lệnh Commit để ghi nhận dữ liệu chính thức vào DB dưới một Database Transaction duy nhất.
 
 ## 7. Frontend/RF/mobile
 
-| Màn hình/Control | Mục đích | Yêu cầu UX |
-|---|---|---|
-| Integration dashboard | Log đồng bộ | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Import wizard | Preview/commit | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Export center | Tải file | Có loading, empty, error, filter, pagination và quyền theo action. |
-
-### Chuẩn UI áp dụng
-
-* UI text dùng Sentence case.
-* Không dùng inline style.
-* Tách CSS/JS riêng nếu là web truyền thống; với SPA dùng component/style module nhất quán.
-* Mọi action nguy hiểm có confirm rõ ràng.
-* Mọi màn hình có loading, empty, error, unauthorized state.
-* Bảng dữ liệu có filter, pagination và trạng thái no result.
-* RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
-
-### State cần hiển thị
-
-* Draft/open/in progress/completed/cancelled nếu phase có workflow.
-* Locked/blocked/exception nếu thao tác bị chặn.
-* Last updated và actor cho dữ liệu quan trọng.
-* Trace ID hoặc reference ID khi cần hỗ trợ vận hành.
+- **Giao diện Import Wizard:** Gồm 3 bước:
+  1. Chọn và tải tệp tin (Excel/CSV).
+  2. Xem trước dữ liệu (Preview): Dòng lỗi được tô màu đỏ và hiển thị nguyên nhân lỗi (ví dụ: "Mã Item không tồn tại", "Số lượng không được âm").
+  3. Bấm nút "Lưu vào hệ thống" (chỉ kích hoạt khi không còn lỗi).
+- **Dashboard giám sát tích hợp:** Hiển thị danh sách các tin nhắn tích hợp gần nhất, hỗ trợ lọc theo trạng thái (Thành công, Thất bại) và tìm kiếm theo `traceId` hoặc mã đơn hàng ERP.
 
 ## 8. Execution flow
 
-1. External sends message
-2. Validate contract
-3. Map master data
-4. Commit
-5. Return result
-6. Emit event
+### Quy trình Nhập dữ liệu 2 bước (Import Preview & Commit Flow)
 
-### Flow guardrails
+```mermaid
+sequenceDiagram
+    participant User as Thủ kho / Admin
+    participant UI as Web UI
+    participant API as Web API Backend
+    participant DB as PostgreSQL Database
 
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+    User->>UI: 1. Upload File Excel
+    UI->>API: 2. POST /api/import/items/preview
+    API->>API: 3. Parse File & Run Validation In-Memory
+    API-->>UI: 4. Return Validation Report (Green/Red Rows)
+    Note over UI: User corrects errors if any
+    User->>UI: 5. Click "Commit Import"
+    UI->>API: 6. POST /api/import/items/{jobId}/commit
+    API->>DB: 7. Insert Rows in single ACID Transaction
+    DB-->>API: 8. Transaction Committed
+    API-->>UI: 9. Show Success Notification
+```
 
 ## 9. Validation & business rules
 
-* Idempotency bắt buộc
-* Contract versioned
-* Invalid mapping không commit
-
-### Validation nền bắt buộc
-
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
-* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
-* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
-* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
+- **Contract Versioning Policy:** API endpoint hỗ trợ header `X-Contract-Version` (hoặc prefix URL như `/api/v1/...`). Nếu phiên bản hợp đồng không khớp, trả lỗi `400 Bad Request` yêu cầu nâng cấp adapter.
+- **Ánh xạ bắt buộc (Strict Mapping):** Nếu mã hàng trong file ERP gửi sang không tìm thấy trong bảng mapping alias của WMS, hệ thống chặn xử lý và trả về lỗi `mapping.unresolvedItemCode`.
 
 ## 10. Exception handling
 
-* Payload sai
-* Duplicate
-* Missing master data
-
-### Mapping lỗi chuẩn
-
-| Nhóm lỗi | Hành vi hệ thống |
-|---|---|
-| Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit nếu cần |
-| Dữ liệu stale | Trả conflict, yêu cầu reload |
-| Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
-| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
-| Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
-
-### Nguyên tắc exception
-
-* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
-* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
-* Không nuốt lỗi âm thầm.
-* Mọi override phải có reason và audit.
+| Nhóm lỗi | Nguyên nhân | Xử lý |
+|---|---|---|
+| Sai định dạng cột | File import thiếu cột bắt buộc hoặc đổi tên cột | Trả lỗi cấu hình file ngay bước preview, dừng parse dòng. |
+| Stale data | Trùng mã đơn đã hoàn tất nhập từ lâu | Trả lỗi `validation.orderAlreadyProcessed`. |
+| Trùng mã Idempotency | Gọi lại API do timeout mạng | Trả về response cũ để đảm bảo tính an toàn giao dịch. |
 
 ## 11. Observability
 
-* Integration failure KPI
-* Trace ID
-* Message log
-
-### Log và trace
-
-* Mỗi request có trace ID.
-* Command quan trọng ghi audit log.
-* Entity nghiệp vụ chính ghi activity timeline.
-* Job nền và integration event truyền trace ID khi liên quan flow gốc.
-* Log không chứa password, token, secret hoặc dữ liệu nhạy cảm không mask.
-
-### KPI đề xuất
-
-* Throughput theo ngày/ca/user nếu phase có thao tác vận hành.
-* Aging của task mở hoặc exception mở.
-* Tỷ lệ lỗi validation/rule block.
-* Tỷ lệ retry/failure nếu phase có tích hợp.
-* Độ chính xác tồn kho nếu phase ảnh hưởng inventory.
+- Ghi nhận mọi giao dịch import thủ công vào `AuditLogs` kèm file đính kèm.
+- KPI: Tỷ lệ import thành công trong lượt đầu, số tin nhắn lỗi tích hợp tồn đọng.
 
 ## 12. Test plan
 
-* Valid import
-* Duplicate idempotency
-* Invalid payload
-
-### Test matrix bắt buộc
-
-| Nhóm test | Nội dung |
-|---|---|
-| Unit | Rule nghiệp vụ, status transition, validation helper |
-| Integration | API + DB transaction + permission + concurrency |
-| E2E | Luồng người dùng chính từ UI/RF/mobile |
-| Negative | Sai quyền, sai trạng thái, dữ liệu stale, duplicate request |
-| Regression | Không phá phase trước và dependency downstream |
-
-### Dữ liệu test
-
-* Tenant demo.
-* User đủ quyền và user thiếu quyền.
-* Master data hợp lệ và master data inactive.
-* Bản ghi đang open/completed/cancelled để test transition.
-* Dữ liệu conflict/concurrency nếu phase ghi transaction.
+- **Unit Test:**
+  - Logic xác định trùng lặp Idempotency Key (trùng hash/khác hash).
+  - Logic parse file Excel lỗi dòng và gom lỗi báo cáo.
+- **Integration Test:**
+  - Gửi mock payload đơn PO từ ERP giả lập lên API tích hợp. Kiểm tra việc ánh xạ mã hàng hóa và ghi nhận tồn kho.
+  - Test rollback transaction khi dòng thứ 99 trong file Excel bị lỗi ghi DB.
 
 ## 13. Acceptance criteria
 
-* ERP/WMS cũ đồng bộ được order và inventory
-
-### Definition of done
-
-* Database migration chạy sạch trên database trống.
-* API chính có test integration pass.
-* UI/RF/mobile flow chính thao tác được end-to-end.
-* Audit/trace hoạt động cho command quan trọng.
-* Exception path chính được test.
-* README hoặc phase note đủ để executor tiếp theo hiểu dependency.
-* Không còn placeholder generic trong phần triển khai phase.
-
-## 14. Out of scope
-
-* EDI
-
-Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu phát hiện scope mới bắt buộc, cập nhật roadmap tổng trước khi triển khai.
-
-## 15. Dependencies
-
-* Stage 1-2 tùy integration
-
-### Downstream impact
-
-* Phase sau được phép dùng API/status/data contract của phase này.
-* Nếu đổi contract sau khi phase đã hoàn tất, phải cập nhật phase phụ thuộc.
-* Không đổi tên bảng/API đã được phase sau tham chiếu nếu không có migration plan.
-
-## 16. Maintenance notes
-
-* Tất cả tích hợp phải idempotent
-* Không để lỗi ngoại vi phá core transaction
-* Log phải mask secret
-
-### Maintenance contract
-
-* Giữ section tài liệu này đồng bộ với migration/API thực tế.
-* Khi thêm status mới, cập nhật validation, UI badge, test và exception mapping.
-* Khi thêm permission mới, cập nhật seed, UI visibility và API policy.
-* Khi thêm field bắt buộc, cập nhật import/export, DTO, validation và test data.
-
-## 17. Extension points
-
-* Thêm partner mới
-* Thêm adapter mới
-* Thêm dashboard nâng cao
-
-### Nguyên tắc mở rộng
-
-* Mở rộng bằng module hoặc service rõ ràng, không nhét logic vào controller.
-* Ưu tiên cấu hình/rule trước khi hardcode nghiệp vụ mới.
-* Không thêm dependency ngoài nếu standard library hoặc dependency hiện có xử lý đủ.
-* Feature nâng cao nên có permission hoặc feature flag riêng.
-
-## 18. Rollback notes
-
-* Disable integration partner/subscription
-* Replay sau khi fix
-* Rollback image nếu deployment lỗi
-
-### Rollback safety
-
-* Không xóa transaction đã phát sinh trong production.
-* Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
-* Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
-* Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
+- API tích hợp tiếp nhận đơn SO/PO từ ERP phản hồi thành công hoặc báo lỗi rõ ràng dưới 500ms.
+- Nhập tệp Excel lỗi không gây ghi đè rác vào database nhờ cơ chế Atomic Commit.

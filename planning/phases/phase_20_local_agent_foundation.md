@@ -1,306 +1,161 @@
-﻿# PHASE 20: Local Agent foundation
+# PHASE 20: Local Agent foundation
 
 ## 1. Mục tiêu
 
-Tạo Windows Local Agent kết nối Web UI với thiết bị cục bộ qua localhost WebSocket.
-
-Phase này thuộc stage **Enterprise integration** và phải tạo ra deliverable có thể kiểm thử độc lập. Nội dung phải đủ rõ để executor triển khai mà không cần suy đoán nghiệp vụ chính.
+Thiết lập Windows Local Agent chạy dưới dạng Windows Service, đóng vai trò làm cầu nối WebSocket cục bộ (`127.0.0.1:9000`) để kết nối Web UI (trình duyệt HTTPS) với các thiết bị ngoại vi vật lý (cân, máy in). Phase này phải tạo ra được nền tảng bảo mật gồm: cơ chế ghép cặp (Pairing Token), xác thực Origin, lưu trữ Token an toàn bằng DPAPI và quản lý phiên kết nối của trạm.
 
 ## 2. Phạm vi
 
-Tạo Windows Local Agent kết nối Web UI với thiết bị cục bộ qua localhost WebSocket.
-
 ### In scope
 
-* Tạo module Local Agent foundation
-* Cấu hình env an toàn
-* Seed permission/menu
+- Xây dựng phần mềm Windows Service Local Agent bằng .NET 8 Worker Service.
+- Triển khai WebSocket Server cục bộ trong Agent chỉ lắng nghe địa chỉ loopback `127.0.0.1:9000`.
+- Thiết lập cơ chế cấu hình Origin Allowlist bảo vệ kết nối từ trình duyệt.
+- Thiết lập quy trình ghép cặp (Pairing Flow) giữa Web UI và Local Agent thông qua mã OTP ghép cặp (One-Time Pairing Code).
+- Mã hóa và lưu trữ Token xác nhận ghép cặp cục bộ bằng Windows Data Protection API (DPAPI).
+- Tạo module trạm làm việc (Station) trên Web Admin để quản lý danh sách trạm và cho phép thu hồi quyền (Revoke Station) từ xa.
 
 ### Non-negotiable output
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
-* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
-* Có execution flow end-to-end.
-* Có validation, exception, observability và test plan.
+- Windows Service cài đặt và chạy thành công trên máy trạm Windows local.
+- WebSocket Server chặn toàn bộ kết nối không có Origin khớp allowlist hoặc không có Pairing Token hợp lệ.
+- Database lưu trữ thông tin trạm làm việc, mã token băm của trạm, và lịch sử kết nối.
+- API endpoint trên Backend để sinh Pairing Code, xác thực ghép cặp, và cập nhật Heartbeat trạm.
 
 ## 3. Điều kiện đầu vào
 
-Core WMS ổn định và có dữ liệu để tích hợp.
-
 ### Readiness checklist
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
-* Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
+- Khung bảo mật Identity và RBAC (Phase 03) đã sẵn sàng.
+- Web UI App Shell (Phase 01) hoạt động tốt.
+- Quyền `local_agent.manage` được gán cho vai trò Admin hệ thống.
 
 ## 4. Setup
 
-* Tạo module Local Agent foundation
-* Cấu hình env an toàn
-* Seed permission/menu
-
 ### Cấu trúc module đề xuất
 
-```text
-backend/modules/local_agent_foundation/
-frontend/features/local_agent_foundation/
-planning/phases/phase_20_local_agent_foundation.md
-```
+- Backend module: `backend/modules/local_agent_foundation/`
+- Local Agent source: `local-agent/Nexustock.LocalAgent/` (chứa Windows Service, WebSocket Server, DPAPI wrapper)
+- Frontend module: `frontend/features/local_agent_foundation/`
 
 ### Permission seed đề xuất
 
-* local_agent_foundation.read
-* local_agent_foundation.create
-* local_agent_foundation.update
-* local_agent_foundation.approve
-* local_agent_foundation.export
-
-Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
+- `local_agent.view`: Xem trạng thái các trạm làm việc và thiết bị.
+- `local_agent.pair`: Thực hiện ghép cặp trạm mới.
+- `local_agent.revoke`: Thu hồi quyền truy cập của một trạm làm việc.
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `AgentStations` | Trạm thiết bị | StationCode, machineName, status |
-| `DeviceStatuses` | Trạng thái thiết bị | DeviceType, heartbeat, lastError |
+### Bảng dữ liệu trạm làm việc (`AgentStations`)
 
-### Chuẩn database áp dụng
+| Tên cột | Kiểu dữ liệu | Nullable | Ràng buộc chính | Ý nghĩa |
+|---|---|---|---|---|
+| `id` | uuid | No | Primary Key | ID trạm |
+| `tenantId` | varchar(50) | No | FK | Định danh tenant |
+| `stationCode` | varchar(50) | No | Unique per tenant | Mã trạm (ví dụ: `STATION-PACK-01`) |
+| `name` | varchar(100) | No | | Tên trạm làm việc |
+| `tokenHash` | varchar(256) | No | | Chuỗi băm SHA-256 của AgentToken dùng để auth |
+| `status` | varchar(30) | No | | Trạng thái trạm: `active`, `revoked` |
+| `machineName` | varchar(100) | Yes | | Tên máy tính Windows cài đặt agent |
+| `createdAt` | timestamp | No | | Thời gian tạo |
+| `updatedAt` | timestamp | Yes | | Thời gian cập nhật gần nhất |
 
-* Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
-* Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
-* Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
-* Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
+### Bảng trạng thái thiết bị ngoại vi (`DeviceStatuses`)
 
-### Transaction boundary
-
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
+| Tên cột | Kiểu dữ liệu | Nullable | Ràng buộc chính | Ý nghĩa |
+|---|---|---|---|---|
+| `id` | uuid | No | Primary Key | ID dòng |
+| `tenantId` | varchar(50) | No | FK | Định danh tenant |
+| `stationId` | uuid | No | FK | Liên kết trạm |
+| `deviceId` | varchar(50) | No | Unique per station | Định danh thiết bị (ví dụ: `scale_01`) |
+| `deviceType` | varchar(30) | No | | Loại thiết bị: `scaleCom`, `zebraZpl`, `tscTspl` |
+| `connectionState`| varchar(20) | No | | Trạng thái kết nối: `connected`, `disconnected`, `error` |
+| `lastHeartbeatAt`| timestamp | No | | Heartbeat gần nhất từ Agent gửi lên |
+| `lastErrorMessage`| text | Yes | | Lỗi gần nhất nếu có |
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `GET http://localhost:9000/health` | Health agent | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `WS ws://localhost:9000` | Realtime device messages | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/agent/stations/heartbeat` | Ghi heartbeat server | Có auth, validation, trace ID và response lỗi chuẩn. |
+### 6.1 API sinh mã ghép cặp (Pairing Code generation)
+- **Method & Path:** `POST /api/agent/stations/pairing-code`
+- **Permission:** `local_agent.pair`
+- **Request:** `{ "stationCode": "STATION-PACK-01", "name": "Bàn đóng gói số 1" }`
+- **Response (Success):** `{ "pairingCode": "887321", "expiresAt": "2026-07-01T09:12:15Z" }`
+- *Ghi chú:* Mã ghép cặp gồm 6 chữ số ngẫu nhiên, lưu vào Redis cache hoặc DB với TTL = 3 phút.
 
-### Quy chuẩn API
+### 6.2 API xác thực ghép cặp từ Local Agent (Pairing confirmation)
+- **Method & Path:** `POST /api/agent/stations/confirm-pair`
+- **Auth:** Public API (xác thực qua Pairing Code).
+- **Request:** `{ "stationCode": "STATION-PACK-01", "pairingCode": "887321", "machineName": "DESKTOP-PACK-01" }`
+- **Response (Success):** `{ "stationId": "uuid-1234", "agentToken": "tok_sec_abc123xyz" }`
+- *Ghi chú:* Tạo AgentToken ngẫu nhiên có độ dài entropy lớn. Lưu băm SHA-256 của AgentToken vào `tokenHash` trong bảng `AgentStations`.
 
-* Request/response dùng camelCase.
-* Mutation API bắt buộc auth và permission.
-* Response lỗi chuẩn gồm `errorCode`, `message`, `details`, `traceId`.
-* Query API có pagination mặc định và max page size.
-* Command API validate input tại boundary trước khi vào domain logic.
-* Không trả dữ liệu tenant khác, kể cả khi biết id.
-
-### Service layer
-
-* Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
+### 6.3 API Heartbeat trạm làm việc
+- **Method & Path:** `POST /api/agent/stations/{stationId}/heartbeat`
+- **Auth:** Header `X-Agent-Token` chứa AgentToken bản rõ.
+- **Request:** `{ "devices": [ { "deviceId": "scale_01", "deviceType": "scaleCom", "connectionState": "connected" } ] }`
+- **Response (Success):** `{ "status": "active" }` (Nếu trạm bị đánh dấu `revoked`, API trả lỗi 403 buộc Agent tự reset cấu hình).
 
 ## 7. Frontend/RF/mobile
 
-| Màn hình/Control | Mục đích | Yêu cầu UX |
-|---|---|---|
-| Agent status widget | Trạng thái agent | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Station setup | Cấu hình trạm | Có loading, empty, error, filter, pagination và quyền theo action. |
-
-### Chuẩn UI áp dụng
-
-* UI text dùng Sentence case.
-* Không dùng inline style.
-* Tách CSS/JS riêng nếu là web truyền thống; với SPA dùng component/style module nhất quán.
-* Mọi action nguy hiểm có confirm rõ ràng.
-* Mọi màn hình có loading, empty, error, unauthorized state.
-* Bảng dữ liệu có filter, pagination và trạng thái no result.
-* RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
-
-### State cần hiển thị
-
-* Draft/open/in progress/completed/cancelled nếu phase có workflow.
-* Locked/blocked/exception nếu thao tác bị chặn.
-* Last updated và actor cho dữ liệu quan trọng.
-* Trace ID hoặc reference ID khi cần hỗ trợ vận hành.
+### Màn hình thiết lập kết nối Trạm (Station Setup)
+- Web UI hiển thị widget kiểm tra trạng thái Local Agent. Nếu chưa có kết nối WebSocket cục bộ, Web UI hiển thị hướng dẫn tải phần mềm và nút "Tạo mã ghép cặp".
+- Trình duyệt chạy JS kết nối WebSocket cục bộ: `ws://127.0.0.1:9000/ws`. 
+- Nếu WebSocket cục bộ báo trạng thái `unpaired`, giao diện Web UI hiển thị hộp thoại điền OTP ghép cặp và gửi xuống Agent.
 
 ## 8. Execution flow
 
-1. Agent start
-2. Bind localhost
-3. UI connect WS
-4. Heartbeat
-5. Reconnect khi mất
+### Quy trình ghép cặp trạm lần đầu (First-time Pairing Flow)
 
-### Flow guardrails
+```mermaid
+sequenceDiagram
+    participant WebUI as Browser Web UI (HTTPS)
+    participant Agent as Local Agent (Service 127.0.0.1)
+    participant Cloud as Web API Backend (Cloud)
 
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+    WebUI->>Cloud: 1. Request Pairing Code (auth)
+    Cloud->>WebUI: 2. Return Code "887321" (valid for 3m)
+    WebUI->>Agent: 3. Send Pairing Code via WS (ws://127.0.0.1:9000/pair)
+    Agent->>Cloud: 4. Post Confirm Pairing (Code "887321", MachineName)
+    Cloud->>Cloud: 5. Verify Code & Create AgentRecord
+    Cloud->>Agent: 6. Return StationId & AgentToken
+    Agent->>Agent: 7. Encrypt AgentToken with DPAPI & Save to Registry/Config
+    Agent->>WebUI: 8. Handshake Success (WS connected & paired)
+```
 
 ## 9. Validation & business rules
 
-* Chỉ bind localhost
-* Không public port
-* Không lưu secret trong agent config
-
-### Validation nền bắt buộc
-
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
-* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
-* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
-* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
+### Luật an toàn Local Agent
+- **Chỉ bind Loopback:** WebSocket Server của Local Agent bắt buộc chỉ bind địa chỉ loopback `127.0.0.1`. Tuyệt đối cấm sử dụng `0.0.0.0` hoặc IP mạng LAN để ngăn chặn truy cập chéo thiết bị ngoại vi trong mạng nội bộ.
+- **Kiểm tra Origin Allowlist:** Bất kỳ kết nối WebSocket nào đến Agent phải được xác thực Header `Origin`. Nếu Origin không khớp cấu hình cho phép của WMS, kết nối bị đóng ngay lập tức với lỗi `403 Forbidden`.
+- **Lưu trữ DPAPI:** AgentToken lưu cục bộ tại máy Windows phải được mã hóa qua Windows Data Protection API (DPAPI) ở mức User scope hoặc Machine scope để chống đọc trộm file cấu hình phẳng.
 
 ## 10. Exception handling
 
-* Port busy
-* Agent stopped
-* WS disconnect
-
-### Mapping lỗi chuẩn
-
-| Nhóm lỗi | Hành vi hệ thống |
-|---|---|
-| Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit nếu cần |
-| Dữ liệu stale | Trả conflict, yêu cầu reload |
-| Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
-| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
-| Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
-
-### Nguyên tắc exception
-
-* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
-* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
-* Không nuốt lỗi âm thầm.
-* Mọi override phải có reason và audit.
+| Nhóm lỗi | Nguyên nhân | Xử lý |
+|---|---|---|
+| Cổng WebSocket bị chiếm | Cổng 9000 bị phần mềm khác chiếm dụng | Agent ghi log Event Viewer, thử bind cổng dự phòng (9001-9005) và báo cho Web UI qua URL parameters. |
+| Token bị thu hồi | Admin bấm Revoke trạm trên Web Admin | Heartbeat API trả về 403. Agent lập tức tự xóa Token đã lưu cục bộ bằng DPAPI, ngắt mọi kết nối WebSocket hiện có và chuyển trạng thái về `unpaired`. |
+| Sai Origin | Trang web lạ kết nối đến localhost:9000 | WebSocket Server từ chối kết nối trước khi thực hiện handshake. |
 
 ## 11. Observability
 
-* Agent heartbeat
-* Device status
-* Reconnect count
-
-### Log và trace
-
-* Mỗi request có trace ID.
-* Command quan trọng ghi audit log.
-* Entity nghiệp vụ chính ghi activity timeline.
-* Job nền và integration event truyền trace ID khi liên quan flow gốc.
-* Log không chứa password, token, secret hoặc dữ liệu nhạy cảm không mask.
-
-### KPI đề xuất
-
-* Throughput theo ngày/ca/user nếu phase có thao tác vận hành.
-* Aging của task mở hoặc exception mở.
-* Tỷ lệ lỗi validation/rule block.
-* Tỷ lệ retry/failure nếu phase có tích hợp.
-* Độ chính xác tồn kho nếu phase ảnh hưởng inventory.
+- **Event Viewer logs:** Ghi nhận lỗi khởi chạy dịch vụ, lỗi bind cổng, lỗi DPAPI giải mã thất bại.
+- **Heartbeat monitoring:** Định kỳ 30 giây, Web Backend kiểm tra các trạm làm việc. Nếu `lastHeartbeatAt` của thiết bị ngoại vi quá 2 phút, đổi trạng thái sang `offline` trên UI giám sát.
 
 ## 12. Test plan
 
-* Start/stop
-* Reconnect
-* Invalid message
-
-### Test matrix bắt buộc
-
-| Nhóm test | Nội dung |
-|---|---|
-| Unit | Rule nghiệp vụ, status transition, validation helper |
-| Integration | API + DB transaction + permission + concurrency |
-| E2E | Luồng người dùng chính từ UI/RF/mobile |
-| Negative | Sai quyền, sai trạng thái, dữ liệu stale, duplicate request |
-| Regression | Không phá phase trước và dependency downstream |
-
-### Dữ liệu test
-
-* Tenant demo.
-* User đủ quyền và user thiếu quyền.
-* Master data hợp lệ và master data inactive.
-* Bản ghi đang open/completed/cancelled để test transition.
-* Dữ liệu conflict/concurrency nếu phase ghi transaction.
+- **Unit Test:**
+  - Logic xác thực Origin khớp wildcard allowlist.
+  - Logic mã hóa/giải mã DPAPI wrapper.
+- **Integration Test:**
+  - Gọi API sinh mã ghép cặp, mô phỏng gửi mã đến Agent và xác thực trả về Token.
+  - Gọi API Heartbeat với Token hợp lệ và Token đã bị thu hồi (Verify 403).
+- **Negative Test:**
+  - Kết nối WebSocket từ một Origin lạ (ví dụ: `https://evil.com`) và xác minh kết nối bị từ chối ngay.
 
 ## 13. Acceptance criteria
 
-* UI nhận heartbeat agent ổn định
-
-### Definition of done
-
-* Database migration chạy sạch trên database trống.
-* API chính có test integration pass.
-* UI/RF/mobile flow chính thao tác được end-to-end.
-* Audit/trace hoạt động cho command quan trọng.
-* Exception path chính được test.
-* README hoặc phase note đủ để executor tiếp theo hiểu dependency.
-* Không còn placeholder generic trong phần triển khai phase.
-
-## 14. Out of scope
-
-* Tray UI
-
-Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu phát hiện scope mới bắt buộc, cập nhật roadmap tổng trước khi triển khai.
-
-## 15. Dependencies
-
-* Stage 1-2 tùy integration
-
-### Downstream impact
-
-* Phase sau được phép dùng API/status/data contract của phase này.
-* Nếu đổi contract sau khi phase đã hoàn tất, phải cập nhật phase phụ thuộc.
-* Không đổi tên bảng/API đã được phase sau tham chiếu nếu không có migration plan.
-
-## 16. Maintenance notes
-
-* Tất cả tích hợp phải idempotent
-* Không để lỗi ngoại vi phá core transaction
-* Log phải mask secret
-
-### Maintenance contract
-
-* Giữ section tài liệu này đồng bộ với migration/API thực tế.
-* Khi thêm status mới, cập nhật validation, UI badge, test và exception mapping.
-* Khi thêm permission mới, cập nhật seed, UI visibility và API policy.
-* Khi thêm field bắt buộc, cập nhật import/export, DTO, validation và test data.
-
-## 17. Extension points
-
-* Thêm partner mới
-* Thêm adapter mới
-* Thêm dashboard nâng cao
-
-### Nguyên tắc mở rộng
-
-* Mở rộng bằng module hoặc service rõ ràng, không nhét logic vào controller.
-* Ưu tiên cấu hình/rule trước khi hardcode nghiệp vụ mới.
-* Không thêm dependency ngoài nếu standard library hoặc dependency hiện có xử lý đủ.
-* Feature nâng cao nên có permission hoặc feature flag riêng.
-
-## 18. Rollback notes
-
-* Disable integration partner/subscription
-* Replay sau khi fix
-* Rollback image nếu deployment lỗi
-
-### Rollback safety
-
-* Không xóa transaction đã phát sinh trong production.
-* Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
-* Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
-* Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
+- Local Agent cài đặt thành công dưới dạng Windows Service và tự động khởi động cùng hệ điều hành.
+- Trình duyệt kết nối được WebSocket `ws://127.0.0.1:9000` và hoàn tất ghép cặp bằng mã 6 số.
+- Khi admin bấm "Revoke" trên Web UI, trạm làm việc bị đẩy ra ngay lập tức và Local Agent chuyển về trạng thái `unpaired`.
+- Không có bất kỳ file plain-text nào chứa AgentToken được lưu trên ổ đĩa máy trạm.

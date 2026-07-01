@@ -1,4 +1,4 @@
-﻿# Phase dependency graph
+# Phase dependency graph
 
 ## Tenancy decision
 

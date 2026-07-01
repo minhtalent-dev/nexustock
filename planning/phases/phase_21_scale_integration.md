@@ -1,305 +1,138 @@
-﻿# PHASE 21: Scale integration
+# PHASE 21: Scale integration
 
 ## 1. Mục tiêu
 
-Tích hợp cân điện tử qua COM và fallback cân tay có kiểm soát.
-
-Phase này thuộc stage **Enterprise integration** và phải tạo ra deliverable có thể kiểm thử độc lập. Nội dung phải đủ rõ để executor triển khai mà không cần suy đoán nghiệp vụ chính.
+Tích hợp thiết bị cân điện tử (kết nối qua cổng serial COM/RS-232) vào quy trình đóng gói Carton. Cung cấp cơ chế đọc cân tự động qua Local Agent, bộ lọc số liệu ổn định chống rung sai, và quy trình nhập cân tay dự phòng có kiểm duyệt chặt chẽ.
 
 ## 2. Phạm vi
 
-Tích hợp cân điện tử qua COM và fallback cân tay có kiểm soát.
-
 ### In scope
 
-* Tạo module Scale integration
-* Cấu hình env an toàn
-* Seed permission/menu
+- Xây dựng module đọc cổng COM nối tiếp trong Local Agent (sử dụng thư viện `System.IO.Ports`).
+- Thiết lập cấu hình tham số cổng nối tiếp: Port Name, Baud Rate, Parity, Data Bits, Stop Bits.
+- Triển khai thuật toán xác định trọng lượng ổn định (Stable Weight Algorithm) dựa trên cửa sổ thời gian (Stable Window) và biên độ rung sai cho phép.
+- Hỗ trợ các lệnh cơ bản: Zero (về 0) và Tare (trừ bì) gửi xuống cân hoặc xử lý giả lập phần mềm.
+- Xây dựng API và giao diện ghi đè cân tay (Manual Weight Override) khi cân vật lý bị hỏng, yêu cầu bắt buộc Reason Code và audit log.
 
 ### Non-negotiable output
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
-* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
-* Có execution flow end-to-end.
-* Có validation, exception, observability và test plan.
+- Local Agent đọc và phân tích (parse) được luồng dữ liệu thô (raw data stream) từ cân điện tử thành số thực.
+- Trình duyệt Web UI nhận được sự kiện thay đổi trọng lượng thời gian thực (`scale.weightChanged`) và trạng thái ổn định (`stable=true`).
+- Bản ghi database lưu lịch sử ghi đè cân tay và lý do đi kèm.
+- Không cho phép hoàn tất đóng gói nếu cân nặng chưa ổn định (trừ trường hợp ghi đè cân tay được duyệt).
 
 ## 3. Điều kiện đầu vào
 
-Core WMS ổn định và có dữ liệu để tích hợp.
-
 ### Readiness checklist
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
-* Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
+- Local Agent Foundation (Phase 20) đã cài đặt và ghép cặp thành công.
+- Module đóng gói Carton (Phase 07) đã có API / UI cơ bản.
 
 ## 4. Setup
 
-* Tạo module Scale integration
-* Cấu hình env an toàn
-* Seed permission/menu
-
 ### Cấu trúc module đề xuất
 
-```text
-backend/modules/scale_integration/
-frontend/features/scale_integration/
-planning/phases/phase_21_scale_integration.md
-```
+- Local Agent module: `local-agent/Nexustock.LocalAgent/Devices/Scale/`
+- Backend module: `backend/modules/scale_integration/`
+- Frontend module: `frontend/features/scale_integration/`
 
 ### Permission seed đề xuất
 
-* scale_integration.read
-* scale_integration.create
-* scale_integration.update
-* scale_integration.approve
-* scale_integration.export
-
-Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
+- `scale.override`: Cho phép thủ kho ghi đè nhập cân nặng bằng tay.
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `ScaleReadings` | Log cân | Raw, parsedWeight, stable, station |
-| `ManualWeightOverrides` | Ghi đè cân | Reason, approvedBy |
+### Bảng ghi nhật ký ghi đè cân tay (`ManualWeightOverrides`)
 
-### Chuẩn database áp dụng
-
-* Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
-* Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
-* Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
-* Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
-
-### Transaction boundary
-
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
+| Tên cột | Kiểu dữ liệu | Nullable | Ràng buộc chính | Ý nghĩa |
+|---|---|---|---|---|
+| `id` | uuid | No | Primary Key | ID bản ghi |
+| `tenantId` | varchar(50) | No | FK | Định danh tenant |
+| `warehouseId` | uuid | No | FK | Định danh kho |
+| `cartonNo` | varchar(50) | No | | Mã thùng carton liên quan |
+| `scaleWeight` | decimal(18,4)| Yes | | Trọng lượng đọc được từ cân tại thời điểm lỗi |
+| `manualWeight`| decimal(18,4)| No | | Trọng lượng do người dùng nhập tay |
+| `reasonCode` | varchar(30) | No | FK | Mã lý do (ví dụ: `DEVICE_ERR`, `JITTER_IN_WIND`) |
+| `note` | text | Yes | | Ghi chú thêm |
+| `createdBy` | varchar(50) | No | | Tài khoản thực hiện ghi đè |
+| `createdAt` | timestamp | No | | Thời gian ghi đè |
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `WS scale.weight` | Đẩy cân real-time | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/packing/weight/manual` | Nhập cân tay | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `GET /api/devices/scale/status` | Trạng thái cân | Có auth, validation, trace ID và response lỗi chuẩn. |
-
-### Quy chuẩn API
-
-* Request/response dùng camelCase.
-* Mutation API bắt buộc auth và permission.
-* Response lỗi chuẩn gồm `errorCode`, `message`, `details`, `traceId`.
-* Query API có pagination mặc định và max page size.
-* Command API validate input tại boundary trước khi vào domain logic.
-* Không trả dữ liệu tenant khác, kể cả khi biết id.
-
-### Service layer
-
-* Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
+### 6.1 API ghi nhận nhập cân tay
+- **Method & Path:** `POST /api/packing/weight/manual`
+- **Permission:** `scale.override`
+- **Request:**
+  ```json
+  {
+    "warehouseId": "wh_hn_01",
+    "cartonNo": "CTN-2026-0001",
+    "manualWeight": 15.45,
+    "reasonCode": "DEVICE_COMM_ERR",
+    "note": "Cáp cân COM3 bị lỏng đầu nối, thủ kho cân bằng cân độc lập"
+  }
+  ```
+- **Response (Success):** `{ "success": true, "overrideId": "uuid-9988" }`
+- *Ghi chú:* Ghi đè thành công sẽ cập nhật trọng lượng thùng carton và ghi đè cờ `weightSource` từ `scaleCom` sang `manual`.
 
 ## 7. Frontend/RF/mobile
 
-| Màn hình/Control | Mục đích | Yêu cầu UX |
-|---|---|---|
-| Packing weight panel | Hiển thị cân | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Manual override dialog | Nhập tay có reason | Có loading, empty, error, filter, pagination và quyền theo action. |
-
-### Chuẩn UI áp dụng
-
-* UI text dùng Sentence case.
-* Không dùng inline style.
-* Tách CSS/JS riêng nếu là web truyền thống; với SPA dùng component/style module nhất quán.
-* Mọi action nguy hiểm có confirm rõ ràng.
-* Mọi màn hình có loading, empty, error, unauthorized state.
-* Bảng dữ liệu có filter, pagination và trạng thái no result.
-* RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
-
-### State cần hiển thị
-
-* Draft/open/in progress/completed/cancelled nếu phase có workflow.
-* Locked/blocked/exception nếu thao tác bị chặn.
-* Last updated và actor cho dữ liệu quan trọng.
-* Trace ID hoặc reference ID khi cần hỗ trợ vận hành.
+### Giao diện panel cân đóng gói (Weighing Panel UI)
+- Hiển thị số cân lớn, màu xanh lá cây khi cân ổn định (`stable`), màu vàng khi số cân đang nhảy (`jitter/unstable`).
+- Cung cấp nút bấm "Trừ bì" (Tare) và "Về không" (Zero).
+- Khi có lỗi kết nối, hiển thị nút "Nhập cân tay". Bấm vào sẽ mở hộp thoại yêu cầu nhập số cân, chọn Reason Code (bắt buộc) từ danh mục đã seed.
 
 ## 8. Execution flow
 
-1. Cân gửi raw
-2. Agent parse
-3. UI nhận weight
-4. Operator xác nhận
-5. Lưu packing weight
+### Thuật toán xác định cân ổn định (Stable Reading Algorithm)
 
-### Flow guardrails
+1. Local Agent mở cổng serial (ví dụ: `COM3`, `9600,N,8,1`) và đọc luồng bytes.
+2. Cắt chuỗi raw data dựa trên ký tự kết thúc dòng (thường là `\r` hoặc `\n`).
+3. Dùng Regular Expression để lọc lấy phần số (ví dụ: chuỗi thô `ST,GS,+0012.35kg` -> parse thành `12.35`).
+4. **Bộ lọc ổn định (Stable Filter Window):**
+   - Agent duy trì một hàng đợi (Queue) chứa các giá trị đọc được trong khoảng thời gian `stableWindowMs` (mặc định 800ms).
+   - Nếu chênh lệch giữa giá trị lớn nhất và nhỏ nhất trong Queue nhỏ hơn hoặc bằng `stableTolerance` (ví dụ: 0.02 kg), và giá trị cân lớn hơn 0:
+     - Phát sự kiện WebSocket: `{ "weight": 12.35, "stable": true }`.
+     - Nếu vượt quá biên độ rung sai: Phát sự kiện: `{ "weight": 12.38, "stable": false }`.
 
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+```mermaid
+graph TD
+    A[Raw Serial Stream] --> B[Parse String to Decimal]
+    B --> C{Value > 0?}
+    C -- No --> D[Ignore / Emit Stable=False]
+    C -- Yes --> E[Push to Window Queue]
+    E --> F{Max - Min <= Tolerance?}
+    F -- Yes --> G[Emit stable=true]
+    F -- No --> H[Emit stable=false]
+```
 
 ## 9. Validation & business rules
 
-* Weight phải dương
-* Manual cần quyền/reason
-* Reject unstable reading
-
-### Validation nền bắt buộc
-
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
-* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
-* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
-* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
+- **Chặn hoàn tất đóng gói:** Trình duyệt chỉ cho phép gửi lệnh hoàn tất carton khi nhận được gói tin có `stable: true` từ WebSocket, trừ khi người dùng đã kích hoạt thành công quyền ghi đè cân tay `scale.override`.
+- **Reason Code bắt buộc:** Tác vụ ghi đè cân tay bắt buộc phải chọn mã lý do hợp lệ từ danh sách `ReasonCodes` (bảng dữ liệu nền Master Data) có loại `reasonType = 'SCALE_OVERRIDE'`.
 
 ## 10. Exception handling
 
-* COM disconnect
-* Parse lỗi
-* Weight dao động
-
-### Mapping lỗi chuẩn
-
-| Nhóm lỗi | Hành vi hệ thống |
-|---|---|
-| Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit nếu cần |
-| Dữ liệu stale | Trả conflict, yêu cầu reload |
-| Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
-| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
-| Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
-
-### Nguyên tắc exception
-
-* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
-* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
-* Không nuốt lỗi âm thầm.
-* Mọi override phải có reason và audit.
+- **Lỗi cổng COM đang bị mở (Port Busy):** Thử giải phóng và mở lại cổng COM. Nếu vẫn lỗi sau 3 lần, báo lỗi thiết bị về Web UI qua sự kiện `scale.connectionError` kèm mã lỗi cổng COM bị chiếm.
+- **Dữ liệu thô lỗi định dạng (Unparseable data):** Nếu không parse được số thực quá 10 dòng liên tiếp, đánh dấu thiết bị ngoại vi trạng thái `error` và gửi thông báo kiểm tra cáp/tần số baudrate.
 
 ## 11. Observability
 
-* Scale health
-* Manual override audit
-
-### Log và trace
-
-* Mỗi request có trace ID.
-* Command quan trọng ghi audit log.
-* Entity nghiệp vụ chính ghi activity timeline.
-* Job nền và integration event truyền trace ID khi liên quan flow gốc.
-* Log không chứa password, token, secret hoặc dữ liệu nhạy cảm không mask.
-
-### KPI đề xuất
-
-* Throughput theo ngày/ca/user nếu phase có thao tác vận hành.
-* Aging của task mở hoặc exception mở.
-* Tỷ lệ lỗi validation/rule block.
-* Tỷ lệ retry/failure nếu phase có tích hợp.
-* Độ chính xác tồn kho nếu phase ảnh hưởng inventory.
+- Ghi log audit hành vi ghi đè cân tay gồm: người thực hiện, thời gian, mã carton, số cân thực nhập, lý do.
+- KPI đề xuất: Tỷ lệ ghi đè cân tay trên tổng số lượt cân đóng gói (Reprint & Override KPI). Nếu tỷ lệ vượt quá 5% trong ngày, hệ thống gửi cảnh báo yêu cầu hiệu chuẩn lại cân.
 
 ## 12. Test plan
 
-* Valid raw
-* Disconnect fallback
-* Invalid weight
-
-### Test matrix bắt buộc
-
-| Nhóm test | Nội dung |
-|---|---|
-| Unit | Rule nghiệp vụ, status transition, validation helper |
-| Integration | API + DB transaction + permission + concurrency |
-| E2E | Luồng người dùng chính từ UI/RF/mobile |
-| Negative | Sai quyền, sai trạng thái, dữ liệu stale, duplicate request |
-| Regression | Không phá phase trước và dependency downstream |
-
-### Dữ liệu test
-
-* Tenant demo.
-* User đủ quyền và user thiếu quyền.
-* Master data hợp lệ và master data inactive.
-* Bản ghi đang open/completed/cancelled để test transition.
-* Dữ liệu conflict/concurrency nếu phase ghi transaction.
+- **Unit Test:**
+  - Viết test suite giả lập hàng đợi Queue số cân để kiểm thử thuật toán xác định ổn định.
+- **Integration Test:**
+  - API `/api/packing/weight/manual` từ chối request nếu gửi thiếu `reasonCode`.
+  - API / API UI chặn đóng gói carton khi cân chưa gửi cờ `stable`.
+- **Mock Test:**
+  - Sử dụng phần mềm giả lập cổng COM ảo (như com0com) để gửi luồng ký tự thô và kiểm chứng Local Agent nhận diện đúng.
 
 ## 13. Acceptance criteria
 
-* Packing nhận cân tự động và fallback an toàn
-
-### Definition of done
-
-* Database migration chạy sạch trên database trống.
-* API chính có test integration pass.
-* UI/RF/mobile flow chính thao tác được end-to-end.
-* Audit/trace hoạt động cho command quan trọng.
-* Exception path chính được test.
-* README hoặc phase note đủ để executor tiếp theo hiểu dependency.
-* Không còn placeholder generic trong phần triển khai phase.
-
-## 14. Out of scope
-
-* Multiple scales
-
-Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu phát hiện scope mới bắt buộc, cập nhật roadmap tổng trước khi triển khai.
-
-## 15. Dependencies
-
-* Stage 1-2 tùy integration
-
-### Downstream impact
-
-* Phase sau được phép dùng API/status/data contract của phase này.
-* Nếu đổi contract sau khi phase đã hoàn tất, phải cập nhật phase phụ thuộc.
-* Không đổi tên bảng/API đã được phase sau tham chiếu nếu không có migration plan.
-
-## 16. Maintenance notes
-
-* Tất cả tích hợp phải idempotent
-* Không để lỗi ngoại vi phá core transaction
-* Log phải mask secret
-
-### Maintenance contract
-
-* Giữ section tài liệu này đồng bộ với migration/API thực tế.
-* Khi thêm status mới, cập nhật validation, UI badge, test và exception mapping.
-* Khi thêm permission mới, cập nhật seed, UI visibility và API policy.
-* Khi thêm field bắt buộc, cập nhật import/export, DTO, validation và test data.
-
-## 17. Extension points
-
-* Thêm partner mới
-* Thêm adapter mới
-* Thêm dashboard nâng cao
-
-### Nguyên tắc mở rộng
-
-* Mở rộng bằng module hoặc service rõ ràng, không nhét logic vào controller.
-* Ưu tiên cấu hình/rule trước khi hardcode nghiệp vụ mới.
-* Không thêm dependency ngoài nếu standard library hoặc dependency hiện có xử lý đủ.
-* Feature nâng cao nên có permission hoặc feature flag riêng.
-
-## 18. Rollback notes
-
-* Disable integration partner/subscription
-* Replay sau khi fix
-* Rollback image nếu deployment lỗi
-
-### Rollback safety
-
-* Không xóa transaction đã phát sinh trong production.
-* Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
-* Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
-* Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
+- Local Agent kết nối và đọc ổn định số cân từ cân mô phỏng.
+- Số cân hiển thị tức thời trên Web UI đóng gói, không có độ trễ cảm nhận (>500ms).
+- Thao tác nhập cân tay ghi đầy đủ log audit vào bảng `ManualWeightOverrides` và được chặn quyền đúng.

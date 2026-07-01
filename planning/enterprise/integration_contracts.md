@@ -1,4 +1,4 @@
-﻿# Integration contracts
+# Integration contracts
 
 ## Local agent message envelope
 

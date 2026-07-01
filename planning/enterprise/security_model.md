@@ -1,4 +1,4 @@
-﻿# Security model
+# Security model
 
 ## Tenancy
 

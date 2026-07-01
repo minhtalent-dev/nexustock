@@ -1,307 +1,169 @@
-﻿# PHASE 22: Label printing
+# PHASE 22: Label printing
 
 ## 1. Mục tiêu
 
-In tem mã vạch qua ZPL/TSPL, print job và reprint audit.
-
-Phase này thuộc stage **Enterprise integration** và phải tạo ra deliverable có thể kiểm thử độc lập. Nội dung phải đủ rõ để executor triển khai mà không cần suy đoán nghiệp vụ chính.
+Xây dựng hệ thống in ấn tem nhãn mã vạch (Zebra ZPL, TSC TSPL) tích hợp. Cung cấp API gửi lệnh in dạng biến số (template variable model), quản lý hàng đợi in (Print Queue) trong Local Agent, và quy trình kiểm soát chặt tác vụ in lại (Reprint Audit) phòng chống dán sai tem nhãn.
 
 ## 2. Phạm vi
 
-In tem mã vạch qua ZPL/TSPL, print job và reprint audit.
-
 ### In scope
 
-* Tạo module Label printing
-* Cấu hình env an toàn
-* Seed permission/menu
+- Thiết lập quản lý mẫu tem nhãn (`LabelTemplates`) hỗ trợ mã thô ZPL (Zebra) và TSPL (TSC) chứa tham số động (ví dụ: `{{lotNo}}`, `{{itemCode}}`).
+- Xây dựng hàng đợi in ấn (Print Queue) trên Local Agent để nhận lệnh và in tuần tự.
+- Gửi lệnh in trực tiếp đến máy in USB local (RAW Print) hoặc máy in IP mạng qua cổng TCP raw socket (cổng 9100).
+- Validate dữ liệu đầu vào chống chèn mã độc (ZPL/TSPL injection).
+- Thiết lập quy trình in lại (Reprint Flow) bắt buộc liên kết với Print Job gốc và ghi nhận Reason Code.
 
 ### Non-negotiable output
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
-* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
-* Có execution flow end-to-end.
-* Có validation, exception, observability và test plan.
+- Thiết bị máy in nhận được lệnh in đúng định dạng thô (RAW data) và in ra tem nhãn sắc nét.
+- Mỗi hành động in lại (Reprint) sinh ra một bản ghi mới liên kết với mã `originalPrintJobId`.
+- Log audit in ghi nhận chi tiết: người thực hiện, lý do in lại, và trạm in.
 
 ## 3. Điều kiện đầu vào
 
-Core WMS ổn định và có dữ liệu để tích hợp.
-
 ### Readiness checklist
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
-* Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
+- Local Agent Foundation (Phase 20) đã hoạt động.
+- Cấu hình thiết bị trạm (Station) đã được định nghĩa.
 
 ## 4. Setup
 
-* Tạo module Label printing
-* Cấu hình env an toàn
-* Seed permission/menu
-
 ### Cấu trúc module đề xuất
 
-```text
-backend/modules/label_printing/
-frontend/features/label_printing/
-planning/phases/phase_22_label_printing.md
-```
+- Backend module: `backend/modules/label_printing/`
+- Frontend module: `frontend/features/label_printing/`
+- Local Agent Device: `local-agent/Nexustock.LocalAgent/Devices/Printer/`
 
 ### Permission seed đề xuất
 
-* label_printing.read
-* label_printing.create
-* label_printing.update
-* label_printing.approve
-* label_printing.export
-
-Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
+- `label_printing.print`: Thực hiện in tem nhãn.
+- `label_printing.reprint`: Thực hiện in lại tem nhãn đã in.
+- `label_printing.manage_templates`: Cập nhật mã ZPL/TSPL mẫu tem.
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `LabelTemplates` | Template tem | Type, language, active |
-| `PrintJobs` | Lệnh in | Status, payload, printer |
-| `PrintLogs` | Log in | Result, error, reprintReason |
+### Bảng cấu hình mẫu tem (`LabelTemplates`)
 
-### Chuẩn database áp dụng
+| Tên cột | Kiểu dữ liệu | Nullable | Ràng buộc chính | Ý nghĩa |
+|---|---|---|---|---|
+| `id` | uuid | No | Primary Key | ID mẫu tem |
+| `tenantId` | varchar(50) | No | FK | Định danh tenant |
+| `templateCode` | varchar(50) | No | Unique per tenant | Mã mẫu tem (ví dụ: `LOT_LABEL_4X3`) |
+| `name` | varchar(100) | No | | Tên mẫu tem nhãn |
+| `language` | varchar(10) | No | | Ngôn ngữ máy in: `zpl`, `tspl` |
+| `rawTemplate` | text | No | | Nội dung mã tem gốc chứa token động (ví dụ: `^FD{{lotNo}}^FS`) |
+| `isActive` | boolean | No | Mặc định: true | Trạng thái hoạt động |
 
-* Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
-* Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
-* Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
-* Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
+### Bảng hàng đợi và nhật ký lệnh in (`PrintJobs`)
 
-### Transaction boundary
-
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
+| Tên cột | Kiểu dữ liệu | Nullable | Ràng buộc chính | Ý nghĩa |
+|---|---|---|---|---|
+| `id` | uuid | No | Primary Key | ID lệnh in |
+| `tenantId` | varchar(50) | No | FK | Định danh tenant |
+| `stationId` | uuid | No | FK | Trạm yêu cầu in |
+| `printerCode` | varchar(50) | No | | Mã định danh máy in |
+| `templateId` | uuid | No | FK | Mẫu tem áp dụng |
+| `payloadJson` | text | No | | JSON chứa giá trị điền vào mẫu tem |
+| `status` | varchar(20) | No | | Trạng thái in: `queued`, `sending`, `printed`, `failed` |
+| `isReprint` | boolean | No | Mặc định: false | Cờ đánh dấu in lại |
+| `originalPrintJobId`| uuid | Yes | FK | Liên kết đến lệnh in đầu tiên nếu là in lại |
+| `reasonCode` | varchar(30) | Yes | FK | Mã lý do in lại |
+| `errorMessage` | text | Yes | | Lỗi in nếu trạng thái là failed |
+| `idempotencyKey`| varchar(100) | No | Unique per tenant | Khóa chống in lặp |
+| `createdBy` | varchar(50) | No | | Người bấm in |
+| `createdAt` | timestamp | No | | Thời gian in |
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `POST /api/printing/jobs` | Tạo print job | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/printing/jobs/{id}/reprint` | In lại | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `GET /api/printing/templates` | Template | Có auth, validation, trace ID và response lỗi chuẩn. |
+### 6.1 API gửi lệnh in mới
+- **Method & Path:** `POST /api/printing/jobs`
+- **Permission:** `label_printing.print`
+- **Request:**
+  ```json
+  {
+    "stationId": "uuid-station-01",
+    "printerCode": "PRINTER-LOT-01",
+    "templateCode": "LOT_LABEL_4X3",
+    "payload": {
+      "itemCode": "MILK-DRY-900",
+      "itemName": "Sua bot Optimum 900g",
+      "lotNo": "LOT-20260701-001",
+      "qty": "12.0",
+      "uomCode": "LON",
+      "expiryDate": "2027-07-01"
+    },
+    "idempotencyKey": "idem_prn_20260701_9982"
+  }
+  ```
+- **Response (Success):** `{ "printJobId": "uuid-job-8877", "status": "queued" }`
 
-### Quy chuẩn API
-
-* Request/response dùng camelCase.
-* Mutation API bắt buộc auth và permission.
-* Response lỗi chuẩn gồm `errorCode`, `message`, `details`, `traceId`.
-* Query API có pagination mặc định và max page size.
-* Command API validate input tại boundary trước khi vào domain logic.
-* Không trả dữ liệu tenant khác, kể cả khi biết id.
-
-### Service layer
-
-* Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
+### 6.2 API yêu cầu in lại (Reprint Job)
+- **Method & Path:** `POST /api/printing/jobs/{id}/reprint`
+- **Permission:** `label_printing.reprint`
+- **Request:**
+  ```json
+  {
+    "reasonCode": "REPRINT_LABEL_DAMAGED",
+    "note": "Tem bị rách góc trong quá trình dán vào pallet"
+  }
+  ```
+- **Response (Success):** `{ "newPrintJobId": "uuid-job-9900", "status": "queued" }`
+- *Ghi chú:* Backend nhân bản dữ liệu `payloadJson` từ job gốc sang job mới, set `isReprint = true`, gán `originalPrintJobId` và ghi nhận `reasonCode`.
 
 ## 7. Frontend/RF/mobile
 
-| Màn hình/Control | Mục đích | Yêu cầu UX |
-|---|---|---|
-| Print button | In tem | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Reprint dialog | Reason | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Printer status | Online/offline | Có loading, empty, error, filter, pagination và quyền theo action. |
-
-### Chuẩn UI áp dụng
-
-* UI text dùng Sentence case.
-* Không dùng inline style.
-* Tách CSS/JS riêng nếu là web truyền thống; với SPA dùng component/style module nhất quán.
-* Mọi action nguy hiểm có confirm rõ ràng.
-* Mọi màn hình có loading, empty, error, unauthorized state.
-* Bảng dữ liệu có filter, pagination và trạng thái no result.
-* RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
-
-### State cần hiển thị
-
-* Draft/open/in progress/completed/cancelled nếu phase có workflow.
-* Locked/blocked/exception nếu thao tác bị chặn.
-* Last updated và actor cho dữ liệu quan trọng.
-* Trace ID hoặc reference ID khi cần hỗ trợ vận hành.
+- Khi bấm in, giao diện hiển thị trạng thái Spinner. Nếu lỗi thiết bị xảy ra, đổi icon máy in sang màu đỏ cảnh báo.
+- Nút "In lại" (Reprint) chỉ hiển thị cho người dùng có quyền `label_printing.reprint`. Khi click, bắt buộc mở Dialog chọn lý do in lại (ví dụ: `Tem rách`, `Sai thông tin`, `Máy in kẹt giấy`) trước khi gửi lệnh.
 
 ## 8. Execution flow
 
-1. User request print
-2. Backend tạo job
-3. Agent gửi raw
-4. Printer in
-5. Log result
+### Quy trình điền giá trị mẫu tem nhãn an toàn (ZPL/TSPL Safe Interpolation)
 
-### Flow guardrails
+1. Backend nhận `payload` dạng key-value.
+2. **Lọc dữ liệu đầu vào (Sanitization):** Loại bỏ toàn bộ các ký tự điều khiển của ngôn ngữ máy in khỏi chuỗi input để tránh lỗi phá vỡ cú pháp nhãn.
+   - Với ZPL: Loại bỏ hoặc mã hóa ký tự điều khiển `^` và `~`.
+   - Với TSPL: Loại bỏ dấu nháy kép `"` và ký tự xuống dòng `\r\n`.
+3. Backend thay thế các token mẫu (ví dụ: `{{lotNo}}` -> `LOT-2026-01`).
+4. Gửi chuỗi mã RAW đã điền giá trị qua WebSocket cục bộ xuống Local Agent.
+5. Local Agent nhận gói tin, mở kết nối RAW đến cổng USB máy in (qua Win32 Spooler API) hoặc kết nối TCP Socket cổng 9100 để đẩy mã RAW đi.
 
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+```mermaid
+graph TD
+    A[Post Print Job] --> B[Sanitize Dynamic Input Values]
+    B --> C[Replace Tokens in Raw Template]
+    C --> D[Save PrintJob as queued]
+    D --> E[Send RAW commands to Local Agent via WS]
+    E --> F[Agent sends to USB/Network Printer via RAW Socket]
+    F --> G[Update PrintJob status to printed]
+```
 
 ## 9. Validation & business rules
 
-* Reprint cần reason
-* Template active
-* Không in nếu printer offline trừ queue mode
-
-### Validation nền bắt buộc
-
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
-* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
-* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
-* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
+- **Chống in lại vô hạn:** Một Print Job gốc chỉ cho phép in lại tối đa 3 lần. Nếu vượt quá, hệ thống yêu cầu phê duyệt nâng cao từ Supervisor.
+- **Idempotency Key:** API chặn in trùng lặp nếu nhận lại cùng một `idempotencyKey` trong vòng 10 phút.
 
 ## 10. Exception handling
 
-* Printer offline
-* Template lỗi
-* Timeout
-
-### Mapping lỗi chuẩn
-
-| Nhóm lỗi | Hành vi hệ thống |
-|---|---|
-| Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit nếu cần |
-| Dữ liệu stale | Trả conflict, yêu cầu reload |
-| Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
-| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
-| Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
-
-### Nguyên tắc exception
-
-* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
-* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
-* Không nuốt lỗi âm thầm.
-* Mọi override phải có reason và audit.
+| Nhóm lỗi | Nguyên nhân | Xử lý |
+|---|---|---|
+| Máy in kẹt giấy/Offline | Máy in hết giấy, lỏng cáp | Local Agent ghi nhận mã lỗi gửi qua WebSocket báo Web UI. Trạng thái Job cập nhật `failed`, hiển thị nút "Thử lại". |
+| Chèn mã độc tem nhãn | Input chứa ký tự điều khiển `^XA` | Bộ lọc Backend loại bỏ ký tự điều khiển, thay thế bằng khoảng trắng để giữ an toàn cú pháp. |
 
 ## 11. Observability
 
-* Print success rate
-* Reprint audit
-
-### Log và trace
-
-* Mỗi request có trace ID.
-* Command quan trọng ghi audit log.
-* Entity nghiệp vụ chính ghi activity timeline.
-* Job nền và integration event truyền trace ID khi liên quan flow gốc.
-* Log không chứa password, token, secret hoặc dữ liệu nhạy cảm không mask.
-
-### KPI đề xuất
-
-* Throughput theo ngày/ca/user nếu phase có thao tác vận hành.
-* Aging của task mở hoặc exception mở.
-* Tỷ lệ lỗi validation/rule block.
-* Tỷ lệ retry/failure nếu phase có tích hợp.
-* Độ chính xác tồn kho nếu phase ảnh hưởng inventory.
+- Ghi log audit Reprint: Ghi nhận ai yêu cầu in lại, in lại tem của đơn nào, lý do gì và tại máy trạm nào.
+- KPI: Tỷ lệ in lỗi, tỷ lệ in lại (Reprint Rate) theo ngày.
 
 ## 12. Test plan
 
-* Print Lot/LPN
-* Offline
-* Reprint
-
-### Test matrix bắt buộc
-
-| Nhóm test | Nội dung |
-|---|---|
-| Unit | Rule nghiệp vụ, status transition, validation helper |
-| Integration | API + DB transaction + permission + concurrency |
-| E2E | Luồng người dùng chính từ UI/RF/mobile |
-| Negative | Sai quyền, sai trạng thái, dữ liệu stale, duplicate request |
-| Regression | Không phá phase trước và dependency downstream |
-
-### Dữ liệu test
-
-* Tenant demo.
-* User đủ quyền và user thiếu quyền.
-* Master data hợp lệ và master data inactive.
-* Bản ghi đang open/completed/cancelled để test transition.
-* Dữ liệu conflict/concurrency nếu phase ghi transaction.
+- **Unit Test:**
+  - Logic thay thế token mẫu tem và bộ lọc ký tự đặc biệt (ZPL/TSPL injection prevention).
+- **Integration Test:**
+  - Gọi API reprint không có lý do -> Verify trả lỗi 400.
+  - Gọi API print trùng `idempotencyKey` -> Verify trả về ID cũ, không tạo dòng in mới.
 
 ## 13. Acceptance criteria
 
-* In tem đúng và truy vết được
-
-### Definition of done
-
-* Database migration chạy sạch trên database trống.
-* API chính có test integration pass.
-* UI/RF/mobile flow chính thao tác được end-to-end.
-* Audit/trace hoạt động cho command quan trọng.
-* Exception path chính được test.
-* README hoặc phase note đủ để executor tiếp theo hiểu dependency.
-* Không còn placeholder generic trong phần triển khai phase.
-
-## 14. Out of scope
-
-* Label designer
-
-Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu phát hiện scope mới bắt buộc, cập nhật roadmap tổng trước khi triển khai.
-
-## 15. Dependencies
-
-* Stage 1-2 tùy integration
-
-### Downstream impact
-
-* Phase sau được phép dùng API/status/data contract của phase này.
-* Nếu đổi contract sau khi phase đã hoàn tất, phải cập nhật phase phụ thuộc.
-* Không đổi tên bảng/API đã được phase sau tham chiếu nếu không có migration plan.
-
-## 16. Maintenance notes
-
-* Tất cả tích hợp phải idempotent
-* Không để lỗi ngoại vi phá core transaction
-* Log phải mask secret
-
-### Maintenance contract
-
-* Giữ section tài liệu này đồng bộ với migration/API thực tế.
-* Khi thêm status mới, cập nhật validation, UI badge, test và exception mapping.
-* Khi thêm permission mới, cập nhật seed, UI visibility và API policy.
-* Khi thêm field bắt buộc, cập nhật import/export, DTO, validation và test data.
-
-## 17. Extension points
-
-* Thêm partner mới
-* Thêm adapter mới
-* Thêm dashboard nâng cao
-
-### Nguyên tắc mở rộng
-
-* Mở rộng bằng module hoặc service rõ ràng, không nhét logic vào controller.
-* Ưu tiên cấu hình/rule trước khi hardcode nghiệp vụ mới.
-* Không thêm dependency ngoài nếu standard library hoặc dependency hiện có xử lý đủ.
-* Feature nâng cao nên có permission hoặc feature flag riêng.
-
-## 18. Rollback notes
-
-* Disable integration partner/subscription
-* Replay sau khi fix
-* Rollback image nếu deployment lỗi
-
-### Rollback safety
-
-* Không xóa transaction đã phát sinh trong production.
-* Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
-* Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
-* Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
+- Local Agent nhận lệnh và in nhãn ZPL/TSPL ra máy in ảo/thực đúng định dạng thiết kế.
+- Thao tác Reprint ghi nhận đầy đủ liên kết cha con và lý do in lại vào cơ sở dữ liệu.

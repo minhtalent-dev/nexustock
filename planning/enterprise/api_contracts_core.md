@@ -1,4 +1,4 @@
-﻿# API contracts core
+# API contracts core
 
 ## Shared rules
 
