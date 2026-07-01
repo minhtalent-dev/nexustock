@@ -2,9 +2,9 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 95%
-- **Đánh giá:** Đủ execution-ready cho skeleton dự án, Docker local, health check, convention và README first-run.
-- **Khi cần upgrade:** Bắt đầu code ngay; chỉ cập nhật khi tech stack hoặc repo convention đổi.
+- **Mức hiện tại:** 98%
+- **Đánh giá:** Đủ execution-ready cho monorepo skeleton, Modular Monolith backend, Docker local, Redis optional, Health Check UI, convention và README first-run.
+- **Khi cần upgrade:** Chỉ cập nhật khi tech stack, port map hoặc repo convention đổi.
 
 ## 1. Mục tiêu
 
@@ -14,14 +14,18 @@ Phase này thuộc stage **MVP vận hành chắc** và phải tạo ra delivera
 
 ## 2. Phạm vi
 
-Monorepo, Docker local, cấu trúc backend/frontend/local-agent, chuẩn env, README vận hành local, health check nền.
+Monorepo, Docker local, cấu trúc backend/frontend/local-agent, chuẩn env, README vận hành local, health check API và Health Check UI nền.
 
 ### In scope
 
-* Tạo cấu trúc backend, frontend, local-agent, planning, docs
-* Chuẩn hóa .env.example và appsettings template
-* Tạo Docker Compose local cho PostgreSQL và Redis tùy chọn
-* Thiết lập convention naming branch, migration, API route, permission
+* Tạo cấu trúc backend, frontend, local-agent, planning, docs.
+* Khởi tạo Backend ASP.NET Core 8 Web API theo Modular Monolith.
+* Tạo sẵn 5 module skeleton: Identity, MasterData, Inbound, Inventory, Outbound.
+* Khởi tạo Frontend Next.js App Router bằng TypeScript, Tailwind CSS, Shadcn UI và npm.
+* Chuẩn hóa `.env.example` và `appsettings` template.
+* Tạo Docker Compose local cho PostgreSQL và Redis optional.
+* Thiết lập convention naming branch, migration, API route, permission.
+* Tạo health endpoints `/health/live`, `/health/ready` và Health Check UI `/health-ui`.
 * Viết README first-run và troubleshooting.
 
 ### Non-negotiable output
@@ -38,51 +42,167 @@ Repository Nexustock đã sẵn sàng và roadmap được duyệt.
 
 ### Readiness checklist
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
-* Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
+* Phase phụ thuộc đã pass acceptance criteria nếu có.
+* Công cụ local đã sẵn sàng: Git, .NET 8 SDK, Node.js LTS, npm, Docker Desktop.
+* Port local quan trọng chưa bị chiếm hoặc đã có port override qua env.
+* Không có file secret thật trong thư mục dự án trước khi khởi tạo.
 
 ## 4. Setup
 
 * Tạo cấu trúc monorepo: `backend/`, `frontend/`, `local-agent/`, `planning/`, `docs/`.
-* Khởi tạo dự án Frontend Next.js SPA:
-  ```bash
-  npx -y create-next-app@latest frontend --typescript --tailwind --app --src-dir --eslint --import-alias "@/*"
-  cd frontend
-  npm install lucide-react axios clsx tailwind-merge
-  npx shadcn-ui@latest init
-  ```
+* Khởi tạo Backend ASP.NET Core 8 Web API và 5 module skeleton.
+* Khởi tạo Frontend Next.js SPA.
 * Chuẩn hóa `.env.example` và `appsettings` template.
-* Tạo Docker Compose local chạy PostgreSQL (dữ liệu chính) và Redis (cache backend - optional, recommended).
+* Tạo Docker Compose local chạy PostgreSQL và Redis optional.
 * Thiết lập convention naming branch, migration, API route, permission.
 * Viết README first-run và troubleshooting.
 
-### Cấu trúc module đề xuất
+### Technology baseline
+
+| Thành phần | Công nghệ / Quyết định | Ghi chú |
+|---|---|---|
+| Backend API | ASP.NET Core Web API (.NET 8) | Modular Monolith theo ADR 0001 |
+| Frontend | Next.js App Router + TypeScript | SPA style cho web app quản trị |
+| UI | Tailwind CSS + Shadcn UI | Không dùng inline style |
+| Package manager | npm | Chuẩn mặc định cho frontend |
+| Database | PostgreSQL | Database chính |
+| Cache | Redis optional | Bật bằng `ENABLE_REDIS=true` |
+| Local Agent | .NET 8 Worker Service | Phase 20 triển khai chi tiết |
+
+### Local port map
+
+| Service | Port mặc định | Env override |
+|---|---:|---|
+| Backend API | `5000` | `API_HTTP_PORT` |
+| Frontend | `3000` | `FRONTEND_PORT` |
+| PostgreSQL | `5432` | `POSTGRES_PORT` |
+| Redis | `6379` | `REDIS_PORT` |
+
+Nếu port bị chiếm, ưu tiên đổi qua `.env` thay vì sửa trực tiếp `docker-compose.yml`.
+
+### Cấu trúc monorepo đề xuất
 
 ```text
-backend/modules/project_foundation/
-frontend/features/project_foundation/
-planning/phases/phase_01_project_foundation.md
+backend/
+  Nexustock.sln
+  Nexustock.Api/
+  modules/
+    Nexustock.Modules.Identity/
+    Nexustock.Modules.MasterData/
+    Nexustock.Modules.Inbound/
+    Nexustock.Modules.Inventory/
+    Nexustock.Modules.Outbound/
+frontend/
+  src/
+    app/
+      health-ui/
+    components/
+    features/
+local-agent/
+planning/
+docs/
+```
+
+### Backend bootstrap commands
+
+```bash
+dotnet new sln -n Nexustock
+
+dotnet new webapi -n Nexustock.Api -o backend/Nexustock.Api
+
+dotnet new classlib -n Nexustock.Modules.Identity -o backend/modules/Nexustock.Modules.Identity
+dotnet new classlib -n Nexustock.Modules.MasterData -o backend/modules/Nexustock.Modules.MasterData
+dotnet new classlib -n Nexustock.Modules.Inbound -o backend/modules/Nexustock.Modules.Inbound
+dotnet new classlib -n Nexustock.Modules.Inventory -o backend/modules/Nexustock.Modules.Inventory
+dotnet new classlib -n Nexustock.Modules.Outbound -o backend/modules/Nexustock.Modules.Outbound
+
+dotnet sln Nexustock.sln add backend/Nexustock.Api/Nexustock.Api.csproj
+dotnet sln Nexustock.sln add backend/modules/Nexustock.Modules.Identity/Nexustock.Modules.Identity.csproj
+dotnet sln Nexustock.sln add backend/modules/Nexustock.Modules.MasterData/Nexustock.Modules.MasterData.csproj
+dotnet sln Nexustock.sln add backend/modules/Nexustock.Modules.Inbound/Nexustock.Modules.Inbound.csproj
+dotnet sln Nexustock.sln add backend/modules/Nexustock.Modules.Inventory/Nexustock.Modules.Inventory.csproj
+dotnet sln Nexustock.sln add backend/modules/Nexustock.Modules.Outbound/Nexustock.Modules.Outbound.csproj
+
+dotnet add backend/Nexustock.Api/Nexustock.Api.csproj reference backend/modules/Nexustock.Modules.Identity/Nexustock.Modules.Identity.csproj
+dotnet add backend/Nexustock.Api/Nexustock.Api.csproj reference backend/modules/Nexustock.Modules.MasterData/Nexustock.Modules.MasterData.csproj
+dotnet add backend/Nexustock.Api/Nexustock.Api.csproj reference backend/modules/Nexustock.Modules.Inbound/Nexustock.Modules.Inbound.csproj
+dotnet add backend/Nexustock.Api/Nexustock.Api.csproj reference backend/modules/Nexustock.Modules.Inventory/Nexustock.Modules.Inventory.csproj
+dotnet add backend/Nexustock.Api/Nexustock.Api.csproj reference backend/modules/Nexustock.Modules.Outbound/Nexustock.Modules.Outbound.csproj
+```
+
+### Frontend bootstrap commands
+
+```bash
+npx -y create-next-app@latest frontend --typescript --tailwind --app --src-dir --eslint --import-alias "@/*"
+cd frontend
+npm install lucide-react axios clsx tailwind-merge
+npx shadcn-ui@latest init
+```
+
+### Baseline commands
+
+| Mục tiêu | Command |
+|---|---|
+| Backend restore | `dotnet restore` |
+| Backend build | `dotnet build` |
+| Backend test | `dotnet test` |
+| Frontend install | `npm install` |
+| Frontend lint | `npm run lint` |
+| Frontend run | `npm run dev` |
+| Docker local | `docker compose up -d` |
+
+### .gitignore template
+
+```gitignore
+# Secrets
+.env
+.env.*
+!.env.example
+appsettings.Production.json
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+npm-debug.log*
+
+# Docker local data
+pgdata/
+redis-data/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
 ```
 
 ### Permission seed đề xuất
 
-* project_foundation.read
-* project_foundation.create
-* project_foundation.update
-* project_foundation.approve
-* project_foundation.export
+Phase 01 không seed permission nghiệp vụ.
 
-Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
+Nếu cần route bảo vệ cho Health Check UI nội bộ sau này, dùng permission riêng ở Phase 03:
+
+* system.health.read
+
+Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
 
 ## 5. Database
 
 | Thành phần dữ liệu | Mục đích | Ràng buộc chính |
 |---|---|---|
 | `nexustock_main` | Database chính local | Encoding UTF-8, timezone UTC, migration quản lý bằng backend |
-| `__MigrationHistory` | Lịch sử migration | Không sửa tay ngoài migration tool |
+| `__EFMigrationsHistory` | Lịch sử migration EF Core | Không sửa tay ngoài migration tool |
+| Redis database `0` | Cache optional | Chỉ dùng khi `ENABLE_REDIS=true` |
 
 ### Chuẩn database áp dụng
 
@@ -104,8 +224,32 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 | API | Mục đích | Ghi chú triển khai |
 |---|---|---|
-| `GET /health` | Kiểm tra API sống | Không yêu cầu auth |
-| `GET /health/db` | Kiểm tra DB connection | Không trả connection string |
+| `GET /health/live` | Kiểm tra tiến trình API đang sống | Không yêu cầu auth, không kiểm tra dependency ngoài |
+| `GET /health/ready` | Kiểm tra readiness | Ping PostgreSQL; ping Redis chỉ khi `ENABLE_REDIS=true` |
+| `GET /api/system/health-summary` | Trả dữ liệu cho `/health-ui` | Không trả connection string, secret hoặc cấu hình nhạy cảm |
+
+### Health response contract
+
+```json
+{
+  "status": "healthy",
+  "version": "0.1.0",
+  "environment": "Development",
+  "services": {
+    "api": "healthy",
+    "database": "healthy",
+    "redis": "disabled"
+  },
+  "traceId": "00-..."
+}
+```
+
+### Redis startup rule
+
+* Nếu `ENABLE_REDIS=false` hoặc thiếu env: không đăng ký Redis distributed cache, dùng in-memory cache dự phòng.
+* Nếu `ENABLE_REDIS=true`: bắt buộc validate `REDIS_CONNECTION_STRING` khi startup.
+* `/health/ready` chỉ fail vì Redis khi `ENABLE_REDIS=true` và Redis không kết nối được.
+* Log trạng thái Redis không được ghi connection string.
 
 ### Quy chuẩn API
 
@@ -123,12 +267,30 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 * Domain service xử lý rule nghiệp vụ thuần.
 * Repository/query tách riêng command và read model khi query phức tạp.
 
+### Modular Monolith boundaries
+
+* `Nexustock.Api` là composition root, chịu trách nhiệm cấu hình DI, middleware, routing và health checks.
+* Các module `Identity`, `MasterData`, `Inbound`, `Inventory`, `Outbound` là class library riêng.
+* Module không truy cập trực tiếp internal class của module khác.
+* Giao tiếp liên module ưu tiên qua interface công khai hoặc event nội bộ.
+* Không join bảng xuyên module ở tầng repository nếu chưa có query model được phê duyệt.
+
 ## 7. Frontend/RF/mobile
 
-| Màn hình/Control | Mục đích | Yêu cầu UX |
-|---|---|---|
-| App shell | Khung giao diện quản trị | Dark theme, sidebar, topbar, route placeholder |
-| Health page | Kiểm tra trạng thái dịch vụ | Hiển thị API/DB/Frontend status rõ ràng |
+| Màn hình/Control | Route | Mục đích | Yêu cầu UX |
+|---|---|---|---|
+| App shell | `/` | Khung giao diện quản trị | Dark theme, sidebar, topbar, route placeholder |
+| Health Check UI | `/health-ui` | Kiểm tra trạng thái API/DB/Redis | Hiển thị trạng thái rõ ràng, tự refresh thủ công, không lộ secret |
+
+### Health Check UI dashboard
+
+`/health-ui` phải hiển thị tối thiểu 3 thẻ trạng thái:
+
+| Thẻ | Trạng thái | Màu gợi ý | Nguồn dữ liệu |
+|---|---|---|---|
+| API Backend | Live / Offline | Green / Red | `GET /health/live` |
+| Database | Connected / Disconnected | Green / Red | `GET /health/ready` |
+| Redis Cache | Enabled / Disabled / Error | Green / Gray / Red | `GET /api/system/health-summary` |
 
 ### Chuẩn UI áp dụng
 
@@ -149,43 +311,68 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 8. Execution flow
 
-1. Clone repository
-2. Copy env template
-3. Chạy Docker local
-4. Chạy backend
-5. Chạy frontend
-6. Mở health page và xác nhận API/DB connected
+1. Clone repository.
+2. Copy env template.
+3. Kiểm tra port local theo Local port map.
+4. Chạy Docker local.
+5. Chạy backend.
+6. Chạy frontend.
+7. Mở `/health/live` và xác nhận API trả 200.
+8. Mở `/health/ready` và xác nhận DB connected, Redis disabled/healthy theo env.
+9. Mở `/health-ui` và xác nhận dashboard hiển thị trạng thái đúng.
+10. Chạy baseline commands và cập nhật README nếu phát hiện lỗi setup.
 
 ### Flow guardrails
 
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+* Không bỏ qua bước validate env.
+* Không commit secret thật.
+* Không đưa nghiệp vụ kho vào Phase 01.
+* Không tạo permission nghiệp vụ dư.
+* Không hardcode port nếu đã có env override.
 
 ## 9. Validation & business rules
 
-* Không commit secret
-* Không hardcode connection string
-* Không đưa business logic vào phase foundation
-* Mọi service đọc cấu hình từ env/appsettings
+* Không commit secret.
+* Không hardcode connection string.
+* Không đưa business logic vào phase foundation.
+* Mọi service đọc cấu hình từ env/appsettings.
+* Redis phải chạy optional: tắt Redis không được làm API startup fail.
+* Health endpoint không trả connection string, token, password hoặc thông tin nhạy cảm.
+* Module skeleton chỉ chứa contract và registration rỗng; không chứa nghiệp vụ thật.
 
 ### Validation nền bắt buộc
 
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
+* Validate tenant scope ở các phase có dữ liệu tenant.
+* Validate status transition ở các phase có workflow.
+* Validate permission theo action ở các phase có auth/RBAC.
 * Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
 * Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
 * Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
 
+### First-run verification
+
+| Kiểm tra | Kỳ vọng |
+|---|---|
+| `dotnet restore` | Pass |
+| `dotnet build` | Pass |
+| `dotnet test` | Pass hoặc không có test nhưng command chạy hợp lệ |
+| `npm install` | Pass |
+| `npm run lint` | Pass |
+| `npm run dev` | Frontend chạy ở port `3000` |
+| `docker compose up -d` | PostgreSQL chạy, Redis chạy nếu enabled |
+| `GET /health/live` | HTTP 200 |
+| `GET /health/ready` | HTTP 200 khi dependency sẵn sàng |
+| `/health-ui` | Hiển thị trạng thái API/DB/Redis đúng |
+
 ## 10. Exception handling
 
-* Port bị chiếm
-* Docker chưa chạy
-* DB chưa sẵn sàng
-* Frontend không gọi được API do env sai
+* Port bị chiếm.
+* Docker chưa chạy.
+* DB chưa sẵn sàng.
+* Redis disabled nhưng app vẫn cố connect.
+* Redis enabled nhưng thiếu connection string.
+* Frontend không gọi được API do env sai.
+* Health UI hiển thị sai trạng thái do API response contract lệch.
 
 ### Mapping lỗi chuẩn
 
@@ -207,9 +394,10 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 11. Observability
 
-* Startup log có environment, version, trace root
-* Health endpoint log lỗi dependency
-* Không log secret/env nhạy cảm
+* Startup log có environment, version, trace root.
+* Health endpoint log lỗi dependency.
+* Health UI hiển thị trace ID khi lỗi để hỗ trợ đối soát log.
+* Không log secret/env nhạy cảm.
 
 ### Log và trace
 
@@ -229,38 +417,45 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 12. Test plan
 
-* Backend health endpoint trả 200
-* DB health trả connected khi PostgreSQL chạy
-* Frontend render app shell
-* README first-run chạy được trên máy sạch
+* Backend `/health/live` trả 200.
+* Backend `/health/ready` trả connected khi PostgreSQL chạy.
+* Redis disabled không làm API fail startup.
+* Redis enabled nhưng offline làm `/health/ready` báo unhealthy rõ ràng.
+* Frontend render app shell.
+* Frontend render `/health-ui` và hiển thị đúng API/DB/Redis status.
+* README first-run chạy được trên máy sạch.
 
 ### Test matrix bắt buộc
 
 | Nhóm test | Nội dung |
 |---|---|
-| Unit | Rule nghiệp vụ, status transition, validation helper |
-| Integration | API + DB transaction + permission + concurrency |
-| E2E | Luồng người dùng chính từ UI/RF/mobile |
-| Negative | Sai quyền, sai trạng thái, dữ liệu stale, duplicate request |
-| Regression | Không phá phase trước và dependency downstream |
+| Unit | Env parser, Redis enable/disable branch, health summary mapping |
+| Integration | API + DB connection + health endpoints |
+| E2E | `/health-ui` gọi API và hiển thị status |
+| Negative | Port sai, DB offline, Redis enabled/offline, frontend env sai |
+| Regression | Không phá structure planning và downstream phase docs |
 
 ### Dữ liệu test
 
-* Tenant demo.
-* User đủ quyền và user thiếu quyền.
-* Master data hợp lệ và master data inactive.
-* Bản ghi đang open/completed/cancelled để test transition.
-* Dữ liệu conflict/concurrency nếu phase ghi transaction.
+* `.env.example` với Redis disabled.
+* `.env.example` với Redis enabled.
+* PostgreSQL container healthy.
+* PostgreSQL container stopped.
+* Redis container enabled/disabled.
 
 ## 13. Acceptance criteria
 
-* Dev mới chạy local trong một lượt theo README
-* API, DB, Frontend hoạt động
-* Không có secret trong repo
+* Dev mới chạy local trong một lượt theo README.
+* API, DB, Frontend hoạt động.
+* Không có secret trong repo.
+* `/health/live` và `/health/ready` hoạt động đúng theo NFR.
+* `/health-ui` hiển thị trạng thái API/DB/Redis rõ ràng.
+* 5 module skeleton backend được tạo sẵn và add vào solution.
+* Redis optional: tắt Redis vẫn chạy backend bình thường.
 
 ### Definition of done
 
-* Database migration chạy sạch trên database trống.
+* Database migration chạy sạch trên database trống hoặc Phase 01 ghi rõ chưa cần migration nghiệp vụ.
 * API chính có test integration pass.
 * UI/RF/mobile flow chính thao tác được end-to-end.
 * Audit/trace hoạt động cho command quan trọng.
@@ -270,28 +465,34 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 14. Out of scope
 
-* RBAC
-* Master data
-* Nghiệp vụ kho
-* CI/CD production
+* RBAC thật.
+* Master data thật.
+* Nghiệp vụ kho.
+* CI/CD production.
+* Local Agent device bridge.
+* Redis caching nghiệp vụ.
 
 Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu phát hiện scope mới bắt buộc, cập nhật roadmap tổng trước khi triển khai.
 
 ## 15. Dependencies
 
-* Không có
+* Không có phase phụ thuộc.
+* Phụ thuộc công cụ local: .NET 8 SDK, Node.js LTS, npm, Docker Desktop, PostgreSQL image, Redis image optional.
 
 ### Downstream impact
 
 * Phase sau được phép dùng API/status/data contract của phase này.
 * Nếu đổi contract sau khi phase đã hoàn tất, phải cập nhật phase phụ thuộc.
 * Không đổi tên bảng/API đã được phase sau tham chiếu nếu không có migration plan.
+* Các phase sau dùng 5 module skeleton làm boundary mặc định.
 
 ## 16. Maintenance notes
 
-* Mọi thay đổi cấu trúc project phải cập nhật README
-* Env mới phải thêm vào .env.example
-* Không đổi convention nếu chưa cập nhật toàn bộ phase sau
+* Mọi thay đổi cấu trúc project phải cập nhật README.
+* Env mới phải thêm vào `.env.example`.
+* Không đổi convention nếu chưa cập nhật toàn bộ phase sau.
+* Nếu thêm module mới, phải add vào solution, cập nhật README và architecture notes.
+* Nếu đổi health response contract, phải cập nhật `/health-ui` cùng lúc.
 
 ### Maintenance contract
 
@@ -302,9 +503,11 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 
 ## 17. Extension points
 
-* Thêm CI pipeline
-* Thêm container observability
-* Thêm seed data command
+* Thêm CI pipeline.
+* Thêm container observability.
+* Thêm seed data command.
+* Thêm architecture boundary tests cho module dependency.
+* Thêm `/health-ui` auto-refresh và uptime history.
 
 ### Nguyên tắc mở rộng
 
@@ -315,9 +518,11 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 
 ## 18. Rollback notes
 
-* Revert file cấu hình foundation
-* Xóa container/volume local nếu cần reset
-* Không ảnh hưởng dữ liệu production
+* Revert file cấu hình foundation.
+* Xóa container/volume local nếu cần reset.
+* Không ảnh hưởng dữ liệu production.
+* Nếu module skeleton sai tên, sửa trước khi phase sau tham chiếu.
+* Nếu `/health-ui` contract sai, sửa route/response trước khi triển khai monitoring.
 
 ### Rollback safety
 
@@ -325,8 +530,3 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
-
