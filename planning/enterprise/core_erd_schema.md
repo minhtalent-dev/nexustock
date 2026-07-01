@@ -29,6 +29,20 @@ erDiagram
 - All mutable tables use `rowVersion` or equivalent optimistic concurrency token.
 - Ledger tables are append-only.
 
+## Canonical naming policy
+
+Để tránh sự sai lệch giữa các tài liệu phase và code thực tế, tất cả các module phải tuân thủ nghiêm ngặt bảng tên chuẩn hóa sau:
+
+| Khái niệm nghiệp vụ | Tên bảng Canonical | Khóa ngoại tham chiếu | Ghi chú |
+|---|---|---|---|
+| Số dư tồn kho | `InventoryBalances` | `warehouseId`, `locationId`, `itemId`, `lotId`, `lpnId` | Nguồn dữ liệu kiểm tra khả dụng |
+| Giao dịch sổ cái kho | `InventoryTransactions` | `warehouseId`, `locationId`, `itemId`, `lotId`, `uomId` | Bảng append-only, ghi nhận lịch sử biến động |
+| Phân bổ giữ hàng | `AllocationReservations` | `shipmentLineId`, `inventoryBalanceId` | Trạng thái giữ hàng cho xuất kho |
+| Trạm Agent cục bộ | `AgentStations` | `tenantId` | Quản lý định danh trạm tại kho |
+| Trạng thái thiết bị | `DeviceStatuses` | `stationId` | Giám sát cân, máy in trực thuộc trạm |
+| Lịch sử in tem | `PrintJobs` | `stationId` | Nhật ký in tem nhãn (ZPL/TSPL) |
+| Tin nhắn tích hợp | `IntegrationMessages` | `tenantId` | Log nhận đơn ERP và webhook |
+
 ## Core tables
 
 | Table | Required fields | Main constraints | Indexes |

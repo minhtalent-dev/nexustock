@@ -18,8 +18,8 @@ Chúng tôi quyết định chọn thiết kế **Table-driven Rule Engine với
 1. **Cấu trúc Dữ liệu cấu hình Rule (`RuleDefinitions`):**
    - Lưu trữ các quy tắc dưới dạng bảng cấu hình trong database.
    - Các trường chính: `id`, `tenantId`, `ruleType` (PUTAWAY, ALLOCATION, REPLENISHMENT), `priority` (số nguyên, số nhỏ ưu tiên chạy trước), `ruleName`, `isActive` (flag bật/tắt rule).
-   - **Conditions (Điều kiện áp dụng):** Lưu dưới dạng JSON chứa danh sách các tiêu chí lọc (ví dụ: `itemId = 'ITEM-001'`, `itemGroup = 'PHARMA'`, `zoneType = 'COOL'`, `partnerId = 'SUPPLIER-X'`).
-   - **Actions (Hành động thực thi):** Lưu dưới dạng JSON chứa tham số cho chiến lược (ví dụ: `strategy = 'FEFO'`, `preferredZoneId = 'ZONE-A'`, `fallbackZoneId = 'ZONE-B'`, `allowPartial = false`).
+    - **Conditions (Điều kiện áp dụng):** Lưu dưới dạng JSON chứa danh sách các tiêu chí lọc (ví dụ: `itemId = 'ITEM-001'`, `itemGroup = 'PHARMA'`, `zoneType = 'COOL'`, `partnerId = 'SUPPLIER-X'`).
+    - **Actions (Hành động thực thi):** Lưu dưới dạng JSON chứa tham số cho chiến lược (ví dụ: `strategy = 'FEFO'`, `preferredZoneId = 'ZONE-A'`, `fallbackZoneId = 'ZONE-B'`, `allowPartial = true` - mặc định là true theo chỉ đạo của FOUNDER).
 
 2. **Cách thức Engine hoạt động (Execution Flow):**
    - Khi có sự kiện kích hoạt (ví dụ: yêu cầu phân bổ đơn hàng xuất):

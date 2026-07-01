@@ -1,120 +1,65 @@
-﻿# PHASE 30: Hardening & production acceptance
+# PHASE 30: Production Readiness Gate
 
 ## 1. Mục tiêu
 
-Kiểm thử tổng thể, hardening, UAT, cutover và rollback rehearsal trước go-live.
-
-Phase này thuộc stage **Optimization & automation** và phải tạo ra deliverable có thể kiểm thử độc lập. Nội dung phải đủ rõ để executor triển khai mà không cần suy đoán nghiệp vụ chính.
+Thiết lập Cổng kiểm soát sẵn sàng vận hành (Production Readiness Gate) cuối cùng. Phase này không phải là một module nghiệp vụ CRUD mới cho người dùng kho, mà là **quy trình kiểm soát chất lượng, UAT và kỹ thuật cắt chuyển hệ thống (Cutover/Rollback)** để chứng minh Nexustock đã sẵn sàng go-live an toàn dưới sự vận hành của **1 Developer chính**.
 
 ## 2. Phạm vi
 
-Kiểm thử tổng thể, hardening, UAT, cutover và rollback rehearsal trước go-live.
-
 ### In scope
 
-* Tạo module Hardening & production acceptance
-* Bật feature flag/permission
-* Chuẩn hóa KPI
+- **Diễn tập khôi phục & Cắt chuyển (Cutover & Rollback Rehearsal):** Viết tài liệu kịch bản cutover chi tiết từng giờ (Runbook) và thực hành khôi phục DB dự phòng từ bản backup trong vòng dưới 2 giờ (đáp ứng RTO).
+- **Hardening hệ thống (System Hardening):** 
+  - Khóa toàn bộ các cổng/service không cần thiết.
+  - Cấu hình chỉ cho phép Local Agent chạy WSS và chặn các trang web không thuộc WMS kết nối.
+  - Cài đặt Code Signing Certificate doanh nghiệp cho bộ cài MSIX của Local Agent.
+- **Nghiệm thu người dùng cuối (UAT Signoff):** Chạy và ký biên bản kiểm thử cho 4 kịch bản UAT cốt lõi (nhập hàng, QC, đóng gói + cân, lỗi in ấn).
+- **Tải trọng và An toàn:** Thực hiện smoke test tải đồng thời 50 RF scanners và rà soát lỗi bảo mật IDOR.
 
 ### Non-negotiable output
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
-* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
-* Có execution flow end-to-end.
-* Có validation, exception, observability và test plan.
+- Biên bản xác nhận UAT thành công (UAT Signoff Evidence).
+- Báo cáo diễn tập Rollback thành công trong môi trường Rehearsal (đảm bảo thời gian khôi phục < 2 giờ).
+- File cài đặt Local Agent đã được ký số (Signed MSIX Installer).
+- Màn hình dashboard giám sát hệ thống (Observability Dashboard) hoạt động, hiển thị đầy đủ Trace ID.
 
 ## 3. Điều kiện đầu vào
 
-Stage trước đã ổn định và có dữ liệu vận hành thực tế.
-
 ### Readiness checklist
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
-* Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
+- Tất cả 29 phase trước đó đã hoàn tất và vượt qua tiêu chí nghiệm thu tương ứng.
+- Không còn lỗi Critical hoặc High nào chưa được vá trong issue tracker.
+- Môi trường SAP sandbox hoạt động ổn định và sẵn sàng cho việc test liên thông dữ liệu.
 
-## 4. Setup
+## 4. Setup & Infrastructure Configuration
 
-* Tạo module Hardening & production acceptance
-* Bật feature flag/permission
-* Chuẩn hóa KPI
+Phase này tập trung vào cấu hình hạ tầng và cài đặt bảo mật cho cả máy chủ Cloud và máy chủ trạm local:
+- **Cloud/On-prem VM:** Thiết lập Docker Compose production profile, cấu hình SSL TLS 1.3 và Rate Limiting.
+- **Local Agent trạm:** Phân phối file cài đặt MSIX đã được ký số cho máy trạm thủ kho.
 
-### Cấu trúc module đề xuất
+## 5. Database & Configuration State
 
-```text
-backend/modules/hardening_production_acceptance/
-frontend/features/hardening_production_acceptance/
-planning/phases/phase_30_hardening_production_acceptance.md
-```
-
-### Permission seed đề xuất
-
-* hardening_production_acceptance.read
-* hardening_production_acceptance.create
-* hardening_production_acceptance.update
-* hardening_production_acceptance.approve
-* hardening_production_acceptance.export
-
-Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
-
-## 5. Database
+Không tạo bảng CRUD mới cho user. Sử dụng các bảng hệ thống để theo dõi quá trình nghiệm thu và checklist (chỉ dùng nội bộ cho Admin và DevOps):
 
 | Thành phần dữ liệu | Mục đích | Ràng buộc chính |
 |---|---|---|
-| `UatRuns` | Đợt UAT | Scope,status,signoff |
-| `CutoverChecklists` | Checklist go-live | Item,status,owner |
-| `IncidentDrills` | Diễn tập sự cố | Scenario,result |
+| `UatRuns` | Lưu lịch sử chạy các đợt UAT | ID, Người ký duyệt, Kết quả, Trace ID liên đới |
+| `CutoverLogs` | Ghi nhận mốc thời gian thực hiện cutover | Mã công việc, Thời gian bắt đầu, Kết thúc, Trạng thái |
+| `IncidentDrills` | Ghi nhận kết quả diễn tập sự cố (mất mạng, sập DB) | Kịch bản, Thời gian RTO thực tế, Người diễn tập |
 
-### Chuẩn database áp dụng
-
-* Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
-* Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
-* Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
-* Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
-
-### Transaction boundary
-
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
-
-## 6. Backend/API
+## 6. Backend/API hỗ trợ vận hành
 
 | API | Mục đích | Ghi chú triển khai |
 |---|---|---|
-| `GET /api/admin/readiness` | Readiness | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/uat/runs` | Tạo UAT run | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/cutover/checklist/{id}/complete` | Check item | Có auth, validation, trace ID và response lỗi chuẩn. |
+| `GET /api/admin/readiness` | Kiểm tra độ sẵn sàng của DB, Redis, SAP link | Chỉ dành cho Admin, kiểm tra toàn bộ kết nối. |
+| `POST /api/admin/cutover/freeze` | Khóa giao dịch ghi để backup DB trước cutover | Chỉ dành cho DevOps Admin có quyền hệ thống cao nhất. |
 
-### Quy chuẩn API
-
-* Request/response dùng camelCase.
-* Mutation API bắt buộc auth và permission.
-* Response lỗi chuẩn gồm `errorCode`, `message`, `details`, `traceId`.
-* Query API có pagination mặc định và max page size.
-* Command API validate input tại boundary trước khi vào domain logic.
-* Không trả dữ liệu tenant khác, kể cả khi biết id.
-
-### Service layer
-
-* Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
-
-## 7. Frontend/RF/mobile
+## 7. Frontend/RF/mobile support
 
 | Màn hình/Control | Mục đích | Yêu cầu UX |
 |---|---|---|
-| UAT checklist | Kịch bản nghiệm thu | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Readiness dashboard | Go/no-go | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Cutover board | Theo dõi checklist | Có loading, empty, error, filter, pagination và quyền theo action. |
+| System Readiness Dashboard | Admin theo dõi trạng thái các cổng kết nối và agent | Giao diện hiển thị màu xanh/đỏ cho các service kết nối, không cho phép mutation thường. |
+| Cutover Status Board | Theo dõi checklist cutover thời gian thực | View-only cho toàn đội dự án để biết mốc công việc đang chạy. |
 
 ### Chuẩn UI áp dụng
 

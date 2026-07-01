@@ -1,16 +1,15 @@
 # Measurable acceptance criteria
 
-## Standard
+## Tiêu chuẩn nghiệm thu chung (Standard Gates)
 
-Every phase must prove:
-
-- Functional result works end-to-end.
-- Data integrity invariant holds.
-- Permission and tenant isolation are enforced.
-- Audit or activity timeline exists for mutation.
-- Trace ID exists for support.
-- Main negative path is tested.
-- Rollback or disable path is documented.
+Tất cả các phase phát triển bắt buộc phải cung cấp bằng chứng nghiệm thu (Evidence) chứng minh:
+- **Functional result:** Kết quả chạy nghiệp vụ thành công trên giao diện UI/RF hoặc API.
+- **Data integrity:** Invariant dữ liệu đúng (ví dụ: tồn khả dụng không âm). Ghi nhận dòng Ledger tương ứng.
+- **Permission & Isolation:** Đã test phân quyền RBAC và cách ly multi-tenant tuyệt đối.
+- **Audit trail:** Lưu vết lịch sử thay đổi kèm actor, timestamp và lý do.
+- **Observability:** Có Trace ID đi kèm trong response lỗi và log nghiệp vụ.
+- **Rollback rehearsal:** Có kịch bản hạ cấp hoặc rollback cấu hình thành công.
+- **Evidence format:** Bằng chứng bắt buộc gồm logs (API/Agent), query SQL đối soát dữ liệu sau thao tác, và hình ảnh/video thao tác giao diện.
 
 ## Phase criteria
 

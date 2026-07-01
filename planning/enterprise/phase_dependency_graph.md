@@ -55,7 +55,7 @@ graph TD
     P11 --> P29["29 Task interleaving"]
     P18 --> P29
     P28 --> P29
-    P26 --> P30["30 Hardening & production acceptance"]
+    P26 --> P30["30 Readiness Gate"]
     P27 --> P30
     P29 --> P30
 ```

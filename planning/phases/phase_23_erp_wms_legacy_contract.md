@@ -107,8 +107,33 @@ sequenceDiagram
 
 ## 9. Validation & business rules
 
-- **Contract Versioning Policy:** API endpoint hỗ trợ header `X-Contract-Version` (hoặc prefix URL như `/api/v1/...`). Nếu phiên bản hợp đồng không khớp, trả lỗi `400 Bad Request` yêu cầu nâng cấp adapter.
-- **Ánh xạ bắt buộc (Strict Mapping):** Nếu mã hàng trong file ERP gửi sang không tìm thấy trong bảng mapping alias của WMS, hệ thống chặn xử lý và trả về lỗi `mapping.unresolvedItemCode`.
+### 9.1 Chính sách vòng đời phiên bản Hợp đồng (Contract Versioning Lifecycle)
+
+Hệ thống quản lý tích hợp API hỗ trợ 3 trạng thái phiên bản thông qua Header `X-Contract-Version`:
+- **`Supported` (Đang hoạt động):** Phiên bản hiện tại (ví dụ: `v1.1` dành cho SAP).
+- **`Deprecated` (Khuyến cáo ngưng):** Phiên bản cũ vẫn chạy nhưng ghi log cảnh báo và gửi email nhắc nâng cấp (ví dụ: `v1.0`).
+- **`Retired` (Bị loại bỏ):** Phiên bản không còn hỗ trợ, API trả lỗi ngay lập tức: `HTTP 400 - integration.contractVersionRetired`.
+
+### 9.2 Ma trận chống trùng lặp dữ liệu (Idempotency & Payload Hash Matrix)
+
+| Idempotency-Key | Payload Body Hash | Database Match | Hệ quả & Phản hồi từ WMS |
+|---|---|---|---|
+| Mới hoàn toàn | N/A | Không có | Tiếp nhận đơn, lưu log tích hợp, xử lý nghiệp vụ, trả `201 Created` |
+| Đã tồn tại | Khớp 100% | Có khớp | Trả lại HTTP Response cũ đã lưu trong log, không chạy lại nghiệp vụ (HTTP 200) |
+| Đã tồn tại | Khác biệt | Có khớp | Phát hiện giả mạo hoặc xung đột. Chặn xử lý, trả lỗi `HTTP 409 Conflict - integration.payloadHashMismatch` |
+| Rỗng/Thiếu | N/A | N/A | Từ chối xử lý, trả lỗi `HTTP 400 Bad Request - integration.idempotencyKeyRequired` |
+
+### 9.3 Quy tắc nhập dữ liệu 2 bước (Import Preview & Commit Invariants)
+
+- **Preview State Storage (Bộ nhớ tạm):**
+  - Khi người dùng upload file Excel, dữ liệu được parse thô, validate và lưu tạm vào Redis cache với TTL = 30 phút dưới dạng `import_job:{jobId}`. Không ghi dữ liệu tạm này vào các bảng nghiệp vụ chính để tránh rác DB.
+- **Atomic Batch Commit (Ghi nhận đồng loạt):**
+  - Khi người dùng xác nhận "Commit", hệ thống đọc lại Redis cache, mở một Database Transaction duy nhất để insert toàn bộ dữ liệu.
+  - Nếu bất kỳ dòng nào lỗi ghi (do database constraint vi phạm ở phút chót), rollback toàn bộ transaction và trả lỗi giao dịch nguyên khối.
+- **Mapping Error Taxonomy (Bảng phân loại lỗi ánh xạ):**
+  - `mapping.unresolvedItemCode`: Mã vật tư SAP chưa khai báo alias trong WMS.
+  - `mapping.unresolvedWarehouse`: Mã kho SAP chưa được ánh xạ.
+  - `mapping.unresolvedPartner`: Nhà cung cấp hoặc khách hàng không hợp lệ.
 
 ## 10. Exception handling
 
@@ -117,6 +142,8 @@ sequenceDiagram
 | Sai định dạng cột | File import thiếu cột bắt buộc hoặc đổi tên cột | Trả lỗi cấu hình file ngay bước preview, dừng parse dòng. |
 | Stale data | Trùng mã đơn đã hoàn tất nhập từ lâu | Trả lỗi `validation.orderAlreadyProcessed`. |
 | Trùng mã Idempotency | Gọi lại API do timeout mạng | Trả về response cũ để đảm bảo tính an toàn giao dịch. |
+| Lỗi hash payload | Gửi trùng key nhưng sửa đổi số lượng đơn | Trả lỗi `409 Conflict` để bảo vệ tính toàn vẹn dữ liệu. |
+| ERP Sandbox Down | Môi trường test của SAP bị lỗi | Trả lỗi `integration.externalGatewayTimeout` kèm traceId. |
 
 ## 11. Observability
 

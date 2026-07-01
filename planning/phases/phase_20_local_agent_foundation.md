@@ -99,7 +99,7 @@ Thiết lập Windows Local Agent chạy dưới dạng Windows Service, đóng 
 
 ### Màn hình thiết lập kết nối Trạm (Station Setup)
 - Web UI hiển thị widget kiểm tra trạng thái Local Agent. Nếu chưa có kết nối WebSocket cục bộ, Web UI hiển thị hướng dẫn tải phần mềm và nút "Tạo mã ghép cặp".
-- Trình duyệt chạy JS kết nối WebSocket cục bộ: `ws://127.0.0.1:9000/ws`. 
+- Trình duyệt chạy JS kết nối WebSocket cục bộ: `wss://127.0.0.1:9000/ws` (hoặc `ws://` chỉ trong môi trường dev). 
 - Nếu WebSocket cục bộ báo trạng thái `unpaired`, giao diện Web UI hiển thị hộp thoại điền OTP ghép cặp và gửi xuống Agent.
 
 ## 8. Execution flow
@@ -114,17 +114,28 @@ sequenceDiagram
 
     WebUI->>Cloud: 1. Request Pairing Code (auth)
     Cloud->>WebUI: 2. Return Code "887321" (valid for 3m)
-    WebUI->>Agent: 3. Send Pairing Code via WS (ws://127.0.0.1:9000/pair)
+    WebUI->>Agent: 3. Send Pairing Code via secure WS (wss://127.0.0.1:9000/pair)
     Agent->>Cloud: 4. Post Confirm Pairing (Code "887321", MachineName)
     Cloud->>Cloud: 5. Verify Code & Create AgentRecord
     Cloud->>Agent: 6. Return StationId & AgentToken
     Agent->>Agent: 7. Encrypt AgentToken with DPAPI & Save to Registry/Config
-    Agent->>WebUI: 8. Handshake Success (WS connected & paired)
+    Agent->>WebUI: 8. Handshake Success (WSS connected & paired)
 ```
 
 ## 9. Validation & business rules
 
 ### Luật an toàn Local Agent
+
+- **Mặc định HTTPS/WSS:** WebSocket Server của Local Agent bắt buộc sử dụng giao thức bảo mật `wss://127.0.0.1:9000` cho môi trường production để tránh bị các trình duyệt HTTPS chặn (Mixed Content). Cung cấp fallback `ws://127.0.0.1:9000` chỉ dành cho môi trường phát triển (development) cục bộ.
+- **Cấp và tin cậy chứng chỉ (Certificate Trust Flow):** 
+  - Trình cài đặt Local Agent (MSIX) sẽ tự động tạo một Self-signed SSL Certificate cho tên miền `localhost` và thêm nó vào thư mục `Trusted Root Certification Authorities` trên máy tính trạm Windows của thủ kho.
+  - Quá trình này được ký số (Code Signing) bằng chứng chỉ doanh nghiệp để vượt qua Windows SmartScreen cảnh báo.
+- **Cơ chế dò cổng dự phòng (Port Discovery & Fallback):**
+  - Nếu cổng mặc định `9000` bị chiếm, Local Agent sẽ tự động thử bind cổng trong dải `9001-9005`.
+  - Web UI trên trình duyệt khi tải trang sẽ thực hiện quét cổng nhanh (Port scanning) từ `9000` đến `9005` bằng cách gửi request WSS ping để nhận diện cổng đang mở của Agent.
+- **Chống tấn công phát lại (Replay & Time Skew Protection):**
+  - Mỗi tin nhắn giao tiếp WebSocket gửi xuống Agent phải chứa `timestamp` dạng ISO 8601 và mã chữ ký HMAC SHA-256 được tính dựa trên `AgentToken`.
+  - Local Agent sẽ reject tin nhắn nếu độ lệch thời gian (Time Skew) giữa Client và Server cục bộ vượt quá 30 giây để chống lại cuộc tấn công phát lại (Replay attack).
 - **Chỉ bind Loopback:** WebSocket Server của Local Agent bắt buộc chỉ bind địa chỉ loopback `127.0.0.1`. Tuyệt đối cấm sử dụng `0.0.0.0` hoặc IP mạng LAN để ngăn chặn truy cập chéo thiết bị ngoại vi trong mạng nội bộ.
 - **Kiểm tra Origin Allowlist:** Bất kỳ kết nối WebSocket nào đến Agent phải được xác thực Header `Origin`. Nếu Origin không khớp cấu hình cho phép của WMS, kết nối bị đóng ngay lập tức với lỗi `403 Forbidden`.
 - **Lưu trữ DPAPI:** AgentToken lưu cục bộ tại máy Windows phải được mã hóa qua Windows Data Protection API (DPAPI) ở mức User scope hoặc Machine scope để chống đọc trộm file cấu hình phẳng.
@@ -133,9 +144,10 @@ sequenceDiagram
 
 | Nhóm lỗi | Nguyên nhân | Xử lý |
 |---|---|---|
-| Cổng WebSocket bị chiếm | Cổng 9000 bị phần mềm khác chiếm dụng | Agent ghi log Event Viewer, thử bind cổng dự phòng (9001-9005) và báo cho Web UI qua URL parameters. |
+| Cổng WebSocket bị chiếm | Cổng 9000-9005 đều bị chiếm dụng | Agent ghi log Event Viewer, dừng khởi chạy dịch vụ, báo động đỏ. |
 | Token bị thu hồi | Admin bấm Revoke trạm trên Web Admin | Heartbeat API trả về 403. Agent lập tức tự xóa Token đã lưu cục bộ bằng DPAPI, ngắt mọi kết nối WebSocket hiện có và chuyển trạng thái về `unpaired`. |
-| Sai Origin | Trang web lạ kết nối đến localhost:9000 | WebSocket Server từ chối kết nối trước khi thực hiện handshake. |
+| Sai Origin | Trang web lạ kết nối đến localhost | WebSocket Server từ chối kết nối trước khi thực hiện handshake. |
+| Mất đồng bộ thời gian | Đồng hồ máy trạm bị sai lệch quá 30 giây | Trả lỗi `auth.time_skew` và yêu cầu đồng bộ lại đồng hồ hệ thống (NTP). |
 
 ## 11. Observability
 
@@ -156,6 +168,6 @@ sequenceDiagram
 ## 13. Acceptance criteria
 
 - Local Agent cài đặt thành công dưới dạng Windows Service và tự động khởi động cùng hệ điều hành.
-- Trình duyệt kết nối được WebSocket `ws://127.0.0.1:9000` và hoàn tất ghép cặp bằng mã 6 số.
+- Trình duyệt kết nối được WebSocket bảo mật `wss://127.0.0.1:9000` (hoặc `ws://` ở dev) và hoàn tất ghép cặp bằng mã 6 số.
 - Khi admin bấm "Revoke" trên Web UI, trạm làm việc bị đẩy ra ngay lập tức và Local Agent chuyển về trạng thái `unpaired`.
 - Không có bất kỳ file plain-text nào chứa AgentToken được lưu trên ổ đĩa máy trạm.

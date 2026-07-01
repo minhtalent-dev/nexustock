@@ -1,4 +1,4 @@
-﻿# PHASE 13: Allocation & reservation
+# PHASE 13: Allocation & reservation
 
 ## 1. Mục tiêu
 
@@ -64,9 +64,9 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 | Thành phần dữ liệu | Mục đích | Ràng buộc chính |
 |---|---|---|
-| `Reservations` | Giữ hàng | Shipment,item,lot,location,qty,status |
-| `ReservationEvents` | Timeline reservation | Create,release,expire,consume |
-| `Inventory.qtyReserved` | Số lượng đã giữ | Không vượt qtyOnHand |
+| `AllocationReservations` | Bảng giữ hàng phân bổ chính | id, tenantId, warehouseId, shipmentLineId, inventoryBalanceId, qty, status, expiresAt |
+| `InventoryBalances` | Số dư tồn kho | unique tenantId+warehouseId+locationId+itemId+lotId+lpnId+inventoryStatus |
+| `InventoryTransactions` | Sổ cái giao dịch tồn kho | Ghi nhận sự kiện xuất/nhập/điều chỉnh thực tế thay đổi số dư |
 
 ### Chuẩn database áp dụng
 
@@ -136,60 +136,73 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 8. Execution flow
 
-1. Shipment open
-2. Evaluate availability
-3. Reserve Lot/location
-4. Picking consume reservation
-5. Ship complete release remainder
+Quy trình xử lý phân bổ lô hàng xuất kho an toàn (Allocation Execution Flow):
 
-### Flow guardrails
-
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+1. **Nhận yêu cầu phân bổ:** Nhận `shipmentId`, `strategy` (FEFO/FIFO/LIFO), `allowPartial` (mặc định: `true` theo chỉ đạo của FOUNDER), và `reservationTtlMinutes` (mặc định: 1440 phút).
+2. **Khởi tạo Transaction:** Mở Database Transaction mức Isolation Level = `ReadCommitted`.
+3. **Truy vấn nhu cầu xuất (Shipment Lines):** Đọc danh sách các line cần xuất của shipment.
+4. **Truy vấn tồn kho khả dụng:** Tìm các bản ghi `InventoryBalances` thỏa mãn điều kiện:
+   - Trạng thái QC (`qcStatus`) của Lot là `released` (Đã duyệt chất lượng).
+   - Vị trí (`locationId`) không bị khóa (`lockReason` là null).
+   - Có số lượng khả dụng thực tế (`qty - qtyReserved > 0`).
+5. **Áp dụng Thuật toán Phân bổ:**
+   - Sắp xếp dòng tồn kho theo chiến lược:
+     - `FEFO`: Sắp xếp `expiryDate` tăng dần (Hạn gần xuất trước).
+     - `FIFO`: Sắp xếp `manufactureDate` hoặc `createdAt` tăng dần.
+   - Duyệt qua từng dòng tồn kho để trừ lùi nhu cầu xuất.
+6. **Xử lý Phân bổ Một phần (Partial Allocation):**
+   - Nếu số lượng tồn kho khả dụng < số lượng yêu cầu của line:
+     - Nếu `allowPartial = true`: Ghi nhận phân bổ một phần, gán số lượng phân bổ thực tế (`allocatedQty`) bằng tồn khả dụng tối đa, cập nhật trạng thái Shipment Line thành `partially_allocated`.
+     - Nếu `allowPartial = false`: Hủy toàn bộ tiến trình, rollback transaction và trả lỗi `inventory.insufficientAvailableQty`.
+7. **Chiến lược Lock tránh Concurrency Race Condition:**
+   - Để tránh hai đơn hàng phân bổ cùng một dòng tồn kho tại cùng một thời điểm:
+     - Áp dụng cơ chế **Pessimistic Locking** trên bảng `InventoryBalances` bằng câu lệnh SQL `SELECT ... FOR UPDATE` (hoặc `rowVersion` OCC nếu chạy database có hỗ trợ phân bổ phân tán nhanh, nhưng ưu tiên `SELECT FOR UPDATE` trên các dòng balance cụ thể trong transaction ngắn).
+     - Ghi nhận bản ghi mới vào bảng `AllocationReservations` với trạng thái `active`.
+     - Cộng dồn số lượng giữ hàng vào trường `qtyReserved` của `InventoryBalances` của dòng tương ứng.
+8. **Commit Transaction:** Lưu thay đổi xuống PostgreSQL. Gửi sự kiện `AllocationCompletedEvent` ra ngoài qua Outbox.
 
 ## 9. Validation & business rules
 
-* Không reserve hàng hold/QC fail/location locked
-* Không double reserve
-* FEFO/FIFO mặc định
-* Reservation expire có kiểm soát
-
-### Validation nền bắt buộc
-
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
-* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
-* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
-* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
+- **Ràng buộc an toàn tồn kho (Inventory Hard Invariant):**
+  - Số lượng khả dụng (`availableQty = qty - qtyReserved`) không bao giờ được âm.
+  - Tuyệt đối cấm phân bổ tồn kho đang nằm ở các vị trí bị khóa hoặc có trạng thái QC là `hold`, `qcPending`, hoặc `rejected`.
+- **Cơ chế Hết hạn Giữ hàng (Reservation Expiry):**
+  - Mọi bản ghi `AllocationReservations` đều có trường `expiresAt = CURRENT_TIMESTAMP + reservationTtlMinutes`.
+  - Một Job chạy nền (Background Worker) định kỳ 5 phút một lần sẽ quét các bản ghi có `status = 'active' AND expiresAt < CURRENT_TIMESTAMP`.
+  - Với mỗi bản ghi hết hạn:
+    - Mở transaction, thực hiện giải phóng (Release): Giảm `qtyReserved` trong `InventoryBalances` tương ứng, cập nhật trạng thái reservation thành `expired`, ghi log giao dịch hoàn trả khả dụng.
+- **Quy tắc Giải phóng Chủ động (Manual Release):**
+  - Khi người dùng bấm "Hủy phân bổ" hoặc hủy Shipment, toàn bộ reservations liên quan sẽ chuyển thành `released` và hoàn trả số lượng khả dụng ngay lập tức.
 
 ## 10. Exception handling
 
-* Thiếu tồn khả dụng
-* Race condition
-* Reservation stale
-* Priority conflict
+| Nhóm lỗi | Nguyên nhân | Xử lý |
+|---|---|---|
+| Thiếu tồn khả dụng | Không đủ hàng trong kho đáp ứng đơn hàng | Nếu `allowPartial = false` thì trả lỗi 400 và rollback. Nếu `allowPartial = true` thì tiến hành phân bổ một phần và cập nhật trạng thái thiếu hàng trên line. |
+| Tranh chấp ghi (Race condition) | Hai luồng xử lý phân bổ cùng tranh chấp một dòng tồn kho | Câu lệnh `SELECT FOR UPDATE` sẽ block luồng thứ hai cho đến khi luồng thứ nhất hoàn tất. Nếu bị khóa quá 5 giây (Timeout), trả lỗi `allocation.lockTimeout` để client retry. |
+| Lô hàng bị khóa giữa chừng | QC Inspector thực hiện khóa lô hàng đúng lúc đang chạy phân bổ | Kiểm tra lại `qcStatus` của Lot trước khi commit ghi nhận reservation. Nếu trạng thái đã chuyển `hold`, bỏ qua lô đó và tìm lô thay thế. |
+### Validation nền bắt buộc
+
+- **Validate tenant scope:** Đảm bảo user chỉ được phân bổ tồn kho của tenant của mình.
+- **Validate status transition:** Chỉ cho phép chuyển trạng thái reservation hợp lệ: `active` -> `consumed` hoặc `expired` hoặc `released`.
+- **Validate permission:** Yêu cầu quyền `allocation_reservation.create`.
+- **Validate optimistic concurrency:** Sử dụng `rowVersion` để kiểm tra xung đột số dư tồn kho.
+- **Validate số lượng không âm:** Số lượng phân bổ và số lượng giữ hàng phải > 0 và khả dụng.
 
 ### Mapping lỗi chuẩn
 
 | Nhóm lỗi | Hành vi hệ thống |
 |---|---|
 | Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit nếu cần |
-| Dữ liệu stale | Trả conflict, yêu cầu reload |
+| Thiếu quyền | Trả 403, ghi security audit |
+| Dữ liệu stale | Trả 409 conflict, yêu cầu reload |
 | Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
-| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
 | Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
 
 ### Nguyên tắc exception
 
-* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
-* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
-* Không nuốt lỗi âm thầm.
-* Mọi override phải có reason và audit.
+- Không nuốt lỗi âm thầm. Mọi lỗi phân bổ phải trả về đầy đủ mã lỗi và traceId.
+- Mọi trường hợp override phân bổ bằng tay phải ghi nhận reason code và audit log.
 
 ## 11. Observability
 

@@ -33,11 +33,16 @@ Chúng tôi quyết định áp dụng **Mô hình tin cậy đa lớp (Multi-la
      3. Local Agent gửi Pairing Code lên Web API để xác thực. Nếu hợp lệ, Web API trả về một mã định danh trạm (`stationId`) và một mã khóa phiên (`AgentToken`).
      4. Local Agent lưu trữ `AgentToken` và `stationId` vào bộ nhớ an toàn của hệ điều hành (Windows Credential Manager / DPAPI), không lưu dạng file text phẳng để tránh bị phần mềm độc hại đọc trộm.
 
-4. **Xác thực WebSocket Message (Message Authentication):**
-   - Mỗi tin nhắn gửi qua WebSocket từ Web UI đến Agent phải đính kèm token xác thực hoặc chạy trên một kênh WebSocket đã được handshake bằng `AgentToken` ngay khi mở kết nối.
-   - Tin nhắn phải chứa `timestamp` để chống tấn công phát lại (Replay Attack). Agent sẽ từ chối các tin nhắn có độ lệch thời gian (Time Skew) vượt quá 30 giây so với giờ hệ thống của Agent.
+4. **Bảo mật kết nối WSS & Certificate Trust:**
+   - Trong môi trường production, kết nối bắt buộc phải sử dụng `wss://127.0.0.1:9000` (WebSocket Secure) để trình duyệt HTTPS không chặn mixed-content.
+   - Trình cài đặt MSIX tự động tạo chứng chỉ SSL cục bộ cho `localhost` và thêm nó vào `Trusted Root Certification Authorities` trên Windows.
+   - Hỗ trợ cơ chế quét cổng tự động từ `9000-9005` (Port Discovery) để tự động kết nối nếu cổng 9000 bị chiếm dụng.
 
-5. **Thu hồi quyền từ xa (Remote Revocation):**
+5. **Xác thực WebSocket Message & Chống Replay:**
+   - Mỗi tin nhắn gửi qua WebSocket từ Web UI đến Agent phải đính kèm chữ ký HMAC SHA-256 (sinh từ `AgentToken`) và `timestamp`.
+   - Local Agent từ chối các tin nhắn có độ lệch thời gian (Time Skew) vượt quá 30 giây để chống tấn công phát lại (Replay Attack).
+
+6. **Thu hồi quyền từ xa (Remote Revocation):**
    - Quản trị viên trên Web UI có thể bấm "Revoke" một trạm làm việc (Station). Hệ thống sẽ đánh dấu `AgentToken` của trạm đó là vô hiệu lực trong database. Trong lần kết nối hoặc heartbeat tiếp theo, Local Agent sẽ bị Web API từ chối và bắt buộc phải thực hiện ghép cặp lại từ đầu.
 
 ## Hệ quả & Đánh giá

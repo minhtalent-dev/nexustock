@@ -4,10 +4,11 @@ Bảng ước lượng thời gian triển khai (Dev-Days) cho 30 phase của d�
 
 ## Nguyên tắc ước lượng (Estimation Principles)
 
-- **Dev-Day:** Thời gian làm việc thực tế của 1 developer có trình độ Senior trong 1 ngày (8 tiếng).
+- **Dev-Day (Effort):** Ngày làm việc thực tế của 1 developer có trình độ Senior trong 1 ngày (8 tiếng).
 - **Phạm vi bao gồm:** Code backend, viết unit/integration tests, code frontend/RF, cấu hình database và chạy thử local.
 - **Complexity (Độ phức tạp):** 1 (Rất dễ) -> 5 (Rất khó - thuật toán, tích hợp phần cứng hoặc hệ thống ngoài).
 - **Confidence (Mức độ tự tin):** High (Hiểu rõ nghiệp vụ & công nghệ), Medium (Cần làm rõ vài chi tiết), Low (Có rủi ro về thiết bị hoặc hệ thống bên thứ ba).
+- **Quy đổi Calendar (Thời gian thực tế):** Do dự án chạy với **1 Developer chính**, thời gian trôi qua (Calendar days) sẽ kéo dài hơn so với phân bổ team song song. Do đó, cần phân rã rõ ràng giữa Effort và Calendar, cộng thêm buffer rủi ro tương ứng với đặc thù từng phase.
 
 ---
 
@@ -50,10 +51,13 @@ Bảng ước lượng thời gian triển khai (Dev-Days) cho 30 phase của d�
 
 ## Tổng kết dự báo dự án
 
-- **Tổng thời gian phát triển ước lượng:** **118 - 164 ngày** (tương đương 5 - 7 tháng với team 3 dev).
+- **Tổng nỗ lực phát triển (Effort):** **118 - 164 Dev-Days**.
+- **Quy đổi thời gian thực tế (Calendar Time):** 
+  - Với **1 Developer chính**, tổng thời gian triển khai thực tế ước tính từ **6 - 9 tháng** (đã bao gồm các ngày nghỉ và thời gian hội ý).
+  - Áp dụng thêm buffer rủi ro trung bình **20-25%** cho các phần tích hợp thiết bị (Phase 20-22) và SAP (Phase 23-24), thời gian thực tế có thể dao động từ **7 - 11 tháng** tùy thuộc vào độ sẵn sàng của môi trường SAP sandbox của khách hàng và thời gian cấp chứng chỉ in ấn cục bộ.
 - **Phân bổ nỗ lực trung bình:**
   - Phát triển Backend & DB: **60%**
   - Phát triển Frontend/RF/Mobile: **20%**
   - Tích hợp & Local Agent: **10%**
   - DevOps & Hardening: **10%**
-- **Các phase rủi ro cao dễ trễ tiến độ:** Phase 13 (Allocation), Phase 20 (Local Agent), Phase 23 (ERP Integration). Cần ưu tiên làm rõ tài liệu kỹ thuật của các phase này trước khi code.
+- **Các phase rủi ro cao dễ trễ tiến độ:** Phase 13 (Allocation - cần giải quyết lock tranh chấp và partial allocation), Phase 20 (Local Agent - bảo mật WSS và code signing), Phase 23 (SAP integration contract và idempotency). Cần ưu tiên làm rõ tài liệu kỹ thuật của các phase này trước khi code.
