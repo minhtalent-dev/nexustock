@@ -1,5 +1,11 @@
 ﻿# PHASE 16: Serial tracking
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho serial tracking lifecycle nhận, chuyển, xuất và validate 1-1.
+- **Khi cần upgrade:** Upgrade nếu serial cần bảo hành, trạng thái trả hàng hoặc tích hợp thiết bị scan riêng.
+
 ## 1. Mục tiêu
 
 Truy vết từng đơn vị sản phẩm bằng Serial Number.
@@ -304,6 +310,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

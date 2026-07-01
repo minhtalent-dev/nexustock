@@ -1,5 +1,11 @@
 ﻿# PHASE 17: RMA return flow
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho RMA return, QC phân loại và tái nhập/cách ly/scrap.
+- **Khi cần upgrade:** Upgrade nếu return policy theo khách hàng hoặc reason code cần ma trận xử lý sâu.
+
 ## 1. Mục tiêu
 
 Xử lý hàng trả về, QC phân loại, tái nhập/cách ly/scrap.
@@ -303,6 +309,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

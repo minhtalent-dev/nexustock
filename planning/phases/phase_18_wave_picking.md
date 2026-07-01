@@ -1,5 +1,11 @@
 ﻿# PHASE 18: Wave picking
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho wave picking và gom đơn theo khu vực.
+- **Khi cần upgrade:** Upgrade nếu cần thuật toán tối ưu tuyến đường hoặc batch picking nâng cao.
+
 ## 1. Mục tiêu
 
 Gom nhiều đơn xuất thành wave để tối ưu lấy hàng.
@@ -303,6 +309,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

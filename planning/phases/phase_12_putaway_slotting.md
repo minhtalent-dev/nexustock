@@ -1,5 +1,11 @@
 ﻿# PHASE 12: Putaway slotting
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho putaway/slotting theo capacity, zone và rule ưu tiên.
+- **Khi cần upgrade:** Upgrade nếu warehouse layout thực tế có constraint phức tạp như hàng nguy hiểm/lạnh/khóa khu.
+
 ## 1. Mục tiêu
 
 Đề xuất vị trí cất hàng theo rule, capacity, zone và đặc tính vật tư.
@@ -302,6 +308,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

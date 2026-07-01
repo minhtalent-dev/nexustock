@@ -1,5 +1,11 @@
 ﻿# PHASE 08: Cycle count & stock adjustment
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ rõ cho cycle count, khóa vị trí, phê duyệt chênh lệch và stock adjustment.
+- **Khi cần upgrade:** Upgrade nếu kiểm kê cần blind count, recount nhiều vòng hoặc phê duyệt nhiều cấp.
+
 ## 1. Mục tiêu
 
 Kiểm kê chu kỳ, khóa vị trí, ghi nhận chênh lệch và phê duyệt điều chỉnh tồn.
@@ -310,6 +316,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

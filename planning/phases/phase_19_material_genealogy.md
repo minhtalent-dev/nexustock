@@ -1,5 +1,11 @@
 ﻿# PHASE 19: Material genealogy
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 87%
+- **Đánh giá:** Đủ direction cho material genealogy và truy vết cây Lot cha/con.
+- **Khi cần upgrade:** Upgrade nếu cần traceability theo tiêu chuẩn ngành hoặc báo cáo recall pháp lý.
+
 ## 1. Mục tiêu
 
 Truy vết cây Lot cha/con và khoanh vùng lỗi chất lượng.
@@ -299,6 +305,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

@@ -1,5 +1,11 @@
 ﻿# PHASE 28: Labor tracking
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho labor tracking theo task, user, ca và zone.
+- **Khi cần upgrade:** Upgrade nếu cần chuẩn năng suất, incentive hoặc phân tích hiệu suất nâng cao.
+
 ## 1. Mục tiêu
 
 Đo năng suất theo task, user, ca, zone và loại thao tác.
@@ -300,6 +306,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

@@ -1,5 +1,11 @@
 ﻿# PHASE 04: Inbound receiving
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ rõ cho inbound receiving, PO/Invoice receive, Lot creation và inventory transaction.
+- **Khi cần upgrade:** Upgrade nếu nghiệp vụ dung sai nhận hàng hoặc mapping chứng từ thực tế khác plan.
+
 ## 1. Mục tiêu
 
 Nhận hàng từ PO/Invoice, tạo Lot và ghi transaction nhập kho.
@@ -314,6 +320,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

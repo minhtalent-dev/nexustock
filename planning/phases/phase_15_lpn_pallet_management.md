@@ -1,5 +1,11 @@
 ﻿# PHASE 15: LPN pallet management
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho LPN/pallet, gom lot và movement hàng loạt.
+- **Khi cần upgrade:** Upgrade nếu cần nested LPN, split/merge pallet hoặc audit theo container nhiều tầng.
+
 ## 1. Mục tiêu
 
 Quản lý Pallet/LPN để gom Lot và di chuyển hàng loạt bằng một mã.
@@ -304,6 +310,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

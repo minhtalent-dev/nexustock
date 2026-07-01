@@ -1,5 +1,11 @@
 ﻿# PHASE 07: Outbound picking & packing basic
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ rõ cho outbound picking/packing cơ bản và trừ tồn theo luồng chính.
+- **Khi cần upgrade:** Upgrade nếu khách hàng yêu cầu nhiều chiến lược pick/pack đặc thù.
+
 ## 1. Mục tiêu
 
 Xuất kho cơ bản từ shipment đến picking, packing và trừ tồn.
@@ -314,6 +320,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

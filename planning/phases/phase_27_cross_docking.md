@@ -1,5 +1,11 @@
 ﻿# PHASE 27: Cross-docking
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho cross-docking và so khớp hàng vừa nhận với đơn xuất.
+- **Khi cần upgrade:** Upgrade nếu cần tối ưu thời gian cửa nhập/xuất hoặc priority theo khách hàng.
+
 ## 1. Mục tiêu
 
 Đề xuất chuyển tiếp trực tiếp hàng vừa nhận sang đơn xuất phù hợp.
@@ -301,6 +307,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

@@ -1,4 +1,10 @@
-# PHASE 20: Local Agent foundation
+﻿# PHASE 20: Local Agent foundation
+
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ roadmap cho Local Agent, WSS, pairing, code signing và thiết bị cục bộ.
+- **Khi cần upgrade:** Bắt buộc viết Local Agent threat model để nâng lên 95% trước khi code Phase 20.
 
 ## 1. Mục tiêu
 
@@ -171,3 +177,4 @@ sequenceDiagram
 - Trình duyệt kết nối được WebSocket bảo mật `wss://127.0.0.1:9000` (hoặc `ws://` ở dev) và hoàn tất ghép cặp bằng mã 6 số.
 - Khi admin bấm "Revoke" trên Web UI, trạm làm việc bị đẩy ra ngay lập tức và Local Agent chuyển về trạng thái `unpaired`.
 - Không có bất kỳ file plain-text nào chứa AgentToken được lưu trên ổ đĩa máy trạm.
+

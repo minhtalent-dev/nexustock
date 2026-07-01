@@ -1,4 +1,10 @@
-# PHASE 26: DevOps & platform deployment
+﻿# PHASE 26: DevOps & platform deployment
+
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ roadmap cho production deployment, Docker, health check, backup/restore và rollback.
+- **Khi cần upgrade:** Bắt buộc viết migration rehearsal checklist để nâng lên 95% trước production deployment.
 
 ## 1. Mục tiêu
 
@@ -134,3 +140,4 @@ Khi phát hiện phiên bản mới bị lỗi nghiêm trọng trên production:
 - Chạy cụm container bằng docker-compose lên sạch, `/health/live` trả về 200.
 - File backup DB tạo ra đúng lịch, khôi phục thành công trên môi trường diễn tập (Staging).
 - Tuyệt đối không có bất kỳ file backend/frontend nghiệp vụ nào có logic code liên quan đến tác vụ deploy (Phase deployment sạch 100% code nghiệp vụ).
+

@@ -1,5 +1,11 @@
 ﻿# PHASE 09: RF/mobile core scan
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ rõ cho RF/mobile scan core, focus input, validate barcode và feedback lỗi.
+- **Khi cần upgrade:** Upgrade nếu thiết bị handheld thật có browser/scan behavior khác giả lập.
+
 ## 1. Mục tiêu
 
 Chuẩn hóa thao tác handheld/mobile cho inbound, movement, picking, stocktake và packing.
@@ -314,6 +320,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

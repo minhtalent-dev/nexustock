@@ -1,4 +1,10 @@
-# PHASE 30: Production Readiness Gate
+﻿# PHASE 30: Production Readiness Gate
+
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ roadmap cho readiness gate, hardening, UAT, cutover và rollback rehearsal.
+- **Khi cần upgrade:** Bắt buộc viết incident playbook để nâng lên 95% trước Phase 30.
 
 ## 1. Mục tiêu
 
@@ -252,6 +258,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

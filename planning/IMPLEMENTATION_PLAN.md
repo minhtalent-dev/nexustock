@@ -1,4 +1,4 @@
-# KẾ HOẠCH TỔNG THỂ TRIỂN KHAI DỰ ÁN NEXUSTOCK
+﻿# KẾ HOẠCH TỔNG THỂ TRIỂN KHAI DỰ ÁN NEXUSTOCK
 
 Dự án **Nexustock** là giải pháp quản lý - vận hành kho thế hệ mới, thay thế hệ thống desktop cũ bằng nền tảng Web SPA hiện đại, PostgreSQL độc lập và roadmap triển khai theo chuẩn WMS production.
 
@@ -144,6 +144,23 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 30 | [Readiness Gate](file:///d:/1_Project/48_Nexustock/planning/phases/phase_30_hardening_production_acceptance.md) | Kiểm thử tổng thể, hardening, UAT, cutover và rollback rehearsal trước go-live. |
 ---
 
+## Critical deep-spec backlog
+
+Các deep spec dưới đây **không chặn Phase 01**. Đây là danh sách nâng cấp nhẹ để tránh overplanning: chỉ viết sâu ngay trước phase rủi ro cao tương ứng.
+
+| Thời điểm bắt buộc | Deep spec cần viết | Mục tiêu nâng cấp | Lý do |
+|---|---|---|---|
+| Trước Phase 13 | Allocation algorithm spec | Nâng Phase 13 từ 90% lên 95% execution-ready | Làm rõ pseudo-code, tie-break rule FEFO/FIFO, partial allocation, transaction boundary, lock order và deadlock handling. |
+| Trước Phase 20 | Local Agent threat model | Nâng Phase 20 từ 90% lên 95% execution-ready | Làm rõ attack vector, Origin allowlist, pairing token, WSS/certificate trust, code signing, spoofing test case. |
+| Trước Phase 23 | SAP contract confirmation | Nâng Phase 23 từ 90% lên 95% execution-ready | Làm rõ field mapping thật, error code matrix, idempotency, retry/replay, SAP sandbox readiness và owner xác nhận. |
+| Trước Phase 26/30 | Migration rehearsal & incident playbook | Nâng Phase 26/30 từ 90% lên 95% execution-ready | Làm rõ migration rehearsal checklist, RTO/RPO, backup restore proof, rollback timing và incident response theo lỗi lớn. |
+
+### Nguyên tắc dùng backlog
+
+- Không nâng toàn bộ 30 phase lên 95% từ đầu.
+- Phase thường giữ mức 85-92% để bảo toàn tốc độ triển khai cho 1 Developer.
+- Phase rủi ro cao chỉ được code sau khi deep spec tương ứng đạt 95%.
+- Sau mỗi phase, cập nhật lại phần trăm execution spec bằng bài học thực tế.
 ## Tài liệu quản trị dự án
 
 Để bảo đảm kiểm soát chất lượng bàn giao từ 1 Developer chính lên FOUNDER, toàn bộ quá trình thực thi phải tuân thủ nghiêm ngặt các tài liệu quản trị sau:
@@ -157,3 +174,4 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 Các phase cũ đã được chuyển vào thư mục tạm:
 
 [planning/phases/temp](file:///d:/1_Project/48_Nexustock/planning/phases/temp)
+

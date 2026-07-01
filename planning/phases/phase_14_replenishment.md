@@ -1,5 +1,11 @@
 ﻿# PHASE 14: Replenishment
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho replenishment min/max và task bổ sung pick face.
+- **Khi cần upgrade:** Upgrade nếu cần job scheduling, wave-based replenishment hoặc ưu tiên theo ca vận hành.
+
 ## 1. Mục tiêu
 
 Tự tạo nhiệm vụ bổ sung pick face từ reserve location theo min/max.
@@ -302,6 +308,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

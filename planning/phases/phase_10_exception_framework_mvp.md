@@ -1,5 +1,11 @@
 ﻿# PHASE 10: Exception framework MVP
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ rõ cho exception framework MVP, mã lỗi vận hành và trace lỗi theo thực thể gốc.
+- **Khi cần upgrade:** Upgrade nếu cần workflow xử lý ngoại lệ nhiều cấp hoặc SLA theo loại lỗi.
+
 ## 1. Mục tiêu
 
 Chuẩn hóa xử lý ngoại lệ vận hành cho sai mã, sai Lot, sai vị trí, thiếu/dư hàng, lỗi thiết bị.
@@ -311,6 +317,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

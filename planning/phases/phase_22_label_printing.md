@@ -1,4 +1,10 @@
-# PHASE 22: Label printing
+﻿# PHASE 22: Label printing
+
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho label printing, ZPL/TSPL, print job và reprint audit.
+- **Khi cần upgrade:** Upgrade khi chốt model máy in, template tem thật và rule reprint theo vận hành.
 
 ## 1. Mục tiêu
 
@@ -167,3 +173,4 @@ graph TD
 
 - Local Agent nhận lệnh và in nhãn ZPL/TSPL ra máy in ảo/thực đúng định dạng thiết kế.
 - Thao tác Reprint ghi nhận đầy đủ liên kết cha con và lý do in lại vào cơ sở dữ liệu.
+

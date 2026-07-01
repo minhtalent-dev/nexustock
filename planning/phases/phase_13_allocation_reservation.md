@@ -1,4 +1,10 @@
-# PHASE 13: Allocation & reservation
+﻿# PHASE 13: Allocation & reservation
+
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ roadmap cho allocation/reservation, FEFO/FIFO, partial allocation và lock tồn kho.
+- **Khi cần upgrade:** Bắt buộc viết Allocation algorithm spec để nâng lên 95% trước khi code Phase 13.
 
 ## 1. Mục tiêu
 
@@ -320,6 +326,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

@@ -1,5 +1,11 @@
 ﻿# PHASE 06: Inventory by location & movement
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ rõ cho tồn kho theo vị trí, movement và chống âm kho bằng ledger.
+- **Khi cần upgrade:** Upgrade nếu concurrency test phát hiện tranh chấp ghi phức tạp hơn dự kiến.
+
 ## 1. Mục tiêu
 
 Quản lý tồn kho theo vị trí và chuyển vị trí an toàn, chống âm kho.
@@ -312,6 +318,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

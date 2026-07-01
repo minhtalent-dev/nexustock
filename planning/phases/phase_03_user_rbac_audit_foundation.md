@@ -1,5 +1,11 @@
 ﻿# PHASE 03: User, RBAC & audit foundation
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 92%
+- **Đánh giá:** Đủ rõ cho user, RBAC, audit nền và permission catalog.
+- **Khi cần upgrade:** Upgrade nếu chọn mô hình phân quyền phức tạp hơn role-permission thông thường.
+
 ## 1. Mục tiêu
 
 Thiết lập bảo mật nền: user, role, permission, JWT/session và audit log cho mọi thay đổi dữ liệu.
@@ -325,6 +331,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

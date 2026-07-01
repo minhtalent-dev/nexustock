@@ -1,5 +1,11 @@
 ﻿# PHASE 25: Operational observability
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ rõ cho observability, audit, activity timeline, KPI, alert và Trace ID.
+- **Khi cần upgrade:** Upgrade nếu chọn stack monitoring cụ thể hoặc cần SLO dashboard trước go-live.
+
 ## 1. Mục tiêu
 
 Thiết lập audit, activity timeline, KPI, alert và trace ID xuyên hệ thống.
@@ -302,6 +308,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

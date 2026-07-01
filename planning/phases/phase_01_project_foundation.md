@@ -1,5 +1,11 @@
 ﻿# PHASE 01: Project foundation
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 95%
+- **Đánh giá:** Đủ execution-ready cho skeleton dự án, Docker local, health check, convention và README first-run.
+- **Khi cần upgrade:** Bắt đầu code ngay; chỉ cập nhật khi tech stack hoặc repo convention đổi.
+
 ## 1. Mục tiêu
 
 Thiết lập nền tảng dự án để đội phát triển có thể chạy, build và mở rộng Nexustock nhất quán.
@@ -312,6 +318,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

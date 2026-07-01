@@ -1,4 +1,10 @@
-# PHASE 21: Scale integration
+﻿# PHASE 21: Scale integration
+
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho scale integration qua COM, ổn định số cân và fallback nhập tay.
+- **Khi cần upgrade:** Upgrade khi có model cân thật, protocol frame và sai số thiết bị cụ thể.
 
 ## 1. Mục tiêu
 
@@ -136,3 +142,4 @@ graph TD
 - Local Agent kết nối và đọc ổn định số cân từ cân mô phỏng.
 - Số cân hiển thị tức thời trên Web UI đóng gói, không có độ trễ cảm nhận (>500ms).
 - Thao tác nhập cân tay ghi đầy đủ log audit vào bảng `ManualWeightOverrides` và được chặn quyền đúng.
+

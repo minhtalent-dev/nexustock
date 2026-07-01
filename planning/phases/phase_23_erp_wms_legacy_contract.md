@@ -1,4 +1,10 @@
-# PHASE 23: ERP/WMS legacy contract
+﻿# PHASE 23: ERP/WMS legacy contract
+
+## Execution spec maturity
+
+- **Mức hiện tại:** 90%
+- **Đánh giá:** Đủ roadmap cho ERP/WMS legacy contract, idempotency và SAP integration direction.
+- **Khi cần upgrade:** Bắt buộc viết SAP contract confirmation để nâng lên 95% trước khi code Phase 23.
 
 ## 1. Mục tiêu
 
@@ -163,3 +169,4 @@ Hệ thống quản lý tích hợp API hỗ trợ 3 trạng thái phiên bản 
 
 - API tích hợp tiếp nhận đơn SO/PO từ ERP phản hồi thành công hoặc báo lỗi rõ ràng dưới 500ms.
 - Nhập tệp Excel lỗi không gây ghi đè rác vào database nhờ cơ chế Atomic Commit.
+

@@ -1,5 +1,11 @@
 ﻿# PHASE 29: Task interleaving
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 87%
+- **Đánh giá:** Đủ direction cho task interleaving và gợi ý task kế tiếp.
+- **Khi cần upgrade:** Upgrade nếu cần thuật toán tối ưu đường đi hoặc scoring nhiều biến.
+
 ## 1. Mục tiêu
 
 Gợi ý task kế tiếp để giảm di chuyển rỗng nhưng không phá rule vận hành.
@@ -302,6 +308,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

@@ -1,5 +1,11 @@
 ﻿# PHASE 02: Master data foundation
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 92%
+- **Đánh giá:** Đủ rõ cho master data, import nền, warehouse/zone/location và governance dữ liệu.
+- **Khi cần upgrade:** Upgrade nếu phát sinh cấu trúc đa kho đặc thù hoặc import template thay đổi lớn.
+
 ## 1. Mục tiêu
 
 Chuẩn hóa dữ liệu nền WMS để mọi nghiệp vụ sau dùng chung một catalog nhất quán.
@@ -323,6 +329,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 

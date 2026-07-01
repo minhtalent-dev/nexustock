@@ -1,4 +1,10 @@
-# PHASE 24: Webhook & integration reliability
+﻿# PHASE 24: Webhook & integration reliability
+
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho webhook reliability, retry, backoff, DLQ và replay.
+- **Khi cần upgrade:** Upgrade nếu đối tác yêu cầu SLA delivery, signing scheme hoặc replay window đặc thù.
 
 ## 1. Mục tiêu
 
@@ -147,3 +153,4 @@ Xây dựng hệ thống gửi tin Webhook và cơ chế tích hợp tin cậy (
 - Sự kiện kho phát sinh tự động tạo dòng Outbox tương ứng.
 - Webhook được ký HMAC đầy đủ và gửi thành công sang mock server.
 - Lỗi kết nối giả lập tự kích hoạt retry theo đúng khoảng thời gian cấu hình và chuyển vào DLQ sau khi hết lượt.
+

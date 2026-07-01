@@ -1,5 +1,11 @@
 ﻿# PHASE 11: Rule engine foundation
 
+## Execution spec maturity
+
+- **Mức hiện tại:** 88%
+- **Đánh giá:** Đủ direction cho rule engine dạng bảng, priority, condition/action và execution log.
+- **Khi cần upgrade:** Upgrade trước khi code nếu condition JSON hoặc expression evaluator cần đặc tả DSL sâu hơn.
+
 ## 1. Mục tiêu
 
 Tạo nền rule engine dạng bảng, có priority, condition, action và execution log.
@@ -302,6 +308,7 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
+
 
 
 
