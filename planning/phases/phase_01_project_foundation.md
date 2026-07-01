@@ -75,7 +75,7 @@ Repository Nexustock đã sẵn sàng và roadmap được duyệt.
 |---|---:|---|
 | Backend API | `5000` | `API_HTTP_PORT` |
 | Frontend | `3000` | `FRONTEND_PORT` |
-| PostgreSQL | `5432` | `POSTGRES_PORT` |
+| PostgreSQL | `5435` | `POSTGRES_PORT` |
 | Redis | `6379` | `REDIS_PORT` |
 
 Nếu port bị chiếm, ưu tiên đổi qua `.env` thay vì sửa trực tiếp `docker-compose.yml`.

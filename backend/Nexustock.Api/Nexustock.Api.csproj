@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.21" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\modules\Nexustock.Modules.Identity\Nexustock.Modules.Identity.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.MasterData\Nexustock.Modules.MasterData.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Inbound\Nexustock.Modules.Inbound.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Inventory\Nexustock.Modules.Inventory.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Outbound\Nexustock.Modules.Outbound.csproj" />
+  </ItemGroup>
+
+</Project>

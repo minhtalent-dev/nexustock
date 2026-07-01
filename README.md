@@ -1,0 +1,49 @@
+# Nexustock — WMS Modular Monolith
+
+Dự án Hệ thống quản lý kho hàng (WMS) xây dựng theo kiến trúc Modular Monolith chuẩn sản xuất.
+
+## 🚀 Công nghệ sử dụng
+* **Backend**: .NET 8.0 (C# Web API, Entity Framework Core)
+* **Database**: PostgreSQL (Operational Storage)
+* **Caching**: Redis (Optional)
+* **Frontend**: Next.js 16.2 (App Router, Tailwind CSS, Webpack)
+
+## 📁 Cấu trúc Monorepo
+* /backend — Trọng tâm dịch vụ Web API.
+  * /backend/Nexustock.Api — Composition Root, DI, Middleware, Health Check.
+  * /backend/modules — Các phân hệ lõi: Identity, MasterData, Inbound, Inventory, Outbound.
+* /frontend — Giao diện quản trị Next.js.
+  * /health-ui — Bảng điều khiển kiểm tra sức khỏe hệ thống.
+* /planning — Spec kỹ thuật và tài liệu nghiệp vụ từng Phase.
+
+## 🛠️ Hướng dẫn khởi chạy nhanh (First-Run)
+
+### 1. Khởi chạy Docker local (DB & Redis)
+`ash
+docker compose up -d
+`
+
+### 2. Thiết lập Environment
+Sao chép cấu hình mẫu:
+`ash
+cp .env.example .env
+`
+
+### 3. Chạy Backend
+`ash
+cd backend/Nexustock.Api
+dotnet run
+`
+API Host sẽ chạy tại cổng http://localhost:5024.
+
+### 4. Chạy Frontend
+` ash
+cd frontend
+npm run dev
+`
+Giao diện sẽ chạy tại cổng `http://localhost:3003`.
+
+## 🩺 Endpoints kiểm tra sức khỏe
+* **Liveness Probe**: GET http://localhost:5024/health/live (Trả về 200 OK nếu API Host sống)
+* **Readiness Probe**: GET http://localhost:5024/health/ready (Kiểm tra kết nối DB và Redis)
+* **Health Dashboard UI**: `http://localhost:3003/health-ui` (Giao diện giám sát thời gian thực)

@@ -44,7 +44,7 @@ services:
     image: postgres:16-alpine
     container_name: nexustock-postgres
     ports:
-      - "5432:5432"
+      - "5435:5435"
     environment:
       POSTGRES_DB: nexustock_main
       POSTGRES_USER: nexustock_user
