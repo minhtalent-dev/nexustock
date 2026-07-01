@@ -2,29 +2,33 @@
 
 Dự án **Nexustock** là giải pháp quản lý - vận hành kho thế hệ mới, thay thế hệ thống desktop cũ bằng nền tảng Web SPA hiện đại, PostgreSQL độc lập và roadmap triển khai theo chuẩn WMS production.
 
-Roadmap đã được tách lại thành **4 stage / 30 phase nhỏ**. Mỗi phase là một deliverable độc lập, có đủ setup, database, backend/API, frontend/RF/mobile, execution flow, validation, exception, observability, test và acceptance criteria.
+Roadmap dùng mô hình **4 stage / 30 phase nhỏ**. Mỗi phase là một deliverable độc lập, có đủ setup, database, backend/API, frontend/RF/mobile, execution flow, validation, exception, observability, test, acceptance, maintenance, extension và rollback.
 
 ---
 
-## Nguyên tắc phase chuẩn
+## Definition of done cho mỗi phase
 
-Mỗi phase mới trong [planning/phases](file:///d:/1_Project/48_Nexustock/planning/phases) dùng cùng cấu trúc:
+Một phase chỉ được xem là hoàn tất khi:
 
-1. Mục tiêu
-2. Phạm vi
-3. Điều kiện đầu vào
-4. Setup
-5. Database
-6. Backend/API
-7. Frontend/RF/mobile
-8. Execution flow
-9. Validation & business rules
-10. Exception handling
-11. Observability
-12. Test plan
-13. Acceptance criteria
-14. Out of scope
-15. Dependencies
+* Có database contract hoặc xác nhận rõ không cần database.
+* Có API contract hoặc xác nhận rõ chỉ là tài liệu/cấu hình.
+* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
+* Có execution flow end-to-end không mơ hồ.
+* Có validation rule, exception mapping và observability.
+* Có test plan gồm unit, integration, E2E/negative/regression nếu phù hợp.
+* Có acceptance criteria đo được.
+* Có maintenance notes, extension points và rollback notes.
+* Không còn placeholder generic.
+
+---
+
+## Nguyên tắc maintenance roadmap
+
+* [planning/phases](file:///d:/1_Project/48_Nexustock/planning/phases) chỉ chứa phase mới nhất.
+* [planning/phases/temp](file:///d:/1_Project/48_Nexustock/planning/phases/temp) chỉ dùng tham chiếu lịch sử, không chỉnh nếu không có lý do.
+* Khi đổi contract ở phase trước, phải cập nhật phase phụ thuộc downstream.
+* Khi thêm permission, status, bảng hoặc API mới, phải cập nhật test và observability tương ứng.
+* Không giới hạn số dòng phase; ưu tiên chi tiết đủ để executor triển khai an toàn.
 
 ---
 
@@ -85,62 +89,40 @@ gantt
 
 ---
 
-## Stage 1: MVP vận hành chắc
+## Danh mục phase mới nhất
 
 | Phase | Tài liệu | Deliverable |
 |---|---|---|
-| 01 | [Project foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_01_project_foundation.md) | Monorepo, Docker local, API/UI shell |
-| 02 | [Master data foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_02_master_data_foundation.md) | Item, UOM, Package, Warehouse, Zone, Location, Partner, Reason Code |
-| 03 | [User, RBAC & audit foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_03_user_rbac_audit_foundation.md) | User, Role, Permission, JWT, audit log |
-| 04 | [Inbound receiving](file:///d:/1_Project/48_Nexustock/planning/phases/phase_04_inbound_receiving.md) | Nhận hàng, tạo Lot, transaction nhập |
-| 05 | [QC hold/release](file:///d:/1_Project/48_Nexustock/planning/phases/phase_05_qc_hold_release.md) | QC, hold, release, reject |
-| 06 | [Inventory by location & movement](file:///d:/1_Project/48_Nexustock/planning/phases/phase_06_inventory_location_movement.md) | Tồn theo vị trí, movement, location lock |
-| 07 | [Outbound picking & packing basic](file:///d:/1_Project/48_Nexustock/planning/phases/phase_07_outbound_picking_packing_basic.md) | Đơn xuất, picking FIFO/FEFO, packing |
-| 08 | [Cycle count & stock adjustment](file:///d:/1_Project/48_Nexustock/planning/phases/phase_08_cycle_count_stock_adjustment.md) | Kiểm kê, khóa vị trí, điều chỉnh tồn |
-| 09 | [RF/mobile core scan](file:///d:/1_Project/48_Nexustock/planning/phases/phase_09_rf_mobile_core_scan.md) | Scan handheld/mobile cho core flow |
-| 10 | [Exception framework MVP](file:///d:/1_Project/48_Nexustock/planning/phases/phase_10_exception_framework_mvp.md) | Khung xử lý ngoại lệ vận hành |
-
----
-
-## Stage 2: Advanced WMS
-
-| Phase | Tài liệu | Deliverable |
-|---|---|---|
-| 11 | [Rule engine foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_11_rule_engine_foundation.md) | Rule set, condition, action, execution log |
-| 12 | [Putaway slotting](file:///d:/1_Project/48_Nexustock/planning/phases/phase_12_putaway_slotting.md) | Đề xuất vị trí cất hàng |
-| 13 | [Allocation & reservation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_13_allocation_reservation.md) | Giữ hàng theo đơn xuất |
-| 14 | [Replenishment](file:///d:/1_Project/48_Nexustock/planning/phases/phase_14_replenishment.md) | Bổ sung pick face |
-| 15 | [LPN pallet management](file:///d:/1_Project/48_Nexustock/planning/phases/phase_15_lpn_pallet_management.md) | Pallet/LPN, di chuyển hàng loạt |
-| 16 | [Serial tracking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_16_serial_tracking.md) | Truy vết serial |
-| 17 | [RMA return flow](file:///d:/1_Project/48_Nexustock/planning/phases/phase_17_rma_return_flow.md) | Hàng trả về, QC phân loại |
-| 18 | [Wave picking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_18_wave_picking.md) | Gom đơn xuất |
-| 19 | [Material genealogy](file:///d:/1_Project/48_Nexustock/planning/phases/phase_19_material_genealogy.md) | Cây Lot cha/con, khoanh vùng lỗi |
-
----
-
-## Stage 3: Enterprise integration
-
-| Phase | Tài liệu | Deliverable |
-|---|---|---|
-| 20 | [Local Agent foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_20_local_agent_foundation.md) | Windows service, WebSocket local, device health |
-| 21 | [Scale integration](file:///d:/1_Project/48_Nexustock/planning/phases/phase_21_scale_integration.md) | Cân điện tử, fallback cân tay |
-| 22 | [Label printing](file:///d:/1_Project/48_Nexustock/planning/phases/phase_22_label_printing.md) | ZPL/TSPL, print log, reprint |
-| 23 | [ERP/WMS legacy contract](file:///d:/1_Project/48_Nexustock/planning/phases/phase_23_erp_wms_legacy_contract.md) | API contract, import/export |
-| 24 | [Webhook & integration reliability](file:///d:/1_Project/48_Nexustock/planning/phases/phase_24_webhook_integration_reliability.md) | Retry, idempotency, dead-letter |
-| 25 | [Operational observability](file:///d:/1_Project/48_Nexustock/planning/phases/phase_25_operational_observability.md) | Audit, timeline, KPI, alert, trace ID |
-| 26 | [Production deployment](file:///d:/1_Project/48_Nexustock/planning/phases/phase_26_production_deployment.md) | Docker, health check, backup, rollback |
-
----
-
-## Stage 4: Optimization & automation
-
-| Phase | Tài liệu | Deliverable |
-|---|---|---|
-| 27 | [Cross-docking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_27_cross_docking.md) | Chuyển tiếp trực tiếp hàng vừa nhận sang đơn xuất |
-| 28 | [Labor tracking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_28_labor_tracking.md) | Đo năng suất theo task |
-| 29 | [Task interleaving](file:///d:/1_Project/48_Nexustock/planning/phases/phase_29_task_interleaving.md) | Gợi ý task kế tiếp |
-| 30 | [Hardening & production acceptance](file:///d:/1_Project/48_Nexustock/planning/phases/phase_30_hardening_production_acceptance.md) | Security, load, UAT, cutover, rollback rehearsal |
-
+| 01 | [Project foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_01_project_foundation.md) | Thiết lập nền tảng dự án để đội phát triển có thể chạy, build và mở rộng Nexustock nhất quán. |
+| 02 | [Master data foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_02_master_data_foundation.md) | Chuẩn hóa dữ liệu nền WMS để mọi nghiệp vụ sau dùng chung một catalog nhất quán. |
+| 03 | [User, RBAC & audit foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_03_user_rbac_audit_foundation.md) | Thiết lập bảo mật nền: user, role, permission, JWT/session và audit log cho mọi thay đổi dữ liệu. |
+| 04 | [Inbound receiving](file:///d:/1_Project/48_Nexustock/planning/phases/phase_04_inbound_receiving.md) | Nhận hàng từ PO/Invoice, tạo Lot và ghi transaction nhập kho. |
+| 05 | [QC hold/release](file:///d:/1_Project/48_Nexustock/planning/phases/phase_05_qc_hold_release.md) | Kiểm soát chất lượng Lot sau nhận: hold, release, reject, quarantine. |
+| 06 | [Inventory by location & movement](file:///d:/1_Project/48_Nexustock/planning/phases/phase_06_inventory_location_movement.md) | Quản lý tồn kho theo vị trí và chuyển vị trí an toàn, chống âm kho. |
+| 07 | [Outbound picking & packing basic](file:///d:/1_Project/48_Nexustock/planning/phases/phase_07_outbound_picking_packing_basic.md) | Xuất kho cơ bản từ shipment đến picking, packing và trừ tồn. |
+| 08 | [Cycle count & stock adjustment](file:///d:/1_Project/48_Nexustock/planning/phases/phase_08_cycle_count_stock_adjustment.md) | Kiểm kê chu kỳ, khóa vị trí, ghi nhận chênh lệch và phê duyệt điều chỉnh tồn. |
+| 09 | [RF/mobile core scan](file:///d:/1_Project/48_Nexustock/planning/phases/phase_09_rf_mobile_core_scan.md) | Chuẩn hóa thao tác handheld/mobile cho inbound, movement, picking, stocktake và packing. |
+| 10 | [Exception framework MVP](file:///d:/1_Project/48_Nexustock/planning/phases/phase_10_exception_framework_mvp.md) | Chuẩn hóa xử lý ngoại lệ vận hành cho sai mã, sai Lot, sai vị trí, thiếu/dư hàng, lỗi thiết bị. |
+| 11 | [Rule engine foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_11_rule_engine_foundation.md) | Tạo nền rule engine dạng bảng, có priority, condition, action và execution log. |
+| 12 | [Putaway slotting](file:///d:/1_Project/48_Nexustock/planning/phases/phase_12_putaway_slotting.md) | Đề xuất vị trí cất hàng theo rule, capacity, zone và đặc tính vật tư. |
+| 13 | [Allocation & reservation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_13_allocation_reservation.md) | Giữ hàng theo đơn xuất, ưu tiên, khách hàng, Lot, hạn dùng và trạng thái QC. |
+| 14 | [Replenishment](file:///d:/1_Project/48_Nexustock/planning/phases/phase_14_replenishment.md) | Tự tạo nhiệm vụ bổ sung pick face từ reserve location theo min/max. |
+| 15 | [LPN pallet management](file:///d:/1_Project/48_Nexustock/planning/phases/phase_15_lpn_pallet_management.md) | Quản lý Pallet/LPN để gom Lot và di chuyển hàng loạt bằng một mã. |
+| 16 | [Serial tracking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_16_serial_tracking.md) | Truy vết từng đơn vị sản phẩm bằng Serial Number. |
+| 17 | [RMA return flow](file:///d:/1_Project/48_Nexustock/planning/phases/phase_17_rma_return_flow.md) | Xử lý hàng trả về, QC phân loại, tái nhập/cách ly/scrap. |
+| 18 | [Wave picking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_18_wave_picking.md) | Gom nhiều đơn xuất thành wave để tối ưu lấy hàng. |
+| 19 | [Material genealogy](file:///d:/1_Project/48_Nexustock/planning/phases/phase_19_material_genealogy.md) | Truy vết cây Lot cha/con và khoanh vùng lỗi chất lượng. |
+| 20 | [Local Agent foundation](file:///d:/1_Project/48_Nexustock/planning/phases/phase_20_local_agent_foundation.md) | Tạo Windows Local Agent kết nối Web UI với thiết bị cục bộ qua localhost WebSocket. |
+| 21 | [Scale integration](file:///d:/1_Project/48_Nexustock/planning/phases/phase_21_scale_integration.md) | Tích hợp cân điện tử qua COM và fallback cân tay có kiểm soát. |
+| 22 | [Label printing](file:///d:/1_Project/48_Nexustock/planning/phases/phase_22_label_printing.md) | In tem mã vạch qua ZPL/TSPL, print job và reprint audit. |
+| 23 | [ERP/WMS legacy contract](file:///d:/1_Project/48_Nexustock/planning/phases/phase_23_erp_wms_legacy_contract.md) | Chuẩn hóa API contract, import/export và mapping với ERP/WMS cũ. |
+| 24 | [Webhook & integration reliability](file:///d:/1_Project/48_Nexustock/planning/phases/phase_24_webhook_integration_reliability.md) | Webhook tin cậy với retry, backoff, dead-letter và replay. |
+| 25 | [Operational observability](file:///d:/1_Project/48_Nexustock/planning/phases/phase_25_operational_observability.md) | Thiết lập audit, activity timeline, KPI, alert và trace ID xuyên hệ thống. |
+| 26 | [Production deployment](file:///d:/1_Project/48_Nexustock/planning/phases/phase_26_production_deployment.md) | Đóng gói production bằng Docker, health check, backup/restore và rollback. |
+| 27 | [Cross-docking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_27_cross_docking.md) | Đề xuất chuyển tiếp trực tiếp hàng vừa nhận sang đơn xuất phù hợp. |
+| 28 | [Labor tracking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_28_labor_tracking.md) | Đo năng suất theo task, user, ca, zone và loại thao tác. |
+| 29 | [Task interleaving](file:///d:/1_Project/48_Nexustock/planning/phases/phase_29_task_interleaving.md) | Gợi ý task kế tiếp để giảm di chuyển rỗng nhưng không phá rule vận hành. |
+| 30 | [Hardening & production acceptance](file:///d:/1_Project/48_Nexustock/planning/phases/phase_30_hardening_production_acceptance.md) | Kiểm thử tổng thể, hardening, UAT, cutover và rollback rehearsal trước go-live. |
 ---
 
 ## Tài liệu phase cũ
@@ -148,3 +130,5 @@ gantt
 Các phase cũ đã được chuyển vào thư mục tạm:
 
 [planning/phases/temp](file:///d:/1_Project/48_Nexustock/planning/phases/temp)
+
+
