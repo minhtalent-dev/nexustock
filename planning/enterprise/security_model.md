@@ -1,60 +1,155 @@
-# Security model
+# Security Model - Nexustock WMS
 
-## Tenancy
+Tài liệu thiết kế chi tiết mô hình bảo mật đa tầng, tối ưu hóa cho môi trường đám mây (Multi-tenant Cloud) kết hợp với vận hành thiết bị ngoại vi tại nhà kho (Local Agent).
 
-- Model: multi-warehouse cùng tenant.
-- `tenantId` = company/organization.
-- `warehouseId` = operating warehouse under tenant.
-- API must reject cross-tenant access even when ID is guessed.
-- Warehouse-scoped permissions must check both `tenantId` and allowed `warehouseId`.
+---
 
-## Auth and authorization
+## 1. Cơ chế Xác thực & Phân quyền (Authentication & Authorization)
 
-- Human users authenticate through app auth.
-- Mutation APIs require permission code and audit.
-- Device operations require station pairing and device permission.
-- Integration APIs require partner credential and idempotency key.
+### 1.1 Cấu trúc Token JWT (JSON Web Token)
+Tất cả các API nghiệp vụ WMS đều được bảo vệ bởi JWT Token sử dụng thuật toán ký `HS256`. 
+Cấu trúc Payload bắt buộc của JWT như sau:
 
-## Local agent trust model
+```json
+{
+  "sub": "usr_01H7XZY...",
+  "userId": "usr_01H7XZY...",
+  "userName": "receiver.optimum",
+  "tenantId": "tnt_vinamilk_01",
+  "warehouseId": "wh_vsip_01",
+  "roles": ["WmsReceiver"],
+  "permissions": [
+    "inbound_receiving.read",
+    "inbound_receiving.create"
+  ],
+  "exp": 1782806400
+}
+```
 
-- Local Agent runs as Windows service.
-- Bind only `127.0.0.1:9000`; never bind `0.0.0.0`.
-- Browser origin allowlist required.
-- First pairing uses short-lived pairing code generated from authenticated UI.
-- Pairing token stored in OS-protected user/machine storage, not plain text config.
-- Agent token rotation required on admin revoke, station reinstall, or suspected compromise.
-- WebSocket messages include `messageId`, `stationId`, `deviceId`, `timestamp`, `traceId`.
-- Agent rejects stale messages older than configured skew.
+### 1.2 Ma trận phân quyền chi tiết (RBAC Matrix)
 
-## Device priority
+Dưới đây là bảng phân quyền chi tiết cho 4 vai trò cốt lõi trong vận hành nhà kho:
 
-1. Local agent Windows service.
-2. Scanner keyboard wedge.
-3. Scale COM.
-4. Zebra ZPL printer.
-5. TSC TSPL printer.
+| Quyền hạn (Permission Code) | Thủ kho nhận (WmsReceiver) | Kiểm soát QC (WmsQcInspector) | Nhân viên lấy hàng (WmsPicker) | Nhân viên đóng gói (WmsPacker) |
+|---|:---:|:---:|:---:|:---:|
+| `inbound_receiving.read` | ✅ | ✅ | ❌ | ❌ |
+| `inbound_receiving.create` | ✅ | ❌ | ❌ | ❌ |
+| `lot.hold` | ❌ | ✅ | ❌ | ❌ |
+| `lot.release` | ❌ | ✅ | ❌ | ❌ |
+| `inventory.move` | ✅ | ✅ | ✅ | ❌ |
+| `pick.execute` | ❌ | ❌ | ✅ | ❌ |
+| `pack.execute` | ❌ | ❌ | ❌ | ✅ |
+| `print.execute` | ✅ | ✅ | ❌ | ✅ |
+| `print.reprint` | ❌ | ❌ | ❌ | ✅ |
 
-## Health endpoint rule
+---
 
-- `/health/live` returns process liveness only.
-- `/health/ready` returns dependency readiness without secrets.
-- Health endpoints should be restricted by network/reverse proxy where possible, not normal business auth.
-- Response must not expose connection string, token, printer path, COM details or machine secret.
+## 2. Bảo mật trạm Local Agent (Local Agent Security Model)
 
-## Secret handling
+Local Agent chạy dưới dạng Windows Service và hoạt động như một WebSocket Secure (`wss://`) bridge kết nối trình duyệt với thiết bị ngoại vi.
 
-- Never log password, token, HMAC secret, pairing token or raw authorization header.
-- Mask integration credentials in UI and logs.
-- Rotation events must be audited.
+```mermaid
+sequenceDiagram
+    participant WebUI as Web Browser (HTTPS)
+    participant Agent as Local Agent (WSS 127.0.0.1)
+    participant API as Web API Cloud
+    participant Scale as COM Port Scale
+    
+    Note over Agent: Trạng thái: Unpaired
+    WebUI->>API: 1. Request Pairing Code (Auth JWT)
+    API-->>WebUI: Trả về Pairing Code (One-time, 3m)
+    WebUI->>Agent: 2. Gửi Pairing Code (WS Handshake)
+    Agent->>API: 3. POST /api/stations/pair (Pairing Code)
+    API-->>Agent: 4. Trả về stationId & AgentToken (Mã hóa)
+    Note over Agent: Lưu AgentToken bằng DPAPI/Windows Credential
+    Agent-->>WebUI: 5. Pairing Complete
+    
+    Note over WebUI, Agent: Các kết nối tiếp theo: WebSocket HMAC Handshake
+```
 
-## Audit
+### 2.1 Cơ chế mã hóa khóa AgentToken
+- **Lưu trữ cục bộ:** `AgentToken` tuyệt đối không ghi dạng clear-text vào file JSON/XML phẳng. Trên hệ điều hành Windows, Agent bắt buộc phải gọi API **DPAPI (Data Protection API)** hoặc lưu vào **Windows Credential Manager** để mã hóa khóa bằng ngữ cảnh bảo mật của User chạy dịch vụ.
+- **Xác thực WebSocket:** Mọi bản tin WS Client gửi lên Agent phải đính kèm:
+  - `timestamp` (UTC ISO 8601).
+  - `signature` = `HMAC-SHA256(payload, AgentToken)`.
+  - Local Agent sẽ reject bản tin nếu `Time Skew` (độ lệch thời gian máy trạm và client) lớn hơn **30 giây** để chống tấn công phát lại (Replay Attack).
 
-Audit required for:
+### 2.2 PowerShell Deployment Script cho Self-Signed Certificate
+Để trình duyệt (HTTPS) không chặn WebSocket Secure (`wss://127.0.0.1:9000`), Local Agent builder phải sinh chứng chỉ SSL nội bộ và trust tự động trên máy trạm của thủ kho qua script sau:
 
-- Permission changes.
-- Pairing/revoking station.
-- Manual weight override.
-- Reprint.
-- Import commit.
-- Webhook replay.
-- Deployment approval/checklist sign-off.
+```powershell
+# 1. Tạo Root Certificate cục bộ
+$cert = New-SelfSignedCertificate -Type Custom -KeySpec Signature `
+    -Subject "CN=Nexustock Local CA" -KeyExportPolicy Exportable `
+    -HashAlgorithm sha256 -KeyLength 2048 `
+    -CertStoreLocation "Cert:\CurrentUser\My" `
+    -KeyUsage PropertySign, CertSign
+
+# 2. Export chứng chỉ để import vào Root Store
+$certPath = "$env:TEMP\nexustock_ca.cer"
+Export-Certificate -Cert -FilePath $certPath
+
+# 3. Trust chứng chỉ tự ký hệ thống
+Import-Certificate -FilePath $certPath -CertStoreLocation "Cert:\LocalMachine\Root"
+Import-Certificate -FilePath $certPath -CertStoreLocation "Cert:\CurrentUser\Root"
+
+# 4. Bind chứng chỉ vào Port 9000 cho WebSocket Server
+# Lưu ý: $cert.Thumbprint là dấu vân tay của cert vừa tạo
+$guid = [Guid]::NewGuid().ToString("B")
+netsh http add sslcert ipport=127.0.0.1:9000 certhash=$cert.Thumbprint appid=$guid
+```
+
+---
+
+## 3. Các biện pháp chống IDOR & CSRF (IDOR & CSRF Mitigations)
+
+### 3.1 Chống IDOR (Insecure Direct Object Reference)
+WMS áp dụng cơ chế tự động lọc theo Tenant (Global Query Filter) trong Entity Framework Core nhằm cách ly dữ liệu:
+
+```csharp
+// Cấu hình Entity Framework Core DbContext
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    base.OnModelCreating(modelBuilder);
+
+    // Tự động áp dụng bộ lọc tenantId cho tất cả thực thể có Interface ITenantEntity
+    foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+    {
+        if (typeof(ITenantEntity).IsAssignableFrom(entityType.ClrType))
+        {
+            modelBuilder.Entity(entityType.ClrType)
+                .HasQueryFilter(ConvertFilterExpression(entityType.ClrType));
+        }
+    }
+}
+```
+Tại tầng API, Controller bắt buộc kiểm tra quyền sở hữu đối tượng trước khi thực hiện mutation:
+- API `/api/inbound/orders/{orderId}/receive` bắt buộc kiểm tra:
+  `inboundOrder.tenantId == userClaim.tenantId && inboundOrder.warehouseId == userClaim.warehouseId`
+
+### 3.2 Phòng chống CSRF (Cross-Site Request Forgery)
+- Mọi API Mutation (POST, PUT, DELETE) dùng cookie-based session bắt buộc phải đính kèm **X-CSRF-TOKEN** or **Antiforgery Token** trong header HTTP.
+- Trong ASP.NET Core: Kích hoạt `[ValidateAntiForgeryToken]` hoặc cấu hình tự động tại DI:
+  ```csharp
+  services.AddAntiforgery(options => options.HeaderName = "X-XSRF-TOKEN");
+  ```
+
+---
+
+## 4. Nhật ký Kiểm toán hệ thống (Audit Logging)
+
+Bảng ghi log kiểm toán (`AuditLogs`) lưu vết bất biến các thay đổi trạng thái và hành vi override nhạy cảm:
+
+| Trường dữ liệu (Field) | Kiểu dữ liệu | Mô tả |
+|---|---|---|
+| `Id` | Guid | Khóa chính |
+| `TenantId` | String | Định danh Tenant |
+| `TraceId` | String | Trace ID của API request |
+| `Actor` | String | User thực hiện (`userId` hoặc `system_job`) |
+| `ActionType` | String | Loại thao tác (`PERMISSION_CHANGE`, `WEIGH_OVERRIDE`, `REPRINT`) |
+| `EntityName` | String | Tên thực thể chịu ảnh hưởng (`InventoryBalances`, `PrintJobs`) |
+| `EntityId` | String | ID thực thể |
+| `OldValues` | JSON | Dữ liệu cũ trước khi đổi (dùng cho debug và phục hồi) |
+| `NewValues` | JSON | Dữ liệu mới sau khi đổi |
+| `ReasonCode` | String | Mã lý do bắt buộc giải trình |
+| `Timestamp` | DateTime | Thời gian ghi nhận (UTC) |

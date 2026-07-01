@@ -1,141 +1,257 @@
-# API contracts core
+# API Contracts - Nexustock WMS Core
 
-## Shared rules
+Tài liệu đặc tả các giao diện lập trình ứng dụng (API Contracts) cốt lõi của hệ thống WMS, tuân thủ định dạng `camelCase` cho payload và chuẩn OpenAPI 3.0.
 
-- JSON uses camelCase.
-- Mutation requires auth, permission and `Idempotency-Key` header.
-- Every response includes `traceId`.
-- List APIs use `page`, `pageSize`, `sort`, `filters`; max `pageSize` = 100.
+---
 
-## Error envelope
+## 1. OpenAPI 3.0 Specification cho các APIs Cốt lõi
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Nexustock WMS API - Core Contracts
+  version: 1.0.0
+paths:
+  /api/inbound/orders/{orderId}/receive:
+    post:
+      summary: Ghi nhận nhận hàng thực tế từ PO
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InboundReceiveRequest'
+      responses:
+        '200':
+          description: Thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InboundReceiveResponse'
+        '400':
+          description: Lỗi nghiệp vụ (Vượt tolerance, trùng Lot)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+  /api/outbound/shipments/{shipmentId}/allocate:
+    post:
+      summary: Chạy Rule Engine và phân bổ tồn kho giữ hàng
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AllocationRequest'
+      responses:
+        '200':
+          description: Phân bổ thành công (toàn bộ hoặc một phần)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationResponse'
+        '400':
+          description: Lỗi phân bổ (Hết hàng khả dụng nếu allowPartial = false)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    InboundReceiveRequest:
+      type: object
+      required:
+        - warehouseId
+        - lineId
+        - itemId
+        - lotNo
+        - qty
+        - uomCode
+        - locationId
+      properties:
+        warehouseId:
+          type: string
+        lineId:
+          type: string
+        itemId:
+          type: string
+        lotNo:
+          type: string
+        qty:
+          type: number
+          format: double
+        uomCode:
+          type: string
+        locationId:
+          type: string
+        expiryDate:
+          type: string
+          format: date
+        reasonCode:
+          type: string
+          nullable: true
+
+    InboundReceiveResponse:
+      type: object
+      properties:
+        inboundOrderId:
+          type: string
+        status:
+          type: string
+        lotId:
+          type: string
+        transactionId:
+          type: string
+        receivedQty:
+          type: number
+          format: double
+        traceId:
+          type: string
+
+    AllocationRequest:
+      type: object
+      required:
+        - warehouseId
+        - strategy
+      properties:
+        warehouseId:
+          type: string
+        strategy:
+          type: string
+          enum: [FEFO, FIFO, LIFO]
+        allowPartial:
+          type: boolean
+          default: true
+        reservationTtlMinutes:
+          type: integer
+          default: 1440
+
+    AllocationResponse:
+      type: object
+      properties:
+        shipmentId:
+          type: string
+        status:
+          type: string
+          enum: [allocated, partially_allocated]
+        allocatedLinesCount:
+          type: integer
+        reservations:
+          type: array
+          items:
+            type: object
+            properties:
+              reservationId:
+                type: string
+              itemId:
+                type: string
+              qty:
+                type: number
+                format: double
+        traceId:
+          type: string
+
+    ErrorEnvelope:
+      type: object
+      properties:
+        errorCode:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+        traceId:
+          type: string
+```
+
+---
+
+## 2. API Tích hợp Webhook & Chữ ký HMAC
+
+### 2.1 Cấu trúc Webhook Payload (Định dạng gửi đi từ WMS)
+Khi có sự kiện xuất kho (`outbound.shipped`), WMS phát tin nhắn webhook:
 
 ```json
 {
-  "errorCode": "inventory.insufficientAvailableQty",
-  "message": "Available quantity is not enough.",
-  "details": { "itemCode": "ITEM-001", "requestedQty": 10, "availableQty": 6 },
-  "traceId": "trc_01hxyz"
+  "eventId": "evt_01H7YZZ...",
+  "eventType": "outbound.shipped",
+  "timestamp": "2026-07-01T09:30:00Z",
+  "tenantId": "tnt_vinamilk_01",
+  "traceId": "trc_01hxyz",
+  "payload": {
+    "shipmentId": "shp_001",
+    "shipmentNo": "SO-20260701-99",
+    "carrierCode": "INTERNAL",
+    "trackingNo": "TRK-998822",
+    "shippedLines": [
+      {
+        "itemId": "item_milk_opt",
+        "lotNo": "LOT-MILK-001",
+        "qty": 100.0,
+        "uomCode": "BOX"
+      }
+    ]
+  }
 }
 ```
 
-## Inbound receive
+### 2.2 Thuật toán ký HMAC SHA-256 trên Webhook Header
+Mỗi webhook payload gửi đi được mã hóa chữ ký trong Header `X-Nexustock-Signature`. 
 
-`POST /api/inbound/orders/{orderId}/receive`
+Cấu thức code backend tạo chữ ký:
+```csharp
+using System.Security.Cryptography;
+using System.Text;
 
-Permission: `inbound_receiving.receive`
-
-```json
+public static class WebhookSigner
 {
-  "warehouseId": "wh_001",
-  "lineId": "iol_001",
-  "itemId": "item_001",
-  "lotNo": "LOT-20260701-001",
-  "qty": 12.5,
-  "uomCode": "PCS",
-  "locationId": "loc_receiving_01",
-  "expiryDate": "2027-07-01",
-  "reasonCode": null
+    public static string CreateSignature(string payloadJson, string secretKey, string timestamp)
+    {
+        var encoding = new UTF8Encoding();
+        var signatureString = $"{timestamp}.{payloadJson}";
+        byte[] keyByte = encoding.GetBytes(secretKey);
+        byte[] messageBytes = encoding.GetBytes(signatureString);
+        
+        using (var hmacsha256 = new HMACSHA256(keyByte))
+        {
+            byte[] hashmessage = hmacsha256.ComputeHash(messageBytes);
+            return Convert.ToHexString(hashmessage).ToLower();
+        }
+    }
 }
 ```
-
-Success:
-
-```json
-{
-  "inboundOrderId": "inb_001",
-  "status": "receiving",
-  "lotId": "lot_001",
-  "transactionId": "txn_001",
-  "receivedQty": 12.5,
-  "traceId": "trc_01hxyz"
-}
-```
-
-## Inventory move
-
-`POST /api/inventory/moves`
-
-Permission: `inventory_movement.create`
-
-```json
-{
-  "warehouseId": "wh_001",
-  "itemId": "item_001",
-  "lotId": "lot_001",
-  "fromLocationId": "loc_a01",
-  "toLocationId": "loc_b01",
-  "qty": 5,
-  "uomCode": "PCS",
-  "reasonCode": "MOVE_NORMAL"
-}
-```
-
-## Allocate shipment
-
-`POST /api/outbound/shipments/{shipmentId}/allocate`
-
-Permission: `allocation_reservation.create`
-
-```json
-{
-  "warehouseId": "wh_001",
-  "strategy": "FEFO",
-  "allowPartial": false,
-  "reservationTtlMinutes": 1440
-}
-```
-
-## Pick task confirm
-
-`POST /api/picking/tasks/{taskId}/confirm`
-
-Permission: `outbound_picking.confirm`
-
-```json
-{
-  "scannedLocationCode": "A-01-01",
-  "scannedItemCode": "ITEM-001",
-  "scannedLotNo": "LOT-20260701-001",
-  "pickedQty": 5,
-  "exceptionCode": null
-}
-```
-
-## Pack and ship
-
-`POST /api/packing/sessions/{sessionId}/close`
-
-```json
-{
-  "cartonNo": "CTN-0001",
-  "weight": 12.35,
-  "weightSource": "scaleCom",
-  "labelJobId": "prn_001"
-}
-```
-
-`POST /api/outbound/shipments/{shipmentId}/ship`
-
-```json
-{
-  "carrierCode": "INTERNAL",
-  "trackingNo": "TRK-001",
-  "shipTime": "2026-07-01T09:00:00Z"
-}
-```
-
-## Exception create
-
-`POST /api/exceptions`
-
-```json
-{
-  "warehouseId": "wh_001",
-  "sourceType": "pickTask",
-  "sourceId": "pick_001",
-  "exceptionCode": "SHORT_PICK",
-  "severity": "medium",
-  "description": "Short quantity found at location.",
-  "evidence": { "scannedLocationCode": "A-01-01" }
-}
-```
+*Giao thức bắt tay bảo mật:* Đối tác nhận webhook bắt buộc phải tự tính lại chữ ký trên và so sánh với giá trị header `X-Nexustock-Signature` để đảm bảo dữ liệu không bị giả mạo trên đường truyền.

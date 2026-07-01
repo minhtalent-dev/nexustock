@@ -1,94 +1,150 @@
-# Release runbook and governance (Sổ tay hướng dẫn phát hành và Cắt chuyển hệ thống)
+# Release Runbook & Governance - Nexustock WMS
 
-Tài liệu hướng dẫn các bước chi tiết cho quy trình phát hành (Release) và cắt chuyển dữ liệu (Cutover) sang môi trường Production của dự án Nexustock WMS.
-
----
-
-## 1. Bản kiểm tra Phát hành (Release Checklist)
-
-Quy trình phát hành bắt buộc phải đi qua 6 bước kiểm soát độc lập để tránh gián đoạn kho:
-
-### 1.1 Chuẩn bị & Build (Stage 1)
-- [ ] Chạy test suite toàn bộ dự án tại local và CI: `dotnet test` và `npm run test` phải pass 100%.
-- [ ] Build Docker image chính thức: `docker compose -f docker-compose.prod.yml build`.
-- [ ] Xác nhận file cài đặt Local Agent MSIX đã được ký số bằng Certificate chính thức.
-
-### 1.2 Sao lưu dữ liệu cũ (Stage 2 - Backup)
-- [ ] Thực hiện lệnh khóa ghi tạm thời trên API: `POST /api/admin/cutover/freeze`.
-- [ ] Chạy lệnh backup nóng database PostgreSQL:
-  ```bash
-  pg_dump -U postgres -h localhost -d nexustock_main -F c -b -v -f "/var/backups/nexustock/pre_release_$(date +%Y%m%d%H%M%S).backup"
-  ```
-- [ ] Xác nhận file backup đã lưu trữ thành công trên Cloud/Storage vật lý an toàn và dung lượng > 0.
-
-### 1.3 Cập nhật Database (Stage 3 - Migration)
-- [ ] Chạy script database migration trên môi trường production.
-- [ ] Kiểm tra bảng `__MigrationHistory` để đảm bảo migration chạy thành công không có lỗi pending.
-
-### 1.4 Chạy smoke test (Stage 4 - Smoke Test)
-- [ ] Kiểm tra endpoint `/health/live` và `/health/ready` trả về HTTP 200.
-- [ ] Kiểm tra kết nối WebSocket trạm Local Agent thành công.
-- [ ] Mở API freeze lock để mở cổng giao dịch trở lại.
-
-### 1.5 Nghiệm thu & Rollback (Stage 5)
-- [ ] Nếu smoke test lỗi hoặc sập kết nối không thể tự vá dưới 30 phút, kích hoạt **Quy trình rollback khẩn cấp (Section 3)**.
-- [ ] Nếu mọi thứ hoạt động tốt, xin phê duyệt signoff chính thức từ FOUNDER.
+Tài liệu đặc tả quy trình đóng gói, CI/CD, phát hành (Release) và cắt chuyển dữ liệu (Cutover) sang môi trường Production.
 
 ---
 
-## 2. Biên bản kiểm duyệt Go/No-Go (Go/No-Go Template)
+## 1. Kiến trúc Đóng gói & Deploy Topology
 
-Trước giờ phát hành chính thức (thường là 22:00 ngày cuối tuần khi kho nghỉ giao dịch), Developer chính và FOUNDER phải họp duyệt:
+Nexustock chạy trên môi trường Production sử dụng kiến trúc Container hóa.
 
+### 1.1 Sơ đồ Topology
 ```text
-====================================================================
-BIÊN BẢN DUYỆT PHÁT HÀNH NEXUSTOCK WMS
-Thời gian họp: ...
-Người chủ trì: FOUNDER
-Người báo cáo kỹ thuật: Dev chính
-====================================================================
+                  +-----------------------------------+
+                  |           Internet/WAN            |
+                  +-----------------+-----------------+
+                                    | HTTPS (SSL 1.3)
+                                    v
+                  +-----------------+-----------------+
+                  |       Nginx Reverse Proxy         |
+                  +--------+-----------------+--------+
+                           |                 |
+            HTTP /api      v                 v Static SPA
+              +------------+----+       +----+------------+
+              | ASP.NET Core VM |       | Next.js SPA VM  |
+              +--------+--------+       +-----------------+
+                       |
+        +--------------+--------------+
+        |                             |
+        v                             v
+  +-----+------+                +-----+------+
+  | PostgreSQL |                | Redis Cache|
+  +------------+                +------------+
+```
 
-CÁC TIÊU CHÍ GO/NO-GO:
-1. Kết quả Test tự động (Đạt/Không đạt): ...
-2. Kết quả UAT Signoff (Đạt/Không đạt): ...
-3. Thời gian RTO khôi phục thử nghiệm (Đạt/Không đạt): ...
-4. Trạng thái kết nối SAP sandbox (Sẵn sàng/Không sẵn sàng): ...
-5. Chứng chỉ số Local Agent (Đã ký/Chưa ký): ...
+### 1.2 File cấu trúc docker-compose.prod.yml mẫu
+```yaml
+version: '3.8'
 
-QUYẾT ĐỊNH CUỐI CÙNG (GO hoặc NO-GO): [   ]
-Ghi chú/Hành động bổ sung: ...
-====================================================================
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - wms-api
+      - wms-web
+
+  wms-api:
+    image: nexustock/wms-api:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=db;Database=nexustock_prod;Username=postgres;Password=${DB_PASSWORD}
+      - Redis__Configuration=redis:6379
+    depends_on:
+      - db
+      - redis
+
+  wms-web:
+    image: nexustock/wms-web:latest
+    environment:
+      - NEXT_PUBLIC_API_URL=https://api.nexustock.vn
+
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=nexustock_prod
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+
+  redis:
+    image: redis:7-alpine
+
+volumes:
+  pgdata:
 ```
 
 ---
 
-## 3. Quy trình Quay lui Khẩn cấp (Rollback Plan)
+## 2. GitHub Actions CI/CD Pipeline Spec
 
-Trong trường hợp phát hành phiên bản mới gặp lỗi nghiêm trọng (sập DB, mất dữ liệu, Local Agent bị chặn Windows SmartScreen hàng loạt), Developer áp dụng quy trình rollback sau dưới 2 tiếng:
+Quy trình tự động hóa kiểm thử và đóng gói Docker Image khi có pull request/merge vào branch `main`.
 
-1. **Khóa cổng Web/API:** Tắt container frontend/backend để chặn người dùng kho thao tác.
-2. **Khôi phục Database:**
-   - Xóa database lỗi: `dropdb -U postgres nexustock_main` (sau khi đã sao lưu bản lỗi để đối soát sau).
-   - Tạo lại database trống: `createdb -U postgres nexustock_main`.
-   - Khôi phục từ file backup lưu tại Stage 2:
-     ```bash
-     pg_restore -U postgres -d nexustock_main -v "/var/backups/nexustock/pre_release_xxxx.backup"
-     ```
-3. **Quay lui phiên bản Code (Rollback Code):**
-   - Đẩy (Deploy) Docker image của phiên bản ổn định trước đó (Rollback tag).
-   - Rollback phiên bản Local Agent trên các máy trạm thủ kho nếu có thay đổi logic WebSocket.
-4. **Mở kết nối & Smoke Test lại:** Chạy lại smoke test để đảm bảo kho hoạt động ổn định trên bản cũ.
-5. **Thông báo sự cố:** Gửi thông báo đến Ops Lead và các bên liên quan theo mẫu:
-   > *"Hệ thống Nexustock phát sinh lỗi tương thích thiết bị ngoại vi trong đợt cập nhật ngày... Chúng tôi đã thực hiện rollback thành công về phiên bản cũ lúc... Hoạt động của kho hiện bình thường."*
+```yaml
+name: Production Release CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    # 1. Setup & Test Backend (.NET)
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+    - name: Restore dependencies
+      run: dotnet restore backend/Nexustock.sln
+    - name: Run Backend Unit & Integration Tests
+      run: dotnet test backend/Nexustock.sln --no-restore --configuration Release
+
+    # 2. Setup & Test Frontend (NodeJS)
+    - name: Setup NodeJS
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    - name: Install JS dependencies
+      run: npm ci --prefix frontend
+    - name: Run Frontend Tests
+      run: npm test --prefix frontend
+
+    # 3. Build & Push Docker Images
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Backend Image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: true
+        tags: nexustock/wms-api:latest,nexustock/wms-api:${{ github.sha }}
+
+    - name: Build and Push Frontend Image
+      uses: docker/build-push-action@v4
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: true
+        tags: nexustock/wms-web:latest,nexustock/wms-web:${{ github.sha }}
+```
 
 ---
 
-## 4. Ma trận hỗ trợ Hypercare (Hypercare Support & Escalation)
-
-Giai đoạn Hypercare diễn ra trong 72 giờ đầu tiên sau go-live. Developer chính chịu trách nhiệm trực chiến:
-
-| Cấp độ lỗi | Triệu chứng | RTO tối đa | Quy trình leo thang (Escalation) |
-|---|---|---|---|
-| **Lỗi Cấp 1 (Critical)** | Sập kho, mất dữ liệu, không in được tem, cân không hoạt động | 1 giờ | Dev chính xử lý ngay. Báo cáo trực tiếp FOUNDER mỗi 15 phút. |
-| **Lỗi Cấp 2 (High)** | Một số RF scanner bị đơ kết nối, lỗi đồng bộ SAP lẻ | 4 giờ | Dev chính chẩn đoán, đưa phương án fix nóng hoặc manual override. |
-| **Lỗi Cấp 3 (Medium)** | Sai lệch giao diện hiển thị, thiếu báo cáo KPI | 24 giờ | Ghi nhận issue tracker, lập kế hoạch fix vào sprint sau. |
+## 3. Quy trình Cắt chuyển dữ liệu (Cutover) & Diễn tập Rollback
+Chi tiết các bước rollback khẩn cấp và Hypercare support được chốt tại tài liệu tổng [release_runbook_governance.md](file:///d:/1_Project/48_Nexustock/planning/enterprise/release_runbook_governance.md).
+- **RTO (Recovery Time Objective):** Dưới **2 giờ** khôi phục database từ file dump và restart containers.
+- **RPO (Recovery Point Objective):** Dưới **1 giờ** lệch dữ liệu (nhờ sao lưu DB ngay trước thời điểm cutover).
+- **Data Reconciliation:** Sau khi rollback, Ops Admin quét đối chiếu log Outbox và API logs để xác định các transactions bị mất và yêu cầu ERP gửi bù (Replay) qua `Idempotency-Key` định danh duy nhất.

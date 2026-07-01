@@ -1,101 +1,75 @@
-# Integration contracts
+# Integration Contracts - Nexustock WMS
 
-## Local agent message envelope
+Tài liệu định nghĩa các giao thức và cấu trúc dữ liệu tích hợp (máy trạm Local Agent, cân điện tử COM, máy in Zebra/TSC và webhook).
+
+---
+
+## 1. Cấu trúc Message trạm Local Agent
+
+Đóng vai trò làm Envelope bọc ngoài cho mọi tin nhắn gửi qua WebSocket Secure (`wss://127.0.0.1:9000`):
 
 ```json
 {
-  "messageId": "msg_001",
+  "messageId": "msg_01H7YZZ5...",
   "stationId": "station_pack_01",
-  "deviceId": "scale_01",
+  "deviceId": "scale_com3",
   "deviceType": "scaleCom",
   "eventType": "scale.weightChanged",
-  "timestamp": "2026-07-01T09:00:00Z",
-  "traceId": "trc_001",
-  "payload": {}
+  "timestamp": "2026-07-01T09:30:00Z",
+  "traceId": "trc_01hxyz",
+  "payload": {
+    "weight": 12.35,
+    "unit": "kg",
+    "stable": true
+  }
 }
 ```
 
-## Scale COM contract
+---
 
-Priority device: scale COM.
+## 2. Giao thức Thiết bị Ngoại vi (Device Protocol Contracts)
 
-Config fields:
+### 2.1 Cân điện tử cổng COM (RS-232)
+- **Cấu hình trạm:**
+  - `portName`: COM3 (hoặc port được HĐH gán).
+  - `baudRate`: 9600.
+  - `stableWindowMs`: 800.
+  - `stableTolerance`: 0.02 (kg).
+- **Thuật toán xác thực số cân ổn định:**
+  - Agent đọc liên tiếp luồng dữ liệu từ cổng COM.
+  - Số cân chỉ được phát (`stable = true`) khi sự sai lệch giữa $N$ lần đọc liên tiếp trong khoảng thời gian `stableWindowMs` nhỏ hơn `stableTolerance`.
+  - Manual override (nhập tay) bắt buộc yêu cầu quyền `print.execute` và ghi nhận mã lý do `REASON-COM-FAIL`.
 
-| Field | Example | Rule |
-|---|---|---|
-| portName | COM3 | Required |
-| baudRate | 9600 | Device-specific |
-| parity | none | none/even/odd |
-| dataBits | 8 | Usually 7 or 8 |
-| stopBits | 1 | Usually 1 |
-| readMode | stableWindow | Required |
-| stableWindowMs | 800 | Must be > 0 |
-| stableTolerance | 0.02 | Decimal |
-| unit | kg | kg/g/lb |
+### 2.2 Máy in nhãn (Zebra ZPL / TSC TSPL)
+Mỗi Print Job gửi xuống Agent phải tuân thủ schema:
 
-Stable reading rule:
+```json
+{
+  "printJobId": "job_01H7...",
+  "printerCode": "PRN-ZEBRA-01",
+  "language": "zpl",
+  "templateCode": "LABEL-PALLET-01",
+  "payload": {
+    "lotNo": "LOT-MILK-001",
+    "itemCode": "ITEM-001",
+    "qty": "100",
+    "uomCode": "BOX"
+  },
+  "copies": 1,
+  "idempotencyKey": "idem_job_11928"
+}
+```
 
-- Parse raw frame.
-- Reject negative or zero if workflow requires positive.
-- Require N readings within tolerance during stable window.
-- Emit `stable=true` only after stable window passes.
-- Manual override requires permission, reason and audit.
+**Cơ chế in lại (Reprint):**
+- In lại tem nhãn bắt buộc sinh `printJobId` mới có trường liên kết `originalPrintJobId`.
+- Ghi nhận Audit Log kèm theo `reasonCode` (ví dụ: `REASON-LABEL-TORN` - Rách tem).
 
-## Printer contract
+---
 
-Priority printers:
+## 3. Webhook Contract & Retry Policy
+Xem chi tiết cấu trúc payload và chữ ký HMAC trong [api_contracts_core.md](file:///d:/1_Project/48_Nexustock/planning/enterprise/api_contracts_core.md).
 
-1. Zebra ZPL.
-2. TSC TSPL.
-
-Print job fields:
-
-| Field | Rule |
-|---|---|
-| printJobId | Unique per tenant |
-| printerCode | Required |
-| language | zpl or tspl |
-| templateCode | Required active template |
-| payload | Template variables only |
-| copies | 1-10 by default |
-| idempotencyKey | Required |
-
-Reprint rule:
-
-- Reprint requires original print job, reason code and permission.
-- Reprint creates new job linked to original job.
-- Raw label command must not contain unvalidated free text.
-
-## Scanner keyboard wedge
-
-- Scanner acts as keyboard input.
-- UI field must auto-focus in RF/mobile screens.
-- Scan must always be interpreted in workflow context.
-- Unknown scan type returns clear error and does not mutate data.
-
-## ERP payload contract
-
-- Every inbound external message requires `externalSystem`, `externalReference`, `contractVersion`, `idempotencyKey`.
-- Invalid mapping fails preview and does not commit.
-- Duplicate idempotency key returns original result when payload hash matches.
-- Duplicate idempotency key with different payload hash returns conflict.
-
-## Webhook contract
-
-Headers:
-
-| Header | Rule |
-|---|---|
-| X-Nexustock-Event | Required |
-| X-Nexustock-Delivery-Id | Required |
-| X-Nexustock-Timestamp | Required |
-| X-Nexustock-Signature | HMAC SHA-256 |
-| Idempotency-Key | Required |
-
-Retry policy:
-
-- Retry on timeout, network error, 429, 5xx.
-- Do not retry on 2xx.
-- Do not retry on 400/401/403 unless manually replayed after config fix.
-- Backoff: 1m, 5m, 15m, 1h, 6h.
-- After max retry, move to dead letter.
+- **Retry Policy:**
+  - Áp dụng Retry cho các lỗi mạng hoặc HTTP Status `5xx`, `429`.
+  - Bỏ qua không retry cho lỗi Client `400`, `401`, `403` (được đưa vào hàng chờ DLQ để Admin xử lý thủ công).
+  - Khoảng thời gian Retry tăng dần (Exponential Backoff): 1 phút, 5 phút, 15 phút, 1 giờ, 6 giờ.
