@@ -1,4 +1,4 @@
-﻿# PHASE 13: Allocation & reservation
+# PHASE 13: Allocation & reservation
 
 ## Execution spec maturity
 
@@ -142,30 +142,146 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 8. Execution flow
 
-Quy trình xử lý phân bổ lô hàng xuất kho an toàn (Allocation Execution Flow):
+### 8.1 Quy trình xử lý phân bổ lô hàng xuất kho an toàn (Allocation Execution Flow)
 
-1. **Nhận yêu cầu phân bổ:** Nhận `shipmentId`, `strategy` (FEFO/FIFO/LIFO), `allowPartial` (mặc định: `true` theo chỉ đạo của FOUNDER), và `reservationTtlMinutes` (mặc định: 1440 phút).
+1. **Nhận yêu cầu phân bổ:** Nhận `shipmentId`, `strategy` (FEFO/FIFO/LIFO), `allowPartial` (mặc định: `true`), và `reservationTtlMinutes` (mặc định: 1440 phút).
 2. **Khởi tạo Transaction:** Mở Database Transaction mức Isolation Level = `ReadCommitted`.
 3. **Truy vấn nhu cầu xuất (Shipment Lines):** Đọc danh sách các line cần xuất của shipment.
 4. **Truy vấn tồn kho khả dụng:** Tìm các bản ghi `InventoryBalances` thỏa mãn điều kiện:
    - Trạng thái QC (`qcStatus`) của Lot là `released` (Đã duyệt chất lượng).
    - Vị trí (`locationId`) không bị khóa (`lockReason` là null).
    - Có số lượng khả dụng thực tế (`qty - qtyReserved > 0`).
-5. **Áp dụng Thuật toán Phân bổ:**
+5. **Áp dụng Thuật toán Phân bổ & Lock:**
+   - Để tránh hai đơn hàng phân bổ cùng một dòng tồn kho tại cùng một thời điểm, áp dụng cơ chế **Pessimistic Locking** (`SELECT FOR UPDATE`) trên các dòng `InventoryBalances` được tìm thấy.
    - Sắp xếp dòng tồn kho theo chiến lược:
      - `FEFO`: Sắp xếp `expiryDate` tăng dần (Hạn gần xuất trước).
      - `FIFO`: Sắp xếp `manufactureDate` hoặc `createdAt` tăng dần.
+     - **Quy tắc Tie-break:** Nếu hai lô có cùng `expiryDate` (hoặc `manufactureDate`), hệ thống ưu tiên lô có `manufactureDate` sớm hơn -> `createdAt` sớm hơn -> `id` tăng dần.
    - Duyệt qua từng dòng tồn kho để trừ lùi nhu cầu xuất.
 6. **Xử lý Phân bổ Một phần (Partial Allocation):**
    - Nếu số lượng tồn kho khả dụng < số lượng yêu cầu của line:
      - Nếu `allowPartial = true`: Ghi nhận phân bổ một phần, gán số lượng phân bổ thực tế (`allocatedQty`) bằng tồn khả dụng tối đa, cập nhật trạng thái Shipment Line thành `partially_allocated`.
      - Nếu `allowPartial = false`: Hủy toàn bộ tiến trình, rollback transaction và trả lỗi `inventory.insufficientAvailableQty`.
-7. **Chiến lược Lock tránh Concurrency Race Condition:**
-   - Để tránh hai đơn hàng phân bổ cùng một dòng tồn kho tại cùng một thời điểm:
-     - Áp dụng cơ chế **Pessimistic Locking** trên bảng `InventoryBalances` bằng câu lệnh SQL `SELECT ... FOR UPDATE` (hoặc `rowVersion` OCC nếu chạy database có hỗ trợ phân bổ phân tán nhanh, nhưng ưu tiên `SELECT FOR UPDATE` trên các dòng balance cụ thể trong transaction ngắn).
-     - Ghi nhận bản ghi mới vào bảng `AllocationReservations` với trạng thái `active`.
-     - Cộng dồn số lượng giữ hàng vào trường `qtyReserved` của `InventoryBalances` của dòng tương ứng.
-8. **Commit Transaction:** Lưu thay đổi xuống PostgreSQL. Gửi sự kiện `AllocationCompletedEvent` ra ngoài qua Outbox.
+7. **Commit Transaction:** Lưu thay đổi xuống PostgreSQL. Gửi sự kiện `AllocationCompletedEvent` ra ngoài qua Outbox.
+
+### 8.2 Thuật toán phân bổ chi tiết (Pseudo-code C#)
+
+```csharp
+public async Task<AllocationResult> AllocateAsync(
+    Guid shipmentId, 
+    AllocationStrategy strategy = AllocationStrategy.FEFO, 
+    bool allowPartial = true, 
+    int reservationTtlMinutes = 1440)
+{
+    const int maxRetries = 3;
+    const int delayMs = 50;
+    
+    for (int retry = 0; retry < maxRetries; retry++)
+    {
+        using var transaction = await _dbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        try
+        {
+            var shipmentLines = await _dbContext.ShipmentLines
+                .Where(x => x.ShipmentId == shipmentId && x.Status != ShipmentLineStatus.Allocated)
+                .ToListAsync();
+                
+            foreach (var line in shipmentLines)
+            {
+                // Lock pessimistic trên InventoryBalances của Item Code
+                var balances = await _dbContext.InventoryBalances
+                    .FromSqlRaw(@"SELECT * FROM ""InventoryBalances"" 
+                                  WHERE ""ItemId"" = {0} 
+                                    AND ""QcStatus"" = 'released' 
+                                    AND ""LockReason"" IS NULL 
+                                  FOR UPDATE", line.ItemId)
+                    .ToListAsync();
+                
+                // Áp dụng chiến lược sắp xếp và Tie-break
+                if (strategy == AllocationStrategy.FEFO)
+                {
+                    balances = balances
+                        .OrderBy(x => x.ExpiryDate)
+                        .ThenBy(x => x.ManufactureDate)
+                        .ThenBy(x => x.CreatedAt)
+                        .ThenBy(x => x.Id)
+                        .ToList();
+                }
+                else // FIFO
+                {
+                    balances = balances
+                        .OrderBy(x => x.ManufactureDate)
+                        .ThenBy(x => x.CreatedAt)
+                        .ThenBy(x => x.Id)
+                        .ToList();
+                }
+                
+                decimal remainingQty = line.OrderedQty - line.AllocatedQty;
+                if (remainingQty <= 0) continue;
+                
+                foreach (var balance in balances)
+                {
+                    decimal availableQty = balance.Qty - balance.QtyReserved;
+                    if (availableQty <= 0) continue;
+                    
+                    decimal allocatedQty = Math.Min(remainingQty, availableQty);
+                    
+                    // Cập nhật lượng giữ hàng
+                    balance.QtyReserved += allocatedQty;
+                    remainingQty -= allocatedQty;
+                    
+                    // Tạo bản ghi Allocation Reservation
+                    var reservation = new AllocationReservation
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = line.TenantId,
+                        WarehouseId = line.WarehouseId,
+                        ShipmentLineId = line.Id,
+                        InventoryBalanceId = balance.Id,
+                        Qty = allocatedQty,
+                        Status = ReservationStatus.Active,
+                        ExpiresAt = DateTime.UtcNow.AddMinutes(reservationTtlMinutes)
+                    };
+                    await _dbContext.AllocationReservations.AddAsync(reservation);
+                    
+                    if (remainingQty == 0) break;
+                }
+                
+                if (remainingQty > 0)
+                {
+                    if (!allowPartial)
+                    {
+                        throw new InsufficientInventoryException($"Không đủ tồn kho khả dụng cho vật tư: {line.ItemId}");
+                    }
+                    line.Status = ShipmentLineStatus.PartiallyAllocated;
+                }
+                else
+                {
+                    line.Status = ShipmentLineStatus.Allocated;
+                }
+            }
+            
+            await _dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+            
+            // Gửi Outbox Event
+            await PublishOutboxEventAsync(new AllocationCompletedEvent { ShipmentId = shipmentId });
+            return AllocationResult.Success();
+        }
+        catch (NpgsqlException ex) when (ex.SqlState == "40P01") // Lỗi Deadlock từ PostgreSQL
+        {
+            await transaction.RollbackAsync();
+            if (retry == maxRetries - 1) throw; // Vượt quá số lần retry, ném lỗi ra ngoài
+            await Task.Delay(delayMs * (retry + 1)); // Exponential Backoff
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+    return AllocationResult.Failed("Đã xảy ra lỗi tranh chấp khóa phân bổ.");
+}
+```
 
 ## 9. Validation & business rules
 
@@ -260,7 +376,13 @@ Quy trình xử lý phân bổ lô hàng xuất kho an toàn (Allocation Executi
 
 ## 13. Acceptance criteria
 
-* Không có hai đơn giữ cùng một tồn
+Để đạt mức sẵn sàng 95% (Execution-Ready), hệ thống phân bổ phải đáp ứng các tiêu chí nghiệm thu sau:
+
+* **AC-01 (Tính đồng thời và Over-allocation):** Khi chạy đồng thời 2 luồng phân bổ song song cho cùng một mã vật tư có số lượng giới hạn, một luồng phải thành công và luồng còn lại phải bị block đợi khóa hoặc trả về lỗi lock timeout/hết hàng. Hệ thống tuyệt đối không được phân bổ vượt quá số tồn kho khả dụng hiện hữu (`qtyReserved` không vượt quá `qty`).
+* **AC-02 (Quy tắc FEFO/FIFO và Tie-break):** Khi phân bổ theo FEFO, hệ thống bắt buộc lấy các dòng tồn kho có `expiryDate` gần nhất. Trong trường hợp có các lô trùng hạn dùng (`expiryDate` bằng nhau), thuật toán phải thực hiện tie-break theo thứ tự: ưu tiên lô sản xuất trước (`manufactureDate` nhỏ hơn) -> lô tạo trước (`createdAt` nhỏ hơn) -> ID nhỏ hơn để bảo đảm FIFO lô.
+* **AC-03 (Xử lý Partial Allocation):** Khi `allowPartial = true`, nếu tồn kho chỉ đáp ứng 30% nhu cầu, hệ thống vẫn phải tạo reservation cho 30% đó và gán trạng thái line là `partially_allocated`. Khi `allowPartial = false`, nếu không đáp ứng đủ 100% nhu cầu của toàn bộ các line trong shipment, hệ thống phải rollback toàn bộ transaction (không tạo reservation thừa).
+* **AC-04 (Hết hạn giữ hàng tự động):** Background Job chạy mỗi 5 phút phải quét sạch các reservation ở trạng thái `active` có `expiresAt < CURRENT_TIMESTAMP` và thực hiện giải phóng tồn kho: giảm `qtyReserved` trong `InventoryBalances` tương ứng, cập nhật trạng thái reservation sang `expired` trong cùng một transaction.
+* **AC-05 (Deadlock resiliency):** Khi xảy ra tranh chấp khóa PostgreSQL gây lỗi deadlock (mã SQLState = `40P01`), hệ thống phải kích hoạt cơ chế retry tự động tối thiểu 3 lần, giãn cách tăng dần (Exponential Backoff: 50ms, 100ms, 150ms) trước khi ném ngoại lệ cuối cùng về client.
 
 ### Definition of done
 

@@ -86,16 +86,31 @@ Không tạo bảng CRUD mới cho user. Sử dụng các bảng hệ thống đ
 
 ## 8. Execution flow
 
-1. Freeze data
-2. Backup
-3. Migrate rehearsal
-4. Run tests
-5. UAT
-6. Go/no-go
-7. Cutover
-8. Monitor
+### 8.1 Quy trình cutover chi tiết từng giờ (Cutover Runbook Timeline)
 
-### Flow guardrails
+Mọi mốc thời gian dưới đây sử dụng placeholder giờ thực tế và được điều phối trực tiếp bởi DevOps (Developer chính):
+
+| Mốc thời gian | Tên bước công việc | Người thực hiện | Nội dung chi tiết | Lệnh thực thi / Ghi chú |
+|---|---|---|---|---|
+| **T-04:00** (18:00) | **System Freeze** | DevOps | Khóa toàn bộ các giao dịch ghi mới từ ERP/SAP. Thông báo bảo trì hệ thống. | Gọi API: `POST /api/admin/cutover/freeze` để đưa WMS về chế độ Read-Only. |
+| **T-03:00** (19:00) | **Database Backup** | Lead Dev | Thực hiện pg_dump sao lưu toàn bộ dữ liệu hiện tại trước cutover. | Lệnh: `pg_dump -U postgres -F t -f nexustock_prod_backup_T4.tar nexustock_prod` |
+| **T-02:30** (19:30) | **Infrastructure Deployment** | DevOps | Run docker-compose profile mới trên Production VM, thực thi script migration UP. | Lệnh: `docker-compose -f docker-compose.prod.yml up -d --build && dotnet ef database update` |
+| **T-01:30** (20:30) | **Local Agent Rollout** | IT Support | Hỗ trợ cài đặt và tin cậy chứng chỉ SSL tự ký cho Local Agent tại các trạm. | Chạy bộ cài: `NexustockLocalAgent.msix`. Xác thực service chạy nền. |
+| **T-01:00** (21:00) | **Integration Smoke Test** | Lead Dev | Ping thử kết nối SAP Gateway, in thử tem barcode qua WebSocket trạm local. | Verify in 5 tem nhãn kiểm thử không phát sinh lỗi. |
+| **T-00:30** (21:30) | **Go/No-Go Evaluation** | FOUNDER & Tech | Rà soát điều kiện sẵn sàng. FOUNDER đưa ra quyết định Go hoặc No-Go. | Dựa trên bảng Go/No-Go Thresholds ở Section 9.1. |
+| **T-00:00** (22:00) | **System Live (GO-LIVE)** | DevOps | Mở cổng tiếp nhận API Inbound từ SAP, tắt chế độ Read-Only trên WMS. | Khởi chạy chính thức hệ thống Nexustock WMS. |
+| **T+01:00** (23:00) | **Hypercare Monitoring I** | Lead Dev | Kiểm tra log, trace ID của 10 đơn nhập xuất đầu tiên từ SAP sang WMS. | Theo dõi trace log tại dashboard grafana / kibana. |
+| **T+02:00** (00:00) | **Hypercare Monitoring II** | Lead Dev | Đánh giá chỉ số hiệu năng (Latency p95 < 300ms, tỷ lệ lỗi CPU < 10%). | Gửi báo cáo vận hành đầu ca đêm cho FOUNDER. |
+
+### 8.2 Quy trình hoãn Go-Live khẩn cấp (Rollback Plan)
+
+Trường hợp cuộc họp quyết định **No-Go** tại mốc `T-00:30` hoặc hệ thống phát sinh lỗi nghiêm trọng sau go-live, DevOps thực hiện:
+1. Chạy Script hạ cấp Database (Migration DOWN) để đưa cấu hình DB về trạng thái ổn định trước đó.
+2. Trả quyền tiếp nhận PO/SO về cho Legacy WMS cũ.
+3. Thông báo cho ERP SAP chuyển đổi endpoint nhận webhook trở lại hệ thống cũ.
+4. Tắt service Local Agent trên các máy trạm nếu có xung đột thiết bị COM/USB.
+
+### 8.3 Flow guardrails
 
 * Không bỏ qua bước validate master data.
 * Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
@@ -105,9 +120,23 @@ Không tạo bảng CRUD mới cho user. Sử dụng các bảng hệ thống đ
 
 ## 9. Validation & business rules
 
-* Không go-live nếu critical fail
-* Rollback đã diễn tập
-* Data reconcile bắt buộc
+### 9.1 Go/No-Go Thresholds Checklist (Điều kiện quyết định Go-Live)
+
+Trước mốc `T-00:30`, cuộc họp Go/No-Go giữa Lead Developer và FOUNDER sẽ rà soát các điều kiện sau để ký duyệt Go-live:
+
+| STT | Chỉ số đánh giá | Ngưỡng đạt (Go Threshold) | Ngưỡng hoãn (No-Go Threshold) | Hành động khi No-Go |
+|---|---|---|---|---|
+| 1 | **Tỷ lệ kiểm thử UAT** | Pass 100% (4/4 kịch bản cốt lõi) | < 100% kịch bản UAT thành công | Hoãn go-live, rollback hệ thống về legacy, sửa bug khẩn cấp. |
+| 2 | **Khôi phục dữ liệu (RTO)** | Diễn tập Restore DB thành công < 2 giờ | RTO diễn tập > 2 giờ hoặc restore lỗi | Dừng cutover, rà soát lại script backup/restore, tối ưu hóa kích thước dump. |
+| 3 | **Code Signing Agent** | 100% máy trạm tin cậy file MSIX | Có máy trạm báo lỗi Windows SmartScreen chặn cài | IT support import thủ công Certificate vào Trusted Root CA hoặc dùng bản chạy portable. |
+| 4 | **Độ trễ API Inbound** | p95 < 500ms khi test với SAP | p95 > 1000ms hoặc timeout liên tục | Hoãn go-live, kiểm tra cấu hình network, index DB và cấu hình memory Redis. |
+| 5 | **Bảo mật Tenant** | Pass 100% test case Tenant Isolation | Có lỗi rò rỉ dữ liệu chéo giữa các tenant | **No-Go tuyệt đối**. Hủy cutover, vá lỗ hổng phân quyền ngay lập tức. |
+
+### 9.2 Luật an toàn hệ thống (Hardening Guardrails)
+
+* Bắt buộc vô hiệu hóa cổng HTTP (Port 80) trên máy chủ Production, chuyển hướng toàn bộ sang HTTPS (TLS 1.3).
+* Chỉ mở cổng IP loopback `127.0.0.1:9000` cho Local Agent. Cấm tuyệt đối bind 0.0.0.0.
+* Toàn bộ dữ liệu lịch sử cân và in của thủ kho phải thực hiện reconcile định kỳ 1 giờ một lần để đảm bảo không bị lệch số lượng.
 
 ### Validation nền bắt buộc
 
@@ -118,13 +147,52 @@ Không tạo bảng CRUD mới cho user. Sử dụng các bảng hệ thống đ
 * Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
 * Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
 
-## 10. Exception handling
+## 10. Incident Playbooks (Kịch bản ứng phó sự cố sản xuất)
 
-* Data mismatch
-* Performance fail
-* Permission mismatch
+Quy trình xử lý khẩn cấp khi gặp 3 kịch bản thảm họa hệ thống trong hoặc ngay sau khi cutover:
 
-### Mapping lỗi chuẩn
+### 10.1 Kịch bản 1: Sập Database Production trong lúc cutover
+
+* **Triệu chứng:** Kết nối DB báo `Connection Refused`, Web UI báo lỗi 500 diện rộng, API endpoint sập hoàn toàn.
+* **Quy trình xử lý (Playbook):**
+  1. **Xác định lỗi:** Chạy lệnh `docker ps` và `docker logs postgres-prod` để tìm nguyên nhân (Hết đĩa, lỗi RAM hoặc cấu hình sai tham số `max_connections`).
+  2. **Giải phóng tài nguyên:** Nếu do tràn RAM/CPU, restart Docker service: `docker-compose restart postgres`.
+  3. **Khôi phục khẩn cấp (Rollback DB):** Nếu DB bị hỏng vật lý dữ liệu (data corruption):
+     - Xóa container DB cũ: `docker-compose down -v`.
+     - Tạo lại container DB sạch: `docker-compose up -d postgres`.
+     - Khôi phục từ bản backup `nexustock_prod_backup_T4.tar` mới nhất:
+       ```bash
+       pg_restore -U postgres -d nexustock_prod -v nexustock_prod_backup_T4.tar
+       ```
+  4. **Kiểm tra tính nhất quán:** Thực hiện query đối soát: `SELECT COUNT(*) FROM "InventoryBalances"`.
+  5. **Báo cáo:** Gửi log và trace ID sự cố lên DevOps Admin.
+
+### 10.2 Kịch bản 2: Local Agent sập diện rộng hoặc lỗi kết nối thiết bị
+
+* **Triệu chứng:** Hàng loạt máy trạm của thủ kho báo lỗi đỏ "Không tìm thấy Local Agent" hoặc "Lỗi in tem hàng loạt".
+* **Quy trình xử lý (Playbook):**
+  1. **Cách ly thiết bị:** Hướng dẫn thủ kho chuyển sang chế độ **In tem thủ công** (Tải file PDF tem nhãn về máy tính local và in qua driver Windows truyền thống).
+  2. **Kiểm tra trạng thái Service:** Trên máy trạm Windows, mở Command Prompt quyền Admin chạy:
+     ```cmd
+     sc query NexustockLocalAgent
+     ```
+     Nếu service báo `STOPPED`, chạy lệnh start: `net start NexustockLocalAgent`.
+  3. **Kiểm tra chứng chỉ SSL:** Truy cập `https://127.0.0.1:9000/ping` trên trình duyệt máy trạm. Nếu báo lỗi "Your connection is not private", chạy lại script cài đặt cert tự ký trong thư mục cài đặt của Agent.
+  4. **Quét cổng:** Nếu cổng `9000` bị chiếm, cấu hình lại file `appsettings.json` của Agent sang cổng `9001` và reload Web UI để tự quét cổng dự phòng.
+
+### 10.3 Kịch bản 3: Mất kết nối liên thông với hệ thống ERP/SAP
+
+* **Triệu chứng:** SAP báo lỗi không gửi được đơn PO/SO sang WMS (lỗi timeout). WMS không bắn được Goods Receipt Webhook sang SAP.
+* **Quy trình xử lý (Playbook):**
+  1. **Bật chế độ Offline Integration:** Kích hoạt chế độ tải đơn thủ công qua Excel (Import Wizard) trên Web UI WMS để thủ kho tiếp tục nhập/xuất hàng bình thường, không làm gián đoạn kho vật lý.
+  2. **Kiểm tra Outbox Queue:** Trên WMS, kiểm tra bảng `IntegrationMessages` tìm các bản ghi có trạng thái `pending_retry` hoặc `failed`.
+  3. **Ping Network:** Thực hiện ping và trace route cổng kết nối của SAP gateway từ server WMS.
+  4. **Đồng bộ bù (Resync):** Khi đường truyền SAP phục hồi, DevOps chạy lệnh trigger gửi lại toàn bộ webhook lỗi trong hàng đợi:
+     ```bash
+     curl -X POST -H "Authorization: Bearer <token>" https://wms.nexustock.vn/api/admin/integration/retry-failed
+     ```
+
+### 10.4 Mapping lỗi chuẩn
 
 | Nhóm lỗi | Hành vi hệ thống |
 |---|---|

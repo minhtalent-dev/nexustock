@@ -1,4 +1,4 @@
-﻿# PHASE 20: Local Agent foundation
+# PHASE 20: Local Agent foundation
 
 ## Execution spec maturity
 
@@ -52,7 +52,7 @@ Thiết lập Windows Local Agent chạy dưới dạng Windows Service, đóng 
 
 ## 5. Database
 
-### Bảng dữ liệu trạm làm việc (`AgentStations`)
+### 5.1 Bảng dữ liệu trạm làm việc (`AgentStations`)
 
 | Tên cột | Kiểu dữ liệu | Nullable | Ràng buộc chính | Ý nghĩa |
 |---|---|---|---|---|
@@ -66,7 +66,7 @@ Thiết lập Windows Local Agent chạy dưới dạng Windows Service, đóng 
 | `createdAt` | timestamp | No | | Thời gian tạo |
 | `updatedAt` | timestamp | Yes | | Thời gian cập nhật gần nhất |
 
-### Bảng trạng thái thiết bị ngoại vi (`DeviceStatuses`)
+### 5.2 Bảng trạng thái thiết bị ngoại vi (`DeviceStatuses`)
 
 | Tên cột | Kiểu dữ liệu | Nullable | Ràng buộc chính | Ý nghĩa |
 |---|---|---|---|---|
@@ -78,6 +78,44 @@ Thiết lập Windows Local Agent chạy dưới dạng Windows Service, đóng 
 | `connectionState`| varchar(20) | No | | Trạng thái kết nối: `connected`, `disconnected`, `error` |
 | `lastHeartbeatAt`| timestamp | No | | Heartbeat gần nhất từ Agent gửi lên |
 | `lastErrorMessage`| text | Yes | | Lỗi gần nhất nếu có |
+
+### 5.3 Kịch bản SQL Migration (PostgreSQL)
+
+```sql
+-- +migrate Up
+CREATE TABLE "AgentStations" (
+    "Id" UUID PRIMARY KEY,
+    "TenantId" VARCHAR(50) NOT NULL,
+    "StationCode" VARCHAR(50) NOT NULL,
+    "Name" VARCHAR(100) NOT NULL,
+    "TokenHash" VARCHAR(256) NOT NULL,
+    "Status" VARCHAR(30) NOT NULL DEFAULT 'active',
+    "MachineName" VARCHAR(100),
+    "CreatedAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "UpdatedAt" TIMESTAMP,
+    CONSTRAINT "UQ_AgentStations_Tenant_Code" UNIQUE ("TenantId", "StationCode")
+);
+
+CREATE TABLE "DeviceStatuses" (
+    "Id" UUID PRIMARY KEY,
+    "TenantId" VARCHAR(50) NOT NULL,
+    "StationId" UUID NOT NULL,
+    "DeviceId" VARCHAR(50) NOT NULL,
+    "DeviceType" VARCHAR(30) NOT NULL,
+    "ConnectionState" VARCHAR(20) NOT NULL DEFAULT 'disconnected',
+    "LastHeartbeatAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "LastErrorMessage" TEXT,
+    CONSTRAINT "FK_DeviceStatuses_AgentStations" FOREIGN KEY ("StationId") REFERENCES "AgentStations"("Id") ON DELETE CASCADE,
+    CONSTRAINT "UQ_DeviceStatuses_Station_Device" UNIQUE ("StationId", "DeviceId")
+);
+
+CREATE INDEX "IX_AgentStations_TenantId" ON "AgentStations" ("TenantId");
+CREATE INDEX "IX_DeviceStatuses_StationId" ON "DeviceStatuses" ("StationId");
+
+-- +migrate Down
+DROP TABLE IF EXISTS "DeviceStatuses";
+DROP TABLE IF EXISTS "AgentStations";
+```
 
 ## 6. Backend/API
 
@@ -130,7 +168,17 @@ sequenceDiagram
 
 ## 9. Validation & business rules
 
-### Luật an toàn Local Agent
+### 9.1 Threat Model & Attack Vector Matrix
+
+| ID | Attack Vector (Véc tơ tấn công) | Threat Impact (Tác động) | Mitigation Strategy (Chiến lược phòng chống) |
+|---|---|---|---|
+| **AV-01** | **Origin Spoofing** (Trang web lạ cố kết nối WebSocket của Agent) | Kẻ xấu mở tab ẩn danh chạy mã độc gán lệnh in/cân đè dữ liệu cục bộ | WebSocket Server của Agent lọc Header `Origin`. Chỉ chấp nhận các tên miền trong allowlist được cấu hình cứng (ví dụ: `https://*.nexustock.vn`). Từ chối bắt tay (handshake) ngay nếu sai. |
+| **AV-02** | **Token Theft** (Kẻ xấu đọc trộm file cấu hình Agent để lấy Pairing Token) | Giả mạo máy trạm gửi heartbeat giả, đánh cắp quyền in ấn/cân | Token lưu cục bộ trên Windows Registry hoặc JSON config bắt buộc mã hóa qua Windows Data Protection API (DPAPI) ở mức Machine/User scope. Key giải mã chỉ nằm trên kernel của máy trạm đó. |
+| **AV-03** | **Replay Attack** (Chặn tin nhắn WebSocket cũ và gửi lại) | Lặp lại lệnh cân/lệnh in cũ gây sai lệch số lượng | Mỗi request gửi xuống Agent phải có `Timestamp` (ISO 8601) và `HMAC-SHA256` ký số bằng `AgentToken`. Agent từ chối nếu thời gian lệch quá 30 giây (`Time Skew`). |
+| **AV-04** | **Port Hijack** (Phần mềm khác chiếm cổng 9000 của Agent) | Làm tê liệt kết nối Web UI đến thiết bị ngoại vi | Cơ chế quét dải cổng (Port scanning) dự phòng tự động từ `9000` đến `9005`. Web UI ping tuần tự để kết nối cổng khả dụng. |
+| **AV-05** | **MITM (Man-In-The-Middle)** (Chặn bắt gói tin trên loopback) | Rò rỉ dữ liệu hoặc chèn lệnh trái phép | Bắt buộc chạy kết nối WebSocket bảo mật `wss://127.0.0.1:9000` sử dụng chứng chỉ SSL tự ký đã được tin cậy tại máy local của trạm. |
+
+### 9.2 Luật an toàn Local Agent
 
 - **Mặc định HTTPS/WSS:** WebSocket Server của Local Agent bắt buộc sử dụng giao thức bảo mật `wss://127.0.0.1:9000` cho môi trường production để tránh bị các trình duyệt HTTPS chặn (Mixed Content). Cung cấp fallback `ws://127.0.0.1:9000` chỉ dành cho môi trường phát triển (development) cục bộ.
 - **Cấp và tin cậy chứng chỉ (Certificate Trust Flow):** 
@@ -145,6 +193,58 @@ sequenceDiagram
 - **Chỉ bind Loopback:** WebSocket Server của Local Agent bắt buộc chỉ bind địa chỉ loopback `127.0.0.1`. Tuyệt đối cấm sử dụng `0.0.0.0` hoặc IP mạng LAN để ngăn chặn truy cập chéo thiết bị ngoại vi trong mạng nội bộ.
 - **Kiểm tra Origin Allowlist:** Bất kỳ kết nối WebSocket nào đến Agent phải được xác thực Header `Origin`. Nếu Origin không khớp cấu hình cho phép của WMS, kết nối bị đóng ngay lập tức với lỗi `403 Forbidden`.
 - **Lưu trữ DPAPI:** AgentToken lưu cục bộ tại máy Windows phải được mã hóa qua Windows Data Protection API (DPAPI) ở mức User scope hoặc Machine scope để chống đọc trộm file cấu hình phẳng.
+
+### 9.3 Windows DPAPI Cryptography Wrapper (Pseudo-code C#)
+
+Để lưu trữ `AgentToken` an toàn trên máy trạm Windows, Agent sử dụng lớp thư viện mã hóa sau:
+
+```csharp
+using System.Security.Cryptography;
+using System.Text;
+
+public class DpapiSecretStorage : ISecretStorage
+{
+    // Entropy bổ sung để tăng cường bảo mật (tương đương muối bảo mật)
+    private static readonly byte[] OptionalEntropy = Encoding.UTF8.GetBytes("NexustockAgentEntropy2026");
+
+    public string EncryptSecret(string plainText)
+    {
+        if (string.IsNullOrEmpty(plainText)) return string.Empty;
+        
+        byte[] plainBytes = Encoding.UTF8.GetBytes(plainText);
+        // Mã hóa sử dụng Machine scope hoặc User scope
+        byte[] encryptedBytes = ProtectedData.Protect(
+            plainBytes, 
+            OptionalEntropy, 
+            DataProtectionScope.CurrentUser
+        );
+        
+        return Convert.ToBase64String(encryptedBytes);
+    }
+
+    public string DecryptSecret(string encryptedBase64)
+    {
+        if (string.IsNullOrEmpty(encryptedBase64)) return string.Empty;
+        
+        try
+        {
+            byte[] encryptedBytes = Convert.FromBase64String(encryptedBase64);
+            byte[] plainBytes = ProtectedData.Unprotect(
+                encryptedBytes, 
+                OptionalEntropy, 
+                DataProtectionScope.CurrentUser
+            );
+            
+            return Encoding.UTF8.GetString(plainBytes);
+        }
+        catch (CryptographicException)
+        {
+            // Trả về rỗng nếu token bị corrupt hoặc bị đổi user giải mã
+            return string.Empty;
+        }
+    }
+}
+```
 
 ## 10. Exception handling
 
@@ -173,8 +273,13 @@ sequenceDiagram
 
 ## 13. Acceptance criteria
 
-- Local Agent cài đặt thành công dưới dạng Windows Service và tự động khởi động cùng hệ điều hành.
-- Trình duyệt kết nối được WebSocket bảo mật `wss://127.0.0.1:9000` (hoặc `ws://` ở dev) và hoàn tất ghép cặp bằng mã 6 số.
-- Khi admin bấm "Revoke" trên Web UI, trạm làm việc bị đẩy ra ngay lập tức và Local Agent chuyển về trạng thái `unpaired`.
-- Không có bất kỳ file plain-text nào chứa AgentToken được lưu trên ổ đĩa máy trạm.
+Để đạt mức sẵn sàng 95% (Execution-Ready), Local Agent phải thỏa mãn các tiêu chí nghiệm thu sau:
+
+* **AC-01 (Cài đặt & Tự khởi động):** Local Agent đóng gói dạng MSIX cài đặt thành công trên máy trạm Windows 10/11, tự động đăng ký Windows Service và khởi động cùng hệ điều hành (`StartType = Automatic`).
+* **AC-02 (Xác thực Origin & Cấm WAN):** WebSocket Server của Agent chỉ lắng nghe ở `127.0.0.1`. Khi thực hiện quét cổng hoặc kết nối từ một client nằm ngoài máy (mạng LAN/WAN), kết nối phải bị chặn hoàn toàn. Khi kết nối từ trình duyệt với Header `Origin` lạ (ví dụ: `https://evil.com`), kết nối phải bị reject ngay từ khâu handshake (HTTP 403).
+* **AC-03 (Bảo mật lưu trữ Token):** Sau khi hoàn tất ghép cặp (Pairing), file cấu hình JSON cục bộ hoặc Registry của Agent chỉ chứa chuỗi token đã mã hóa dạng Base64 (DPAPI encrypted). Nếu mở file cấu hình bằng Notepad, tuyệt đối không nhìn thấy Token bản rõ. Thử copy file cấu hình sang một máy tính khác, Agent tại máy mới phải báo lỗi giải mã DPAPI thất bại và tự chuyển về trạng thái `unpaired`.
+* **AC-04 (Chống Replay & Lệch giờ):** Khi gửi lệnh in thử qua WebSocket với timestamp bị sửa lùi quá 30 giây so với giờ hệ thống của Agent, Agent phải từ chối xử lý và trả về lỗi `auth.time_skew`.
+* **AC-05 (Heartbeat & Thu hồi từ xa):** Khi Admin thực hiện "Revoke Station" trên Web Admin Cloud:
+  1. API Heartbeat trả về 403.
+  2. Agent nhận 403 lập tức kích hoạt hàm xóa token cục bộ, đóng mọi socket và chuyển trạng thái trên Web UI thành `unpaired` trong vòng 10 giây.
 
