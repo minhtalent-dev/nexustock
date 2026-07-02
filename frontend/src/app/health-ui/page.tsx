@@ -21,11 +21,12 @@ export default function HealthUi() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const fetchHealth = async () => {
     try {
       setError(null);
-      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5024";
       const response = await axios.get<HealthSummary>(`${apiUrl}/api/system/health-summary`, {
         timeout: 5000
       });
@@ -41,6 +42,7 @@ export default function HealthUi() {
   };
 
   useEffect(() => {
+    setMounted(true);
     const timeout = window.setTimeout(fetchHealth, 0);
     const interval = window.setInterval(fetchHealth, 10000);
 
@@ -206,7 +208,7 @@ export default function HealthUi() {
           {/* Trace ID */}
           <div className="mt-4 pt-4 border-t border-zinc-800/60 flex flex-col sm:flex-row sm:justify-between gap-2 text-xs text-zinc-500">
             <span>Trace identifier: <span className="font-mono text-zinc-400">{error ? "N/A" : (data?.traceId || "—")}</span></span>
-            <span>Last checked: {new Date().toLocaleTimeString()}</span>
+            <span>Last checked: {mounted ? new Date().toLocaleTimeString() : "—"}</span>
           </div>
 
         </section>
