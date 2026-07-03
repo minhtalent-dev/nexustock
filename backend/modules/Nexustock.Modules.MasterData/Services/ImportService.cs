@@ -1,0 +1,510 @@
+using Microsoft.EntityFrameworkCore;
+using System.Text;
+using System.Text.Json;
+using Nexustock.Modules.MasterData.Contexts;
+using Nexustock.Modules.MasterData.DTOs;
+using Nexustock.Modules.MasterData.Entities;
+
+namespace Nexustock.Modules.MasterData.Services;
+
+public interface IImportService
+{
+    Task<ImportResultDto> PreviewImportAsync(string importType, string csvContent, CancellationToken cancellationToken);
+    Task<ImportResultDto> CommitImportAsync(Guid batchId, CancellationToken cancellationToken);
+    Task<string?> ExportErrorCsvAsync(Guid batchId, CancellationToken cancellationToken);
+    string GetTemplateCsv(string importType);
+}
+
+public class ImportService : IImportService
+{
+    private readonly MasterDataDbContext _db;
+
+    public ImportService(MasterDataDbContext db)
+    {
+        _db = db;
+    }
+
+    public string GetTemplateCsv(string importType)
+    {
+        var type = importType.Trim().ToUpperInvariant();
+        return type switch
+        {
+            "ITEMS" => "code,name,baseUomCode,trackingPolicy,shelfLifeDays,minStock,errorMessage\n" +
+                       "SP001,Sản phẩm mẫu 1,PCS,NONE,0,10,\n" +
+                       "SP002,Sản phẩm mẫu 2,KG,BATCH,30,5,",
+            "LOCATIONS" => "warehouseCode,zoneCode,code,xCoord,yCoord,zCoord,maxCapacity,errorMessage\n" +
+                           "K01,Z01,LOC-01,1,1,1,1000,\n" +
+                           "K01,Z01,LOC-02,1,1,2,1000,",
+            "PARTNERS" => "code,name,partnerType,address,taxCode,errorMessage\n" +
+                          "NCC01,Nhà cung cấp mẫu,VENDOR,123 Đường A,0102030405,\n" +
+                          "KH01,Khách hàng mẫu,CUSTOMER,456 Đường B,0908070605,",
+            _ => throw new ArgumentException("Loại import không hợp lệ.")
+        };
+    }
+
+    public async Task<ImportResultDto> PreviewImportAsync(string importType, string csvContent, CancellationToken cancellationToken)
+    {
+        var type = importType.Trim().ToUpperInvariant();
+        var rawRows = CsvParser.Parse(csvContent);
+        if (rawRows.Count <= 1)
+        {
+            return new ImportResultDto(false, Guid.Empty, type, "FAILED", 0, 0, 0, new List<ImportRowErrorDto>(), "File CSV trống hoặc chỉ có header.");
+        }
+
+        var header = rawRows[0].Select(h => h.Trim()).ToArray();
+        var dataRows = rawRows.Skip(1).ToList();
+        var batchId = Guid.NewGuid();
+        var tenantId = _db.CurrentTenantId;
+
+        var batch = new ImportBatch
+        {
+            Id = batchId,
+            TenantId = tenantId,
+            ImportType = type,
+            Status = "VALIDATED",
+            TotalRows = dataRows.Count,
+            CreatedAt = DateTimeOffset.UtcNow,
+            CreatedBy = "SYSTEM"
+        };
+
+        var errors = new List<ImportRowErrorDto>();
+        var batchRows = new List<ImportBatchRow>();
+
+        // Cache existing data for faster validation
+        var existingUomCodes = await _db.Uoms.Select(x => x.Code).ToListAsync(cancellationToken);
+        var existingWarehouseCodes = await _db.Warehouses.Select(x => x.Code).ToListAsync(cancellationToken);
+        var existingZoneCodes = await _db.StorageZones.Select(x => new { x.Code, WhCode = x.Warehouse!.Code }).ToListAsync(cancellationToken);
+        var existingProductCodes = await _db.Products.Select(x => x.Code).ToListAsync(cancellationToken);
+        var existingLocationCodes = await _db.StorageLocations.Select(x => x.Code).ToListAsync(cancellationToken);
+        var existingPartnerCodes = await _db.Partners.Select(x => x.Code).ToListAsync(cancellationToken);
+
+        // Keep track of codes within the file to check for duplicates
+        var seenCodes = new HashSet<string>();
+
+        for (int i = 0; i < dataRows.Count; i++)
+        {
+            var row = dataRows[i];
+            var rowIndex = i + 1;
+            var rawMap = new Dictionary<string, string>();
+            for (int h = 0; h < header.Length; h++)
+            {
+                rawMap[header[h]] = h < row.Length ? row[h] : string.Empty;
+            }
+
+            var isValid = true;
+            var errorMsg = new StringBuilder();
+
+            // Perform type specific validation
+            if (type == "ITEMS")
+            {
+                var code = GetVal(row, header, "code")?.ToUpperInvariant();
+                var name = GetVal(row, header, "name");
+                var baseUomCode = GetVal(row, header, "baseUomCode")?.ToUpperInvariant();
+
+                if (string.IsNullOrWhiteSpace(code) || code.Length < 2 || code.Length > 50 || code.Contains(" "))
+                {
+                    isValid = false;
+                    errorMsg.Append("Mã vật tư phải từ 2-50 ký tự, không dấu, không cách. ");
+                }
+                else if (existingProductCodes.Contains(code) || seenCodes.Contains(code))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Mã vật tư '{code}' đã tồn tại hoặc bị trùng trong file. ");
+                }
+                else
+                {
+                    seenCodes.Add(code);
+                }
+
+                if (string.IsNullOrWhiteSpace(name) || name.Length > 255)
+                {
+                    isValid = false;
+                    errorMsg.Append("Tên vật tư không được để trống và tối đa 255 ký tự. ");
+                }
+
+                if (string.IsNullOrWhiteSpace(baseUomCode) || !existingUomCodes.Contains(baseUomCode))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Đơn vị tính cơ sở '{baseUomCode}' không tồn tại. ");
+                }
+
+                var shelfLifeDaysStr = GetVal(row, header, "shelfLifeDays");
+                if (!string.IsNullOrEmpty(shelfLifeDaysStr) && (!int.TryParse(shelfLifeDaysStr, out var days) || days < 0))
+                {
+                    isValid = false;
+                    errorMsg.Append("Số ngày hạn dùng phải là số nguyên >= 0. ");
+                }
+
+                var minStockStr = GetVal(row, header, "minStock");
+                if (!string.IsNullOrEmpty(minStockStr) && (!decimal.TryParse(minStockStr, out var minStock) || minStock < 0))
+                {
+                    isValid = false;
+                    errorMsg.Append("Tồn kho tối thiểu phải >= 0. ");
+                }
+            }
+            else if (type == "LOCATIONS")
+            {
+                var whCode = GetVal(row, header, "warehouseCode")?.ToUpperInvariant();
+                var zoneCode = GetVal(row, header, "zoneCode")?.ToUpperInvariant();
+                var code = GetVal(row, header, "code")?.ToUpperInvariant();
+
+                if (string.IsNullOrWhiteSpace(whCode) || !existingWarehouseCodes.Contains(whCode))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Mã kho '{whCode}' không tồn tại. ");
+                }
+
+                if (string.IsNullOrWhiteSpace(zoneCode) || !existingZoneCodes.Any(z => z.Code == zoneCode && z.WhCode == whCode))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Mã vùng kho '{zoneCode}' không tồn tại thuộc kho '{whCode}'. ");
+                }
+
+                if (string.IsNullOrWhiteSpace(code) || code.Length > 50)
+                {
+                    isValid = false;
+                    errorMsg.Append("Mã vị trí không được để trống và tối đa 50 ký tự. ");
+                }
+                else if (existingLocationCodes.Contains(code) || seenCodes.Contains(code))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Mã vị trí '{code}' đã tồn tại hoặc bị trùng trong file. ");
+                }
+                else
+                {
+                    seenCodes.Add(code);
+                }
+
+                var xStr = GetVal(row, header, "xCoord");
+                var yStr = GetVal(row, header, "yCoord");
+                var zStr = GetVal(row, header, "zCoord");
+                if (!string.IsNullOrEmpty(xStr) && (!int.TryParse(xStr, out var x) || x < 0)) { isValid = false; errorMsg.Append("Tọa độ X phải >= 0. "); }
+                if (!string.IsNullOrEmpty(yStr) && (!int.TryParse(yStr, out var y) || y < 0)) { isValid = false; errorMsg.Append("Tọa độ Y phải >= 0. "); }
+                if (!string.IsNullOrEmpty(zStr) && (!int.TryParse(zStr, out var z) || z < 0)) { isValid = false; errorMsg.Append("Tọa độ Z phải >= 0. "); }
+
+                var maxCapStr = GetVal(row, header, "maxCapacity");
+                if (!string.IsNullOrEmpty(maxCapStr) && (!decimal.TryParse(maxCapStr, out var cap) || cap < 0))
+                {
+                    isValid = false;
+                    errorMsg.Append("Sức chứa tối đa phải >= 0. ");
+                }
+            }
+            else if (type == "PARTNERS")
+            {
+                var code = GetVal(row, header, "code")?.ToUpperInvariant();
+                var name = GetVal(row, header, "name");
+                var partnerType = GetVal(row, header, "partnerType")?.ToUpperInvariant();
+
+                if (string.IsNullOrWhiteSpace(code) || code.Length > 50)
+                {
+                    isValid = false;
+                    errorMsg.Append("Mã đối tác không được để trống và tối đa 50 ký tự. ");
+                }
+                else if (existingPartnerCodes.Contains(code) || seenCodes.Contains(code))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Mã đối tác '{code}' đã tồn tại hoặc bị trùng trong file. ");
+                }
+                else
+                {
+                    seenCodes.Add(code);
+                }
+
+                if (string.IsNullOrWhiteSpace(name) || name.Length > 255)
+                {
+                    isValid = false;
+                    errorMsg.Append("Tên đối tác không được để trống và tối đa 255 ký tự. ");
+                }
+
+                if (string.IsNullOrWhiteSpace(partnerType) || (partnerType != "VENDOR" && partnerType != "CUSTOMER" && partnerType != "CARRIER"))
+                {
+                    isValid = false;
+                    errorMsg.Append("Loại đối tác phải là VENDOR, CUSTOMER hoặc CARRIER. ");
+                }
+            }
+            else
+            {
+                isValid = false;
+                errorMsg.Append("Loại import không hợp lệ.");
+            }
+
+            var finalError = errorMsg.ToString().Trim();
+            if (!isValid)
+            {
+                errors.Add(new ImportRowErrorDto(rowIndex, rawMap, finalError));
+            }
+
+            batchRows.Add(new ImportBatchRow
+            {
+                Id = Guid.NewGuid(),
+                BatchId = batchId,
+                RowIndex = rowIndex,
+                RawData = JsonSerializer.Serialize(rawMap),
+                IsValid = isValid,
+                ErrorMessage = isValid ? null : finalError
+            });
+        }
+
+        batch.SuccessRows = batchRows.Count(x => x.IsValid);
+        batch.ErrorRows = batchRows.Count(x => !x.IsValid);
+
+        await _db.ImportBatches.AddAsync(batch, cancellationToken);
+        await _db.ImportBatchRows.AddRangeAsync(batchRows, cancellationToken);
+        await _db.SaveChangesAsync(cancellationToken);
+
+        return new ImportResultDto(
+            errors.Count == 0,
+            batchId,
+            type,
+            batch.Status,
+            batch.TotalRows,
+            batch.SuccessRows,
+            batch.ErrorRows,
+            errors,
+            null
+        );
+    }
+
+    public async Task<ImportResultDto> CommitImportAsync(Guid batchId, CancellationToken cancellationToken)
+    {
+        var batch = await _db.ImportBatches
+            .IgnoreQueryFilters() // Cần tìm batch bất kể filter tenant khi xử lý hệ thống
+            .FirstOrDefaultAsync(x => x.Id == batchId && x.TenantId == _db.CurrentTenantId, cancellationToken);
+
+        if (batch is null)
+        {
+            return new ImportResultDto(false, batchId, "UNKNOWN", "FAILED", 0, 0, 0, new List<ImportRowErrorDto>(), "Không tìm thấy phiên nhập dữ liệu.");
+        }
+
+        if (batch.Status != "VALIDATED")
+        {
+            return new ImportResultDto(false, batchId, batch.ImportType, batch.Status, batch.TotalRows, batch.SuccessRows, batch.ErrorRows, new List<ImportRowErrorDto>(), $"Phiên nhập dữ liệu ở trạng thái '{batch.Status}' không thể duyệt.");
+        }
+
+        if (batch.ErrorRows > 0)
+        {
+            return new ImportResultDto(false, batchId, batch.ImportType, batch.Status, batch.TotalRows, batch.SuccessRows, batch.ErrorRows, new List<ImportRowErrorDto>(), "Không thể duyệt phiên nhập dữ liệu có lỗi.");
+        }
+
+        // Lock batch
+        batch.Status = "PROCESSING";
+        await _db.SaveChangesAsync(cancellationToken);
+
+        var rows = await _db.ImportBatchRows
+            .Where(x => x.BatchId == batchId && x.IsValid)
+            .OrderBy(x => x.RowIndex)
+            .ToListAsync(cancellationToken);
+
+        using var tx = await _db.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            if (batch.ImportType == "ITEMS")
+            {
+                var uoms = await _db.Uoms.ToDictionaryAsync(x => x.Code, x => x.Id, cancellationToken);
+                foreach (var row in rows)
+                {
+                    var map = JsonSerializer.Deserialize<Dictionary<string, string>>(row.RawData!)!;
+                    var code = map["code"].Trim().ToUpperInvariant();
+                    var name = map["name"].Trim();
+                    var baseUomCode = map["baseUomCode"].Trim().ToUpperInvariant();
+                    var trackingPolicy = map.TryGetValue("trackingPolicy", out var tp) && !string.IsNullOrEmpty(tp) ? tp.Trim().ToUpperInvariant() : "NONE";
+                    var shelfLifeDays = map.TryGetValue("shelfLifeDays", out var sld) && int.TryParse(sld, out var d) ? d : 0;
+                    var minStock = map.TryGetValue("minStock", out var ms) && decimal.TryParse(ms, out var m) ? m : 0.0000m;
+
+                    var productId = Guid.NewGuid();
+                    var product = new Product
+                    {
+                        Id = productId,
+                        TenantId = batch.TenantId,
+                        Code = code,
+                        Name = name,
+                        BaseUomId = uoms[baseUomCode],
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+
+                    var config = new ProductConfig
+                    {
+                        ProductId = productId,
+                        TenantId = batch.TenantId,
+                        IqcCheckType = "FULL",
+                        MinStock = minStock,
+                        WeightClass = "MEDIUM",
+                        RotationSpeed = "SLOW"
+                    };
+
+                    await _db.Products.AddAsync(product, cancellationToken);
+                    await _db.ProductConfigs.AddAsync(config, cancellationToken);
+                }
+            }
+            else if (batch.ImportType == "LOCATIONS")
+            {
+                var zones = await _db.StorageZones.Include(x => x.Warehouse).ToDictionaryAsync(x => x.Warehouse!.Code + "_" + x.Code, x => x.Id, cancellationToken);
+                foreach (var row in rows)
+                {
+                    var map = JsonSerializer.Deserialize<Dictionary<string, string>>(row.RawData!)!;
+                    var whCode = map["warehouseCode"].Trim().ToUpperInvariant();
+                    var zoneCode = map["zoneCode"].Trim().ToUpperInvariant();
+                    var code = map["code"].Trim().ToUpperInvariant();
+                    var x = map.TryGetValue("xCoord", out var xs) && int.TryParse(xs, out var xv) ? xv : 0;
+                    var y = map.TryGetValue("yCoord", out var ys) && int.TryParse(ys, out var yv) ? yv : 0;
+                    var z = map.TryGetValue("zCoord", out var zs) && int.TryParse(zs, out var zv) ? zv : 0;
+                    var cap = map.TryGetValue("maxCapacity", out var cs) && decimal.TryParse(cs, out var cv) ? cv : 999999.0000m;
+
+                    var location = new StorageLocation
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = batch.TenantId,
+                        ZoneId = zones[whCode + "_" + zoneCode],
+                        Code = code,
+                        XCoord = x,
+                        YCoord = y,
+                        ZCoord = z,
+                        MaxCapacity = cap,
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+
+                    await _db.StorageLocations.AddAsync(location, cancellationToken);
+                }
+            }
+            else if (batch.ImportType == "PARTNERS")
+            {
+                foreach (var row in rows)
+                {
+                    var map = JsonSerializer.Deserialize<Dictionary<string, string>>(row.RawData!)!;
+                    var code = map["code"].Trim().ToUpperInvariant();
+                    var name = map["name"].Trim();
+                    var partnerType = map["partnerType"].Trim().ToUpperInvariant();
+                    var address = map.TryGetValue("address", out var addr) ? addr.Trim() : null;
+                    var taxCode = map.TryGetValue("taxCode", out var tc) ? tc.Trim() : null;
+
+                    var partner = new Partner
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = batch.TenantId,
+                        Code = code,
+                        Name = name,
+                        PartnerType = partnerType,
+                        Address = string.IsNullOrEmpty(address) ? null : address,
+                        TaxCode = string.IsNullOrEmpty(taxCode) ? null : taxCode,
+                        IsActive = true,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+
+                    await _db.Partners.AddAsync(partner, cancellationToken);
+                }
+            }
+
+            await _db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
+
+            batch.Status = "COMMITTED";
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return new ImportResultDto(true, batchId, batch.ImportType, batch.Status, batch.TotalRows, batch.SuccessRows, batch.ErrorRows, new List<ImportRowErrorDto>(), null);
+        }
+        catch (Exception ex)
+        {
+            await tx.RollbackAsync(cancellationToken);
+
+            batch.Status = "FAILED";
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return new ImportResultDto(false, batchId, batch.ImportType, batch.Status, batch.TotalRows, batch.SuccessRows, batch.ErrorRows, new List<ImportRowErrorDto>(), $"Commit thất bại: {ex.InnerException?.Message ?? ex.Message}");
+        }
+    }
+
+    public async Task<string?> ExportErrorCsvAsync(Guid batchId, CancellationToken cancellationToken)
+    {
+        var rows = await _db.ImportBatchRows
+            .Where(x => x.BatchId == batchId && !x.IsValid)
+            .OrderBy(x => x.RowIndex)
+            .ToListAsync(cancellationToken);
+
+        if (rows.Count == 0) return null;
+
+        var firstRow = JsonSerializer.Deserialize<Dictionary<string, string>>(rows[0].RawData!)!;
+        var header = firstRow.Keys.ToList();
+
+        var csvBuilder = new StringBuilder();
+        csvBuilder.AppendLine(string.Join(",", header.Select(EscapeCsvField)) + ",errorMessage");
+
+        foreach (var r in rows)
+        {
+            var map = JsonSerializer.Deserialize<Dictionary<string, string>>(r.RawData!)!;
+            var rowFields = new List<string>();
+            foreach (var h in header)
+            {
+                rowFields.Add(map.TryGetValue(h, out var v) ? v : string.Empty);
+            }
+            rowFields.Add(r.ErrorMessage ?? string.Empty);
+            csvBuilder.AppendLine(string.Join(",", rowFields.Select(EscapeCsvField)));
+        }
+
+        return csvBuilder.ToString();
+    }
+
+    private static string? GetVal(string[] row, string[] header, string key)
+    {
+        var idx = Array.FindIndex(header, h => h.Equals(key, StringComparison.OrdinalIgnoreCase));
+        if (idx >= 0 && idx < row.Length) return row[idx].Trim();
+        return null;
+    }
+
+    private static string EscapeCsvField(string field)
+    {
+        if (string.IsNullOrEmpty(field)) return "";
+        if (field.Contains(",") || field.Contains("\"") || field.Contains("\n") || field.Contains("\r"))
+        {
+            return "\"" + field.Replace("\"", "\"\"") + "\"";
+        }
+        return field;
+    }
+}
+
+public static class CsvParser
+{
+    public static List<string[]> Parse(string csvContent)
+    {
+        var result = new List<string[]>();
+        if (string.IsNullOrEmpty(csvContent)) return result;
+
+        var lines = csvContent.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+        foreach (var line in lines)
+        {
+            if (string.IsNullOrWhiteSpace(line)) continue;
+            var fields = ParseCsvLine(line);
+            result.Add(fields);
+        }
+        return result;
+    }
+
+    private static string[] ParseCsvLine(string line)
+    {
+        var fields = new List<string>();
+        var inQuotes = false;
+        var currentField = new StringBuilder();
+
+        for (int i = 0; i < line.Length; i++)
+        {
+            char c = line[i];
+            if (c == '"')
+            {
+                inQuotes = !inQuotes;
+            }
+            else if (c == ',' && !inQuotes)
+            {
+                fields.Add(currentField.ToString());
+                currentField.Clear();
+            }
+            else
+            {
+                currentField.Append(c);
+            }
+        }
+        fields.Add(currentField.ToString());
+        return fields.ToArray();
+    }
+}
+

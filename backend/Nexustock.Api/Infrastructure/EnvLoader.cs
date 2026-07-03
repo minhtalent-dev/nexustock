@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System;
+﻿using System;
+using System.IO;
 
 namespace Nexustock.Api.Infrastructure;
 
@@ -7,36 +7,43 @@ public static class EnvLoader
 {
     public static void LoadDotEnvFromNearestParent()
     {
-        var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
-
-        while (directory is not null)
+        try
         {
-            var envPath = Path.Combine(directory.FullName, ".env");
-            if (File.Exists(envPath))
+            var directory = new DirectoryInfo(Directory.GetCurrentDirectory());
+
+            while (directory != null)
             {
-                foreach (var line in File.ReadAllLines(envPath))
+                var envPath = Path.Combine(directory.FullName, ".env");
+                if (File.Exists(envPath))
                 {
-                    var trimmed = line.Trim();
-                    if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith('#'))
+                    foreach (var line in File.ReadAllLines(envPath))
                     {
-                        continue;
+                        var trimmed = line.Trim();
+                        if (string.IsNullOrWhiteSpace(trimmed) || trimmed.StartsWith('#'))
+                        {
+                            continue;
+                        }
+
+                        var separatorIndex = trimmed.IndexOf('=');
+                        if (separatorIndex <= 0)
+                        {
+                            continue;
+                        }
+
+                        var key = trimmed[..separatorIndex].Trim();
+                        var value = trimmed[(separatorIndex + 1)..].Trim();
+                        Environment.SetEnvironmentVariable(key, value);
                     }
 
-                    var separatorIndex = trimmed.IndexOf('=');
-                    if (separatorIndex <= 0)
-                    {
-                        continue;
-                    }
-
-                    var key = trimmed[..separatorIndex].Trim();
-                    var value = trimmed[(separatorIndex + 1)..].Trim();
-                    Environment.SetEnvironmentVariable(key, value);
+                    return;
                 }
 
-                return;
+                directory = directory.Parent;
             }
-
-            directory = directory.Parent;
+        }
+        catch
+        {
+            // Bỏ qua lỗi load .env khi test
         }
     }
 }

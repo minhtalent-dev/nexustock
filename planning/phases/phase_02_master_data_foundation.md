@@ -351,16 +351,23 @@ Dữ liệu trả về hoặc nhận vào bắt buộc sử dụng định dạn
 | `PUT` | `/api/master/items/{id}` | Cập nhật vật tư | Request Body: ItemDTO |
 | `GET` | `/api/master/uoms` | Danh sách đơn vị tính | `page`, `pageSize`, `isActive` |
 | `POST` | `/api/master/uoms` | Tạo mới đơn vị tính | Request Body: UomDTO |
+| `PUT` | `/api/master/uoms/{id}` | Cập nhật đơn vị tính | Request Body: UomDTO |
 | `GET` | `/api/master/warehouses` | Danh sách nhà kho | `page`, `pageSize`, `isActive` |
 | `POST` | `/api/master/warehouses`| Tạo mới nhà kho | Request Body: WarehouseDTO |
+| `PUT` | `/api/master/warehouses/{id}`| Cập nhật nhà kho | Request Body: WarehouseDTO |
 | `GET` | `/api/master/zones` | Danh sách vùng kho | `page`, `pageSize`, `warehouseId` |
 | `POST` | `/api/master/zones` | Tạo mới vùng kho | Request Body: StorageZoneDTO |
+| `PUT` | `/api/master/zones/{id}` | Cập nhật vùng kho | Request Body: StorageZoneDTO |
 | `GET` | `/api/master/locations` | Danh sách vị trí kệ | `page`, `pageSize`, `zoneId`, `isLocked` |
 | `POST` | `/api/master/locations`| Tạo mới vị trí kệ | Request Body: LocationDTO |
+| `PUT` | `/api/master/locations/{id}`| Cập nhật vị trí kệ | Request Body: LocationDTO |
 | `GET` | `/api/master/partners` | Danh sách đối tác | `page`, `pageSize`, `partnerType` |
 | `POST` | `/api/master/partners` | Tạo mới đối tác | Request Body: PartnerDTO |
+| `PUT` | `/api/master/partners/{id}` | Cập nhật đối tác | Request Body: PartnerDTO |
 | `GET` | `/api/master/reasons` | Danh sách lý do | `page`, `pageSize`, `reasonType` |
 | `POST` | `/api/master/reasons` | Tạo lý do mới | Request Body: ReasonCodeDTO |
+| `PUT` | `/api/master/reasons/{id}` | Cập nhật lý do | Request Body: ReasonCodeDTO |
+| `GET` | `/api/master/import/{batchId}/errors/export` | Xuất file lỗi import | `batchId` |
 
 ### B. API Import 2 bước
 
@@ -406,10 +413,17 @@ Dữ liệu trả về hoặc nhận vào bắt buộc sử dụng định dạn
 ```
 * **Hành vi:**
   1. Kiểm tra trạng thái của `batchId`. Nếu đã commit hoặc có `errorRows > 0`, chặn lại và báo lỗi.
-  2. Khởi chạy DB Transaction.
-  3. Ghi toàn bộ dữ liệu hợp lệ từ `import_batch_rows` vào các bảng master data thực tế (`products`, `storage_locations`...).
-  4. Cập nhật trạng thái batch thành `COMMITTED`.
-  5. Commit Transaction. Nếu có bất kỳ lỗi Runtime nào, Rollback toàn bộ.
+  2. Cập nhật trạng thái batch từ `VALIDATED` sang `PROCESSING` (sử dụng mệnh đề WHERE `status = 'VALIDATED'` để lock batch chống double commit).
+  3. Khởi chạy DB Transaction.
+  4. Ghi toàn bộ dữ liệu hợp lệ từ `import_batch_rows` vào các bảng master data thực tế (`products`, `storage_locations`...).
+  5. Cập nhật trạng thái batch thành `COMMITTED`.
+  6. Commit Transaction. Nếu có bất kỳ lỗi Runtime nào, **Rollback toàn bộ**, cập nhật trạng thái batch thành `FAILED` và trả lỗi chi tiết kèm `traceId` cho client.
+
+#### 3. Xuất file lỗi import: `GET /api/master/import/{batchId}/errors/export`
+* **Hành vi:**
+  1. Đọc dữ liệu từ `import_batch_rows` có `is_valid = false` thuộc `batchId`.
+  2. Tạo file CSV chứa các cột dữ liệu gốc kèm theo cột `errorMessage` ở cuối.
+  3. Trả về file tải xuống trực tiếp cho client.
 
 ## 7. Quy tắc import và cấu trúc tệp mẫu (Import Templates)
 
@@ -432,7 +446,8 @@ Các cột bắt buộc:
 
 ## 8. Frontend / UI UX Design Rule
 
-Theo quy tắc UI của FOUNDER:
+Theo quy tắc UI của FOUNDER và Skillset dự án:
+* **Tuân thủ quy tắc Skill Shadcn:** Bắt buộc tuân thủ 100% các nguyên tắc và rule trong [shadcn skill](file:///d:/1_Project/48_Nexustock/.agents/skills/shadcn/SKILL.md) (Dùng `FieldGroup` + `Field` cho Form, dùng `size-*` thay vì `w-* h-*` khi kích thước bằng nhau, không lạm dụng `space-y-*` mà dùng `flex flex-col gap-*`, bắt buộc Dialog/Sheet phải có Title, dùng `cn()` cho conditional classes, dùng semantic colors tokens thay vì màu raw, v.v.).
 * **Quy tắc viết hoa UI Text:** Bắt buộc dùng **Sentence case** (Chữ cái đầu tiên viết hoa, ví dụ: "Trang chủ", "Danh mục vật tư", "Xem chi tiết"). Không viết hoa chữ cái đầu của từng từ (Title Case).
 * **Tuyệt đối không sử dụng inline style:** Toàn bộ component định nghĩa style thông qua các class Tailwind CSS và cấu trúc UI của Shadcn.
 * **Sử dụng thẻ `<template>` cho HTML động:** Đối với các dòng dữ liệu trong bảng import preview được hiển thị động, hoặc các template tooltip, bắt buộc dùng thẻ `<template>` hoặc cấu trúc Component chuẩn của React/Next.js, không cộng chuỗi HTML thủ công.
@@ -441,6 +456,8 @@ Theo quy tắc UI của FOUNDER:
 * **Loading State:** Skeleton loader hiển thị khi đang fetch danh mục hoặc đang phân tích file Excel/CSV.
 * **Empty State:** Hiển thị hình minh họa (tạo bằng image generator nếu cần) và nút "Thêm mới" hoặc "Tải template" khi danh mục trống.
 * **Confirm Dialog:** Hộp thoại xác nhận Sentence case hiển thị khi người dùng thực hiện khóa (lock) vị trí kho hoặc inactive một mã vật tư.
+* **Import Error Panel:** Khi file upload có lỗi validation, UI hiển thị danh sách lỗi trực quan và xuất hiện nút **Tải file lỗi** (Sentence case) gọi API export để người dùng tải file lỗi về sửa trực tiếp. Nút "Xác nhận nhập dữ liệu" sẽ bị vô hiệu hóa.
+* **Commit Error Handling:** Nếu API commit trả lỗi, UI hiển thị thông báo lỗi chung và giữ nguyên dữ liệu preview hiện tại (không làm mất batch dữ liệu).
 
 ## 9. Quy trình thực hiện (Execution Flow)
 
@@ -448,30 +465,39 @@ Theo quy tắc UI của FOUNDER:
    * Tạo migration tạo 12 bảng dữ liệu và thiết lập các khóa ngoại, khóa duy nhất.
    * Tạo script seed dữ liệu nền: 1 Tenant mặc định, các đơn vị tính cơ bản (`PCS`, `BOX`, `PALLET`), 1 kho demo (`WH-MAIN`), 3 vùng kho (`ZONE-STORAGE`, `ZONE-QC`, `ZONE-STAGING`) và một số lý do chuẩn hóa (`HOLD-QC`, `ADJ-COUNT`).
 2. **Backend API:**
-   * Viết Application Services và Controller.
+   * Viết Application Services và Controller cho toàn bộ CRUD các bảng: Items, Locations, UOMs, Warehouses, Zones, Partners, Reason Codes.
    * Cấu hình Route chuẩn `/api/master/...`.
-   * Viết logic parse file Excel/CSV (sử dụng thư viện phổ biến ExcelDataReader hoặc CsvHelper, không tự viết parser).
+   * Viết logic parse file CSV (ưu tiên CSV parser nội bộ để tránh phụ thuộc package ngoài; ExcelDataReader/CsvHelper chỉ dùng khi dependency restore ổn định).
+   * Triển khai API export file lỗi `GET /api/master/import/{batchId}/errors/export`.
 3. **Frontend SPA:**
    * Tạo cấu trúc thư mục feature.
    * Thiết kế giao diện bảng danh mục hỗ trợ lọc và phân trang.
    * Xây dựng Panel Import trực quan, hiển thị bảng Preview lỗi trực tiếp trước khi nhấn "Xác nhận nhập dữ liệu".
+   * Hiển thị nút "Tải file lỗi" khi batch có lỗi validation.
+   * Triển khai đầy đủ giao diện CRUD production-ready cho các danh mục nền: UOM, Warehouse, Zone, Partner, Reason code.
+   * Mỗi danh mục có bảng dữ liệu, tìm kiếm, lọc trạng thái/type phù hợp, phân trang, tạo mới, chỉnh sửa, khóa/kích hoạt hoặc inactive, validate lỗi rõ ràng và trạng thái loading/empty/error đầy đủ.
 
 ## 10. Kịch bản kiểm thử (Test Plan)
 
 ### A. Kiểm thử tự động (Unit / Integration Tests)
 * **UnitTest_ItemValidation:** Đảm bảo khi tạo vật tư với mã đơn vị tính không tồn tại, API trả về lỗi 400 Bad Request kèm mã lỗi chuẩn.
 * **IntegrationTest_ImportPreviewNoDatabaseWrite:** Gọi API `/api/master/import/preview` với file có 1 dòng lỗi, xác nhận bảng `products` không bị chèn thêm dữ liệu, nhưng bảng `import_batches` ghi nhận đúng 1 lỗi.
-* **IntegrationTest_ImportCommitAtomic:** Gọi API `/api/master/import/commit` với batch hợp lệ, xác nhận tất cả bản ghi được chèn vào DB. Giả lập lỗi ở bản ghi cuối cùng để xác nhận toàn bộ lô được rollback hoàn toàn.
+* **IntegrationTest_ImportCommitAtomic:** Gọi API `/api/master/import/commit` với batch hợp lệ, xác nhận tất cả bản ghi được chèn vào DB. Giả lập lỗi ở bản ghi cuối cùng để xác nhận toàn bộ lô được rollback hoàn toàn và trả lỗi rõ ràng.
+* **IntegrationTest_ImportErrorExport:** Gọi API `/api/master/import/{batchId}/errors/export` với batch có lỗi, xác nhận file tải xuống chứa dữ liệu gốc và cột `errorMessage`.
 
 ### B. Kiểm thử thủ công (Manual Verification)
 * **Kiểm tra UI/UX:** Mở màn hình Import, kéo thả tệp CSV bị lỗi định dạng. Xác nhận giao diện hiển thị danh sách lỗi chi tiết theo Sentence case và tô đỏ dòng bị lỗi.
+* **Kiểm tra tải file lỗi:** Khi có lỗi validation, nhấn nút "Tải file lỗi" và xác nhận file tải xuống có cột `errorMessage`.
 * **Kiểm tra Concurrency:** 2 Admin cùng nhấn commit một `batchId` cùng lúc. Xác nhận hệ thống chặn Admin thứ hai bằng lỗi tranh chấp (Optimistic Concurrency hoặc Lock Batch).
 
 ## 11. Acceptance Criteria (DoD)
 
 Hệ thống chỉ được duyệt hoàn thành Phase 02 khi đáp ứng đủ:
 1. Database migration chạy thành công trên PostgreSQL sạch mà không có lỗi.
-2. API Swagger hiển thị đầy đủ danh mục CRUD Master Data và API Import 2 bước.
+2. API Swagger hiển thị đầy đủ danh mục CRUD Master Data, API Import 2 bước và API export file lỗi.
 3. Front-end SPA load mượt mà, hiển thị đúng các danh mục, không có lỗi console và giao diện tuân thủ 100% Sentence case + không dùng inline style.
 4. Test suite tự động (Integration Test) của module MasterData pass 100%.
-5. Có đầy đủ bằng chứng kiểm thử (ảnh chụp UI lỗi preview, ảnh chụp DB sau khi commit thành công) gửi PO duyệt.
+5. File import lỗi xuất được file tải xuống có cột `errorMessage` cho enduser.
+6. Commit lỗi rollback toàn bộ batch và trả thông báo lỗi rõ ràng.
+7. Có đầy đủ bằng chứng kiểm thử (ảnh chụp UI lỗi preview, ảnh chụp DB sau khi commit thành công) gửi PO duyệt.
+

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { Activity, Database, RefreshCw, Server, CheckCircle2, AlertTriangle, XCircle, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import BreadcrumbNav from "@/components/breadcrumb-nav";
 
 interface HealthSummary {
   status: string;
@@ -105,6 +107,7 @@ export default function HealthUi() {
   return (
     <main className="flex-1 bg-[#0a0a0a] text-zinc-100 flex flex-col items-center justify-center p-6 md:p-12 font-sans selection:bg-emerald-500 selection:text-black">
       <div className="w-full max-w-4xl flex flex-col gap-8">
+        <BreadcrumbNav />
         
         {/* Top Header */}
         <header className="flex justify-between items-center border-b border-zinc-800/80 pb-6">
@@ -117,14 +120,14 @@ export default function HealthUi() {
               <p className="text-sm text-zinc-400">Nexustock modular monolith dashboard</p>
             </div>
           </div>
-          <button
+          <Button
             onClick={handleRefresh}
             disabled={refreshing || loading}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 rounded-lg transition-all active:scale-95 disabled:opacity-50"
+            variant="outline"
           >
             <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
             Refresh
-          </button>
+          </Button>
         </header>
 
         {/* Overview Status Grid */}

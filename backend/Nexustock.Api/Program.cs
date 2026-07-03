@@ -2,19 +2,20 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Nexustock.Api.Health;
 using Nexustock.Api.Infrastructure;
+using Nexustock.Modules.MasterData;
 using Serilog;
 using System.Text.Json;
 
-EnvLoader.LoadDotEnvFromNearestParent();
-
-Log.Logger = new LoggerConfiguration()
-    .MinimumLevel.Debug()
-    .WriteTo.Console()
-    .WriteTo.File("logs/nexustock-.log", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
+try { EnvLoader.LoadDotEnvFromNearestParent(); } catch { /* Bỏ qua lỗi .env khi test */ }
 
 try
 {
+    Log.Logger = new LoggerConfiguration()
+        .MinimumLevel.Debug()
+        .WriteTo.Console()
+        .WriteTo.File("logs/nexustock-.log", rollingInterval: RollingInterval.Day)
+        .CreateLogger();
+
     Log.Information("Nexustock API starting...");
 
     var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +23,28 @@ try
     builder.Host.UseSerilog();
 
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddControllers();
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+        {
+            Title = "Nexustock API",
+            Version = "v1",
+            Description = "Nexustock Warehouse Management System API",
+            Contact = new Microsoft.OpenApi.Models.OpenApiContact
+            {
+                Name = "Nexustock Team",
+            }
+        });
+
+        // Include XML comments từ assembly
+        var apiXmlPath = Path.Combine(AppContext.BaseDirectory, "Nexustock.Api.xml");
+        if (File.Exists(apiXmlPath)) c.IncludeXmlComments(apiXmlPath);
+
+        var masterDataXmlPath = Path.Combine(AppContext.BaseDirectory, "Nexustock.Modules.MasterData.xml");
+        if (File.Exists(masterDataXmlPath)) c.IncludeXmlComments(masterDataXmlPath);
+    });
+    builder.Services.AddMasterDataModule(builder.Configuration);
 
     builder.Services.AddCors(options =>
     {
@@ -71,6 +93,7 @@ try
     {
         AllowCachingResponses = false,
     });
+    app.MapControllers();
 
     app.MapGet("/api/system/health-summary", async (IConfiguration config, HealthCheckService healthCheckService) =>
     {
@@ -104,7 +127,7 @@ try
 
     app.Run();
 }
-catch (Exception ex)
+catch (Exception ex) when (ex.GetType().Name != "HostAbortedException")
 {
     Log.Fatal(ex, "Application terminated unexpectedly");
 }
@@ -119,3 +142,8 @@ static string ToServiceStatus(HealthStatus status) => status switch
     HealthStatus.Degraded => "degraded",
     _ => "unhealthy"
 };
+
+// Partial class để WebApplicationFactory có thể tham chiếu trong integration test
+// Top-level statement Program class là internal, nên partial cũng phải internal
+internal partial class Program { }
+
