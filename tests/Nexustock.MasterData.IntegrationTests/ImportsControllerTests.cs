@@ -1,6 +1,9 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Nexustock.Modules.MasterData.Contexts;
 
 namespace Nexustock.MasterData.IntegrationTests;
 

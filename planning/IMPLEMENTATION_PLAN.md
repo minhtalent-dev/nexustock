@@ -180,8 +180,8 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | # | Phase | Trạng thái | Thông tin đã thực hiện | Ngày hoàn thành | Ghi chú |
 |---|-------|:----------:|------------------------|:---------------:|---------|
 | 01 | Project foundation | ✅ Hoàn thành | Thiết lập Monorepo (.NET API + 5 modules, Next.js frontend, Docker, env, README, health-ui, Swagger dev) | 2026-07-01 | — |
-| 02 | Master data foundation | ⬜ Chưa bắt đầu | — | — | — |
-| 03 | User, RBAC & audit foundation | ⬜ Chưa bắt đầu | — | — | — |
+| 02 | Master data foundation | ✅ Hoàn thành | Hoàn tất cấu trúc bảng PostgreSQL cho Master Data, APIs CRUD danh mục, luồng Import CSV 2 bước (preview/commit) và frontend UI quản lý danh mục | 2026-07-02 | Có regression test cho import status flow và export filter |
+| 03 | User, RBAC & audit foundation | ✅ Hoàn thành | Hoàn tất Identity module, JWT auth, refresh token rotation, user/role/permission API, audit log, tenant resolution, seed admin/permission catalog và integration test chính | 2026-07-03 | Build pass; Auth integration test pass |
 | 04 | Inbound receiving | ⬜ Chưa bắt đầu | — | — | — |
 | 05 | QC hold/release | ⬜ Chưa bắt đầu | — | — | — |
 | 06 | Inventory by location & movement | ⬜ Chưa bắt đầu | — | — | — |

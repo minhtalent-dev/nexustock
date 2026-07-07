@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Nexustock.Api.Health;
 using Nexustock.Api.Infrastructure;
+using Nexustock.Modules.Identity;
 using Nexustock.Modules.MasterData;
 using Serilog;
 using System.Text.Json;
@@ -37,6 +38,32 @@ try
             }
         });
 
+        // JWT Bearer Token Security Definition
+        c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+            Description = "Enter JWT Bearer token (without 'Bearer ' prefix)"
+        });
+
+        c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+        {
+            {
+                new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                    {
+                        Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    }
+                },
+                Array.Empty<string>()
+            }
+        });
+
         // Include XML comments từ assembly
         var apiXmlPath = Path.Combine(AppContext.BaseDirectory, "Nexustock.Api.xml");
         if (File.Exists(apiXmlPath)) c.IncludeXmlComments(apiXmlPath);
@@ -45,6 +72,33 @@ try
         if (File.Exists(masterDataXmlPath)) c.IncludeXmlComments(masterDataXmlPath);
     });
     builder.Services.AddMasterDataModule(builder.Configuration);
+    builder.Services.AddIdentityModule(builder.Configuration);
+
+    // JWT Authentication
+    var jwtSecretKey = builder.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
+    var jwtIssuer = builder.Configuration["JWT_ISSUER"] ?? "Nexustock";
+    var jwtAudience = builder.Configuration["JWT_AUDIENCE"] ?? "Nexustock";
+
+    builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = "Bearer";
+        options.DefaultChallengeScheme = "Bearer";
+    })
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtIssuer,
+            ValidAudience = jwtAudience,
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                System.Text.Encoding.UTF8.GetBytes(jwtSecretKey)),
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 
     builder.Services.AddCors(options =>
     {
@@ -75,6 +129,8 @@ try
     var app = builder.Build();
 
     app.UseCors("AllowFrontendDev");
+    app.UseAuthentication();  // Phải đặt trước UseAuthorization
+    app.UseAuthorization();
     app.UseSerilogRequestLogging();
 
     if (app.Environment.IsDevelopment())
@@ -124,6 +180,18 @@ try
 
         return Results.Json(summary, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     });
+
+    // Run Database Seeding
+    try
+    {
+        var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
+            .Select(p => (p.Code, p.Name, p.Group));
+        await Nexustock.Modules.Identity.Seeders.IdentitySeeder.SeedAsync(app.Services, appPermissions);
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while seeding the database");
+    }
 
     app.Run();
 }

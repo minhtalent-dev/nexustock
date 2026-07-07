@@ -14,16 +14,22 @@ public static class DependencyInjection
 
         if (!string.IsNullOrEmpty(connectionString))
         {
-            services.AddDbContext<MasterDataDbContext>(options =>
+            services.AddDbContext<MasterDataDbContext>((sp, options) =>
+            {
                 options.UseNpgsql(
                     connectionString,
-                    b => b.MigrationsAssembly(typeof(MasterDataDbContext).Assembly.FullName)));
+                    b => b.MigrationsAssembly(typeof(MasterDataDbContext).Assembly.FullName));
+                options.AddInterceptors(sp.GetServices<Microsoft.EntityFrameworkCore.Diagnostics.ISaveChangesInterceptor>());
+            });
         }
         else
         {
             // Test environment: InMemory DB được đăng ký bởi CustomWebApplicationFactory
-            services.AddDbContext<MasterDataDbContext>(options =>
-                options.UseInMemoryDatabase("NexustockTest_Fallback"));
+            services.AddDbContext<MasterDataDbContext>((sp, options) =>
+            {
+                options.UseInMemoryDatabase("NexustockTest_Fallback");
+                options.AddInterceptors(sp.GetServices<Microsoft.EntityFrameworkCore.Diagnostics.ISaveChangesInterceptor>());
+            });
         }
 
         services.AddScoped<ITenantProvider, TenantProvider>();

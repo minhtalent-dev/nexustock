@@ -1,10 +1,10 @@
-﻿# PHASE 03: User, RBAC & audit foundation
+# PHASE 03: User, RBAC & audit foundation
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 92%
-- **Đánh giá:** Đủ rõ cho user, RBAC, audit nền và permission catalog.
-- **Khi cần upgrade:** Upgrade nếu chọn mô hình phân quyền phức tạp hơn role-permission thông thường.
+- **Mức hiện tại:** 100% (Prod-ready)
+- **Đánh giá:** Hoàn tất bổ sung chi tiết kiến trúc Identity, JWT Auth, Refresh Token Rotation, Centralized Audit Log và Tenant Resolution.
+- **Khi cần upgrade:** Không cần thiết, trừ khi chuyển sang mô hình Identity Server độc lập hoặc SSO/MFA nâng cao.
 
 ## 1. Mục tiêu
 
@@ -18,16 +18,20 @@ Identity API, permission catalog, role assignment, audit middleware, menu visibi
 
 ### In scope
 
-* Tạo module Identity
-* Seed admin role và permission catalog
-* Chuẩn hóa policy name module.action
-* Cấu hình password policy
-* Cấu hình JWT issuer/audience/expiry từ env.
+* [x] Tạo module Identity (`Nexustock.Modules.Identity`) và tích hợp vào Host API.
+* [x] Tích hợp ASP.NET Core Identity dùng EF Core với PostgreSQL.
+* [x] Seed admin role và permission catalog (MasterData & Identity).
+* [x] Chuẩn hóa policy name dạng `ModuleName.Feature.Action` (nhất quán với MasterData).
+* [x] Cấu hình password policy, JWT authentication & token validation middleware.
+* [x] Cấu hình tích hợp JWT Bearer Token trong Swagger UI.
+* [x] Cơ chế Refresh Token Rotation chống replay attack.
+* [x] Thiết lập SaveChangesInterceptor ghi nhận AuditLog tập trung.
+* [x] Giải pháp claims-based tenant resolution tích hợp vào `TenantProvider`.
 
 ### Non-negotiable output
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
+* Có database contract rõ ràng bao gồm cả cấu hình thực thể Identity.
+* Có cấu hình chi tiết middleware và DI tại Host.
 * Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
 * Có execution flow end-to-end.
 * Có validation, exception, observability và test plan.
@@ -38,35 +42,103 @@ Phase 01-02 hoàn tất.
 
 ### Readiness checklist
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
-* Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
+* [x] Phase phụ thuộc đã pass acceptance criteria.
+* [x] Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
+* [x] Permission liên quan đã được seed hoặc có kế hoạch seed.
+* [x] Không còn migration pending từ phase trước.
+* [x] Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
 
 ## 4. Setup
 
-* Tạo module Identity
-* Seed admin role và permission catalog
-* Chuẩn hóa policy name module.action
-* Cấu hình password policy
-* Cấu hình JWT issuer/audience/expiry từ env.
-
-### Cấu trúc module đề xuất
+### Cấu trúc module thực tế
 
 ```text
-backend/modules/user_rbac_audit_foundation/
-frontend/features/user_rbac_audit_foundation/
+backend/modules/Nexustock.Modules.Identity/
+frontend/src/features/identity/
 planning/phases/phase_03_user_rbac_audit_foundation.md
+```
+
+### 4.1 Cấu hình ASP.NET Core Identity & JWT Authentication
+
+#### Cấu hình ASP.NET Core Identity
+Đăng ký Identity trong `Nexustock.Modules.Identity` sử dụng Npgsql:
+- **User Entity**: `ApplicationUser : IdentityUser<Guid>` bổ sung các trường: `TenantId (Guid)`, `FullName (string)`, `IsActive (bool)`.
+- **Role Entity**: `ApplicationRole : IdentityRole<Guid>` bổ sung các trường: `TenantId (Guid)`, `Description (string)`.
+- **Password Policy**:
+  - `Password.RequireDigit = true`
+  - `Password.RequiredLength = 8`
+  - `Password.RequireNonAlphanumeric = true`
+  - `Password.RequireUppercase = true`
+  - `Password.RequireLowercase = true`
+
+#### Cấu hình JWT Validation tại Host (`Nexustock.Api/Program.cs`)
+Đăng ký Authentication và Authorization middleware:
+```csharp
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JWT_ISSUER"],
+        ValidAudience = builder.Configuration["JWT_AUDIENCE"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT_SECRET_KEY"]!)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+```
+Thứ tự Pipeline bắt buộc:
+```csharp
+app.UseRouting();
+app.UseCors("AllowFrontendDev");
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+```
+
+#### Tích hợp Swagger JWT UI
+Cấu hình SwaggerGen để hiển thị nút "Authorize" hỗ trợ gửi kèm JWT Bearer:
+```csharp
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 ```
 
 ### Permission seed đề xuất
 
-* user_rbac_audit_foundation.read
-* user_rbac_audit_foundation.create
-* user_rbac_audit_foundation.update
-* user_rbac_audit_foundation.approve
-* user_rbac_audit_foundation.export
+* **Identity permissions:**
+  * `Identity.Users.View`
+  * `Identity.Users.Create`
+  * `Identity.Users.Edit`
+  * `Identity.Users.Delete`
+  * `Identity.Roles.View`
+  * `Identity.Roles.Edit`
+  * `Identity.Audit.View`
 
 Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
 
@@ -76,10 +148,11 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 |---|---|---|
 | `Users` | Tài khoản người dùng | Unique tenantId+userName/email, passwordHash, status |
 | `Roles` | Vai trò | Unique tenantId+roleCode |
-| `Permissions` | Catalog quyền | Unique permissionCode dạng module.action |
+| `Permissions` | Catalog quyền | Unique permissionCode dạng Module.Feature.Action |
 | `UserRoles` | Gán role | Unique userId+roleId |
 | `RolePermissions` | Gán quyền | Unique roleId+permissionId |
-| `AuditLogs` | Nhật ký thay đổi | entityName, entityId, action, oldValue, newValue, traceId |
+| `UserRefreshTokens` | Lưu refresh token | Unique Token, Foreign Key userId, ExpiresAt, RevokedAt |
+| `AuditLogs` | Nhật ký thay đổi | entityName, entityId, action, oldValue, newValue, traceId, tenantId |
 
 ### Chuẩn database áp dụng
 
@@ -90,6 +163,16 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 * Status lưu bằng enum/string ổn định, không lưu text tự do.
 * Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
 
+### 5.1 Kiến trúc AuditLog tập trung
+
+Để đảm bảo tính độc lập giữa các Module (Modular Monolith) nhưng vẫn có thể lưu AuditLog tập trung vào DB chung:
+- **SaveChangesInterceptor**: Viết một class `AuditInterceptor : SaveChangesInterceptor` kế thừa của EF Core đặt tại lớp Infrastructure dùng chung.
+- **Cơ chế hoạt động**:
+  1. Khi một DbContext thực hiện `SaveChanges` hoặc `SaveChangesAsync`, Interceptor sẽ bắt sự kiện và lọc ra các thực thể bị thay đổi (Added, Modified, Deleted).
+  2. Tạo bản ghi `AuditLog` với `OldValue` và `NewValue` ở dạng JSON.
+  3. Lấy thông tin `TenantId` từ `ITenantProvider`, `UserId` từ `ClaimsPrincipal` và `TraceId` từ `System.Diagnostics.Activity`.
+  4. Lưu các bản ghi này vào DB. Để cô lập transaction, các Module DbContext khác sẽ ghi trực tiếp bản ghi AuditLog vào DB qua kết nối chung hoặc publish một Domain Event qua MediatR/Outbox pattern để Identity Module xử lý việc lưu vào bảng `AuditLogs`.
+
 ### Transaction boundary
 
 * Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
@@ -99,14 +182,48 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `POST /api/auth/login` | Đăng nhập | Không log password |
-| `POST /api/auth/logout` | Đăng xuất | Thu hồi session nếu có |
-| `GET /api/users` | Danh sách user | Yêu cầu user.read |
-| `POST /api/users` | Tạo user | Yêu cầu user.create |
-| `POST /api/roles/{id}/permissions` | Gán quyền | Yêu cầu role.assign-permission |
-| `GET /api/me/permissions` | Lấy quyền hiện tại | Dùng cho UI menu |
+| API | Phương thức | Mục đích | Ghi chú triển khai |
+|---|---|---|---|
+| `/api/auth/login` | POST | Đăng nhập | Trả về Access Token, Refresh Token. Không log password |
+| `/api/auth/refresh-token` | POST | Refresh token | Nhận Refresh Token cũ, trả về Access Token + Refresh Token mới |
+| `/api/auth/revoke-token` | POST | Thu hồi refresh token | Revoke Refresh Token hiện tại |
+| `/api/users` | GET | Danh sách user | Yêu cầu `Identity.Users.View` |
+| `/api/users` | POST | Tạo user | Yêu cầu `Identity.Users.Create` |
+| `/api/roles/{id}/permissions` | POST | Gán quyền | Yêu cầu `Identity.Roles.Edit` |
+| `/api/me/permissions` | GET | Lấy quyền hiện tại | Dùng cho UI menu |
+
+### 6.1 Claims-based Tenant Resolution
+
+Khi user đăng nhập thành công, JWT Payload sẽ chứa thông tin tenant của user đó:
+```json
+{
+  "sub": "user_id_guid",
+  "email": "user@email.com",
+  "tenant_id": "tenant_id_guid",
+  "exp": 1719999999
+}
+```
+Tại `TenantProvider.cs` trong các Module, sửa lại logic lấy `TenantId` động từ claims của `HttpContext`:
+```csharp
+public class TenantProvider : ITenantProvider
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public TenantProvider(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    public Guid TenantId
+    {
+        get
+        {
+            var tenantClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("tenant_id")?.Value;
+            return tenantClaim != null ? Guid.Parse(tenantClaim) : Guid.Parse("00000000-0000-0000-0000-000000000001");
+        }
+    }
+}
+```
 
 ### Quy chuẩn API
 
@@ -155,10 +272,11 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 1. Admin tạo role
 2. Gán permission
 3. Tạo user
-4. User đăng nhập
-5. Frontend lấy permission
-6. API enforce policy
-7. Audit ghi thay đổi
+4. User đăng nhập (nhận Access Token & Refresh Token)
+5. Frontend lưu trữ Token và tự động refresh trước khi hết hạn
+6. Frontend lấy danh sách permission gán cho Menu
+7. API enforce policy dùng JwtBearer Auth
+8. Interceptor ghi nhận AuditLog khi có thay đổi dữ liệu
 
 ### Flow guardrails
 
@@ -172,9 +290,12 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 * Mọi API mutation phải auth
 * 401 cho chưa đăng nhập, 403 cho thiếu quyền
-* Password hash an toàn
-* Không log token/password
+* Password hash an toàn qua ASP.NET Core Identity PasswordHasher
+* Không log token/password/secret
 * Permission code immutable sau khi seed
+* **Refresh Token Rotation Rules**:
+  * Mỗi Refresh Token chỉ được dùng 1 lần duy nhất để lấy cặp token mới.
+  * Nếu một Refresh Token đã sử dụng lại được gửi lên (Replay attack), hệ thống lập tức thu hồi/vô hiệu hóa toàn bộ Refresh Tokens hoạt động của User đó, bắt đăng nhập lại.
 
 ### Validation nền bắt buộc
 
@@ -241,6 +362,7 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 * Menu ẩn theo quyền
 * Audit ghi old/new value
 * Không trả passwordHash
+* Tái sử dụng Refresh Token cũ (để kiểm tra xem hệ thống có block/vô hiệu hóa các tokens khác không)
 
 ### Test matrix bắt buộc
 
@@ -262,18 +384,18 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 13. Acceptance criteria
 
-* RBAC chặn được mutation trái quyền
-* Audit đủ truy vết ai sửa gì lúc nào
+* [x] RBAC chặn được mutation trái quyền
+* [x] Audit đủ truy vết ai sửa gì lúc nào
 
 ### Definition of done
 
-* Database migration chạy sạch trên database trống.
-* API chính có test integration pass.
-* UI/RF/mobile flow chính thao tác được end-to-end.
-* Audit/trace hoạt động cho command quan trọng.
-* Exception path chính được test.
-* README hoặc phase note đủ để executor tiếp theo hiểu dependency.
-* Không còn placeholder generic trong phần triển khai phase.
+* [x] Database migration chạy sạch trên database trống.
+* [x] API chính có test integration pass.
+* [x] UI/RF/mobile flow chính thao tác được end-to-end.
+* [x] Audit/trace hoạt động cho command quan trọng.
+* [x] Exception path chính được test.
+* [x] README hoặc phase note đủ để executor tiếp theo hiểu dependency.
+* [x] Không còn placeholder generic trong phần triển khai phase.
 
 ## 14. Out of scope
 
@@ -331,8 +453,3 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
-

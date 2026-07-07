@@ -8,16 +8,15 @@ using Nexustock.Modules.MasterData.Contexts;
 namespace Nexustock.MasterData.IntegrationTests;
 
 /// <summary>
-/// Custom WebApplicationFactory để tạo host dùng InMemory database
-/// Tránh phụ thuộc vào PostgreSQL và .env khi test
+/// Custom WebApplicationFactory dùng database InMemory để test.
+/// Must be internal because base type parameter 'Program' is internal.
 /// </summary>
 internal class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
-    private readonly string _dbName = $"NexustockTest_{Guid.NewGuid()}";
+    private readonly string _dbName = $"TestDb_{Guid.NewGuid()}";
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Tránh load .env và kết nối DB thật
         builder.UseEnvironment("Test");
 
         builder.ConfigureServices(services =>
@@ -26,8 +25,15 @@ internal class CustomWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<MasterDataDbContext>>();
             services.RemoveAll<MasterDataDbContext>();
 
+            // Xoá DbContextOptions<IdentityDbContext> hiện có (Npgsql)
+            services.RemoveAll<DbContextOptions<Nexustock.Modules.Identity.Contexts.IdentityDbContext>>();
+            services.RemoveAll<Nexustock.Modules.Identity.Contexts.IdentityDbContext>();
+
             // Thay bằng InMemory
             services.AddDbContext<MasterDataDbContext>(options =>
+                options.UseInMemoryDatabase(_dbName));
+
+            services.AddDbContext<Nexustock.Modules.Identity.Contexts.IdentityDbContext>(options =>
                 options.UseInMemoryDatabase(_dbName));
         });
     }

@@ -24,7 +24,11 @@ public class IntegrationTestBase : IDisposable
 
         // Đảm bảo DB được tạo và seed data
         var db = Services.GetRequiredService<MasterDataDbContext>();
+        db.Database.EnsureDeleted();
         db.Database.EnsureCreated();
+
+        var identityDb = Services.GetRequiredService<Nexustock.Modules.Identity.Contexts.IdentityDbContext>();
+        identityDb.Database.EnsureCreated();
 
         Client = _factory.CreateClient();
     }
