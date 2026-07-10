@@ -181,11 +181,51 @@ try
         return Results.Json(summary, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     });
 
+    // Apply Migrations
+    using (var scope = app.Services.CreateScope())
+    {
+        try
+        {
+            var identityDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Identity.Contexts.IdentityDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(identityDb.Database);
+            Log.Information("Identity database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Identity database");
+        }
+
+        try
+        {
+            var masterDataDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.MasterData.Contexts.MasterDataDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(masterDataDb.Database);
+            Log.Information("MasterData database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the MasterData database");
+        }
+    }
+
     // Run Database Seeding
     try
     {
+        var identityPermissions = new List<(string Code, string Name, string Group)>
+        {
+            ("Identity.Users.View", "Xem người dùng", "Identity"),
+            ("Identity.Users.Create", "Thêm người dùng", "Identity"),
+            ("Identity.Users.Edit", "Sửa người dùng", "Identity"),
+            ("Identity.Roles.View", "Xem vai trò & quyền", "Identity"),
+            ("Identity.Roles.Create", "Thêm vai trò", "Identity"),
+            ("Identity.Roles.Edit", "Sửa vai trò", "Identity"),
+            ("Identity.Roles.Delete", "Xóa vai trò", "Identity"),
+            ("Identity.Audit.View", "Xem nhật ký hệ thống", "Identity")
+        };
+
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
-            .Select(p => (p.Code, p.Name, p.Group));
+            .Select(p => (p.Code, p.Name, p.Group))
+            .Concat(identityPermissions);
+
         await Nexustock.Modules.Identity.Seeders.IdentitySeeder.SeedAsync(app.Services, appPermissions);
     }
     catch (Exception ex)

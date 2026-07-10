@@ -134,15 +134,15 @@ public class AuditInterceptor : SaveChangesInterceptor
 
             context.Database.ExecuteSqlRaw(sql,
                 Guid.NewGuid(),
-                (object?)entry.UserId ?? DBNull.Value,
-                (object?)entry.TenantId ?? DBNull.Value,
+                entry.UserId,
+                entry.TenantId,
                 entry.EntityName,
                 entry.EntityId,
                 entry.Action,
-                (object?)oldValuesJson ?? DBNull.Value,
-                (object?)newValuesJson ?? DBNull.Value,
-                (object?)changedColumnsJson ?? DBNull.Value,
-                (object?)entry.TraceId ?? DBNull.Value,
+                oldValuesJson,
+                newValuesJson,
+                changedColumnsJson,
+                entry.TraceId,
                 DateTime.UtcNow);
         }
     }
@@ -161,15 +161,15 @@ public class AuditInterceptor : SaveChangesInterceptor
 
             await context.Database.ExecuteSqlRawAsync(sql, new object[] {
                 Guid.NewGuid(),
-                (object?)entry.UserId ?? DBNull.Value,
-                (object?)entry.TenantId ?? DBNull.Value,
+                entry.UserId,
+                entry.TenantId,
                 entry.EntityName,
                 entry.EntityId,
                 entry.Action,
-                (object?)oldValuesJson ?? DBNull.Value,
-                (object?)newValuesJson ?? DBNull.Value,
-                (object?)changedColumnsJson ?? DBNull.Value,
-                (object?)entry.TraceId ?? DBNull.Value,
+                oldValuesJson,
+                newValuesJson,
+                changedColumnsJson,
+                entry.TraceId,
                 DateTime.UtcNow
             }, cancellationToken);
         }

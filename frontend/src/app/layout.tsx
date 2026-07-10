@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   description: "System health dashboard for Nexustock modular monolith. Real-time status of API, PostgreSQL database, and Redis cache.",
 };
 
+import { AuthProvider } from "@/providers/auth-provider";
+import AuthGuard from "@/components/auth-guard";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,7 +36,11 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col bg-[#0a0a0a]">
         <ConfirmDialogProvider>
           <TooltipProvider>
-            {children}
+            <AuthProvider>
+              <AuthGuard>
+                {children}
+              </AuthGuard>
+            </AuthProvider>
           </TooltipProvider>
           <Toaster
             position="bottom-right"

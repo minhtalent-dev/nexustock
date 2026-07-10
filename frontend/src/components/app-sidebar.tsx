@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 import {
   Home,
   Activity,
@@ -16,12 +17,23 @@ import {
   Tag,
   Upload,
   ChevronDown,
+  Shield,
+  Lock,
+  FileText,
+  LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+type LinkItem = {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  permission?: string;
+};
+
 type NavGroup = {
   title: string;
-  links: { href: string; label: string; icon: React.ComponentType<{ className?: string }> }[];
+  links: LinkItem[];
 };
 
 const navGroups: NavGroup[] = [
@@ -35,37 +47,46 @@ const navGroups: NavGroup[] = [
   {
     title: "Vật tư & Đơn vị",
     links: [
-      { href: "/master-data/products", label: "Vật tư", icon: Package },
-      { href: "/master-data/uoms", label: "Đơn vị tính", icon: Ruler },
+      { href: "/master-data/products", label: "Vật tư", icon: Package, permission: "MasterData.Products.View" },
+      { href: "/master-data/uoms", label: "Đơn vị tính", icon: Ruler, permission: "MasterData.Uoms.View" },
     ],
   },
   {
     title: "Kho bãi & Kệ",
     links: [
-      { href: "/master-data/warehouses", label: "Nhà kho", icon: Warehouse },
-      { href: "/master-data/zones", label: "Vùng kho", icon: Grid3X3 },
-      { href: "/master-data/locations", label: "Vị trí kệ", icon: MapPin },
+      { href: "/master-data/warehouses", label: "Nhà kho", icon: Warehouse, permission: "MasterData.Warehouses.View" },
+      { href: "/master-data/zones", label: "Vùng kho", icon: Grid3X3, permission: "MasterData.Zones.View" },
+      { href: "/master-data/locations", label: "Vị trí kệ", icon: MapPin, permission: "MasterData.Locations.View" },
     ],
   },
   {
     title: "Đối tác & Nghiệp vụ",
     links: [
-      { href: "/master-data/partners", label: "Đối tác", icon: Users },
-      { href: "/master-data/reasons", label: "Mã lý do", icon: Tag },
+      { href: "/master-data/partners", label: "Đối tác", icon: Users, permission: "MasterData.Partners.View" },
+      { href: "/master-data/reasons", label: "Mã lý do", icon: Tag, permission: "MasterData.Reasons.View" },
     ],
   },
   {
     title: "Tiện ích",
     links: [
-      { href: "/master-data/import", label: "Nhập dữ liệu", icon: Upload },
+      { href: "/master-data/import", label: "Nhập dữ liệu", icon: Upload, permission: "MasterData.Imports.Preview" },
+    ],
+  },
+  {
+    title: "Hệ thống & Quyền",
+    links: [
+      { href: "/admin/users", label: "Người dùng", icon: Shield, permission: "Identity.Users.View" },
+      { href: "/admin/roles", label: "Vai trò & Quyền", icon: Lock, permission: "Identity.Roles.View" },
+      { href: "/admin/audit", label: "Nhật ký hệ thống", icon: FileText, permission: "Identity.Audit.View" },
     ],
   },
 ];
 
-function isGroupActive(group: NavGroup, pathname: string): boolean {
-  return group.links.some((link) =>
-    link.href === "/" ? pathname === "/" : pathname.startsWith(link.href)
-  );
+function isGroupActive(group: NavGroup, pathname: string, userPermissions: string[]): boolean {
+  return group.links.some((link) => {
+    if (link.permission && !userPermissions.includes(link.permission)) return false;
+    return link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+  });
 }
 
 const COLLAPSED_KEY = "nexustock:sidebar:collapsed";
@@ -90,7 +111,7 @@ function saveCollapsed(state: Record<string, boolean>) {
 
 export default function AppSidebar() {
   const pathname = usePathname();
-
+  const { permissions, logout, user } = useAuth();
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
@@ -100,12 +121,11 @@ export default function AppSidebar() {
       if (g.title in saved) {
         initial[g.title] = saved[g.title];
       } else {
-        initial[g.title] = !isGroupActive(g, pathname);
+        initial[g.title] = !isGroupActive(g, pathname, permissions);
       }
     });
     setCollapsed(initial);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [permissions, pathname]);
 
   const toggle = (title: string) => {
     setCollapsed((prev) => {
@@ -114,6 +134,16 @@ export default function AppSidebar() {
       return next;
     });
   };
+
+  // Lọc các group và link dựa trên permissions của user
+  const filteredGroups = navGroups
+    .map((group) => {
+      const filteredLinks = group.links.filter(
+        (link) => !link.permission || permissions.includes(link.permission)
+      );
+      return { ...group, links: filteredLinks };
+    })
+    .filter((group) => group.links.length > 0);
 
   return (
     <aside className="w-60 border-r border-zinc-800/80 bg-[#0a0a0a] p-4 flex-shrink-0 flex flex-col min-h-screen">
@@ -128,70 +158,91 @@ export default function AppSidebar() {
       </Link>
 
       {/* Navigation groups */}
-      {navGroups.map((group) => {
-        const active = isGroupActive(group, pathname);
-        const isOpen = !collapsed[group.title];
+      <div className="flex-1 flex flex-col gap-1 overflow-y-auto pr-1">
+        {filteredGroups.map((group) => {
+          const active = isGroupActive(group, pathname, permissions);
+          const isOpen = !collapsed[group.title];
 
-        return (
-          <div key={group.title} className="mb-1">
-            {/* Group header — click toggle */}
-            <Button
-              onClick={() => toggle(group.title)}
-              variant="ghost"
-              size="sm"
-              className={clsx(
-                "w-full justify-between px-1 text-xs font-semibold uppercase tracking-wider",
-                active
-                  ? "text-emerald-400"
-                  : "text-zinc-500 hover:text-zinc-300"
-              )}
-            >
-              <span>{group.title}</span>
-              <ChevronDown
+          return (
+            <div key={group.title} className="mb-1">
+              {/* Group header — click toggle */}
+              <Button
+                onClick={() => toggle(group.title)}
+                variant="ghost"
+                size="sm"
                 className={clsx(
-                  "h-3.5 w-3.5 transition-transform duration-200",
-                  isOpen && "rotate-180"
+                  "w-full justify-between px-1 text-xs font-semibold uppercase tracking-wider h-8 hover:bg-transparent",
+                  active
+                    ? "text-emerald-400"
+                    : "text-zinc-500 hover:text-zinc-300"
                 )}
-              />
-            </Button>
+              >
+                <span>{group.title}</span>
+                <ChevronDown
+                  className={clsx(
+                    "h-3.5 w-3.5 transition-transform duration-200",
+                    isOpen && "rotate-180"
+                  )}
+                />
+              </Button>
 
-            {/* Collapsible submenu */}
-            <div
-              className={clsx(
-                "overflow-hidden transition-all duration-250 ease-in-out",
-                isOpen ? "max-h-96 opacity-100 mt-1" : "max-h-0 opacity-0"
-              )}
-            >
-              <nav className="flex flex-col gap-1 pl-1">
-                {group.links.map((link) => {
-                  const isActive =
-                    pathname === link.href ||
-                    (link.href !== "/" && pathname.startsWith(link.href));
-                  return (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className={clsx(
-                        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
-                        isActive
-                          ? "bg-zinc-800 text-white"
-                          : "text-zinc-400 hover:text-white hover:bg-zinc-900"
-                      )}
-                    >
-                      <link.icon className="h-4 w-4 flex-shrink-0" />
-                      {link.label}
-                    </Link>
-                  );
-                })}
-              </nav>
+              {/* Collapsible submenu */}
+              <div
+                className={clsx(
+                  "overflow-hidden transition-all duration-200 ease-in-out",
+                  isOpen ? "max-h-96 opacity-100 mt-1" : "max-h-0 opacity-0"
+                )}
+              >
+                <nav className="flex flex-col gap-1 pl-1">
+                  {group.links.map((link) => {
+                    const isActive =
+                      pathname === link.href ||
+                      (link.href !== "/" && pathname.startsWith(link.href));
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className={clsx(
+                          "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+                          isActive
+                            ? "bg-zinc-850 text-white border border-zinc-800"
+                            : "text-zinc-400 hover:text-white hover:bg-zinc-900/50"
+                        )}
+                      >
+                        <link.icon className="h-4 w-4 flex-shrink-0" />
+                        {link.label}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </div>
             </div>
+          );
+        })}
+      </div>
+
+      {/* User Info & Logout Button */}
+      {user && (
+        <div className="mt-auto pt-4 border-t border-zinc-800/60 flex flex-col gap-2">
+          <div className="flex flex-col px-2">
+            <span className="text-sm font-medium text-white truncate">{user.fullName}</span>
+            <span className="text-[10px] text-zinc-500 truncate font-mono">{user.email}</span>
           </div>
-        );
-      })}
+          <Button
+            onClick={logout}
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-3 px-2 h-9"
+          >
+            <LogOut className="h-4 w-4 flex-shrink-0" />
+            Đăng xuất
+          </Button>
+        </div>
+      )}
 
       {/* Footer */}
-      <div className="mt-auto pt-4 border-t border-zinc-800/40 text-xs text-zinc-500">
-        <span>Phiên bản v0.2.0 (Phase 02)</span>
+      <div className="mt-2 text-[10px] text-zinc-650 font-mono text-center">
+        <span>v0.3.0 (Phase 03 UI)</span>
       </div>
     </aside>
   );
