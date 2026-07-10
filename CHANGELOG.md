@@ -1,5 +1,20 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 0.3.0 - Quản trị hệ thống, Phân quyền & Nhật ký thay đổi (Phase 3)
+*Ngày cập nhật: 10/07/2026*
+
+### Tính năng mới
+- **Trang đăng nhập bảo mật**: Cho phép đăng nhập hệ thống bằng email và mật khẩu an toàn.
+- **Quản lý người dùng**: Xem danh sách người dùng, thay đổi trạng thái kích hoạt và gán nhiều vai trò.
+- **Quản lý vai trò và Ma trận quyền**: Cho phép tạo vai trò mới và tích chọn phân quyền chi tiết cho từng vai trò trên giao diện trực quan.
+- **Nhật ký hệ thống**: Tra cứu lịch sử thao tác dữ liệu chi tiết, cho phép lọc theo thực thể, hành động, thời gian và xem chi tiết giá trị cũ/mới dạng JSON.
+- **Tự động ẩn hiện menu**: Hệ thống tự động lọc và chỉ hiển thị các chức năng menu trên sidebar tương ứng với quyền hạn thực tế của người dùng.
+
+### Cải tiến và tối ưu
+- **Quay vòng mã Token**: Tích hợp cơ chế Refresh Token Rotation và ngăn chặn tấn công replay attack tự động phía Client-side.
+- **Ghi log thay đổi tự động**: Tích hợp SaveChangesInterceptor ghi nhận lịch sử thay đổi thực thể tự động trên database.
+- **Khắc phục lỗi ghi log PostgreSQL**: Sửa lỗi tương thích kiểu dữ liệu DBNull khi ghi nhận log thay đổi trên cơ sở dữ liệu PostgreSQL.
+
 ## Phiên bản 0.2.0 - Quản lý danh mục nền tảng (Phase 2)
 *Ngày cập nhật: 02/07/2026*
 

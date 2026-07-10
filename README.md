@@ -47,3 +47,9 @@ Giao diện sẽ chạy tại cổng `http://localhost:3003`.
 * **Liveness Probe**: GET http://localhost:5024/health/live (Trả về 200 OK nếu API Host sống)
 * **Readiness Probe**: GET http://localhost:5024/health/ready (Kiểm tra kết nối DB và Redis)
 * **Health Dashboard UI**: `http://localhost:3003/health-ui` (Giao diện giám sát thời gian thực)
+
+## 🔒 Tài khoản quản trị mặc định
+Sau khi khởi chạy Backend lần đầu, cơ sở dữ liệu sẽ tự động được migrate và seed tài khoản admin:
+* **Email**: `admin@nexustock.com`
+* **Mật khẩu**: `AdminSecret123!`
+Tài khoản này được gán vai trò `Admin` và sở hữu đầy đủ quyền truy cập hệ thống.
