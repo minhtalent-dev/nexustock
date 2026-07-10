@@ -1,10 +1,10 @@
-﻿# PHASE 04: Inbound receiving
+# PHASE 04: Inbound receiving
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 90%
-- **Đánh giá:** Đủ rõ cho inbound receiving, PO/Invoice receive, Lot creation và inventory transaction.
-- **Khi cần upgrade:** Upgrade nếu nghiệp vụ dung sai nhận hàng hoặc mapping chứng từ thực tế khác plan.
+- **Mức hiện tại:** 100% (Completed)
+- **Đánh giá:** Đã hoàn thành 100% việc thiết kế backend module, database migrations, seed permissions, frontend UI và E2E testing.
+- **Khi cần upgrade:** Khi có yêu cầu thay đổi logic dung sai nhận hàng nâng cao hoặc quy trình kiểm QC mở rộng.
 
 ## 1. Mục tiêu
 
@@ -18,7 +18,7 @@ Nhận hàng từ PO/Invoice, tạo Lot và ghi transaction nhập kho.
 
 ### In scope
 
-* Tạo module Inbound receiving
+* Tạo module Inbound receiving (`Nexustock.Modules.Inbound`)
 * Seed permission và reason code liên quan
 * Cấu hình route/API/menu
 * Chuẩn hóa DTO camelCase
@@ -53,18 +53,18 @@ Các phase phụ thuộc đã hoàn tất và dữ liệu nền liên quan đã 
 ### Cấu trúc module đề xuất
 
 ```text
-backend/modules/inbound_receiving/
-frontend/features/inbound_receiving/
+backend/modules/Nexustock.Modules.Inbound/
+frontend/src/features/inbound/
 planning/phases/phase_04_inbound_receiving.md
 ```
 
 ### Permission seed đề xuất
 
-* inbound_receiving.read
-* inbound_receiving.create
-* inbound_receiving.update
-* inbound_receiving.approve
-* inbound_receiving.export
+* `Inbound.Orders.View` - Xem danh sách phiếu nhập
+* `Inbound.Orders.Create` - Tạo mới phiếu nhập
+* `Inbound.Orders.Receive` - Nhận hàng thực tế
+* `Inbound.Orders.Approve` - Phê duyệt nhận hàng vượt tolerance
+* `Inbound.Lots.View` - Tra cứu thông tin Lot
 
 Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
 
@@ -72,10 +72,10 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 | Thành phần dữ liệu | Mục đích | Ràng buộc chính |
 |---|---|---|
-| `InboundOrders` | Phiếu nhập | Status draft,open,receiving,completed,cancelled |
-| `InboundOrderItems` | Dòng phiếu nhập | ExpectedQty, receivedQty, tolerance |
-| `Lots` | Lô hàng | Unique tenantId+lotNo+itemId, expiryDate, qcStatus |
-| `InventoryTransactions` | Giao dịch nhập | Type RECEIVE, immutable |
+| `InboundOrders` | Phiếu nhập | Id (PK), TenantId, OrderNo (Unique composite tenantId+orderNo), PartnerId (FK Partners), Status (Draft, Open, Receiving, Completed, Cancelled), CreatedAt, CreatedBy, UpdatedAt, UpdatedBy |
+| `InboundOrderItems` | Dòng phiếu nhập | Id (PK), TenantId, InboundOrderId (FK InboundOrders), ItemId (FK Products), UomId (FK Uoms), ExpectedQty (Decimal), ReceivedQty (Decimal, default 0), Tolerance (Decimal, default 0) |
+| `Lots` | Lô hàng | Id (PK), TenantId, LotNo, ItemId (FK Products), ExpiryDate, ProductionDate, QcStatus (Unspec, Hold, Release, Reject - default Unspec). Unique composite tenantId+lotNo+itemId |
+| `InventoryTransactions` | Giao dịch nhập | Id (PK), TenantId, ItemId, LotNo, TransactionType (RECEIVE), Qty (Decimal), ToLocationId (FK Locations), CreatedAt, CreatedBy, TraceId. Immutable |
 
 ### Chuẩn database áp dụng
 
@@ -97,10 +97,10 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 | API | Mục đích | Ghi chú triển khai |
 |---|---|---|
-| `GET /api/inbound/orders` | Danh sách phiếu nhập | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/inbound/orders` | Tạo phiếu nhập | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/inbound/orders/{id}/receive` | Nhận hàng | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `GET /api/lots/{lotNo}` | Tra cứu Lot | Có auth, validation, trace ID và response lỗi chuẩn. |
+| `GET /api/inbound/orders` | Danh sách phiếu nhập | Yêu cầu `Inbound.Orders.View` |
+| `POST /api/inbound/orders` | Tạo phiếu nhập | Yêu cầu `Inbound.Orders.Create`. Tự động tạo OrderNo nếu trống. |
+| `POST /api/inbound/orders/{id}/receive` | Nhận hàng | Yêu cầu `Inbound.Orders.Receive`. Kiểm tra và so khớp Tolerance. |
+| `GET /api/lots/{lotNo}` | Tra cứu Lot | Yêu cầu `Inbound.Lots.View`. |
 
 ### Quy chuẩn API
 

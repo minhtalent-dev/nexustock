@@ -21,6 +21,8 @@ import {
   Lock,
   FileText,
   LogOut,
+  ClipboardList,
+  Archive,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -70,6 +72,13 @@ const navGroups: NavGroup[] = [
     title: "Tiện ích",
     links: [
       { href: "/master-data/import", label: "Nhập dữ liệu", icon: Upload, permission: "MasterData.Imports.Preview" },
+    ],
+  },
+  {
+    title: "Nhập kho",
+    links: [
+      { href: "/admin/inbound", label: "Phiếu nhập hàng", icon: ClipboardList, permission: "Inbound.Orders.View" },
+      { href: "/admin/lots", label: "Tra cứu lô hàng", icon: Archive, permission: "Inbound.Lots.View" },
     ],
   },
   {

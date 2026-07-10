@@ -1,6 +1,6 @@
 # Lịch sử cập nhật dự án
 
-## Phiên bản 0.3.0 - Quản trị hệ thống, Phân quyền & Nhật ký thay đổi (Phase 3)
+## Phiên bản 0.3.0 - Quản trị hệ thống, Phân quyền & Nhập kho nhận hàng (Phase 3 & 4)
 *Ngày cập nhật: 10/07/2026*
 
 ### Tính năng mới
@@ -9,11 +9,15 @@
 - **Quản lý vai trò và Ma trận quyền**: Cho phép tạo vai trò mới và tích chọn phân quyền chi tiết cho từng vai trò trên giao diện trực quan.
 - **Nhật ký hệ thống**: Tra cứu lịch sử thao tác dữ liệu chi tiết, cho phép lọc theo thực thể, hành động, thời gian và xem chi tiết giá trị cũ/mới dạng JSON.
 - **Tự động ẩn hiện menu**: Hệ thống tự động lọc và chỉ hiển thị các chức năng menu trên sidebar tương ứng với quyền hạn thực tế của người dùng.
+- **Phiếu nhập hàng (Inbound Orders)**: Tạo mới và quản lý danh sách phiếu nhập PO/Invoice với giao diện trực quan.
+- **Nhận hàng thực tế (Receiving)**: Ghi nhận số lượng thực nhận, kiểm soát dung sai (tolerance) cho phép, tự động sinh hoặc khớp số lô (Lot no), ngày sản xuất, hạn sử dụng và lưu vị trí kho nhận hàng chi tiết.
+- **Tra cứu lô hàng (Lots Search)**: Tra cứu nhanh thông tin ngày sản xuất, hạn sử dụng và trạng thái QC của lô hàng thực tế theo số lô.
 
 ### Cải tiến và tối ưu
 - **Quay vòng mã Token**: Tích hợp cơ chế Refresh Token Rotation và ngăn chặn tấn công replay attack tự động phía Client-side.
 - **Ghi log thay đổi tự động**: Tích hợp SaveChangesInterceptor ghi nhận lịch sử thay đổi thực thể tự động trên database.
 - **Khắc phục lỗi ghi log PostgreSQL**: Sửa lỗi tương thích kiểu dữ liệu DBNull khi ghi nhận log thay đổi trên cơ sở dữ liệu PostgreSQL.
+- **Kiểm soát dung sai nghiêm ngặt**: Tích hợp phân quyền phê duyệt vượt dung sai (Inbound.Orders.Approve) ngay tại API Controller backend.
 
 ## Phiên bản 0.2.0 - Quản lý danh mục nền tảng (Phase 2)
 *Ngày cập nhật: 02/07/2026*

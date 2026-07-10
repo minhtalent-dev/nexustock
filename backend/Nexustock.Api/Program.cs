@@ -4,6 +4,7 @@ using Nexustock.Api.Health;
 using Nexustock.Api.Infrastructure;
 using Nexustock.Modules.Identity;
 using Nexustock.Modules.MasterData;
+using Nexustock.Modules.Inbound;
 using Serilog;
 using System.Text.Json;
 
@@ -73,6 +74,7 @@ try
     });
     builder.Services.AddMasterDataModule(builder.Configuration);
     builder.Services.AddIdentityModule(builder.Configuration);
+    builder.Services.AddInboundModule(builder.Configuration);
 
     // JWT Authentication
     var jwtSecretKey = builder.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
@@ -205,6 +207,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the MasterData database");
         }
+
+        try
+        {
+            var inboundDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Inbound.Contexts.InboundDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(inboundDb.Database);
+            Log.Information("Inbound database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Inbound database");
+        }
     }
 
     // Run Database Seeding
@@ -219,7 +232,12 @@ try
             ("Identity.Roles.Create", "Thêm vai trò", "Identity"),
             ("Identity.Roles.Edit", "Sửa vai trò", "Identity"),
             ("Identity.Roles.Delete", "Xóa vai trò", "Identity"),
-            ("Identity.Audit.View", "Xem nhật ký hệ thống", "Identity")
+            ("Identity.Audit.View", "Xem nhật ký hệ thống", "Identity"),
+            ("Inbound.Orders.View", "Xem danh sách phiếu nhập", "Inbound"),
+            ("Inbound.Orders.Create", "Tạo mới phiếu nhập", "Inbound"),
+            ("Inbound.Orders.Receive", "Nhận hàng thực tế", "Inbound"),
+            ("Inbound.Orders.Approve", "Phê duyệt nhận hàng vượt dung sai", "Inbound"),
+            ("Inbound.Lots.View", "Tra cứu lô hàng", "Inbound")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

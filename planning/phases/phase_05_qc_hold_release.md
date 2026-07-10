@@ -1,10 +1,10 @@
-﻿# PHASE 05: QC hold/release
+# PHASE 05: QC hold/release
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 90%
-- **Đánh giá:** Đủ rõ cho QC hold/release, quarantine/reject và chặn tồn khả dụng.
-- **Khi cần upgrade:** Upgrade nếu cần workflow duyệt QC nhiều cấp hoặc lấy mẫu kiểm nghiệm chi tiết.
+- **Mức hiện tại:** 100% (Completed Spec)
+- **Đánh giá:** Đã hoàn tất chi tiết hóa cấu trúc module, sơ đồ cơ sở dữ liệu (PostgreSQL), danh sách phân quyền đồng bộ với hệ thống Identity/Inbound, và các DTO API contract cụ thể. Sẵn sàng triển khai.
+- **Khi cần upgrade:** Upgrade nếu cần quy trình duyệt QC nhiều cấp hoặc tích hợp thiết bị lấy mẫu tự động.
 
 ## 1. Mục tiêu
 
@@ -18,17 +18,17 @@ Kiểm soát chất lượng Lot sau nhận: hold, release, reject, quarantine.
 
 ### In scope
 
-* Tạo module QC hold/release
-* Seed permission và reason code liên quan
+* Tạo module QC hold/release (`Nexustock.Modules.Qc`)
+* Seed permission và lý do QC
 * Cấu hình route/API/menu
 * Chuẩn hóa DTO camelCase
 
 ### Non-negotiable output
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
-* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
-* Có execution flow end-to-end.
+* Có database contract PostgreSQL chi tiết.
+* Có API contract và DTO cấu trúc rõ ràng.
+* Giao diện UI quản lý danh sách hàng chờ QC, ghi kết quả và hold/release.
+* Luồng nghiệp vụ chính chạy được E2E.
 * Có validation, exception, observability và test plan.
 
 ## 3. Điều kiện đầu vào
@@ -37,71 +37,77 @@ Các phase phụ thuộc đã hoàn tất và dữ liệu nền liên quan đã 
 
 ### Readiness checklist
 
-* Phase phụ thuộc đã pass acceptance criteria.
-* Master data tối thiểu đã có nếu phase cần dữ liệu vận hành.
-* Permission liên quan đã được seed hoặc có kế hoạch seed.
+* Phase phụ thuộc (Phase 04 - Inbound) đã pass và chạy thử thành công.
+* Master data tối thiểu (vật tư, kho bãi, đối tác) đã sẵn sàng.
 * Không còn migration pending từ phase trước.
-* Các status lifecycle liên quan đã được thống nhất trong tài liệu phase trước.
+* Quyền hạn hệ thống và cấu hình menu sidebar đã được quy hoạch.
 
 ## 4. Setup
 
 * Tạo module QC hold/release
-* Seed permission và reason code liên quan
+* Seed permission và lý do QC
 * Cấu hình route/API/menu
 * Chuẩn hóa DTO camelCase
 
 ### Cấu trúc module đề xuất
 
 ```text
-backend/modules/qc_hold_release/
-frontend/features/qc_hold_release/
+backend/modules/Nexustock.Modules.Qc/
+frontend/src/features/qc/
+frontend/src/app/admin/qc/
 planning/phases/phase_05_qc_hold_release.md
 ```
 
 ### Permission seed đề xuất
 
-* qc_hold_release.read
-* qc_hold_release.create
-* qc_hold_release.update
-* qc_hold_release.approve
-* qc_hold_release.export
+* `Qc.Queue.View` - Xem danh sách hàng/lô chờ kiểm định QC
+* `Qc.Results.Create` - Ghi nhận kết quả kiểm định QC
+* `Qc.Lots.Hold` - Khóa lô hàng (Hold)
+* `Qc.Lots.Release` - Giải phóng lô hàng (Release)
+* `Qc.Lots.Reject` - Từ chối/loại bỏ lô hàng (Reject)
 
 Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
+### Các bảng dữ liệu chi tiết
+
+| Bảng | Trường dữ liệu | Mô tả & Ràng buộc |
 |---|---|---|
-| `QcRequests` | Yêu cầu QC | LotId, samplePlan, status |
-| `QcResults` | Kết quả QC | Pass/fail metrics, attachment refs |
-| `MaterialHolds` | Khóa vật tư | Lot/location/reason/status |
-| `Lots.qcStatus` | Trạng thái QC | Pending, passed, failed, held |
+| `QcRequests` | `Id` (Guid, PK)<br>`TenantId` (Guid)<br>`LotId` (Guid, FK `Lots.Id`)<br>`SamplePlan` (Varchar(100))<br>`Status` (Varchar(50) - Pending, Completed, Cancelled)<br>`CreatedAt` (DateTime), `CreatedBy` (Varchar(100))<br>`UpdatedAt` (DateTime), `UpdatedBy` (Varchar(100)) | Yêu cầu kiểm định chất lượng cho lô hàng. Một Lot chỉ có tối đa 1 yêu cầu QC ở trạng thái `Pending`. |
+| `QcResults` | `Id` (Guid, PK)<br>`TenantId` (Guid)<br>`QcRequestId` (Guid, FK `QcRequests.Id`)<br>`IsPassed` (Boolean)<br>`Metrics` (Text - Dữ liệu thông số kiểm tra)<br>`AttachmentRefs` (Text - Link tài liệu/hình ảnh)<br>`Inspector` (Varchar(100))<br>`CreatedAt` (DateTime), `CreatedBy` (Varchar(100)) | Lưu trữ kết quả kiểm định chi tiết của thanh tra viên. |
+| `MaterialHolds` | `Id` (Guid, PK)<br>`TenantId` (Guid)<br>`LotId` (Guid, FK `Lots.Id`)<br>`LocationId` (Guid, FK `StorageLocations.Id`, Nullable)<br>`ReasonCode` (Varchar(50))<br>`Status` (Varchar(50) - Active, Released)<br>`HeldBy` (Varchar(100))<br>`ReleasedBy` (Varchar(100), Nullable)<br>`CreatedAt` (DateTime), `CreatedBy` (Varchar(100))<br>`ReleasedAt` (DateTime, Nullable) | Nhật ký và trạng thái khóa hàng hóa (Hold). Nếu LocationId null thì hold toàn bộ Lot, nếu có LocationId thì chỉ hold Lot tại vị trí đó. |
+
+*Lưu ý:* `Lots` từ Phase 04 có trường `QcStatus` dạng Enum/String gồm (`Unspec`, `Hold`, `Release`, `Reject`). Khi ghi nhận kết quả QC hoặc Hold/Release, trạng thái `QcStatus` của thực thể `Lot` sẽ được cập nhật tương ứng.
 
 ### Chuẩn database áp dụng
 
 * Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
 * Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
+* Index tối thiểu:
+  - `idx_qc_requests_tenant_status` ON `QcRequests` (`TenantId`, `Status`)
+  - `idx_material_holds_tenant_lot` ON `MaterialHolds` (`TenantId`, `LotId`, `Status`)
 * Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
 * Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
+* Migration phải có rollback strategy.
 
 ### Transaction boundary
 
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
+* Mọi thay đổi trạng thái QC của Lot và ghi nhận kết quả/yêu cầu QC phải nằm chung trong một Database Transaction.
+* Chống double-submit bằng cách kiểm tra trạng thái QC hiện tại trước khi thực thi.
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `GET /api/qc/queue` | Lot chờ QC | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/qc/{lotId}/result` | Ghi kết quả QC | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/qc/{lotId}/hold` | Hold Lot | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/qc/{lotId}/release` | Release Lot | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/qc/{lotId}/reject` | Reject Lot | Có auth, validation, trace ID và response lỗi chuẩn. |
+### Chi tiết các API và DTO Contract
+
+| API | Phương thức | Mô tả | Quyền yêu cầu | DTO Request / Response |
+|---|---|---|---|---|
+| `/api/qc/queue` | `GET` | Lấy danh sách lô hàng đang chờ kiểm tra chất lượng (Lot có `QcStatus` = `Unspec` hoặc có `QcRequest` trạng thái `Pending`). | `Qc.Queue.View` | **Response:** `QcQueueResponseDto`<br>- `id` (Guid)<br>- `lotId` (Guid)<br>- `lotNo` (String)<br>- `itemId` (Guid)<br>- `itemName` (String)<br>- `itemCode` (String)<br>- `expectedQty` (Decimal)<br>- `receivedQty` (Decimal)<br>- `createdAt` (DateTime) |
+| `/api/qc/{lotId}/result` | `POST` | Ghi nhận kết quả QC (Đạt/Không đạt). Cập nhật `QcStatus` của Lot thành `Release` (nếu pass) hoặc `Reject` (nếu fail). | `Qc.Results.Create` | **Request:** `RecordQcResultDto`<br>- `qcRequestId` (Guid)<br>- `isPassed` (Boolean)<br>- `metrics` (String)<br>- `attachmentRefs` (String)<br>**Response:** 200 OK |
+| `/api/qc/{lotId}/hold` | `POST` | Chủ động khóa lô hàng. Cập nhật `QcStatus` của Lot thành `Hold`. Ghi một bản ghi mới vào `MaterialHolds`. | `Qc.Lots.Hold` | **Request:** `HoldLotDto`<br>- `locationId` (Guid, Nullable)<br>- `reasonCode` (String)<br>**Response:** 200 OK |
+| `/api/qc/{lotId}/release` | `POST` | Giải phóng lô hàng đang bị khóa (Hold/Reject) về trạng thái khả dụng (`Release`). Cập nhật trạng thái trong `MaterialHolds` thành `Released`. | `Qc.Lots.Release` | **Request:** `ReleaseLotDto`<br>- `reasonCode` (String)<br>**Response:** 200 OK |
+| `/api/qc/{lotId}/reject` | `POST` | Chuyển trạng thái lô hàng thành lỗi/hỏng (`Reject`). Chặn xuất kho và chặn di chuyển. | `Qc.Lots.Reject` | **Request:** `RejectLotDto`<br>- `reasonCode` (String)<br>**Response:** 200 OK |
+| `/api/storage/upload` | `POST` | Upload tệp tin vật lý (bằng chứng QC, tài liệu) lên thư mục cấu hình tùy chỉnh ngoài project (`UploadSettings:UploadPath` trong `appsettings.json`). | Không yêu cầu (Auth only) | **Request:** Multipart Form (`file`)<br>**Response:** `UploadResponseDto`<br>- `url` (String) |
 
 ### Quy chuẩn API
 
@@ -115,17 +121,16 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 ### Service layer
 
 * Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
+* Application service điều phối transaction, permission, lý do thực hiện.
+* Domain service xử lý rule nghiệp vụ: thay đổi trạng thái Lot, kiểm tra tính hợp lệ của thao tác hold/release.
 
 ## 7. Frontend/RF/mobile
 
 | Màn hình/Control | Mục đích | Yêu cầu UX |
 |---|---|---|
-| QC queue | Danh sách Lot chờ | Có loading, empty, error, filter, pagination và quyền theo action. |
-| QC result form | Nhập kết quả | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Hold/release panel | Lý do và quyền duyệt | Có loading, empty, error, filter, pagination và quyền theo action. |
+| QC queue | Danh sách Lot chờ | Bảng hiển thị các lô hàng mới nhận chưa được QC. Hỗ trợ tìm kiếm nhanh theo mã Lot/vật tư. |
+| QC result form | Nhập kết quả | Form trực quan tích chọn "Đạt" hoặc "Không đạt", trường nhập thông số đo lường và tích hợp kéo thả/chọn file tải tệp/ảnh bằng chứng chất lượng gọi API `/api/storage/upload`. |
+| Hold/release panel | Lý do và quyền duyệt | Dialog popup xác nhận khi bấm Hold hoặc Release. Bắt buộc người dùng chọn mã lý do (Reason Code) và nhập giải trình ngắn. |
 
 ### Chuẩn UI áp dụng
 
@@ -138,6 +143,7 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 * RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
 
 ### State cần hiển thị
+
 
 * Draft/open/in progress/completed/cancelled nếu phase có workflow.
 * Locked/blocked/exception nếu thao tác bị chặn.
