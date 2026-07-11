@@ -2,7 +2,7 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 100% (Completed Spec)
+- **Mức hiện tại:** 100% (Completed Spec & Implementation)
 - **Đánh giá:** Hoàn tất thiết kế chi tiết cấu trúc Database schema PostgreSQL, API contracts chi tiết cho nghiệp vụ tồn kho và dịch chuyển kho, tích hợp liên module sử dụng interface IInventoryService dùng chung, giao diện UI/RF và các kịch bản lỗi chi tiết. Sẵn sàng thực thi.
 - **Khi cần upgrade:** Upgrade nếu concurrency test phát hiện tranh chấp ghi phức tạp hơn dự kiến.
 

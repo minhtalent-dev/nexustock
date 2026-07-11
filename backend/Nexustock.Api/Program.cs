@@ -6,6 +6,7 @@ using Nexustock.Modules.Identity;
 using Nexustock.Modules.MasterData;
 using Nexustock.Modules.Inbound;
 using Nexustock.Modules.Qc;
+using Nexustock.Modules.Inventory;
 using Serilog;
 using System.Text.Json;
 
@@ -77,6 +78,7 @@ try
     builder.Services.AddIdentityModule(builder.Configuration);
     builder.Services.AddInboundModule(builder.Configuration);
     builder.Services.AddQcModule(builder.Configuration);
+    builder.Services.AddInventoryModule(builder.Configuration);
 
     // JWT Authentication
     var jwtSecretKey = builder.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
@@ -245,6 +247,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the Qc database");
         }
+
+        try
+        {
+            var inventoryDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Inventory.Contexts.InventoryDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(inventoryDb.Database);
+            Log.Information("Inventory database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Inventory database");
+        }
     }
 
     // Run Database Seeding
@@ -269,7 +282,10 @@ try
             ("Qc.Results.Create", "Ghi kết quả QC", "QC"),
             ("Qc.Lots.Hold", "Khóa lô hàng", "QC"),
             ("Qc.Lots.Release", "Giải phóng lô hàng", "QC"),
-            ("Qc.Lots.Reject", "Từ chối lô hàng", "QC")
+            ("Qc.Lots.Reject", "Từ chối lô hàng", "QC"),
+            ("Inventory.Balances.View", "Xem số dư tồn kho", "Inventory"),
+            ("Inventory.Movements.Create", "Dịch chuyển tồn kho", "Inventory"),
+            ("Inventory.Locks.Manage", "Quản lý khóa vị trí", "Inventory")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

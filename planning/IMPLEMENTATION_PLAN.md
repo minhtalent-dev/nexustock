@@ -184,7 +184,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 03 | User, RBAC & audit foundation | ✅ Hoàn thành | Hoàn tất Identity module, JWT auth, refresh token rotation, user/role/permission API, audit log, tenant resolution, seed admin/permission catalog và integration test chính | 2026-07-03 | Build pass; Auth integration test pass |
 | 04 | Inbound receiving | ✅ Hoàn thành | Hoàn tất thực thể backend Inbound, migrations PostgreSQL, seed permissions Inbound, giao diện Next.js (danh sách phiếu nhập, nhận hàng thực tế, tra cứu lô hàng), E2E test tích hợp và E2E UI Test trên browser pass 100% | 2026-07-10 | Kiểm soát dung sai (tolerance) nghiêm ngặt; E2E UI Test tự động qua Browser subagent pass 100%. |
 | 05 | QC hold/release | ✅ Hoàn thành | Hoàn tất thực thể backend QC, database migrations, seed permissions, API kiểm định chất lượng & Hold/Release, giao diện Next.js, E2E test và E2E UI Test pass 100% | 2026-07-11 | Quyết định hold/release tức thì; E2E UI Test qua browser subagent pass 100%. |
-| 06 | Inventory by location & movement | ⬜ Chưa bắt đầu | — | — | — |
+| 06 | Inventory by location & movement | ✅ Hoàn thành | Hoàn tất module Inventory, migrations, seed permissions, API dịch chuyển kho, khóa/mở khóa vị trí, Capacity Guard, kiểm thử tích hợp tự động pass 100% | 2026-07-11 | — |
 | 07 | Outbound picking & packing basic | ⬜ Chưa bắt đầu | — | — | — |
 | 08 | Cycle count & stock adjustment | ⬜ Chưa bắt đầu | — | — | — |
 | 09 | RF/mobile core scan | ⬜ Chưa bắt đầu | — | — | — |

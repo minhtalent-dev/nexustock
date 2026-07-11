@@ -5,12 +5,15 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Nexustock.Modules.Inbound.Contexts;
 using Nexustock.Modules.Inbound.Dtos;
 using Nexustock.Modules.Inbound.Entities;
 using Nexustock.Modules.Inbound.Services;
 using Nexustock.Modules.MasterData.Contexts;
 using Nexustock.Modules.Identity.Services;
+using Nexustock.Modules.Inventory.Services;
+using Nexustock.Modules.Inventory.Contexts;
 
 namespace Nexustock.Modules.Inbound.Controllers;
 
@@ -21,19 +24,25 @@ public class InboundController : ControllerBase
 {
     private readonly InboundDbContext _context;
     private readonly MasterDataDbContext _masterContext;
-    private readonly ITenantProvider _tenantProvider;
+    private readonly Services.ITenantProvider _tenantProvider;
     private readonly IUserPermissionService _permissionService;
+    private readonly IInventoryService _inventoryService;
+    private readonly InventoryDbContext _inventoryContext;
 
     public InboundController(
         InboundDbContext context, 
         MasterDataDbContext masterContext, 
-        ITenantProvider tenantProvider,
-        IUserPermissionService permissionService)
+        Services.ITenantProvider tenantProvider,
+        IUserPermissionService permissionService,
+        IInventoryService inventoryService,
+        InventoryDbContext inventoryContext)
     {
         _context = context;
         _masterContext = masterContext;
         _tenantProvider = tenantProvider;
         _permissionService = permissionService;
+        _inventoryService = inventoryService;
+        _inventoryContext = inventoryContext;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -296,10 +305,23 @@ public class InboundController : ControllerBase
             order.UpdatedAt = DateTime.UtcNow;
             order.UpdatedBy = username;
 
+            // 5. Record Inventory Balance with shared connection and transaction
+            _inventoryContext.Database.SetDbConnection(_context.Database.GetDbConnection());
+            if (_context.Database.CurrentTransaction != null)
+            {
+                await _inventoryContext.Database.UseTransactionAsync(_context.Database.CurrentTransaction.GetDbTransaction());
+            }
+            await _inventoryService.RecordReceiptAsync(tenantId, dto.ItemId, dto.LotNo, dto.ToLocationId, dto.ReceivedQty, username, traceId);
+
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
 
             return Ok(new { message = "Received successfully", itemReceivedQty = item.ReceivedQty, orderStatus = order.Status.ToString() });
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "LOCATION_OVER_CAPACITY")
+        {
+            await transaction.RollbackAsync();
+            return BadRequest(new { errorCode = "LOCATION_OVER_CAPACITY", message = "Received quantity exceeds max capacity of destination location" });
         }
         catch (Exception)
         {
