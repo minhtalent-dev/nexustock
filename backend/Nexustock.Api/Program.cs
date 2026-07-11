@@ -285,7 +285,11 @@ try
             ("Qc.Lots.Reject", "Từ chối lô hàng", "QC"),
             ("Inventory.Balances.View", "Xem số dư tồn kho", "Inventory"),
             ("Inventory.Movements.Create", "Dịch chuyển tồn kho", "Inventory"),
-            ("Inventory.Locks.Manage", "Quản lý khóa vị trí", "Inventory")
+            ("Inventory.Locks.Manage", "Quản lý khóa vị trí", "Inventory"),
+            ("Outbound.Shipments.View", "Xem đơn xuất kho", "Outbound"),
+            ("Outbound.Shipments.Create", "Tạo đơn xuất kho", "Outbound"),
+            ("Outbound.Picks.Execute", "Thực hiện lấy hàng", "Outbound"),
+            ("Outbound.Packing.Execute", "Thực hiện đóng gói", "Outbound")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

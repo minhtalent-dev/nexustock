@@ -22,6 +22,10 @@ public class InventoryDbContext : DbContext
     public DbSet<InventoryMovement> InventoryMovements { get; set; } = null!;
     public DbSet<InventoryTransaction> InventoryTransactions { get; set; } = null!;
     public DbSet<Lot> Lots { get; set; } = null!;
+    public DbSet<Shipment> Shipments { get; set; } = null!;
+    public DbSet<ShipmentItem> ShipmentItems { get; set; } = null!;
+    public DbSet<PickTask> PickTasks { get; set; } = null!;
+    public DbSet<PackingRecord> PackingRecords { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +37,10 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<InventoryMovement>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<InventoryTransaction>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Lot>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<Shipment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<ShipmentItem>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<PickTask>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<PackingRecord>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
 
         // --- Fluent Configs ---
         modelBuilder.Entity<Entities.Inventory>(entity =>
@@ -54,6 +62,21 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<InventoryTransaction>(entity =>
         {
             entity.HasIndex(e => new { e.TenantId, e.LotNo, e.ItemId }).HasDatabaseName("idx_inv_trans_tenant_lot_item_inv");
+        });
+
+        modelBuilder.Entity<Shipment>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.ShipmentNo }).IsUnique().HasDatabaseName("uq_shipments_tenant_no");
+        });
+
+        modelBuilder.Entity<ShipmentItem>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.ShipmentId, e.ItemId }).IsUnique().HasDatabaseName("uq_shipment_items_tenant_shipment_item");
+        });
+
+        modelBuilder.Entity<PackingRecord>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.PackageNo }).IsUnique().HasDatabaseName("uq_packing_records_tenant_package");
         });
     }
 }

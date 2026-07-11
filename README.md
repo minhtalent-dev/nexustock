@@ -11,7 +11,7 @@ Dự án Hệ thống quản lý kho hàng (WMS) xây dựng theo kiến trúc M
 ## 📁 Cấu trúc Monorepo
 * /backend — Trọng tâm dịch vụ Web API.
   * /backend/Nexustock.Api — Composition Root, DI, Middleware, Health Check.
-  * /backend/modules — Các phân hệ lõi: Identity, MasterData, Inbound (Nhập kho - Phase 4), Inventory, Outbound.
+  * /backend/modules — Các phân hệ lõi: Identity, MasterData, Inbound (Nhập kho - Phase 4), Inventory (Tồn kho - Phase 6), Outbound (Xuất kho - Phase 7).
 * /frontend — Giao diện quản trị Next.js.
   * /health-ui — Bảng điều khiển kiểm tra sức khỏe hệ thống.
 * /planning — Spec kỹ thuật và tài liệu nghiệp vụ từng Phase.

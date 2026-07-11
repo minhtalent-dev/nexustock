@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nexustock.Modules.Inventory.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nexustock.Modules.Inventory.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260711073030_AddOutboundModules")]
+    partial class AddOutboundModules
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,7 +94,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_inventories_tenant_item_lot_location");
 
-                    b.ToTable("inventories", (string)null);
+                    b.ToTable("inventories");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.InventoryMovement", b =>
@@ -168,7 +171,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                     b.HasIndex("TenantId", "Status")
                         .HasDatabaseName("idx_inv_movements_tenant_status");
 
-                    b.ToTable("inventory_movements", (string)null);
+                    b.ToTable("inventory_movements");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.InventoryTransaction", b =>
@@ -226,7 +229,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                     b.HasIndex("TenantId", "LotNo", "ItemId")
                         .HasDatabaseName("idx_inv_trans_tenant_lot_item_inv");
 
-                    b.ToTable("inventory_transactions", (string)null);
+                    b.ToTable("inventory_transactions");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.LocationLock", b =>
@@ -272,7 +275,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_location_locks_tenant_location");
 
-                    b.ToTable("location_locks", (string)null);
+                    b.ToTable("location_locks");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.Lot", b =>
@@ -299,7 +302,7 @@ namespace Nexustock.Modules.Inventory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Lots", (string)null);
+                    b.ToTable("Lots");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.PackingRecord", b =>
@@ -358,7 +361,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_packing_records_tenant_package");
 
-                    b.ToTable("packing_records", (string)null);
+                    b.ToTable("packing_records");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.PickTask", b =>
@@ -425,7 +428,7 @@ namespace Nexustock.Modules.Inventory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("pick_tasks", (string)null);
+                    b.ToTable("pick_tasks");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.Shipment", b =>
@@ -480,7 +483,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_shipments_tenant_no");
 
-                    b.ToTable("shipments", (string)null);
+                    b.ToTable("shipments");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.ShipmentItem", b =>
@@ -524,7 +527,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_shipment_items_tenant_shipment_item");
 
-                    b.ToTable("shipment_items", (string)null);
+                    b.ToTable("shipment_items");
                 });
 #pragma warning restore 612, 618
         }

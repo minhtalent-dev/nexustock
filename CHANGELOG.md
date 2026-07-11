@@ -1,5 +1,18 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 0.4.0 - Quản lý xuất kho, kiểm soát lấy hàng và đóng gói (Phase 7)
+*Ngày cập nhật: 11/07/2026*
+
+### Tính năng mới
+- **Quản lý đơn xuất kho**: Tạo mới đơn xuất kho, chọn đối tác và danh sách vật tư cần xuất với số lượng yêu cầu trực quan.
+- **Tự động phân bổ lấy hàng**: Hệ thống tự động phân bổ lô hàng theo nguyên tắc nhập trước xuất trước (FIFO), tự động loại trừ các lô hàng chưa qua kiểm định chất lượng (QC Hold) và các vị trí lưu trữ đang bị khóa chiều xuất.
+- **Xác nhận lấy hàng (Picking)**: Cho phép nhân viên vận hành xác nhận số lượng thực tế lấy được tại từng vị trí kệ, ngăn chặn việc lấy quá số lượng yêu cầu và kiểm soát trạng thái lô hàng thời gian thực.
+- **Đóng gói kiện hàng (Packing)**: Cho phép ghi nhận thông tin đóng gói, mã kiện hàng và cân nặng thực tế để sẵn sàng xuất xưởng.
+
+### Cải tiến và tối ưu
+- **An toàn chất lượng**: Tích hợp chốt chặn kiểm soát chất lượng nghiêm ngặt ở cả 2 bước phân bổ và lấy hàng thực tế, đảm bảo không xuất nhầm hàng lỗi hay hàng chưa kiểm định.
+- **Quản lý tồn kho tức thời**: Số lượng hàng hóa được trừ trực tiếp và cập nhật trạng thái khả dụng ngay khi hoàn thành nhiệm vụ lấy hàng.
+
 ## Phiên bản 0.3.0 - Quản trị hệ thống, Phân quyền & Nhập kho nhận hàng (Phase 3 & 4)
 *Ngày cập nhật: 10/07/2026*
 
