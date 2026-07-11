@@ -24,7 +24,7 @@ import {
   ClipboardList,
   Archive,
   CheckSquare,
-  Boxes,
+  Box,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -87,7 +87,7 @@ const navGroups: NavGroup[] = [
   {
     title: "Tồn kho",
     links: [
-      { href: "/admin/inventory", label: "Hàng tồn kho", icon: Boxes, permission: "Inventory.Balances.View" },
+      { href: "/admin/inventory", label: "Hàng tồn kho", icon: Box, permission: "Inventory.Balances.View" },
     ],
   },
   {
