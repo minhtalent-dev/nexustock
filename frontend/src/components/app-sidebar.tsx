@@ -23,6 +23,7 @@ import {
   LogOut,
   ClipboardList,
   Archive,
+  CheckSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -79,6 +80,7 @@ const navGroups: NavGroup[] = [
     links: [
       { href: "/admin/inbound", label: "Phiếu nhập hàng", icon: ClipboardList, permission: "Inbound.Orders.View" },
       { href: "/admin/lots", label: "Tra cứu lô hàng", icon: Archive, permission: "Inbound.Lots.View" },
+      { href: "/admin/qc", label: "Kiểm định chất lượng", icon: CheckSquare, permission: "Qc.Queue.View" },
     ],
   },
   {

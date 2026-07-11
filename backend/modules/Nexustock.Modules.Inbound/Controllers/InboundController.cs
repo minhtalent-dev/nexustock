@@ -10,6 +10,7 @@ using Nexustock.Modules.Inbound.Dtos;
 using Nexustock.Modules.Inbound.Entities;
 using Nexustock.Modules.Inbound.Services;
 using Nexustock.Modules.MasterData.Contexts;
+using Nexustock.Modules.Identity.Services;
 
 namespace Nexustock.Modules.Inbound.Controllers;
 
@@ -21,15 +22,18 @@ public class InboundController : ControllerBase
     private readonly InboundDbContext _context;
     private readonly MasterDataDbContext _masterContext;
     private readonly ITenantProvider _tenantProvider;
+    private readonly IUserPermissionService _permissionService;
 
     public InboundController(
         InboundDbContext context, 
         MasterDataDbContext masterContext, 
-        ITenantProvider tenantProvider)
+        ITenantProvider tenantProvider,
+        IUserPermissionService permissionService)
     {
         _context = context;
         _masterContext = masterContext;
         _tenantProvider = tenantProvider;
+        _permissionService = permissionService;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -39,18 +43,7 @@ public class InboundController : ControllerBase
         var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (!Guid.TryParse(userIdClaim, out var userId)) return false;
 
-        const string sql = @"
-            SELECT DISTINCT p.""Name""
-            FROM ""RolePermissions"" rp
-            INNER JOIN ""Permissions"" p ON rp.""PermissionId"" = p.""Id""
-            INNER JOIN ""UserRoles"" ur ON rp.""RoleId"" = ur.""RoleId""
-            WHERE ur.""UserId"" = {0}";
-
-        var permissions = await _context.Database
-            .SqlQueryRaw<string>(sql, userId)
-            .ToListAsync();
-
-        return permissions.Contains(permissionName);
+        return await _permissionService.HasPermissionAsync(userId, permissionName);
     }
 
     [HttpGet]

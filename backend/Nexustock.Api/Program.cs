@@ -5,6 +5,7 @@ using Nexustock.Api.Infrastructure;
 using Nexustock.Modules.Identity;
 using Nexustock.Modules.MasterData;
 using Nexustock.Modules.Inbound;
+using Nexustock.Modules.Qc;
 using Serilog;
 using System.Text.Json;
 
@@ -75,6 +76,7 @@ try
     builder.Services.AddMasterDataModule(builder.Configuration);
     builder.Services.AddIdentityModule(builder.Configuration);
     builder.Services.AddInboundModule(builder.Configuration);
+    builder.Services.AddQcModule(builder.Configuration);
 
     // JWT Authentication
     var jwtSecretKey = builder.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
@@ -129,6 +131,20 @@ try
     }
 
     var app = builder.Build();
+
+    var uploadPath = app.Configuration["UploadSettings:UploadPath"] ?? "D:\\NexustockUploads";
+    var requestPath = app.Configuration["UploadSettings:RequestPath"] ?? "/uploads";
+
+    if (!Directory.Exists(uploadPath))
+    {
+        Directory.CreateDirectory(uploadPath);
+    }
+
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadPath),
+        RequestPath = requestPath
+    });
 
     app.UseCors("AllowFrontendDev");
     app.UseAuthentication();  // Phải đặt trước UseAuthorization
@@ -218,6 +234,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the Inbound database");
         }
+
+        try
+        {
+            var qcDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Qc.Contexts.QcDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(qcDb.Database);
+            Log.Information("Qc database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Qc database");
+        }
     }
 
     // Run Database Seeding
@@ -237,7 +264,12 @@ try
             ("Inbound.Orders.Create", "Tạo mới phiếu nhập", "Inbound"),
             ("Inbound.Orders.Receive", "Nhận hàng thực tế", "Inbound"),
             ("Inbound.Orders.Approve", "Phê duyệt nhận hàng vượt dung sai", "Inbound"),
-            ("Inbound.Lots.View", "Tra cứu lô hàng", "Inbound")
+            ("Inbound.Lots.View", "Tra cứu lô hàng", "Inbound"),
+            ("Qc.Queue.View", "Xem hàng chờ QC", "QC"),
+            ("Qc.Results.Create", "Ghi kết quả QC", "QC"),
+            ("Qc.Lots.Hold", "Khóa lô hàng", "QC"),
+            ("Qc.Lots.Release", "Giải phóng lô hàng", "QC"),
+            ("Qc.Lots.Reject", "Từ chối lô hàng", "QC")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

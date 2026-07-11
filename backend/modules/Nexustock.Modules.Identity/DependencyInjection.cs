@@ -65,6 +65,7 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IUserPermissionService, UserPermissionService>();
 
         // Register Audit SaveChanges Interceptor (global cho IdentityDb và MasterDataDb)
         services.AddSingleton<AuditInterceptor>();

@@ -29,6 +29,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.Identity\Nexustock.Modules.Identity.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.MasterData\Nexustock.Modules.MasterData.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Inbound\Nexustock.Modules.Inbound.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Qc\Nexustock.Modules.Qc.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Inventory\Nexustock.Modules.Inventory.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Outbound\Nexustock.Modules.Outbound.csproj" />
   </ItemGroup>

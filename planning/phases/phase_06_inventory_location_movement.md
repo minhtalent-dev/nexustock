@@ -1,9 +1,9 @@
-﻿# PHASE 06: Inventory by location & movement
+# PHASE 06: Inventory by location & movement
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 90%
-- **Đánh giá:** Đủ rõ cho tồn kho theo vị trí, movement và chống âm kho bằng ledger.
+- **Mức hiện tại:** 100% (Completed Spec)
+- **Đánh giá:** Hoàn tất thiết kế chi tiết cấu trúc Database schema PostgreSQL, API contracts chi tiết cho nghiệp vụ tồn kho và dịch chuyển kho, tích hợp liên module sử dụng interface IInventoryService dùng chung, giao diện UI/RF và các kịch bản lỗi chi tiết. Sẵn sàng thực thi.
 - **Khi cần upgrade:** Upgrade nếu concurrency test phát hiện tranh chấp ghi phức tạp hơn dự kiến.
 
 ## 1. Mục tiêu
@@ -70,137 +70,251 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `Inventories` | Tồn kho theo item/lot/location | QtyOnHand, qtyAvailable, qtyReserved, version |
-| `InventoryMovements` | Phiếu chuyển vị trí | Source, target, status |
-| `InventoryTransactions` | Transaction immutable | MOVE_IN, MOVE_OUT, ADJUST |
-| `LocationLocks` | Khóa vị trí | Reason, status, lockedBy |
+### Cấu trúc Schema chi tiết (PostgreSQL)
+
+```sql
+-- 1. Bảng lưu trữ số dư tồn kho theo Vị trí, Vật tư và Số lô
+CREATE TABLE inventories (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    item_id uuid NOT NULL,
+    lot_no character varying(100) NOT NULL,
+    location_id uuid NOT NULL,
+    qty_on_hand numeric(18,4) NOT NULL DEFAULT 0.0000,
+    qty_reserved numeric(18,4) NOT NULL DEFAULT 0.0000,
+    qty_available numeric(18,4) GENERATED ALWAYS AS (qty_on_hand - qty_reserved) STORED,
+    row_version integer NOT NULL DEFAULT 1,
+    created_at timestamp with time zone NOT NULL,
+    created_by character varying(100) NOT NULL,
+    updated_at timestamp with time zone,
+    updated_by character varying(100),
+    CONSTRAINT "PK_inventories" PRIMARY KEY (id),
+    CONSTRAINT "CK_inventories_qty_on_hand" CHECK (qty_on_hand >= 0),
+    CONSTRAINT "CK_inventories_qty_reserved" CHECK (qty_reserved >= 0 AND qty_reserved <= qty_on_hand)
+);
+
+-- Index duy nhất đảm bảo không trùng lặp dòng tồn kho
+CREATE UNIQUE INDEX uq_inventories_tenant_item_lot_location 
+ON inventories (tenant_id, item_id, lot_no, location_id);
+
+-- 2. Bảng quản lý việc khóa/mở khóa vị trí ô kệ
+CREATE TABLE location_locks (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    location_id uuid NOT NULL,
+    lock_type character varying(50) NOT NULL, -- 'INBOUND', 'OUTBOUND', 'ALL'
+    reason_code character varying(50) NOT NULL,
+    locked_by character varying(100) NOT NULL,
+    locked_at timestamp with time zone NOT NULL,
+    CONSTRAINT "PK_location_locks" PRIMARY KEY (id)
+);
+
+CREATE UNIQUE INDEX uq_location_locks_tenant_location 
+ON location_locks (tenant_id, location_id);
+
+-- 3. Bảng ghi nhận yêu cầu dịch chuyển tồn kho nội bộ
+CREATE TABLE inventory_movements (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    item_id uuid NOT NULL,
+    lot_no character varying(100) NOT NULL,
+    from_location_id uuid NOT NULL,
+    to_location_id uuid NOT NULL,
+    qty numeric(18,4) NOT NULL,
+    status character varying(50) NOT NULL, -- 'Pending', 'Completed', 'Cancelled'
+    reason_code character varying(50) NOT NULL,
+    trace_id character varying(100),
+    created_at timestamp with time zone NOT NULL,
+    created_by character varying(100) NOT NULL,
+    updated_at timestamp with time zone,
+    updated_by character varying(100),
+    CONSTRAINT "PK_inventory_movements" PRIMARY KEY (id),
+    CONSTRAINT "CK_inventory_movements_qty" CHECK (qty > 0)
+);
+
+CREATE INDEX idx_inv_movements_tenant_status ON inventory_movements (tenant_id, status);
+
+-- 4. Bảng nhật ký giao dịch thay đổi tồn kho (Immutable Ledger)
+CREATE TABLE inventory_transactions (
+    id uuid NOT NULL,
+    tenant_id uuid NOT NULL,
+    item_id uuid NOT NULL,
+    lot_no character varying(100) NOT NULL,
+    location_id uuid NOT NULL,
+    transaction_type character varying(50) NOT NULL, -- 'RECEIVE', 'MOVE_OUT', 'MOVE_IN', 'ADJUST_ADD', 'ADJUST_SUB'
+    qty numeric(18,4) NOT NULL,
+    trace_id character varying(100),
+    created_at timestamp with time zone NOT NULL,
+    created_by character varying(100) NOT NULL,
+    CONSTRAINT "PK_inventory_transactions" PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_inv_trans_tenant_lot_item ON inventory_transactions (tenant_id, lot_no, item_id);
+```
 
 ### Chuẩn database áp dụng
-
-* Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
-* Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
-* Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
-* Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
+* Bảng `inventory_transactions` là bất biến (Immutable Ledger). Không cho phép sửa đổi hay xóa bản ghi.
+* Kiểu dữ liệu số lượng được chuẩn hóa thành `numeric(18,4)` để bảo toàn độ chính xác tài chính.
 
 ### Transaction boundary
+* Mọi thao tác cập nhật tồn kho (tăng/giảm `qty_on_hand`, `qty_reserved`) và tạo bản ghi lịch sử `inventory_transactions` phải được bọc trong một Database Transaction duy nhất để bảo đảm tính toàn vẹn (Atomic).
 
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
+---
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `GET /api/inventory/balances` | Tồn theo vị trí | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/inventory/move` | Chuyển vị trí | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/locations/{id}/lock` | Khóa vị trí | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/locations/{id}/unlock` | Mở khóa | Có auth, validation, trace ID và response lỗi chuẩn. |
+### Tích hợp liên module (Cross-Module Integration)
+Để module `Inbound` ghi nhận tồn kho khi nhận hàng mà không phụ thuộc trực tiếp vào DB Context của module `Inventory`, định nghĩa Interface dùng chung được đăng ký trong DI Container:
 
-### Quy chuẩn API
+```csharp
+namespace Nexustock.Modules.Inventory.Services;
 
-* Request/response dùng camelCase.
-* Mutation API bắt buộc auth và permission.
-* Response lỗi chuẩn gồm `errorCode`, `message`, `details`, `traceId`.
-* Query API có pagination mặc định và max page size.
-* Command API validate input tại boundary trước khi vào domain logic.
-* Không trả dữ liệu tenant khác, kể cả khi biết id.
+public interface IInventoryService
+{
+    Task RecordReceiptAsync(
+        Guid tenantId, 
+        Guid itemId, 
+        string lotNo, 
+        Guid toLocationId, 
+        decimal qty, 
+        string username, 
+        string traceId);
+}
+```
 
-### Service layer
+### API Contracts và DTOs
 
-* Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
+#### 1. Lấy số dư tồn kho (`GET /api/inventory/balances`)
+* **Query Parameters:** `itemId` (Guid?), `locationId` (Guid?), `lotNo` (string?), `page` (int, default 1), `pageSize` (int, default 10).
+* **Response DTO:**
+```csharp
+public class InventoryBalanceResponseDto
+{
+    public Guid Id { get; set; }
+    public Guid ItemId { get; set; }
+    public string ItemName { get; set; } = null!;
+    public string ItemCode { get; set; } = null!;
+    public string LotNo { get; set; } = null!;
+    public Guid LocationId { get; set; }
+    public string LocationCode { get; set; } = null!;
+    public decimal QtyOnHand { get; set; }
+    public decimal QtyReserved { get; set; }
+    public decimal QtyAvailable { get; set; }
+}
+```
+
+#### 2. Yêu cầu chuyển vị trí (`POST /api/inventory/move`)
+* **Request DTO:**
+```csharp
+public class MoveInventoryRequestDto
+{
+    [Required]
+    public Guid ItemId { get; set; }
+    [Required]
+    [MaxLength(100)]
+    public string LotNo { get; set; } = null!;
+    [Required]
+    public Guid FromLocationId { get; set; }
+    [Required]
+    public Guid ToLocationId { get; set; }
+    [Required]
+    [Range(0.0001, 9999999999)]
+    public decimal Qty { get; set; }
+    [Required]
+    [MaxLength(50)]
+    public string ReasonCode { get; set; } = null!;
+}
+```
+
+#### 3. Khóa vị trí ô kệ (`POST /api/locations/{id}/lock`)
+* **Request DTO:**
+```csharp
+public class LockLocationRequestDto
+{
+    [Required]
+    public string LockType { get; set; } = null!; -- 'INBOUND', 'OUTBOUND', 'ALL'
+    [Required]
+    [MaxLength(50)]
+    public string ReasonCode { get; set; } = null!;
+}
+```
+
+#### 4. Mở khóa vị trí ô kệ (`POST /api/locations/{id}/unlock`)
+* **Request:** Empty Body.
+
+---
 
 ## 7. Frontend/RF/mobile
 
-| Màn hình/Control | Mục đích | Yêu cầu UX |
-|---|---|---|
-| Inventory balance | Tồn theo vị trí | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Movement screen | Scan nguồn/đích | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Location lock screen | Khóa/mở khóa | Có loading, empty, error, filter, pagination và quyền theo action. |
+### Chuẩn UI và Giao diện Desktop-Native
+* **Ngôn ngữ thiết kế:** Tuân thủ Fluent Design / WinUI 3 (Dark theme mặc định, bo góc mượt, spacing hợp lý, các nhãn hiển thị bắt buộc là Sentence case).
+* Không sử dụng Inline Style. Tách CSS ra tệp riêng.
 
-### Chuẩn UI áp dụng
+### Các màn hình chính
 
-* UI text dùng Sentence case.
-* Không dùng inline style.
-* Sử dụng Next.js, Tailwind CSS và Shadcn UI. Không dùng inline style, tuân thủ component/style nhất quán.
-* Mọi action nguy hiểm có confirm rõ ràng.
-* Mọi màn hình có loading, empty, error, unauthorized state.
-* Bảng dữ liệu có filter, pagination và trạng thái no result.
-* RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
+#### 1. Trang Quản lý tồn kho theo vị trí (`/admin/inventory/balances`)
+* **Layout:** Một bảng hiển thị danh sách tồn kho gồm các cột: "Mã vật tư", "Tên vật tư", "Số lô", "Vị trí", "Tồn thực tế", "Đã giữ", "Khả dụng".
+* **Chức năng:** Bộ lọc nhanh theo Vị trí, Mã vật tư, và trạng thái QC của số lô.
 
-### State cần hiển thị
+#### 2. Màn hình dịch chuyển tồn kho nội bộ (`/admin/inventory/move`)
+* **RF/Handheld Mobile Layout:** Ưu tiên luồng thao tác quét mã vạch tuần tự:
+  1. Quét số lô vật tư (Auto-focus trường "Số lô").
+  2. Quét vị trí nguồn (Kiểm tra tồn tại số dư).
+  3. Quét vị trí đích.
+  4. Nhập số lượng và chọn lý do di chuyển (Reason code).
+  5. Nút bấm "Xác nhận chuyển" (Sentence case).
 
-* Draft/open/in progress/completed/cancelled nếu phase có workflow.
-* Locked/blocked/exception nếu thao tác bị chặn.
-* Last updated và actor cho dữ liệu quan trọng.
-* Trace ID hoặc reference ID khi cần hỗ trợ vận hành.
+#### 3. Màn hình Cấu hình Khóa vị trí (`/admin/inventory/locks`)
+* **Layout:** Danh sách các vị trí ô kệ đang bị khóa kèm thông tin chi tiết: "Vị trí", "Kiểu khóa", "Lý do khóa", "Người khóa", "Thời gian khóa".
+* **Hành động:** Nút "Mở khóa" nhanh đi kèm dialog xác nhận.
+
+---
 
 ## 8. Execution flow
 
-1. Scan Lot
-2. Scan source
-3. Scan target
-4. Nhập qty
-5. Validate balance/lock
-6. Ghi transaction atomic
-7. Cập nhật inventory
+1. **Người dùng quét hoặc nhập Số lô + Mã vị trí nguồn:**
+   - Hệ thống truy vấn số dư khả dụng (`qty_available`) của lô hàng tại vị trí đó.
+2. **Người dùng quét vị trí đích:**
+   - Hệ thống kiểm tra vị trí đích có đang bị khóa inbound (`LockType = 'INBOUND'` hoặc `'ALL'`) hay không.
+3. **Nhập số lượng cần dịch chuyển và gửi yêu cầu:**
+   - API xác thực các quy tắc nghiệp vụ (Validation & Business Rules).
+4. **Thực thi trong Database Transaction:**
+   - Khấu trừ `qty_on_hand` tại dòng tồn kho nguồn (nếu tồn kho khả dụng đủ và không có tranh chấp version).
+   - Cộng thêm `qty_on_hand` tại dòng tồn kho đích (tạo mới dòng nếu chưa tồn tại).
+   - Ghi nhận 2 bản ghi giao dịch bất biến vào `inventory_transactions`:
+     - Bản ghi xuất: `transaction_type = 'MOVE_OUT'`, `qty = -qty`.
+     - Bản ghi nhập: `transaction_type = 'MOVE_IN'`, `qty = qty`.
+   - Cập nhật trạng thái phiếu chuyển `inventory_movements` thành `Completed`.
+5. **Trả kết quả thành công và cập nhật lại giao diện.**
 
-### Flow guardrails
-
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+---
 
 ## 9. Validation & business rules
 
-* Không âm tồn
-* Không move Lot hold
-* Không vào location locked
-* Concurrency token bắt buộc
+* **Không âm tồn:** Hệ thống tuyệt đối chặn mọi thao tác dịch chuyển có số lượng dịch chuyển lớn hơn số dư khả dụng hiện tại (`qty_available`).
+* **Không dịch chuyển Lô hàng đang giữ (Hold):** Trước khi dịch chuyển, hệ thống phải liên kết kiểm tra bảng `lots` từ module Inbound/QC để đảm bảo `QcStatus = 'Release'`. Chặn dịch chuyển đối với Lot có status `'Hold'` hoặc `'Reject'`.
+* **Kiểm tra trạng thái khóa vị trí (Location Lock Guard):** Chặn dịch chuyển đi từ vị trí bị khóa Outbound, và chặn dịch chuyển đến vị trí bị khóa Inbound.
+* **Xác thực Optimistic Concurrency:** Trường `row_version` trong bảng `inventories` bắt buộc phải được truyền lên và so khớp để chống tranh chấp ghi đồng thời (Concurrent movement).
+* **Chặn sức chứa vị trí (Capacity Guard):** Khi dịch chuyển hoặc nhận hàng, tổng lượng tồn kho thực tế (`qty_on_hand`) tại vị trí đích cộng thêm lượng mới dịch chuyển/nhập kho không được phép vượt quá sức chứa thiết lập (`MaxCapacity` của vị trí đó trong bảng `storage_locations`). Nếu vượt quá, chặn và trả lỗi `LOCATION_OVER_CAPACITY`.
 
-### Validation nền bắt buộc
-
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
-* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
-* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
-* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
+---
 
 ## 10. Exception handling
 
-* Thiếu tồn
-* Sai source
-* Target locked
-* Version conflict
+### Các mã lỗi chuẩn của hệ thống (ErrorCode)
 
-### Mapping lỗi chuẩn
+| Mã lỗi | Mô tả | Trạng thái HTTP |
+|---|---|---|
+| `INSUFFICIENT_QTY` | Số lượng dịch chuyển vượt quá tồn khả dụng | 400 Bad Request |
+| `LOCATION_LOCKED` | Vị trí ô kệ đang bị khóa không cho phép thao tác | 400 Bad Request |
+| `LOT_ON_HOLD` | Lô hàng đang bị giữ kiểm định chất lượng, không được di chuyển | 400 Bad Request |
+| `CONCURRENCY_CONFLICT` | Dữ liệu tồn kho đã thay đổi bởi phiên làm việc khác | 409 Conflict |
+| `INVALID_REASON_CODE` | Lý do di chuyển/khóa không hợp lệ | 400 Bad Request |
+| `LOCATION_OVER_CAPACITY` | Số lượng vượt quá sức chứa tối đa của vị trí đích | 400 Bad Request |
 
-| Nhóm lỗi | Hành vi hệ thống |
-|---|---|
-| Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit nếu cần |
-| Dữ liệu stale | Trả conflict, yêu cầu reload |
-| Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
-| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
-| Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
-
-### Nguyên tắc exception
-
-* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
-* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
-* Không nuốt lỗi âm thầm.
-* Mọi override phải có reason và audit.
+### Nguyên tắc xử lý ngoại lệ
+* Mọi lỗi xảy ra trong quá trình cập nhật số dư tồn kho bắt buộc phải rollback transaction để tránh sai lệch số dư thực tế và ledger.
+* Mã lỗi và Trace ID phải được trả về giao diện đầy đủ phục vụ việc gỡ lỗi.
 
 ## 11. Observability
 
