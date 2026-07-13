@@ -86,6 +86,7 @@ const navGroups: NavGroup[] = [
       { href: "/admin/inbound", label: "Phiếu nhập hàng", icon: ClipboardList, permission: "Inbound.Orders.View" },
       { href: "/admin/lots", label: "Tra cứu lô hàng", icon: Archive, permission: "Inbound.Lots.View" },
       { href: "/admin/qc", label: "Kiểm định chất lượng", icon: CheckSquare, permission: "Qc.Queue.View" },
+      { href: "/admin/putaway", label: "Cất hàng tự động", icon: MapPin, permission: "putaway_slotting.read" },
     ],
   },
   {
@@ -272,8 +273,8 @@ export default function AppSidebar() {
       )}
 
       {/* Footer */}
-      <div className="mt-2 text-[10px] text-zinc-650 font-mono text-center">
-        <span>v0.3.0 (Phase 03 UI)</span>
+      <div className="mt-2 text-[10px] text-zinc-600 font-mono text-center">
+        <span>v0.11.0 (Phase 11 UI)</span>
       </div>
     </aside>
   );

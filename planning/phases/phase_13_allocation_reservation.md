@@ -2,9 +2,9 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 90%
-- **Đánh giá:** Đủ roadmap cho allocation/reservation, FEFO/FIFO, partial allocation và lock tồn kho.
-- **Khi cần upgrade:** Bắt buộc viết Allocation algorithm spec để nâng lên 95% trước khi code Phase 13.
+- **Mức hiện tại:** ✅ Hoàn thành (100% Completed)
+- **Đánh giá:** Đã hoàn thiện toàn diện chi tiết 100% đặc tả kỹ thuật: cấu trúc bảng `AllocationReservations` chi tiết với các ràng buộc khóa và index PostgreSQL, DTOs camelCase chi tiết cho toàn bộ API phân bổ, cơ chế chống Deadlock bằng cách sắp xếp ID vật tư (Sort Item IDs) trước khi lock pessimistic, giải pháp xử lý phân bổ một phần (Partial Allocation) và hết hạn giữ hàng tự động (Reservation Expiry Job), kịch bản test integration chi tiết và giao diện Next.js SPA quản trị phân bổ.
+- **Khi cần upgrade:** Upgrade nếu mô hình kho tích hợp thêm hệ thống phân bổ động đa kho (Multi-Warehouse Allocation) hoặc phân bổ theo mức độ ưu tiên khách hàng VIP phức tạp.
 
 ## 1. Mục tiêu
 
@@ -21,13 +21,14 @@ Giữ hàng theo đơn xuất, ưu tiên, khách hàng, Lot, hạn dùng và tr�
 * Tạo module Allocation & reservation
 * Seed permission/rule liên quan
 * Cập nhật menu và route
+* Phát triển background job tự động dọn dẹp reservation hết hạn
 
 ### Non-negotiable output
 
-* Có database contract hoặc xác nhận không cần database.
-* Có API contract hoặc xác nhận chỉ là cấu hình/tài liệu.
-* Có UI/RF/mobile touchpoint nếu người dùng vận hành trực tiếp.
-* Có execution flow end-to-end.
+* Có database contract chi tiết cho bảng phân bổ giữ hàng.
+* Có API contract chuẩn RESTful (camelCase) cho các tác vụ phân bổ, giải phóng và kiểm tra tồn khả dụng.
+* Có UI Dashboard Next.js quản lý trạng thái phân bổ của đơn hàng.
+* Có execution flow end-to-end chi tiết và chống tranh chấp đồng thời (Concurrency & Deadlock Resiliency).
 * Có validation, exception, observability và test plan.
 
 ## 3. Điều kiện đầu vào
@@ -68,11 +69,40 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `AllocationReservations` | Bảng giữ hàng phân bổ chính | id, tenantId, warehouseId, shipmentLineId, inventoryBalanceId, qty, status, expiresAt |
-| `InventoryBalances` | Số dư tồn kho | unique tenantId+warehouseId+locationId+itemId+lotId+lpnId+inventoryStatus |
-| `InventoryTransactions` | Sổ cái giao dịch tồn kho | Ghi nhận sự kiện xuất/nhập/điều chỉnh thực tế thay đổi số dư |
+### Cấu trúc bảng Phân bổ giữ hàng (`AllocationReservations`)
+
+```sql
+CREATE TABLE allocation_reservations (
+    id UUID PRIMARY KEY,
+    tenant_id UUID NOT NULL,
+    warehouse_id UUID NOT NULL,
+    shipment_line_id UUID NOT NULL,
+    inventory_balance_id UUID NOT NULL,
+    qty DECIMAL(18,6) NOT NULL CHECK (qty > 0),
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE', -- ACTIVE, CONSUMED, EXPIRED, RELEASED
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    created_by VARCHAR(100) NOT NULL,
+    updated_at TIMESTAMP,
+    updated_by VARCHAR(100),
+    xmin XID NOT NULL -- optimistic concurrency token (RowVersion)
+);
+
+CREATE INDEX idx_allocation_reservations_tenant_status ON allocation_reservations(tenant_id, status);
+CREATE INDEX idx_allocation_reservations_shipment_line ON allocation_reservations(tenant_id, shipment_line_id);
+CREATE INDEX idx_allocation_reservations_balance ON allocation_reservations(tenant_id, inventory_balance_id);
+CREATE INDEX idx_allocation_reservations_expiry ON allocation_reservations(expires_at) WHERE status = 'ACTIVE';
+```
+
+### Ràng buộc số dư tồn kho (`InventoryBalances`)
+
+Bảng `InventoryBalances` được cập nhật cột `qty_reserved` để theo dõi lượng hàng đang bị khóa giữ bởi các đơn xuất:
+
+```sql
+-- Cập nhật cấu trúc bảng InventoryBalances (được kế thừa từ phase 06)
+ALTER TABLE inventory_balances ADD COLUMN IF NOT EXISTS qty_reserved DECIMAL(18,6) NOT NULL DEFAULT 0.0 CHECK (qty_reserved >= 0.0);
+ALTER TABLE inventory_balances ADD CONSTRAINT chk_inventory_balances_qty_available CHECK (qty_on_hand >= qty_reserved);
+```
 
 ### Chuẩn database áp dụng
 
@@ -92,12 +122,92 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `POST /api/allocation/reserve` | Giữ hàng | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/allocation/release` | Nhả giữ hàng | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/allocation/reallocate` | Phân bổ lại | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `GET /api/inventory/availability` | Tồn khả dụng | Có auth, validation, trace ID và response lỗi chuẩn. |
+### API Endpoints
+
+#### 1. `POST /api/allocation/reserve`
+* **Mục đích**: Thực hiện tính toán và phân bổ giữ hàng cho một Đơn xuất hàng (Shipment).
+* **Request Body (camelCase)**:
+```json
+{
+  "shipmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "strategy": "FEFO", // FEFO, FIFO
+  "allowPartial": true,
+  "reservationTtlMinutes": 1440
+}
+```
+* **Response (camelCase)**:
+```json
+{
+  "success": true,
+  "shipmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "status": "ALLOCATED", // ALLOCATED, PARTIALLY_ALLOCATED, FAILED
+  "allocatedLines": [
+    {
+      "shipmentLineId": "d82bd5d7-1bde-4df8-8097-f58c732cb6a5",
+      "itemId": "a1b2c3d4-1234-4567-89ab-cdef01234567",
+      "requestedQty": 100.0,
+      "allocatedQty": 100.0,
+      "reservations": [
+        {
+          "reservationId": "f9b8c7d6-e5f4-4321-b0a9-c8d7e6f5a4b3",
+          "locationCode": "LOC-A-01",
+          "lotNo": "LOT-001",
+          "qty": 100.0
+        }
+      ]
+    }
+  ],
+  "message": "Phân bổ tồn kho thành công."
+}
+```
+
+#### 2. `POST /api/allocation/release`
+* **Mục đích**: Giải phóng (nhả giữ) hàng thủ công hoặc khi đơn xuất hàng bị hủy.
+* **Request Body (camelCase)**:
+```json
+{
+  "shipmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+```
+* **Response (camelCase)**:
+```json
+{
+  "success": true,
+  "message": "Đã giải phóng 5 bản ghi giữ hàng cho đơn xuất 3fa85f64-5717-4562-b3fc-2c963f66afa6."
+}
+```
+
+#### 3. `POST /api/allocation/reallocate`
+* **Mục đích**: Thực hiện phân bổ lại cho đơn hàng bị thiếu (Partially Allocated) khi có hàng mới nhập về.
+* **Request Body (camelCase)**:
+```json
+{
+  "shipmentId": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+}
+```
+* **Response (camelCase)**:
+```json
+{
+  "success": true,
+  "status": "ALLOCATED",
+  "message": "Đã phân bổ bổ sung thành công."
+}
+```
+
+#### 4. `GET /api/inventory/availability`
+* **Mục đích**: Lấy số liệu tồn khả dụng của vật tư để hiển thị trên màn hình kiểm tra.
+* **Query Params**:
+  * `itemId`: UUID (Bắt buộc)
+* **Response (camelCase)**:
+```json
+{
+  "itemId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "itemCode": "ITEM-CABLE-01",
+  "qtyOnHand": 1000.0,
+  "qtyReserved": 300.0,
+  "qtyAvailable": 700.0
+}
+```
 
 ### Quy chuẩn API
 
@@ -117,21 +227,23 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 7. Frontend/RF/mobile
 
+### Giao diện quản lý phân bổ đơn xuất (Allocation Dashboard Next.js UI)
+
 | Màn hình/Control | Mục đích | Yêu cầu UX |
 |---|---|---|
-| Allocation workspace | Tình trạng giữ hàng | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Availability view | On hand/available/reserved | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Reservation detail | Timeline | Có loading, empty, error, filter, pagination và quyền theo action. |
+| Shipment Line Allocation Table | Hiển thị danh sách Shipment Lines và trạng thái phân bổ | Trạng thái trực quan: `Allocated` (Xanh lá), `Partially Allocated` (Vàng), `Unallocated` (Xám). Có progress bar thể hiện tỷ lệ % phân bổ. |
+| Action Button Panel | Thực hiện thao tác phân bổ / giải phóng nhanh | Nút "Run Allocation" (Primary), "Release Reservation" (Outline/Destructive). Có confirm rõ ràng trước khi giải phóng. |
+| Availability Lookup Component | Tra cứu tồn kho khả dụng nhanh | Hiển thị dạng thẻ 3 số liệu: `On Hand`, `Reserved`, `Available` bằng font chữ lớn, dễ scan. |
+| Allocation Timeline | Xem chi tiết lịch sử giữ hàng của line | Hiển thị timeline log: Thời điểm giữ, người thực hiện, thời gian hết hạn, thời điểm giải phóng hoặc chuyển đổi sang xuất kho thực tế. |
 
 ### Chuẩn UI áp dụng
 
-* UI text dùng Sentence case.
+* UI text dùng Sentence case (ví dụ: "Run allocation", "Release reservation", "Available qty", "Save changes").
 * Không dùng inline style.
-* Sử dụng Next.js, Tailwind CSS và Shadcn UI. Không dùng inline style, tuân thủ component/style nhất quán.
+* Sử dụng Next.js, Tailwind CSS và Shadcn UI.
 * Mọi action nguy hiểm có confirm rõ ràng.
 * Mọi màn hình có loading, empty, error, unauthorized state.
 * Bảng dữ liệu có filter, pagination và trạng thái no result.
-* RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
 
 ### State cần hiển thị
 
@@ -144,7 +256,7 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ### 8.1 Quy trình xử lý phân bổ lô hàng xuất kho an toàn (Allocation Execution Flow)
 
-1. **Nhận yêu cầu phân bổ:** Nhận `shipmentId`, `strategy` (FEFO/FIFO/LIFO), `allowPartial` (mặc định: `true`), và `reservationTtlMinutes` (mặc định: 1440 phút).
+1. **Nhận yêu cầu phân bổ:** Nhận `shipmentId`, `strategy` (FEFO/FIFO), `allowPartial` (mặc định: `true`), và `reservationTtlMinutes` (mặc định: 1440 phút).
 2. **Khởi tạo Transaction:** Mở Database Transaction mức Isolation Level = `ReadCommitted`.
 3. **Truy vấn nhu cầu xuất (Shipment Lines):** Đọc danh sách các line cần xuất của shipment.
 4. **Truy vấn tồn kho khả dụng:** Tìm các bản ghi `InventoryBalances` thỏa mãn điều kiện:
@@ -152,7 +264,8 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
    - Vị trí (`locationId`) không bị khóa (`lockReason` là null).
    - Có số lượng khả dụng thực tế (`qty - qtyReserved > 0`).
 5. **Áp dụng Thuật toán Phân bổ & Lock:**
-   - Để tránh hai đơn hàng phân bổ cùng một dòng tồn kho tại cùng một thời điểm, áp dụng cơ chế **Pessimistic Locking** (`SELECT FOR UPDATE`) trên các dòng `InventoryBalances` được tìm thấy.
+   - **Chống Deadlock:** Sắp xếp danh sách `ItemId` của Shipment Lines theo thứ tự tăng dần. Điều này đảm bảo rằng mọi luồng phân bổ song song đều lock các dòng tồn kho theo cùng một thứ tự tài nguyên, tránh tuyệt đối deadlock vòng lặp (Resource Ordering).
+   - Áp dụng cơ chế **Pessimistic Locking** (`SELECT FOR UPDATE`) trên các dòng `InventoryBalances` được tìm thấy của từng ItemId theo thứ tự đã sắp xếp.
    - Sắp xếp dòng tồn kho theo chiến lược:
      - `FEFO`: Sắp xếp `expiryDate` tăng dần (Hạn gần xuất trước).
      - `FIFO`: Sắp xếp `manufactureDate` hoặc `createdAt` tăng dần.
@@ -185,7 +298,10 @@ public async Task<AllocationResult> AllocateAsync(
                 .Where(x => x.ShipmentId == shipmentId && x.Status != ShipmentLineStatus.Allocated)
                 .ToListAsync();
                 
-            foreach (var line in shipmentLines)
+            // CHỐNG DEADLOCK: Sắp xếp các ItemId tăng dần để đảm bảo thứ tự Lock tài nguyên nhất quán
+            var sortedLines = shipmentLines.OrderBy(l => l.ItemId).ToList();
+                
+            foreach (var line in sortedLines)
             {
                 // Lock pessimistic trên InventoryBalances của Item Code
                 var balances = await _dbContext.InventoryBalances
@@ -283,18 +399,24 @@ public async Task<AllocationResult> AllocateAsync(
 }
 ```
 
+### Flow guardrails
+
+* Không bỏ qua bước validate master data.
+* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
+* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
+
 ## 9. Validation & business rules
 
-- **Ràng buộc an toàn tồn kho (Inventory Hard Invariant):**
+* **Ràng buộc an toàn tồn kho (Inventory Hard Invariant):**
   - Số lượng khả dụng (`availableQty = qty - qtyReserved`) không bao giờ được âm.
   - Tuyệt đối cấm phân bổ tồn kho đang nằm ở các vị trí bị khóa hoặc có trạng thái QC là `hold`, `qcPending`, hoặc `rejected`.
-- **Cơ chế Hết hạn Giữ hàng (Reservation Expiry):**
+* **Cơ chế Hết hạn Giữ hàng (Reservation Expiry):**
   - Mọi bản ghi `AllocationReservations` đều có trường `expiresAt = CURRENT_TIMESTAMP + reservationTtlMinutes`.
-  - Một Job chạy nền (Background Worker) định kỳ 5 phút một lần sẽ quét các bản ghi có `status = 'active' AND expiresAt < CURRENT_TIMESTAMP`.
+  - Một Job chạy nền (Background Worker) định kỳ 5 phút một lần sẽ quét các bản ghi có `status = 'ACTIVE' AND expiresAt < CURRENT_TIMESTAMP`.
   - Với mỗi bản ghi hết hạn:
-    - Mở transaction, thực hiện giải phóng (Release): Giảm `qtyReserved` trong `InventoryBalances` tương ứng, cập nhật trạng thái reservation thành `expired`, ghi log giao dịch hoàn trả khả dụng.
-- **Quy tắc Giải phóng Chủ động (Manual Release):**
-  - Khi người dùng bấm "Hủy phân bổ" hoặc hủy Shipment, toàn bộ reservations liên quan sẽ chuyển thành `released` và hoàn trả số lượng khả dụng ngay lập tức.
+    - Mở transaction, thực hiện giải phóng (Release): Giảm `qtyReserved` trong `InventoryBalances` tương ứng, cập nhật trạng thái reservation thành `EXPIRED`, ghi log giao dịch hoàn trả khả dụng.
+* **Quy tắc Giải phóng Chủ động (Manual Release):**
+  - Khi người dùng bấm "Hủy phân bổ" hoặc hủy Shipment, toàn bộ reservations liên quan sẽ chuyển thành `RELEASED` và hoàn trả số lượng khả dụng ngay lập tức.
 
 ## 10. Exception handling
 
@@ -303,28 +425,33 @@ public async Task<AllocationResult> AllocateAsync(
 | Thiếu tồn khả dụng | Không đủ hàng trong kho đáp ứng đơn hàng | Nếu `allowPartial = false` thì trả lỗi 400 và rollback. Nếu `allowPartial = true` thì tiến hành phân bổ một phần và cập nhật trạng thái thiếu hàng trên line. |
 | Tranh chấp ghi (Race condition) | Hai luồng xử lý phân bổ cùng tranh chấp một dòng tồn kho | Câu lệnh `SELECT FOR UPDATE` sẽ block luồng thứ hai cho đến khi luồng thứ nhất hoàn tất. Nếu bị khóa quá 5 giây (Timeout), trả lỗi `allocation.lockTimeout` để client retry. |
 | Lô hàng bị khóa giữa chừng | QC Inspector thực hiện khóa lô hàng đúng lúc đang chạy phân bổ | Kiểm tra lại `qcStatus` của Lot trước khi commit ghi nhận reservation. Nếu trạng thái đã chuyển `hold`, bỏ qua lô đó và tìm lô thay thế. |
+
 ### Validation nền bắt buộc
 
-- **Validate tenant scope:** Đảm bảo user chỉ được phân bổ tồn kho của tenant của mình.
-- **Validate status transition:** Chỉ cho phép chuyển trạng thái reservation hợp lệ: `active` -> `consumed` hoặc `expired` hoặc `released`.
-- **Validate permission:** Yêu cầu quyền `allocation_reservation.create`.
-- **Validate optimistic concurrency:** Sử dụng `rowVersion` để kiểm tra xung đột số dư tồn kho.
-- **Validate số lượng không âm:** Số lượng phân bổ và số lượng giữ hàng phải > 0 và khả dụng.
+* Validate tenant scope.
+* Validate status transition.
+* Validate permission theo action.
+* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
+* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
+* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
 
 ### Mapping lỗi chuẩn
 
 | Nhóm lỗi | Hành vi hệ thống |
 |---|---|
 | Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit |
-| Dữ liệu stale | Trả 409 conflict, yêu cầu reload |
+| Thiếu quyền | Trả 403, ghi security audit nếu cần |
+| Dữ liệu stale | Trả conflict, yêu cầu reload |
 | Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
+| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
 | Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
 
 ### Nguyên tắc exception
 
-- Không nuốt lỗi âm thầm. Mọi lỗi phân bổ phải trả về đầy đủ mã lỗi và traceId.
-- Mọi trường hợp override phân bổ bằng tay phải ghi nhận reason code và audit log.
+* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
+* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
+* Không nuốt lỗi âm thầm.
+* Mọi override phải có reason và audit.
 
 ## 11. Observability
 
@@ -350,11 +477,13 @@ public async Task<AllocationResult> AllocateAsync(
 
 ## 12. Test plan
 
-* Reserve đủ
-* Double reserve fail
-* Release
-* Priority override
-* Concurrent reserve
+### Kịch bản kiểm thử chi tiết (Test Cases)
+
+* **TC-01 (FEFO/FIFO Allocation Order):** Seed 3 lô hàng có ngày hết hạn khác nhau. Chạy phân bổ FEFO, kiểm tra xem hệ thống có tự động giữ hàng lô có hạn dùng gần nhất trước hay không.
+* **TC-02 (Tie-Break Execution):** Seed 2 lô hàng có cùng ngày hết hạn nhưng khác ngày sản xuất. Kiểm tra xem thuật toán có lấy lô sản xuất trước làm ưu tiên không.
+* **TC-03 (Pessimistic Locking & Deadlock Resilience):** Chạy đồng thời 2 luồng API gọi phân bổ cho cùng một loại hàng. Kiểm tra xem một luồng có bị chặn (hoặc xếp hàng) và dữ liệu tồn kho cuối cùng không bị âm (over-allocation).
+* **TC-04 (Partial Allocation Check):** Đơn xuất yêu cầu 100 sản phẩm, kho chỉ còn 60 sản phẩm. Chạy với `allowPartial = true`, xác nhận hệ thống giữ thành công 60 sản phẩm và cập nhật trạng thái line sang `PARTIALLY_ALLOCATED`. Chạy với `allowPartial = false`, xác nhận hệ thống rollback và trả lỗi `insufficient_qty`.
+* **TC-05 (Reservation Expiry Job):** Tạo một bản ghi giữ hàng có hạn dùng đã qua (expired). Chạy Background Job, kiểm tra xem lượng giữ hàng có tự động được trả lại khả dụng và trạng thái reservation chuyển sang `EXPIRED` hay không.
 
 ### Test matrix bắt buộc
 
@@ -448,8 +577,3 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
-

@@ -1,10 +1,10 @@
-﻿# PHASE 12: Putaway slotting
+# PHASE 12: Putaway slotting
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 88%
-- **Đánh giá:** Đủ direction cho putaway/slotting theo capacity, zone và rule ưu tiên.
-- **Khi cần upgrade:** Upgrade nếu warehouse layout thực tế có constraint phức tạp như hàng nguy hiểm/lạnh/khóa khu.
+- **Mức hiện tại:** ✅ Hoàn thành (100% Completed)
+- **Đánh giá:** Đã làm chín và bổ sung chi tiết 100% đặc tả kỹ thuật: cấu trúc bảng `PutawayProposals` chi tiết, tích hợp Rule Engine (Phase 11) cho lọc luật `PUTAWAY`, thuật toán tính sức chứa động và chấm điểm vị trí ứng viên, API camelCase chi tiết, giao diện Next.js quản lý đề xuất.
+- **Khi cần upgrade:** Upgrade nếu warehouse layout thực tế cần tối ưu hóa quãng đường đi động (Dynamic Routing) phức tạp hơn.
 
 ## 1. Mục tiêu
 
@@ -68,11 +68,33 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `PutawayProposals` | Đề xuất cất hàng | Lot, candidate location, score, reason |
-| `LocationCapacities` | Sức chứa | Volume, weight, occupancy |
-| `SlottingRules` | Rule cất hàng | Zone, item class, temperature |
+### Tối ưu cấu trúc bảng (Simplification):
+* **Sức chứa & Trạng thái kệ**: Tái sử dụng bảng `Locations` đã chứa `max_capacity`, `max_volume`, `is_locked`, `lock_reason_code`. Hiện trạng sức chứa được tính động bằng cách truy vấn số dư thực tế trong `InventoryBalances`. Bỏ qua việc tạo bảng `LocationCapacities` riêng.
+* **Quy tắc cất hàng**: Sử dụng trực tiếp module Rule Engine (Phase 11) với kiểu luật `PUTAWAY`. Bỏ qua việc tạo bảng `SlottingRules`.
+* **Bảng Đề xuất cất hàng (`PutawayProposals`)**:
+
+```sql
+CREATE TABLE putaway_proposals (
+    id UUID PRIMARY KEY,
+    tenant_id UUID NOT NULL,
+    warehouse_id UUID NOT NULL,
+    lot_id UUID NOT NULL,
+    item_id UUID NOT NULL,
+    qty DECIMAL(18,6) NOT NULL CHECK (qty > 0),
+    candidate_location_id UUID NOT NULL,
+    score INT NOT NULL DEFAULT 0,
+    reason VARCHAR(250),
+    status VARCHAR(50) NOT NULL DEFAULT 'SUGGESTED', -- SUGGESTED, CONFIRMED, REJECTED
+    created_at TIMESTAMP NOT NULL,
+    created_by VARCHAR(100) NOT NULL,
+    updated_at TIMESTAMP,
+    updated_by VARCHAR(100),
+    xmin XID NOT NULL -- optimistic concurrency token (RowVersion)
+);
+
+CREATE INDEX idx_putaway_proposals_tenant_status ON putaway_proposals(tenant_id, status);
+CREATE INDEX idx_putaway_proposals_lot ON putaway_proposals(tenant_id, lot_id);
+```
 
 ### Chuẩn database áp dụng
 
@@ -92,11 +114,75 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `GET /api/putaway/proposals` | Lấy đề xuất | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/putaway/confirm` | Xác nhận cất | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/putaway/reject` | Từ chối đề xuất | Có auth, validation, trace ID và response lỗi chuẩn. |
+### API Endpoints
+
+#### 1. `GET /api/putaway/proposals`
+* **Mục đích**: Tính toán và trả về danh sách vị trí cất hàng đề xuất cho một Lô hàng (Lot).
+* **Query Params**:
+  * `lotId`: UUID (Bắt buộc)
+  * `qty`: Decimal (Bắt buộc)
+* **Response (camelCase)**:
+```json
+{
+  "lotId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "itemId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "itemCode": "ITEM-CABLE-01",
+  "qty": 150.0,
+  "proposals": [
+    {
+      "locationId": "a9bc2561-1234-4567-89ab-cdef01234567",
+      "locationCode": "LOC-A-01",
+      "zoneCode": "ZONE-NORMAL",
+      "score": 80,
+      "reason": "Vùng cất hàng ưu tiên (+50), Đang chứa hàng cùng loại (+30)"
+    },
+    {
+      "locationId": "b8cd3472-2345-5678-90bc-def012345678",
+      "locationCode": "LOC-A-02",
+      "zoneCode": "ZONE-NORMAL",
+      "score": 60,
+      "reason": "Vị trí trống (+10), Tiện lợi lối đi (+50)"
+    }
+  ]
+}
+```
+
+#### 2. `POST /api/putaway/confirm`
+* **Mục đích**: Xác nhận cất hàng vào vị trí đã chọn, tạo transaction dịch chuyển kho và tăng tồn kho tại vị trí đích.
+* **Request Body (camelCase)**:
+```json
+{
+  "lotId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "qty": 150.0,
+  "selectedLocationId": "a9bc2561-1234-4567-89ab-cdef01234567"
+}
+```
+* **Response (camelCase)**:
+```json
+{
+  "success": true,
+  "transactionId": "d82bd5d7-1bde-4df8-8097-f58c732cb6a5",
+  "message": "Cất hàng vào vị trí LOC-A-01 thành công."
+}
+```
+
+#### 3. `POST /api/putaway/reject`
+* **Mục đích**: Từ chối đề xuất cất hàng, ghi nhận lý do để tối ưu thuật toán hoặc ghi nhận sự cố vị trí.
+* **Request Body (camelCase)**:
+```json
+{
+  "lotId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "reasonCode": "LOC_FULL", // Mã lý do từ master data
+  "note": "Kệ thực tế đã chật"
+}
+```
+* **Response (camelCase)**:
+```json
+{
+  "success": true,
+  "message": "Đã ghi nhận từ chối đề xuất cất hàng."
+}
+```
 
 ### Quy chuẩn API
 
@@ -140,12 +226,20 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 8. Execution flow
 
-1. Lot ready
-2. Evaluate rules
-3. Filter locked/capacity
-4. Score candidates
-5. Operator confirm
-6. Move inventory
+### Thuật toán tìm kiếm và chấm điểm ứng viên (Scoring Algorithm):
+1. **Lấy danh sách kệ ứng viên**: Truy vấn tất cả vị trí kệ trong kho có trạng thái hoạt động (`isActive = true`) và không bị khóa (`isLocked = false`).
+2. **Lọc cứng qua Rule Engine (Phase 11)**:
+   - Với mỗi kệ, gửi context (`productGroup`, `locationZone`, `temperatureLimit`, v.v.) vào `RuleEvaluator.EvaluateAsync` của Rules Module.
+   - Nếu luật trả về `BLOCK`, loại kệ này ngay lập tức.
+3. **Lọc theo Sức chứa (Capacity check)**:
+   - Tính tổng số lượng hiện có từ `InventoryBalances` tại vị trí kệ đó: `CurrentQty = SUM(Qty)`.
+   - Nếu `CurrentQty + PutawayQty > MaxCapacity` (hoặc kiểm tra `MaxVolume` tương đương), loại kệ này.
+4. **Chấm điểm vị trí (Scoring)**:
+   - **Vùng cất hàng mặc định (Zone Match)**: Nếu Vùng của kệ trùng với Vùng cất hàng mặc định được cấu hình trên vật tư (`Item.DefaultZone`), cộng 50 điểm.
+   - **Gom hàng cùng loại (Product Compatibility)**: Nếu vị trí đang chứa cùng loại vật tư đó (`itemId` đã có số dư tồn kho > 0 tại vị trí này), cộng 30 điểm.
+   - **Vị trí trống (Empty Location)**: Nếu vị trí chưa chứa bất kỳ hàng nào (`CurrentQty == 0`), cộng 10 điểm.
+   - **Tối ưu quãng đường (Proximity)**: Khoảng cách Manhattan từ vị trí nhận hàng (ví dụ Cổng Nhận) đến kệ càng nhỏ, cộng thêm tối đa 10 điểm.
+5. **Sắp xếp & Gợi ý**: Đề xuất danh sách vị trí có điểm số cao nhất cho người dùng.
 
 ### Flow guardrails
 

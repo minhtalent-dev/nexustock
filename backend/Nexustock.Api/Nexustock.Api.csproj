@@ -34,6 +34,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.Outbound\Nexustock.Modules.Outbound.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Exceptions\Nexustock.Modules.Exceptions.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Rules\Nexustock.Modules.Rules.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Putaway\Nexustock.Modules.Putaway.csproj" />
   </ItemGroup>
 
 </Project>

@@ -9,6 +9,7 @@ using Nexustock.Modules.Qc;
 using Nexustock.Modules.Inventory;
 using Nexustock.Modules.Exceptions;
 using Nexustock.Modules.Rules;
+using Nexustock.Modules.Putaway;
 using Serilog;
 using System.Text.Json;
 
@@ -83,6 +84,7 @@ try
     builder.Services.AddInventoryModule(builder.Configuration);
     builder.Services.AddExceptionsModule(builder.Configuration);
     builder.Services.AddRulesModule(builder.Configuration);
+    builder.Services.AddPutawayModule(builder.Configuration);
 
     // JWT Authentication
     var jwtSecretKey = builder.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
@@ -285,6 +287,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the Rules database");
         }
+
+        try
+        {
+            var putawayDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Putaway.Contexts.PutawayDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(putawayDb.Database);
+            Log.Information("Putaway database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Putaway database");
+        }
     }
 
     // Run Database Seeding
@@ -332,7 +345,9 @@ try
             ("exception_framework_mvp.approve", "Phe duyet/Resolve ngoai le", "Exceptions"),
             ("rule_engine_foundation.read", "Xem cấu hình luật động", "Rules"),
             ("rule_engine_foundation.create", "Tạo mới luật động", "Rules"),
-            ("rule_engine_foundation.update", "Cập nhật luật động", "Rules")
+            ("rule_engine_foundation.update", "Cập nhật luật động", "Rules"),
+            ("putaway_slotting.read", "Xem cấu hình và đề xuất cất hàng", "Putaway"),
+            ("putaway_slotting.create", "Thực hiện và từ chối đề xuất cất hàng", "Putaway")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
@@ -411,6 +426,27 @@ try
                     });
                     await inventoryDb.SaveChangesAsync();
                     Log.Information("Seeded Inventory Balance for LOT-SAMPLE-001 at LOC-A-01.");
+                }
+            }
+
+            // Seed test Lot for Putaway E2E test
+            var hasPutawayLot = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(inventoryDb.Lots, l => l.LotNo == "LOT-PUT-E2E-001");
+            if (!hasPutawayLot)
+            {
+                var tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                var product = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(masterDb.Products);
+                if (product != null)
+                {
+                    inventoryDb.Lots.Add(new Nexustock.Modules.Inventory.Entities.Lot
+                    {
+                        Id = Guid.Parse("a1b2c3d4-1234-4567-89ab-cdef01234567"),
+                        TenantId = tenantId,
+                        LotNo = "LOT-PUT-E2E-001",
+                        ItemId = product.Id,
+                        QcStatus = "Release"
+                    });
+                    await inventoryDb.SaveChangesAsync();
+                    Log.Information("Seeded test Lot LOT-PUT-E2E-001 for Putaway E2E test.");
                 }
             }
         }

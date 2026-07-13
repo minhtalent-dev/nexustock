@@ -190,7 +190,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 09 | RF/mobile core scan | ✅ Hoàn thành | Hoàn tất các bảng DB MobileDevice/ScanEvent/OfflineOperation/MobileTask, API kiểm tra mã quét, offline-sync (chống trùng), giao việc tối ưu khoảng cách di chuyển, UI handheld (bẫy online/offline, auto focus), integration test pass 100% | 2026-07-13 | Hồ chung (Pool model) tự động gán việc theo vị trí gần nhất; Test integration pass 100% |
 | 10 | Exception framework MVP | ✅ Hoàn thành | Hoàn tất module backend Exceptions, DB migrations, seed permissions/reason codes, hosted SLA Job, middleware bẫy lỗi tự động, đồng bộ real-time số dư về Inventory, giao diện exceptions page dashboard Next.js và tích hợp sidebar menu, E2E integration test pass 100% | 2026-07-13 | E2E integration test tự động & Middleware auto-capture pass 100% |
 | 11 | Rule engine foundation | ✅ Hoàn thành | Hoàn tất module backend Rules, DB migrations, seed permissions, engine RuleEvaluator (EQUALS/NOT_EQUALS/IN/NOT_IN/GREATER_THAN/LESS_THAN), giao diện rules page dashboard Next.js, verify_rules.ps1 integration test pass 100% | 2026-07-13 | Test integration pass 100% |
-| 12 | Putaway slotting | ⬜ Chưa bắt đầu | — | — | — |
+| 12 | Putaway slotting | ✅ Hoàn thành | Hoàn tất module backend Putaway, migrations PostgreSQL, seed permissions, API cất hàng (lọc luật Rule Engine, tính toán 2D Grid layout & khoảng cách Manhattan, cất hàng dùng TransactionScope, chống trùng lặp idempotency), UI Next.js 2D Grid map, kiểm thử tích hợp tự động pass 100%. | 2026-07-13 | — |
 | 13 | Allocation & reservation | ⬜ Chưa bắt đầu | — | — | — |
 | 14 | Replenishment | ⬜ Chưa bắt đầu | — | — | — |
 | 15 | LPN pallet management | ⬜ Chưa bắt đầu | — | — | — |
@@ -228,7 +228,7 @@ Các deep spec dưới đây **không chặn Phase 01**. Đây là danh sách n�
 
 | Thời điểm bắt buộc | Deep spec cần viết | Mục tiêu nâng cấp | Lý do |
 |---|---|---|---|
-| Trước Phase 13 | Allocation algorithm spec | Nâng Phase 13 từ 90% lên 95% execution-ready | Làm rõ pseudo-code, tie-break rule FEFO/FIFO, partial allocation, transaction boundary, lock order và deadlock handling. |
+| Trước Phase 13 | Allocation algorithm spec | ✅ Đã hoàn thành (100% Ready) | Đã tích hợp cấu trúc DB, API DTOs, thuật toán chống Deadlock (Resource Ordering) và test cases vào tài liệu đặc tả Phase 13. |
 | Trước Phase 20 | Local Agent threat model | Nâng Phase 20 từ 90% lên 95% execution-ready | Làm rõ attack vector, Origin allowlist, pairing token, WSS/certificate trust, code signing, spoofing test case. |
 | Trước Phase 23 | SAP contract confirmation | Nâng Phase 23 từ 90% lên 95% execution-ready | Làm rõ field mapping thật, error code matrix, idempotency, retry/replay, SAP sandbox readiness và owner xác nhận. |
 | Trước Phase 26/30 | Migration rehearsal & incident playbook | Nâng Phase 26/30 từ 90% lên 95% execution-ready | Làm rõ migration rehearsal checklist, RTO/RPO, backup restore proof, rollback timing và incident response theo lỗi lớn. |
