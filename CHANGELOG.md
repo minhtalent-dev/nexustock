@@ -1,5 +1,20 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 0.5.0 - Quét mã cầm tay (RF/Mobile) và Kiểm kê kho (Phase 8 & 9)
+*Ngày cập nhật: 13/07/2026*
+
+### Tính năng mới
+- **Giao diện di động cầm tay (Handheld UI)**: Thiết kế giao diện di động chuyên dụng, tối ưu kích thước màn hình thiết bị cầm tay RF của nhân viên kho, hỗ trợ bẫy trạng thái kết nối mạng thời gian thực.
+- **Tự động giao việc tối ưu khoảng cách**: Áp dụng mô hình hồ việc chung cho nhân viên tự nhận việc (Claim task). Hệ thống tự động tính toán và ưu tiên giao các nhiệm vụ có vị trí kệ (Location) gần vị trí khai báo hiện tại của nhân viên đó nhất để giảm thiểu quãng đường di chuyển.
+- **Dịch chuyển kho cơ động (Movement)**: Cho phép quét mã vạch để thực hiện dịch chuyển vị trí lưu trữ của các lô hàng trực tiếp trên thiết bị cầm tay.
+- **Lấy hàng cơ động (Picking)**: Nhân viên kho thực hiện các nhiệm vụ lấy hàng xuất kho bằng cách quét vị trí kệ và quét lô hàng trực quan trên màn hình di động.
+- **Đồng bộ ngoại tuyến (Offline Sync)**: Hỗ trợ ghi nhận thao tác ngoại tuyến khi mất kết nối mạng và tự động đồng bộ lên hệ thống ngay khi có kết nối trở lại, bảo đảm không gián đoạn công việc.
+- **Kiểm kê kho phân quyền phê duyệt (Cycle Count)**: Hỗ trợ tạo đợt kiểm kê, phong tỏa vị trí kệ tự động và nhập kết quả kiểm đếm thực tế. Hệ thống tự động phân loại chênh lệch và yêu cầu phê duyệt phân cấp L1-L3 tùy theo giá trị chênh lệch.
+
+### Cải tiến và tối ưu
+- **Quét mã vạch thông minh**: Tích hợp cơ chế tự động focus vào ô quét mã trên thiết bị handheld giúp nhân viên kho thao tác liên tục không cần chạm màn hình.
+- **Chống trùng lặp dữ liệu**: Tích hợp cơ chế chống đồng bộ trùng lặp đối với các giao dịch ngoại tuyến, đảm bảo tính toàn vẹn dữ liệu số dư tồn kho.
+
 ## Phiên bản 0.4.0 - Quản lý xuất kho, kiểm soát lấy hàng và đóng gói (Phase 7)
 *Ngày cập nhật: 11/07/2026*
 

@@ -354,6 +354,31 @@ try
                 await inventoryDb.SaveChangesAsync();
                 Log.Information("Seeded MobileTasks for integration testing.");
             }
+
+            var hasInventory = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(inventoryDb.Inventories, i => i.LotNo == "LOT-SAMPLE-001");
+            if (!hasInventory)
+            {
+                var tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                var product = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(masterDb.Products);
+                var locA = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(masterDb.StorageLocations, l => l.Code == "LOC-A-01");
+                if (product != null && locA != null)
+                {
+                    inventoryDb.Inventories.Add(new Nexustock.Modules.Inventory.Entities.Inventory
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = tenantId,
+                        ItemId = product.Id,
+                        LocationId = locA.Id,
+                        LotNo = "LOT-SAMPLE-001",
+                        QtyOnHand = 100,
+                        QtyReserved = 0,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = "System"
+                    });
+                    await inventoryDb.SaveChangesAsync();
+                    Log.Information("Seeded Inventory Balance for LOT-SAMPLE-001 at LOC-A-01.");
+                }
+            }
         }
     }
     catch (Exception ex)
