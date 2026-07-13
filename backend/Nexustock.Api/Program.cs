@@ -295,7 +295,10 @@ try
             ("Inventory.CycleCount.Count", "Nhập kết quả kiểm kê", "Inventory"),
             ("Inventory.CycleCount.Approve.L1", "Duyệt chênh lệch cấp 1 (<10M VNĐ)", "Inventory"),
             ("Inventory.CycleCount.Approve.L2", "Duyệt chênh lệch cấp 2 (10M-100M VNĐ)", "Inventory"),
-            ("Inventory.CycleCount.Approve.L3", "Duyệt chênh lệch cấp 3 (>100M VNĐ)", "Inventory")
+            ("Inventory.CycleCount.Approve.L3", "Duyệt chênh lệch cấp 3 (>100M VNĐ)", "Inventory"),
+            ("rf_mobile_core_scan.read", "Xem thiết bị và log di động", "Mobile"),
+            ("rf_mobile_core_scan.create", "Quét mã và gửi sự kiện", "Mobile"),
+            ("rf_mobile_core_scan.update", "Thực hiện nhiệm vụ di động", "Mobile")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
@@ -303,6 +306,55 @@ try
             .Concat(identityPermissions);
 
         await Nexustock.Modules.Identity.Seeders.IdentitySeeder.SeedAsync(app.Services, appPermissions);
+
+        using (var scope = app.Services.CreateScope())
+        {
+            var inventoryDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Inventory.Contexts.InventoryDbContext>();
+            var masterDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.MasterData.Contexts.MasterDataDbContext>();
+            
+            var hasTasks = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(inventoryDb.MobileTasks);
+            if (!hasTasks)
+            {
+                var tenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
+                var locA = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(masterDb.StorageLocations, l => l.Code == "LOC-A-01");
+                var locB = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.FirstOrDefaultAsync(masterDb.StorageLocations, l => l.Code == "LOC-A-02");
+                
+                if (locA != null)
+                {
+                    inventoryDb.MobileTasks.Add(new Nexustock.Modules.Inventory.Entities.MobileTask
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = tenantId,
+                        ReferenceType = "PICKING",
+                        ReferenceId = Guid.NewGuid(),
+                        Step = "SCAN_LOC",
+                        LocationId = locA.Id,
+                        Status = "Open",
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = "System"
+                    });
+                }
+                
+                if (locB != null)
+                {
+                    inventoryDb.MobileTasks.Add(new Nexustock.Modules.Inventory.Entities.MobileTask
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = tenantId,
+                        ReferenceType = "PICKING",
+                        ReferenceId = Guid.NewGuid(),
+                        Step = "SCAN_LOC",
+                        LocationId = locB.Id,
+                        Status = "Open",
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = "System"
+                    });
+                }
+                
+                await inventoryDb.SaveChangesAsync();
+                Log.Information("Seeded MobileTasks for integration testing.");
+            }
+        }
     }
     catch (Exception ex)
     {

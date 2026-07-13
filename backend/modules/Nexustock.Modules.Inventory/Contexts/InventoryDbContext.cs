@@ -30,6 +30,10 @@ public class InventoryDbContext : DbContext
     public DbSet<StocktakeItem> StocktakeItems { get; set; } = null!;
     public DbSet<StockAdjustment> StockAdjustments { get; set; } = null!;
     public DbSet<StockAdjustmentItem> StockAdjustmentItems { get; set; } = null!;
+    public DbSet<MobileDevice> MobileDevices { get; set; } = null!;
+    public DbSet<ScanEvent> ScanEvents { get; set; } = null!;
+    public DbSet<OfflineOperation> OfflineOperations { get; set; } = null!;
+    public DbSet<MobileTask> MobileTasks { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -49,6 +53,10 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<StocktakeItem>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<StockAdjustment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<StockAdjustmentItem>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<MobileDevice>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<ScanEvent>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<OfflineOperation>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<MobileTask>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
 
         // --- Fluent Configs ---
         modelBuilder.Entity<Entities.Inventory>(entity =>
@@ -107,6 +115,27 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<StockAdjustmentItem>(entity =>
         {
             entity.HasOne<StockAdjustment>().WithMany().HasForeignKey(e => e.AdjustmentId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<MobileDevice>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.DeviceCode }).IsUnique().HasDatabaseName("uq_mobile_devices_tenant_code");
+        });
+
+        modelBuilder.Entity<ScanEvent>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Context }).HasDatabaseName("idx_scan_events_tenant_context");
+        });
+
+        modelBuilder.Entity<OfflineOperation>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.ClientOperationId }).IsUnique().HasDatabaseName("uq_offline_ops_tenant_client_op_id");
+        });
+
+        modelBuilder.Entity<MobileTask>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.AssignedUser, e.Status }).HasDatabaseName("idx_mobile_tasks_tenant_assigned");
+            entity.HasIndex(e => new { e.TenantId, e.LocationId, e.Status }).HasDatabaseName("idx_mobile_tasks_loc_status");
         });
     }
 }

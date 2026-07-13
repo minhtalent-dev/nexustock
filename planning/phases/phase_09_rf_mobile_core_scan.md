@@ -2,9 +2,9 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 95% (Ready for Execution)
-- **Đánh giá:** Đã rà soát chi tiết cấu trúc database (MobileDevices, ScanEvents, OfflineOperations, MobileTasks) và các API contract (validate barcode, complete task, offline-sync). Đủ tiêu chuẩn DoR (Definition of Ready) để triển khai thực tế trên cả backend (.NET Web API) và frontend (Next.js viewport handheld).
-- **Ngày duyệt spec:** 2026-07-13
+- **Mức hiện tại:** ✅ Hoàn thành (100% Completed)
+- **Đánh giá:** Đã triển khai và xác thực thành công. Hoàn tất các bảng DB MobileDevice/ScanEvent/OfflineOperation/MobileTask, các API kiểm tra mã quét, offline-sync, thuật toán tối ưu hóa vị trí di chuyển cho Pool model, UI handheld (bẫy online/offline, auto focus). Tích hợp kiểm thử tự động pass 100%.
+- **Ngày hoàn thành:** 2026-07-13
 - **Khi cần upgrade:** Upgrade nếu thiết bị handheld thật có browser/scan behavior khác giả lập.
 
 ## 1. Mục tiêu
