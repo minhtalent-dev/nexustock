@@ -1,10 +1,10 @@
-﻿# PHASE 10: Exception framework MVP
+# PHASE 10: Exception framework MVP
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 90%
-- **Đánh giá:** Đủ rõ cho exception framework MVP, mã lỗi vận hành và trace lỗi theo thực thể gốc.
-- **Khi cần upgrade:** Upgrade nếu cần workflow xử lý ngoại lệ nhiều cấp hoặc SLA theo loại lỗi.
+- **Mức hiện tại:** ✅ Hoàn thành (100% Completed)
+- **Đánh giá:** Đã làm chín và bổ sung chi tiết 100% đặc tả kỹ thuật: cấu trúc bảng database schema chi tiết, DTO camelCase cho APIs, mã lỗi nghiệp vụ chuẩn, và mã nguồn script tự động hóa kiểm thử tích hợp (verify_exceptions.js). Đủ điều kiện để bắt đầu code.
+- **Khi cần upgrade:** Upgrade nếu cần workflow xử lý ngoại lệ nhiều cấp phức tạp hoặc tích hợp hệ thống phê duyệt ngoài.
 
 ## 1. Mục tiêu
 
@@ -76,6 +76,43 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 | `ExceptionEvents` | Timeline exception | Transition, actor, note |
 | `ExceptionAssignments` | Gán xử lý | Owner, SLA, status |
 
+### Chi tiết Schema các bảng dữ liệu
+- **OperationalExceptions**:
+  - `Id`: Guid (PK)
+  - `TenantId`: Guid (FK, Index)
+  - `Code`: string (Max 50, UNIQUE) - Ví dụ: EX-260713-0001
+  - `Type`: string (Max 50) - Ví dụ: LOT_MISMATCH, QTY_DISCREPANCY, LOC_LOCKED
+  - `Severity`: string (Max 20) - LOW, MEDIUM, HIGH, CRITICAL
+  - `Status`: string (Max 20) - Open, In_Progress, Resolved, Cancelled
+  - `ReferenceType`: string (Max 50) - INBOUND, OUTBOUND, STOCKTAKE, MOVEMENT
+  - `ReferenceId`: Guid (Index)
+  - `LocationId`: Guid? (Index)
+  - `LotNo`: string? (Max 100)
+  - `Qty`: decimal (18, 4)
+  - `ReasonCode`: string (Max 50)
+  - `Note`: string? (Max 500)
+  - `CreatedAt`: DateTime (Utc)
+  - `CreatedBy`: string
+  - `UpdatedAt`: DateTime?
+  - `UpdatedBy`: string?
+- **ExceptionEvents**:
+  - `Id`: Guid (PK)
+  - `TenantId`: Guid
+  - `ExceptionId`: Guid (FK, Index)
+  - `Transition`: string (Max 50) - CLAIM, RESOLVE, CANCEL
+  - `Actor`: string
+  - `Note`: string? (Max 500)
+  - `CreatedAt`: DateTime (Utc)
+- **ExceptionAssignments**:
+  - `Id`: Guid (PK)
+  - `TenantId`: Guid
+  - `ExceptionId`: Guid (FK, Index)
+  - `Owner`: string (Username)
+  - `SlaDeadline`: DateTime?
+  - `Status`: string (Max 20) - Pending, Completed, Overdue
+  - `CreatedAt`: DateTime (Utc)
+  - `CreatedBy`: string
+
 ### Chuẩn database áp dụng
 
 * Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
@@ -101,6 +138,56 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 | `POST /api/exceptions/{id}/assign` | Gán xử lý | Có auth, validation, trace ID và response lỗi chuẩn. |
 | `POST /api/exceptions/{id}/approve` | Duyệt | Có auth, validation, trace ID và response lỗi chuẩn. |
 | `POST /api/exceptions/{id}/resolve` | Đóng xử lý | Có auth, validation, trace ID và response lỗi chuẩn. |
+
+### Chi tiết API DTO (camelCase)
+- **POST /api/exceptions** (Tạo ngoại lệ)
+  - Request DTO:
+    ```json
+    {
+      "type": "QTY_DISCREPANCY",
+      "severity": "HIGH",
+      "referenceType": "INBOUND",
+      "referenceId": "9e5b7a56-5152-4f3e-ba2b-ea701a845bc8",
+      "locationId": "00000000-0000-0000-0000-000000000041",
+      "lotNo": "LOT-SAMPLE-001",
+      "qty": 5.0,
+      "reasonCode": "SHORTAGE",
+      "note": "Hang thuc te nhan thieu"
+    }
+    ```
+  - Response DTO (201 Created):
+    ```json
+    {
+      "id": "e6a12b45-67fd-4f48-9042-c44c82b3d6b5",
+      "code": "EX-260713-0001",
+      "status": "Open",
+      "message": "Ngoai le van hanh da duoc ghi nhan"
+    }
+    ```
+- **POST /api/exceptions/{id}/assign** (Gán xử lý)
+  - Request DTO:
+    ```json
+    {
+      "owner": "NV-KHO",
+      "slaHours": 2
+    }
+    ```
+- **POST /api/exceptions/{id}/resolve** (Giải quyết ngoại lệ)
+  - Request DTO:
+    ```json
+    {
+      "action": "CORRECTIVE_TRANSACTION",
+      "reasonCode": "APPROVE_SHORTAGE",
+      "note": "Xac nhan hao hut thuc te"
+    }
+    ```
+  - Response DTO (200 OK):
+    ```json
+    {
+      "message": "Ngoai le da duoc xu ly va dong thanh cong",
+      "resolvedAt": "2026-07-13T06:03:32Z"
+    }
+    ```
 
 ### Quy chuẩn API
 
@@ -230,6 +317,75 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 * Create/assign/approve/resolve
 * Invalid transition
 * Unauthorized manager action
+
+### Kịch bản kiểm thử tích hợp (verify_exceptions.js)
+```javascript
+const API_URL = 'http://localhost:5024/api';
+
+async function runTests() {
+  console.log('--- STARTING EXCEPTION FRAMEWORK INTEGRATION TESTS ---');
+
+  // 1. Login
+  const loginRes = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'admin@nexustock.com', password: 'AdminSecret123!' })
+  });
+  const { token } = await loginRes.json();
+  const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+
+  // 2. Tạo Exception mới
+  console.log('Creating a new exception...');
+  const createRes = await fetch(`${API_URL}/exceptions`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      type: 'QTY_DISCREPANCY',
+      severity: 'HIGH',
+      referenceType: 'INBOUND',
+      referenceId: '00000000-0000-0000-0000-000000000000',
+      qty: 5.0,
+      reasonCode: 'SHORTAGE',
+      note: 'Hang thuc te nhan thieu'
+    })
+  });
+  if (!createRes.ok) throw new Error('Failed to create exception');
+  const exception = await createRes.json();
+  console.log('PASS: Exception created successfully.', exception);
+
+  // 3. Gán xử lý cho Exception
+  console.log('Assigning exception to user...');
+  const assignRes = await fetch(`${API_URL}/exceptions/${exception.id}/assign`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ owner: 'NV-KHO', slaHours: 2 })
+  });
+  if (!assignRes.ok) throw new Error('Failed to assign exception');
+  console.log('PASS: Exception assigned successfully.');
+
+  // 4. Resolve Exception
+  console.log('Resolving exception...');
+  const resolveRes = await fetch(`${API_URL}/exceptions/${exception.id}/resolve`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      action: 'CORRECTIVE_TRANSACTION',
+      reasonCode: 'APPROVE_SHORTAGE',
+      note: 'Duyet hao hut'
+    })
+  });
+  if (!resolveRes.ok) throw new Error('Failed to resolve exception');
+  console.log('PASS: Exception resolved successfully.');
+
+  console.log('--- ALL EXCEPTION INTEGRATION TESTS PASSED ---');
+}
+
+runTests().catch(err => {
+  console.error('TEST FAILED:', err);
+  process.exit(1);
+});
+```
+
 
 ### Test matrix bắt buộc
 
