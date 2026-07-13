@@ -187,7 +187,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 06 | Inventory by location & movement | ✅ Hoàn thành | Hoàn tất module Inventory, migrations, seed permissions, API dịch chuyển kho, khóa/mở khóa vị trí, Capacity Guard, kiểm thử tích hợp tự động pass 100% | 2026-07-11 | Kiểm soát dung lượng vị trí (Capacity Guard) & Chốt chặn vị trí khóa; Integration Test pass 100% |
 | 07 | Outbound picking & packing basic | ✅ Hoàn thành | Hoàn tất thực thể backend Outbound, migrations PostgreSQL, seed permissions, API sinh nhiệm vụ pick (FIFO/QC release/lock check), xác nhận pick trừ tồn kho thực tế & ghi ledger PICK_OUT, giao diện Next.js, integration test pass 100% | 2026-07-11 | Kiểm soát chặt QC Gate khi phân bổ/pick thực tế; Kiểm thử tích hợp tự động (Integration Test) pass 100% |
 | 08 | Cycle count & stock adjustment | ✅ Hoàn thành | Hoàn tất thực thể backend Stocktake/Adjustment, migrations PostgreSQL, seed permissions, API kiểm kê/khóa kệ/phê duyệt chênh lệch L1-L3, giao diện Next.js quản lý và thực hiện kiểm kê, integration test pass 100% | 2026-07-13 | Phong tỏa kệ (location locks) tự động & Phê duyệt chênh lệch phân cấp L1-L3; Integration Test pass 100% |
-| 09 | RF/mobile core scan | ⬜ Chưa bắt đầu | — | — | — |
+| 09 | RF/mobile core scan | 🔄 Đang thực hiện | Chuẩn bị cấu trúc database MobileDevices/ScanEvents/OfflineOperations/MobileTasks, thiết kế API validation/sync và màn hình Handheld UI | 2026-07-13 | Đang rà soát spec và chuẩn bị triển khai |
 | 10 | Exception framework MVP | ⬜ Chưa bắt đầu | — | — | — |
 | 11 | Rule engine foundation | ⬜ Chưa bắt đầu | — | — | — |
 | 12 | Putaway slotting | ⬜ Chưa bắt đầu | — | — | — |

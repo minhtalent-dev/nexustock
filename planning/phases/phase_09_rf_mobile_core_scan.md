@@ -1,9 +1,10 @@
-﻿# PHASE 09: RF/mobile core scan
+# PHASE 09: RF/mobile core scan
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 90%
-- **Đánh giá:** Đủ rõ cho RF/mobile scan core, focus input, validate barcode và feedback lỗi.
+- **Mức hiện tại:** 95% (Ready for Execution)
+- **Đánh giá:** Đã rà soát chi tiết cấu trúc database (MobileDevices, ScanEvents, OfflineOperations, MobileTasks) và các API contract (validate barcode, complete task, offline-sync). Đủ tiêu chuẩn DoR (Definition of Ready) để triển khai thực tế trên cả backend (.NET Web API) và frontend (Next.js viewport handheld).
+- **Ngày duyệt spec:** 2026-07-13
 - **Khi cần upgrade:** Upgrade nếu thiết bị handheld thật có browser/scan behavior khác giả lập.
 
 ## 1. Mục tiêu
