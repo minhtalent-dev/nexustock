@@ -26,6 +26,7 @@ import {
   CheckSquare,
   Box,
   Truck,
+  ClipboardCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -95,6 +96,7 @@ const navGroups: NavGroup[] = [
     title: "Tồn kho",
     links: [
       { href: "/admin/inventory", label: "Hàng tồn kho", icon: Box, permission: "Inventory.Balances.View" },
+      { href: "/admin/inventory/stocktakes", label: "Kiểm kê chu kỳ", icon: ClipboardCheck, permission: "Inventory.CycleCount.View" },
     ],
   },
   {

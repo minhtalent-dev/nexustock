@@ -26,6 +26,10 @@ public class InventoryDbContext : DbContext
     public DbSet<ShipmentItem> ShipmentItems { get; set; } = null!;
     public DbSet<PickTask> PickTasks { get; set; } = null!;
     public DbSet<PackingRecord> PackingRecords { get; set; } = null!;
+    public DbSet<Stocktake> Stocktakes { get; set; } = null!;
+    public DbSet<StocktakeItem> StocktakeItems { get; set; } = null!;
+    public DbSet<StockAdjustment> StockAdjustments { get; set; } = null!;
+    public DbSet<StockAdjustmentItem> StockAdjustmentItems { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -41,6 +45,10 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<ShipmentItem>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<PickTask>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<PackingRecord>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<Stocktake>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<StocktakeItem>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<StockAdjustment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<StockAdjustmentItem>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
 
         // --- Fluent Configs ---
         modelBuilder.Entity<Entities.Inventory>(entity =>
@@ -77,6 +85,28 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<PackingRecord>(entity =>
         {
             entity.HasIndex(e => new { e.TenantId, e.PackageNo }).IsUnique().HasDatabaseName("uq_packing_records_tenant_package");
+        });
+
+        modelBuilder.Entity<Stocktake>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.StocktakeNo }).IsUnique().HasDatabaseName("uq_stocktakes_tenant_no");
+        });
+
+        modelBuilder.Entity<StocktakeItem>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.StocktakeId, e.LocationId, e.ItemId, e.LotNo }).IsUnique().HasDatabaseName("uq_stocktake_items_tenant_take_loc_item_lot");
+            entity.HasOne<Stocktake>().WithMany().HasForeignKey(e => e.StocktakeId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<StockAdjustment>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.AdjustmentNo }).IsUnique().HasDatabaseName("uq_stock_adjustments_tenant_no");
+            entity.HasOne<Stocktake>().WithMany().HasForeignKey(e => e.StocktakeId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<StockAdjustmentItem>(entity =>
+        {
+            entity.HasOne<StockAdjustment>().WithMany().HasForeignKey(e => e.AdjustmentId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

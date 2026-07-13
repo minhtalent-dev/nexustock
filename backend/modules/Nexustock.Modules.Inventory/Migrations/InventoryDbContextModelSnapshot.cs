@@ -91,7 +91,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_inventories_tenant_item_lot_location");
 
-                    b.ToTable("inventories", (string)null);
+                    b.ToTable("inventories");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.InventoryMovement", b =>
@@ -168,7 +168,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                     b.HasIndex("TenantId", "Status")
                         .HasDatabaseName("idx_inv_movements_tenant_status");
 
-                    b.ToTable("inventory_movements", (string)null);
+                    b.ToTable("inventory_movements");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.InventoryTransaction", b =>
@@ -226,7 +226,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                     b.HasIndex("TenantId", "LotNo", "ItemId")
                         .HasDatabaseName("idx_inv_trans_tenant_lot_item_inv");
 
-                    b.ToTable("inventory_transactions", (string)null);
+                    b.ToTable("inventory_transactions");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.LocationLock", b =>
@@ -272,7 +272,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_location_locks_tenant_location");
 
-                    b.ToTable("location_locks", (string)null);
+                    b.ToTable("location_locks");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.Lot", b =>
@@ -299,7 +299,7 @@ namespace Nexustock.Modules.Inventory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Lots", (string)null);
+                    b.ToTable("Lots");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.PackingRecord", b =>
@@ -358,7 +358,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_packing_records_tenant_package");
 
-                    b.ToTable("packing_records", (string)null);
+                    b.ToTable("packing_records");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.PickTask", b =>
@@ -425,7 +425,7 @@ namespace Nexustock.Modules.Inventory.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("pick_tasks", (string)null);
+                    b.ToTable("pick_tasks");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.Shipment", b =>
@@ -480,7 +480,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_shipments_tenant_no");
 
-                    b.ToTable("shipments", (string)null);
+                    b.ToTable("shipments");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.ShipmentItem", b =>
@@ -524,7 +524,331 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_shipment_items_tenant_shipment_item");
 
-                    b.ToTable("shipment_items", (string)null);
+                    b.ToTable("shipment_items");
+                });
+
+            modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.StockAdjustment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("AdjustmentNo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("adjustment_no");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("approved_at");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("approved_by");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("StocktakeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("stocktake_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StocktakeId");
+
+                    b.HasIndex("TenantId", "AdjustmentNo")
+                        .IsUnique()
+                        .HasDatabaseName("uq_stock_adjustments_tenant_no");
+
+                    b.ToTable("stock_adjustments");
+                });
+
+            modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.StockAdjustmentItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AdjustmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("adjustment_id");
+
+                    b.Property<decimal>("AfterQty")
+                        .HasColumnType("numeric")
+                        .HasColumnName("after_qty");
+
+                    b.Property<decimal>("BeforeQty")
+                        .HasColumnType("numeric")
+                        .HasColumnName("before_qty");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal>("DeltaQty")
+                        .HasColumnType("numeric")
+                        .HasColumnName("delta_qty");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("location_id");
+
+                    b.Property<string>("LotNo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("lot_no");
+
+                    b.Property<string>("ReasonCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("reason_code");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdjustmentId");
+
+                    b.ToTable("stock_adjustment_items");
+                });
+
+            modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.Stocktake", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<string>("CompletedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("completed_by");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<int>("CurrentApprovalLevel")
+                        .HasColumnType("integer")
+                        .HasColumnName("current_approval_level");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("StartedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("started_by");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("StocktakeNo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("stocktake_no");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<decimal>("TotalVarianceAmount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("total_variance_amount");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid?>("ZoneId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("zone_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "StocktakeNo")
+                        .IsUnique()
+                        .HasDatabaseName("uq_stocktakes_tenant_no");
+
+                    b.ToTable("stocktakes");
+                });
+
+            modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.StocktakeItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<decimal?>("CountedQty")
+                        .HasColumnType("numeric")
+                        .HasColumnName("counted_qty");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<Guid>("ItemId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("item_id");
+
+                    b.Property<Guid>("LocationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("location_id");
+
+                    b.Property<string>("LotNo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("lot_no");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("StocktakeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("stocktake_id");
+
+                    b.Property<decimal>("SystemQty")
+                        .HasColumnType("numeric")
+                        .HasColumnName("system_qty");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("updated_by");
+
+                    b.Property<decimal?>("VarianceQty")
+                        .HasColumnType("numeric")
+                        .HasColumnName("variance_qty");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StocktakeId");
+
+                    b.HasIndex("TenantId", "StocktakeId", "LocationId", "ItemId", "LotNo")
+                        .IsUnique()
+                        .HasDatabaseName("uq_stocktake_items_tenant_take_loc_item_lot");
+
+                    b.ToTable("stocktake_items");
+                });
+
+            modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.StockAdjustment", b =>
+                {
+                    b.HasOne("Nexustock.Modules.Inventory.Entities.Stocktake", null)
+                        .WithMany()
+                        .HasForeignKey("StocktakeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.StockAdjustmentItem", b =>
+                {
+                    b.HasOne("Nexustock.Modules.Inventory.Entities.StockAdjustment", null)
+                        .WithMany()
+                        .HasForeignKey("AdjustmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.StocktakeItem", b =>
+                {
+                    b.HasOne("Nexustock.Modules.Inventory.Entities.Stocktake", null)
+                        .WithMany()
+                        .HasForeignKey("StocktakeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

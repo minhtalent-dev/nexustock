@@ -258,6 +258,286 @@ namespace Nexustock.Modules.MasterData.Migrations
                     b.ToTable("partners");
                 });
 
+            modelBuilder.Entity("Nexustock.Modules.MasterData.Entities.Permission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Group")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique()
+                        .HasDatabaseName("uq_permissions_code");
+
+                    b.ToTable("Permissions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000001001"),
+                            Code = "MasterData.Uoms.View",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xem đơn vị tính"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000001002"),
+                            Code = "MasterData.Uoms.Create",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Thêm đơn vị tính"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000001003"),
+                            Code = "MasterData.Uoms.Edit",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Sửa đơn vị tính"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000001004"),
+                            Code = "MasterData.Uoms.Delete",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xóa đơn vị tính"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000002001"),
+                            Code = "MasterData.Products.View",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xem vật tư"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000002002"),
+                            Code = "MasterData.Products.Create",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Thêm vật tư"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000002003"),
+                            Code = "MasterData.Products.Edit",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Sửa vật tư"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000002004"),
+                            Code = "MasterData.Products.Delete",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xóa vật tư"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000003001"),
+                            Code = "MasterData.Warehouses.View",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xem nhà kho"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000003002"),
+                            Code = "MasterData.Warehouses.Create",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Thêm nhà kho"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000003003"),
+                            Code = "MasterData.Warehouses.Edit",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Sửa nhà kho"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000003004"),
+                            Code = "MasterData.Warehouses.Delete",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xóa nhà kho"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000004001"),
+                            Code = "MasterData.Zones.View",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xem vùng kho"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000004002"),
+                            Code = "MasterData.Zones.Create",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Thêm vùng kho"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000004003"),
+                            Code = "MasterData.Zones.Edit",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Sửa vùng kho"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000004004"),
+                            Code = "MasterData.Zones.Delete",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xóa vùng kho"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000005001"),
+                            Code = "MasterData.Locations.View",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xem vị trí kệ"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000005002"),
+                            Code = "MasterData.Locations.Create",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Thêm vị trí kệ"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000005003"),
+                            Code = "MasterData.Locations.Edit",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Sửa vị trí kệ"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000005004"),
+                            Code = "MasterData.Locations.Delete",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xóa vị trí kệ"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000006001"),
+                            Code = "MasterData.Partners.View",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xem đối tác"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000006002"),
+                            Code = "MasterData.Partners.Create",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Thêm đối tác"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000006003"),
+                            Code = "MasterData.Partners.Edit",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Sửa đối tác"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000006004"),
+                            Code = "MasterData.Partners.Delete",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xóa đối tác"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000007001"),
+                            Code = "MasterData.Reasons.View",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xem mã lý do"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000007002"),
+                            Code = "MasterData.Reasons.Create",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Thêm mã lý do"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000007003"),
+                            Code = "MasterData.Reasons.Edit",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Sửa mã lý do"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000007004"),
+                            Code = "MasterData.Reasons.Delete",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xóa mã lý do"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000008001"),
+                            Code = "MasterData.Imports.Preview",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xem trước dữ liệu nhập"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000008002"),
+                            Code = "MasterData.Imports.Commit",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Xác nhận nhập dữ liệu"
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000008003"),
+                            Code = "MasterData.Imports.DownloadErrors",
+                            Group = "MasterData",
+                            IsActive = true,
+                            Name = "Tải file lỗi nhập dữ liệu"
+                        });
+                });
+
             modelBuilder.Entity("Nexustock.Modules.MasterData.Entities.Product", b =>
                 {
                     b.Property<Guid>("Id")
@@ -482,7 +762,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000051"),
                             Code = "HOLD-QC",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4482), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2540), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             Description = "Chờ QC kiểm tra chất lượng",
                             IsActive = true,
@@ -494,11 +774,23 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000052"),
                             Code = "ADJ-COUNT",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4485), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2544), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             Description = "Điều chỉnh số lượng kiểm kê",
                             IsActive = true,
                             ReasonType = "INVENTORY_ADJUSTMENT",
+                            RowVersion = 1,
+                            TenantId = new Guid("00000000-0000-0000-0000-000000000001")
+                        },
+                        new
+                        {
+                            Id = new Guid("00000000-0000-0000-0000-000000000053"),
+                            Code = "STOCKTAKE",
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2546), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedBy = "SYSTEM",
+                            Description = "Khóa vị trí phục vụ kiểm kê chu kỳ",
+                            IsActive = true,
+                            ReasonType = "HOLD",
                             RowVersion = 1,
                             TenantId = new Guid("00000000-0000-0000-0000-000000000001")
                         });
@@ -608,7 +900,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000041"),
                             Code = "LOC-A-01",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4426), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2507), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             Height = 0.00m,
                             IsActive = true,
@@ -628,7 +920,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000042"),
                             Code = "LOC-A-02",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4435), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2515), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             Height = 0.00m,
                             IsActive = true,
@@ -648,7 +940,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000043"),
                             Code = "LOC-QC-01",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4463), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2519), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             Height = 0.00m,
                             IsActive = true,
@@ -668,7 +960,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000044"),
                             Code = "LOC-QC-02",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4466), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2522), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             Height = 0.00m,
                             IsActive = true,
@@ -688,7 +980,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000045"),
                             Code = "LOC-STG-01",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4468), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2525), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             Height = 0.00m,
                             IsActive = true,
@@ -785,7 +1077,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000031"),
                             Code = "ZONE-STORAGE",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4409), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2482), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             IsLocked = false,
                             Name = "Khu lưu trữ chính",
@@ -798,7 +1090,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000032"),
                             Code = "ZONE-QC",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4412), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2487), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             IsLocked = false,
                             Name = "Khu kiểm tra chất lượng",
@@ -811,7 +1103,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000033"),
                             Code = "ZONE-STAGING",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4414), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2489), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             IsLocked = false,
                             Name = "Khu trung chuyển",
@@ -998,7 +1290,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000011"),
                             Code = "PCS",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4380), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2443), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             IsActive = true,
                             Name = "Cái",
@@ -1009,7 +1301,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000012"),
                             Code = "BOX",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4382), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2446), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             IsActive = true,
                             Name = "Hộp",
@@ -1020,7 +1312,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000013"),
                             Code = "PALLET",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4384), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2448), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             IsActive = true,
                             Name = "Pallet",
@@ -1096,7 +1388,7 @@ namespace Nexustock.Modules.MasterData.Migrations
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000021"),
                             Code = "WH-MAIN",
-                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 2, 2, 33, 33, 742, DateTimeKind.Unspecified).AddTicks(4396), new TimeSpan(0, 0, 0, 0, 0)),
+                            CreatedAt = new DateTimeOffset(new DateTime(2026, 7, 11, 9, 25, 2, 714, DateTimeKind.Unspecified).AddTicks(2466), new TimeSpan(0, 0, 0, 0, 0)),
                             CreatedBy = "SYSTEM",
                             IsActive = true,
                             Name = "Kho chính",

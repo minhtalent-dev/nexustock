@@ -289,7 +289,13 @@ try
             ("Outbound.Shipments.View", "Xem đơn xuất kho", "Outbound"),
             ("Outbound.Shipments.Create", "Tạo đơn xuất kho", "Outbound"),
             ("Outbound.Picks.Execute", "Thực hiện lấy hàng", "Outbound"),
-            ("Outbound.Packing.Execute", "Thực hiện đóng gói", "Outbound")
+            ("Outbound.Packing.Execute", "Thực hiện đóng gói", "Outbound"),
+            ("Inventory.CycleCount.View", "Xem đợt kiểm kê", "Inventory"),
+            ("Inventory.CycleCount.Create", "Tạo đợt kiểm kê", "Inventory"),
+            ("Inventory.CycleCount.Count", "Nhập kết quả kiểm kê", "Inventory"),
+            ("Inventory.CycleCount.Approve.L1", "Duyệt chênh lệch cấp 1 (<10M VNĐ)", "Inventory"),
+            ("Inventory.CycleCount.Approve.L2", "Duyệt chênh lệch cấp 2 (10M-100M VNĐ)", "Inventory"),
+            ("Inventory.CycleCount.Approve.L3", "Duyệt chênh lệch cấp 3 (>100M VNĐ)", "Inventory")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
