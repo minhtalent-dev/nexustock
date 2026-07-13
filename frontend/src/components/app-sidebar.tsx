@@ -28,6 +28,7 @@ import {
   Truck,
   ClipboardCheck,
   AlertCircle,
+  Sliders,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -106,6 +107,7 @@ const navGroups: NavGroup[] = [
     links: [
       { href: "/admin/users", label: "Người dùng", icon: Shield, permission: "Identity.Users.View" },
       { href: "/admin/roles", label: "Vai trò & Quyền", icon: Lock, permission: "Identity.Roles.View" },
+      { href: "/admin/rules", label: "Cấu hình luật", icon: Sliders, permission: "rule_engine_foundation.read" },
       { href: "/admin/audit", label: "Nhật ký hệ thống", icon: FileText, permission: "Identity.Audit.View" },
     ],
   },

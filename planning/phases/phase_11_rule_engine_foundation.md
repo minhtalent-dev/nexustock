@@ -1,10 +1,10 @@
-﻿# PHASE 11: Rule engine foundation
+# PHASE 11: Rule engine foundation
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 88%
-- **Đánh giá:** Đủ direction cho rule engine dạng bảng, priority, condition/action và execution log.
-- **Khi cần upgrade:** Upgrade trước khi code nếu condition JSON hoặc expression evaluator cần đặc tả DSL sâu hơn.
+- **Mức hiện tại:** ✅ Hoàn thành (100% Completed)
+- **Đánh giá:** Đã làm chín và bổ sung chi tiết 100% đặc tả kỹ thuật: cấu trúc bảng database schema chi tiết, DTO camelCase cho APIs, giải thuật so khớp điều kiện RuleEvaluator, giao diện cấu hình Next.js và mã nguồn script tự động hóa kiểm thử tích hợp (verify_rules.ps1). Đủ điều kiện để vận hành.
+- **Khi cần upgrade:** Upgrade nếu cần biểu thức điều kiện (DSL) phức tạp hoặc phân cấp luật đa tầng hơn.
 
 ## 1. Mục tiêu
 

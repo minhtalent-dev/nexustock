@@ -8,6 +8,7 @@ using Nexustock.Modules.Inbound;
 using Nexustock.Modules.Qc;
 using Nexustock.Modules.Inventory;
 using Nexustock.Modules.Exceptions;
+using Nexustock.Modules.Rules;
 using Serilog;
 using System.Text.Json;
 
@@ -81,6 +82,7 @@ try
     builder.Services.AddQcModule(builder.Configuration);
     builder.Services.AddInventoryModule(builder.Configuration);
     builder.Services.AddExceptionsModule(builder.Configuration);
+    builder.Services.AddRulesModule(builder.Configuration);
 
     // JWT Authentication
     var jwtSecretKey = builder.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
@@ -272,6 +274,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the Exceptions database");
         }
+
+        try
+        {
+            var rulesDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Rules.Contexts.RulesDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(rulesDb.Database);
+            Log.Information("Rules database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Rules database");
+        }
     }
 
     // Run Database Seeding
@@ -316,7 +329,10 @@ try
             ("exception_framework_mvp.read", "Xem danh sach ngoai le", "Exceptions"),
             ("exception_framework_mvp.create", "Tao ngoai le van hanh", "Exceptions"),
             ("exception_framework_mvp.update", "Gan va cap nhat ngoai le", "Exceptions"),
-            ("exception_framework_mvp.approve", "Phe duyet/Resolve ngoai le", "Exceptions")
+            ("exception_framework_mvp.approve", "Phe duyet/Resolve ngoai le", "Exceptions"),
+            ("rule_engine_foundation.read", "Xem cấu hình luật động", "Rules"),
+            ("rule_engine_foundation.create", "Tạo mới luật động", "Rules"),
+            ("rule_engine_foundation.update", "Cập nhật luật động", "Rules")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
@@ -414,6 +430,8 @@ finally
 {
     Log.CloseAndFlush();
 }
+// Watch trigger
+
 
 static string ToServiceStatus(HealthStatus status) => status switch
 {

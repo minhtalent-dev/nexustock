@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.Qc", "bac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.Exceptions", "backend\modules\Nexustock.Modules.Exceptions\Nexustock.Modules.Exceptions.csproj", "{D83767EA-AE7E-4639-9C00-EEA1C7308DE3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.Rules", "backend\modules\Nexustock.Modules.Rules\Nexustock.Modules.Rules.csproj", "{689D8D2A-6777-4FF1-AA01-46428F0FEA8C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -72,6 +74,10 @@ Global
 		{D83767EA-AE7E-4639-9C00-EEA1C7308DE3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D83767EA-AE7E-4639-9C00-EEA1C7308DE3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D83767EA-AE7E-4639-9C00-EEA1C7308DE3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{689D8D2A-6777-4FF1-AA01-46428F0FEA8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{689D8D2A-6777-4FF1-AA01-46428F0FEA8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{689D8D2A-6777-4FF1-AA01-46428F0FEA8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{689D8D2A-6777-4FF1-AA01-46428F0FEA8C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4EB60904-0E24-4328-8674-70CA3A8F9D31} = {5090C821-0136-4C60-9261-9E336B58EBBD}
@@ -84,5 +90,6 @@ Global
 		{573FBDC7-2F8C-4BEA-B137-8E94B54C9E82} = {41655C87-2B37-448F-940C-80618B918A73}
 		{C8EA9E84-67F0-4A40-96EB-1FCF1A0E0226} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 		{D83767EA-AE7E-4639-9C00-EEA1C7308DE3} = {8759F8F8-F565-43C2-906A-B45B8244239A}
+		{689D8D2A-6777-4FF1-AA01-46428F0FEA8C} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 	EndGlobalSection
 EndGlobal
