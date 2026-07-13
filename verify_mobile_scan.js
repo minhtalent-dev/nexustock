@@ -111,9 +111,36 @@ async function runTests() {
   
   if (tasksRes.ok && taskData.task) {
     console.log(`PASS: Claimed task successfully. Task ID: ${taskData.task.id}, Assigned: ${taskData.task.assignedUser}`);
+    
+    // Test Complete Task API
+    console.log(`Completing task ${taskData.task.id}...`);
+    const compRes = await fetch(`${API_URL}/mobile/tasks/${taskData.task.id}/complete`, {
+      method: 'POST',
+      headers
+    });
+    if (!compRes.ok) {
+      const err = await compRes.text();
+      console.error('Complete task failed:', err);
+      throw new Error('Expected task to be completed successfully');
+    }
+    const compData = await compRes.json();
+    console.log('PASS: Completed task successfully.', compData);
   } else {
     console.log('Info: No open tasks in the pool, skip task assertion.');
   }
+
+  // 6. Test Complete Task API with random ID (Expected 404)
+  console.log('Testing Complete Task API with random ID (Expecting 404)...');
+  const randomTaskId = '00000000-0000-0000-0000-000000000000';
+  const randCompRes = await fetch(`${API_URL}/mobile/tasks/${randomTaskId}/complete`, {
+    method: 'POST',
+    headers
+  });
+  const randCompErr = await randCompRes.json();
+  if (randCompRes.status !== 404 || randCompErr.errorCode !== 'TASK_NOT_FOUND') {
+    throw new Error('Expected TASK_NOT_FOUND error for random task ID');
+  }
+  console.log('PASS: Complete Task API properly returned 404 for non-existent task.');
 
   console.log('--- ALL RF/MOBILE INTEGRATION TESTS PASSED ---');
 }

@@ -351,6 +351,44 @@ public class MobileController : ControllerBase
         }
     }
 
+    [HttpPost("tasks/{id:guid}/complete")]
+    public async Task<IActionResult> CompleteTask(Guid id)
+    {
+        var tenantId = GetTenantId();
+        var username = User.Identity?.Name ?? "System";
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var dbTask = await _context.MobileTasks
+                .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.Id == id);
+
+            if (dbTask == null)
+            {
+                return NotFound(new { errorCode = "TASK_NOT_FOUND", message = "Không tìm thấy nhiệm vụ." });
+            }
+
+            if (dbTask.Status == "Completed")
+            {
+                return BadRequest(new { errorCode = "TASK_ALREADY_COMPLETED", message = "Nhiệm vụ đã hoàn thành trước đó." });
+            }
+
+            dbTask.Status = "Completed";
+            dbTask.UpdatedAt = DateTime.UtcNow;
+            dbTask.UpdatedBy = username;
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Ok(new { message = "Đã hoàn thành nhiệm vụ thành công" });
+        }
+        catch (Exception ex)
+        {
+            await transaction.RollbackAsync();
+            return BadRequest(new { errorCode = "TASK_COMPLETE_FAILED", message = ex.Message });
+        }
+    }
+
     private class MovePayload
     {
         public Guid ItemId { get; set; }
