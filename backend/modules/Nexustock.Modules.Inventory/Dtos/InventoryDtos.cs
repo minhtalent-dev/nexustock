@@ -50,3 +50,26 @@ public class LockLocationRequestDto
     [MaxLength(50)]
     public string ReasonCode { get; set; } = null!;
 }
+
+public class AdjustInventoryRequestDto
+{
+    [Required]
+    public Guid ItemId { get; set; }
+
+    [Required]
+    [MaxLength(100)]
+    public string LotNo { get; set; } = null!;
+
+    [Required]
+    public Guid LocationId { get; set; }
+
+    [Required]
+    public decimal Qty { get; set; }
+
+    [Required]
+    [MaxLength(50)]
+    public string ReasonCode { get; set; } = null!;
+
+    [Required]
+    public string IdempotencyKey { get; set; } = null!;
+}

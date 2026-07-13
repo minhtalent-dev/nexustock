@@ -27,6 +27,7 @@ import {
   Box,
   Truck,
   ClipboardCheck,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -97,6 +98,7 @@ const navGroups: NavGroup[] = [
     links: [
       { href: "/admin/inventory", label: "Hàng tồn kho", icon: Box, permission: "Inventory.Balances.View" },
       { href: "/admin/inventory/stocktakes", label: "Kiểm kê chu kỳ", icon: ClipboardCheck, permission: "Inventory.CycleCount.View" },
+      { href: "/admin/exceptions", label: "Sự cố vận hành", icon: AlertCircle, permission: "exception_framework_mvp.read" },
     ],
   },
   {

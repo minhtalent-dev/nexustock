@@ -333,4 +333,130 @@ public class InventoryController : ControllerBase
 
         return Ok(new { message = "Mở khóa vị trí kệ thành công" });
     }
+
+    [HttpPost("adjust")]
+    public async Task<IActionResult> AdjustInventory([FromBody] AdjustInventoryRequestDto dto)
+    {
+        if (!await HasPermissionAsync("exception_framework_mvp.approve") && !await HasPermissionAsync("Inventory.Movements.Create"))
+        {
+            return Forbid();
+        }
+
+        var tenantId = GetTenantId();
+        var username = User.Identity?.Name ?? "System";
+
+        var existingTx = await _context.InventoryTransactions
+            .FirstOrDefaultAsync(t => t.TenantId == tenantId && t.TraceId == dto.IdempotencyKey);
+        if (existingTx != null)
+        {
+            return Ok(new { message = "Inventory adjusted successfully (idempotent)" });
+        }
+
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
+        {
+            var inventory = await _context.Inventories.FirstOrDefaultAsync(inv =>
+                inv.TenantId == tenantId &&
+                inv.LocationId == dto.LocationId &&
+                inv.ItemId == dto.ItemId &&
+                inv.LotNo == dto.LotNo);
+
+            if (dto.Qty > 0)
+            {
+                if (inventory == null)
+                {
+                    inventory = new Entities.Inventory
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = tenantId,
+                        LocationId = dto.LocationId,
+                        ItemId = dto.ItemId,
+                        LotNo = dto.LotNo,
+                        QtyOnHand = dto.Qty,
+                        QtyReserved = 0,
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = username,
+                        RowVersion = 1
+                    };
+                    _context.Inventories.Add(inventory);
+                }
+                else
+                {
+                    inventory.QtyOnHand += dto.Qty;
+                    inventory.UpdatedAt = DateTime.UtcNow;
+                    inventory.UpdatedBy = username;
+                    inventory.RowVersion += 1;
+                }
+
+                var ledger = new InventoryTransaction
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    ItemId = dto.ItemId,
+                    LotNo = dto.LotNo,
+                    LocationId = dto.LocationId,
+                    TransactionType = "ADJ_IN",
+                    Qty = dto.Qty,
+                    TraceId = dto.IdempotencyKey,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = username
+                };
+                _context.InventoryTransactions.Add(ledger);
+            }
+            else if (dto.Qty < 0)
+            {
+                var absQty = Math.Abs(dto.Qty);
+                if (inventory == null)
+                {
+                    return BadRequest(new { errorCode = "INVENTORY_RECORD_MISSED", message = "Không tìm thấy dòng tồn kho để điều chỉnh giảm" });
+                }
+
+                var availableQty = inventory.QtyOnHand - inventory.QtyReserved;
+                if (availableQty < absQty)
+                {
+                    return BadRequest(new { errorCode = "INSUFFICIENT_AVAILABLE_STOCK", message = $"Không đủ tồn kho khả dụng để giảm {absQty} sản phẩm." });
+                }
+
+                inventory.QtyOnHand -= absQty;
+                inventory.UpdatedAt = DateTime.UtcNow;
+                inventory.UpdatedBy = username;
+                inventory.RowVersion += 1;
+
+                if (inventory.QtyOnHand == 0 && inventory.QtyReserved == 0)
+                {
+                    _context.Inventories.Remove(inventory);
+                }
+
+                var ledger = new InventoryTransaction
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    ItemId = dto.ItemId,
+                    LotNo = dto.LotNo,
+                    LocationId = dto.LocationId,
+                    TransactionType = "ADJ_OUT",
+                    Qty = dto.Qty,
+                    TraceId = dto.IdempotencyKey,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = username
+                };
+                _context.InventoryTransactions.Add(ledger);
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            return Ok(new { message = "Inventory adjusted successfully" });
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            await transaction.RollbackAsync();
+            return StatusCode(409, new { errorCode = "CONCURRENCY_CONFLICT", message = "Dữ liệu tồn kho đã thay đổi bởi phiên làm việc khác, vui lòng tải lại trang" });
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
 }

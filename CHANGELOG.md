@@ -9,7 +9,10 @@
 - **Dịch chuyển kho cơ động (Movement)**: Cho phép quét mã vạch để thực hiện dịch chuyển vị trí lưu trữ của các lô hàng trực tiếp trên thiết bị cầm tay.
 - **Lấy hàng cơ động (Picking)**: Nhân viên kho thực hiện các nhiệm vụ lấy hàng xuất kho bằng cách quét vị trí kệ và quét lô hàng trực quan trên màn hình di động.
 - **Đồng bộ ngoại tuyến (Offline Sync)**: Hỗ trợ ghi nhận thao tác ngoại tuyến khi mất kết nối mạng và tự động đồng bộ lên hệ thống ngay khi có kết nối trở lại, bảo đảm không gián đoạn công việc.
-- **Kiểm kê kho phân quyền phê duyệt (Cycle Count)**: Hỗ trợ tạo đợt kiểm kê, phong tỏa vị trí kệ tự động và nhập kết quả kiểm đếm thực tế. Hệ thống tự động phân loại chênh lệch và yêu cầu phê duyệt phân cấp L1-L3 tùy theo giá trị chênh lệch.
+- **Kiểm kê kho phê duyệt phân cấp L1-L3 (Cycle Count)**: Hỗ trợ tạo đợt kiểm kê, phong tỏa vị trí kệ tự động và nhập kết quả kiểm đếm thực tế. Hệ thống tự động phân loại chênh lệch và yêu cầu phê duyệt phân cấp L1-L3 tùy theo giá trị chênh lệch.
+- **Tự động ghi nhận và xử lý sự cố vận hành**: Tự động phát hiện và ghi nhận các sự cố phát sinh trong quá trình vận hành kho (như quét sai mã kệ, vị trí kệ bị khóa, hoặc chênh lệch số lượng) thành một phiếu lỗi để điều tra và khắc phục.
+- **Quản lý SLA xử lý sự cố**: Hỗ trợ gán phiếu lỗi cho nhân viên phụ trách kèm theo thời gian cam kết xử lý (SLA), tự động cảnh báo và chuyển trạng thái quá hạn nếu không được giải quyết kịp thời.
+- **Tự động đồng bộ số dư khắc phục**: Tự động thực hiện các bút toán điều chỉnh tăng/giảm tồn kho thực tế tương ứng ngay khi phê duyệt phương án khắc phục lỗi vận hành.
 
 ### Cải tiến và tối ưu
 - **Quét mã vạch thông minh**: Tích hợp cơ chế tự động focus vào ô quét mã trên thiết bị handheld giúp nhân viên kho thao tác liên tục không cần chạm màn hình.

@@ -13,6 +13,7 @@ using Nexustock.Modules.Inventory.Entities;
 using Nexustock.Modules.MasterData.Contexts;
 using Nexustock.Modules.Inventory.Services;
 using Nexustock.Modules.Identity.Services;
+using Nexustock.Modules.Exceptions.Contexts;
 
 namespace Nexustock.Modules.Inventory.Controllers;
 
@@ -24,15 +25,18 @@ public class MobileController : ControllerBase
     private readonly InventoryDbContext _context;
     private readonly MasterDataDbContext _masterContext;
     private readonly ITenantProvider _tenantProvider;
+    private readonly ExceptionsDbContext? _exceptionsContext;
 
     public MobileController(
         InventoryDbContext context,
         MasterDataDbContext masterContext,
-        ITenantProvider tenantProvider)
+        ITenantProvider tenantProvider,
+        ExceptionsDbContext? exceptionsContext = null)
     {
         _context = context;
         _masterContext = masterContext;
         _tenantProvider = tenantProvider;
+        _exceptionsContext = exceptionsContext;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -55,7 +59,13 @@ public class MobileController : ControllerBase
                 if (loc == null)
                 {
                     result = "INVALID_LOCATION_NOT_FOUND";
-                    return BadRequest(new { errorCode = result, message = "Vị trí không tồn tại" });
+                    throw new Nexustock.Modules.Exceptions.Entities.OperationalBusinessException(
+                        "Vị trí không tồn tại",
+                        result,
+                        "LOW",
+                        "BARCODE_SCAN",
+                        Guid.Empty
+                    );
                 }
 
                 // Check location lock
@@ -64,7 +74,13 @@ public class MobileController : ControllerBase
                 if (isLocked)
                 {
                     result = "INVALID_LOCATION_LOCKED";
-                    return BadRequest(new { errorCode = result, message = "Vị trí đang bị phong tỏa kiểm kê" });
+                    throw new Nexustock.Modules.Exceptions.Entities.OperationalBusinessException(
+                        "Vị trí đang bị phong tỏa kiểm kê",
+                        result,
+                        "MEDIUM",
+                        "LOCATION",
+                        loc.Id
+                    );
                 }
             }
             else if (dto.Context == "LOT")
@@ -74,7 +90,14 @@ public class MobileController : ControllerBase
                 if (!lotExists)
                 {
                     result = "INVALID_LOT_NOT_FOUND";
-                    return BadRequest(new { errorCode = result, message = "Không tìm thấy số lô hàng tồn kho" });
+                    throw new Nexustock.Modules.Exceptions.Entities.OperationalBusinessException(
+                        "Không tìm thấy số lô hàng tồn kho",
+                        result,
+                        "LOW",
+                        "LOT",
+                        Guid.Empty,
+                        lotNo: dto.Barcode
+                    );
                 }
             }
             else if (dto.Context == "ITEM")
@@ -84,7 +107,13 @@ public class MobileController : ControllerBase
                 if (!itemExists)
                 {
                     result = "INVALID_ITEM_NOT_FOUND";
-                    return BadRequest(new { errorCode = result, message = "Sản phẩm không tồn tại trên hệ thống" });
+                    throw new Nexustock.Modules.Exceptions.Entities.OperationalBusinessException(
+                        "Sản phẩm không tồn tại trên hệ thống",
+                        result,
+                        "LOW",
+                        "ITEM",
+                        Guid.Empty
+                    );
                 }
             }
             else
@@ -247,6 +276,74 @@ public class MobileController : ControllerBase
                 {
                     offlineOp.SyncStatus = "Failed";
                     offlineOp.ErrorMessage = ex.Message;
+
+                    if (_exceptionsContext != null)
+                    {
+                        try
+                        {
+                            var dateStr = DateTime.UtcNow.ToString("yyMMdd");
+                            var countToday = await _exceptionsContext.OperationalExceptions
+                                .IgnoreQueryFilters()
+                                .CountAsync(e => e.TenantId == tenantId && e.Code.StartsWith($"EX-{dateStr}-"));
+                            var exceptionCode = $"EX-{dateStr}-{(countToday + 1):D4}";
+
+                            Guid itemId = Guid.Empty;
+                            string? lotNo = null;
+                            Guid? locationId = null;
+                            decimal qty = 0;
+                            try
+                            {
+                                var moveData = JsonSerializer.Deserialize<MovePayload>(opDto.Payload);
+                                if (moveData != null)
+                                {
+                                    itemId = moveData.ItemId;
+                                    lotNo = moveData.LotNo;
+                                    locationId = moveData.FromLocationId;
+                                    qty = moveData.Qty;
+                                }
+                            }
+                            catch {}
+
+                            var opException = new Nexustock.Modules.Exceptions.Entities.OperationalException
+                            {
+                                Id = Guid.NewGuid(),
+                                TenantId = tenantId,
+                                Code = exceptionCode,
+                                Type = "OFFLINE_SYNC_FAILED",
+                                Severity = "HIGH",
+                                Status = "Open",
+                                ReferenceType = "OFFLINE_OP",
+                                ReferenceId = Guid.TryParse(opDto.ClientOperationId, out var gId) ? gId : Guid.Empty,
+                                LocationId = locationId,
+                                LotNo = lotNo,
+                                Qty = qty,
+                                ReasonCode = "SYNC_CONFLICT",
+                                Note = $"Dong bo offline that bai: {ex.Message}",
+                                CreatedAt = DateTime.UtcNow,
+                                CreatedBy = username
+                            };
+                            _exceptionsContext.OperationalExceptions.Add(opException);
+
+                            var @event = new Nexustock.Modules.Exceptions.Entities.ExceptionEvent
+                            {
+                                Id = Guid.NewGuid(),
+                                TenantId = tenantId,
+                                ExceptionId = opException.Id,
+                                Transition = "CREATE_AUTO",
+                                Actor = username,
+                                Note = $"Tu dong ghi nhan tu offline sync fail. ClientOpId: {opDto.ClientOperationId}",
+                                CreatedAt = DateTime.UtcNow
+                            };
+                            _exceptionsContext.ExceptionEvents.Add(@event);
+
+                            await _exceptionsContext.SaveChangesAsync();
+                        }
+                        catch (Exception ex2)
+                        {
+                            // Thay vi dung Serilog.Log directly, ta co thể dùng System.Console.WriteLine hoặc System.Diagnostics.Debug
+                            System.Console.WriteLine($"Loi khi tu dong tao OperationalException tu Offline Sync: {ex2.Message}");
+                        }
+                    }
                 }
 
                 _context.OfflineOperations.Add(offlineOp);

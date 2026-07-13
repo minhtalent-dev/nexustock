@@ -32,6 +32,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.Qc\Nexustock.Modules.Qc.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Inventory\Nexustock.Modules.Inventory.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Outbound\Nexustock.Modules.Outbound.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Exceptions\Nexustock.Modules.Exceptions.csproj" />
   </ItemGroup>
 
 </Project>

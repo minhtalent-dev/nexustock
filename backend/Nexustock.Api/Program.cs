@@ -7,6 +7,7 @@ using Nexustock.Modules.MasterData;
 using Nexustock.Modules.Inbound;
 using Nexustock.Modules.Qc;
 using Nexustock.Modules.Inventory;
+using Nexustock.Modules.Exceptions;
 using Serilog;
 using System.Text.Json;
 
@@ -79,6 +80,7 @@ try
     builder.Services.AddInboundModule(builder.Configuration);
     builder.Services.AddQcModule(builder.Configuration);
     builder.Services.AddInventoryModule(builder.Configuration);
+    builder.Services.AddExceptionsModule(builder.Configuration);
 
     // JWT Authentication
     var jwtSecretKey = builder.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
@@ -148,6 +150,7 @@ try
         RequestPath = requestPath
     });
 
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseCors("AllowFrontendDev");
     app.UseAuthentication();  // Phải đặt trước UseAuthorization
     app.UseAuthorization();
@@ -258,6 +261,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the Inventory database");
         }
+
+        try
+        {
+            var exceptionsDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Exceptions.Contexts.ExceptionsDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(exceptionsDb.Database);
+            Log.Information("Exceptions database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Exceptions database");
+        }
     }
 
     // Run Database Seeding
@@ -298,7 +312,11 @@ try
             ("Inventory.CycleCount.Approve.L3", "Duyệt chênh lệch cấp 3 (>100M VNĐ)", "Inventory"),
             ("rf_mobile_core_scan.read", "Xem thiết bị và log di động", "Mobile"),
             ("rf_mobile_core_scan.create", "Quét mã và gửi sự kiện", "Mobile"),
-            ("rf_mobile_core_scan.update", "Thực hiện nhiệm vụ di động", "Mobile")
+            ("rf_mobile_core_scan.update", "Thực hiện nhiệm vụ di động", "Mobile"),
+            ("exception_framework_mvp.read", "Xem danh sach ngoai le", "Exceptions"),
+            ("exception_framework_mvp.create", "Tao ngoai le van hanh", "Exceptions"),
+            ("exception_framework_mvp.update", "Gan va cap nhat ngoai le", "Exceptions"),
+            ("exception_framework_mvp.approve", "Phe duyet/Resolve ngoai le", "Exceptions")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
