@@ -11,6 +11,10 @@ using Nexustock.Modules.Exceptions;
 using Nexustock.Modules.Rules;
 using Nexustock.Modules.Putaway;
 using Nexustock.Modules.Allocation;
+using Nexustock.Modules.Replenishment;
+using Nexustock.Modules.Replenishment.Services;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Serilog;
 using System.Text.Json;
 
@@ -87,6 +91,22 @@ try
     builder.Services.AddRulesModule(builder.Configuration);
     builder.Services.AddPutawayModule(builder.Configuration);
     builder.Services.AddAllocationModule(builder.Configuration);
+    builder.Services.AddReplenishmentModule(builder.Configuration);
+
+    // Register Hangfire for Background Jobs
+    var defaultConn = builder.Configuration.GetConnectionString("Default");
+    if (!string.IsNullOrEmpty(defaultConn))
+    {
+        builder.Services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(options =>
+            {
+                options.UseNpgsqlConnection(defaultConn);
+            }));
+        builder.Services.AddHangfireServer();
+    }
 
     // JWT Authentication
     var jwtSecretKey = builder.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
@@ -179,6 +199,20 @@ try
         AllowCachingResponses = false,
     });
     app.MapControllers();
+
+    // Hangfire Dashboard and Recurring Jobs
+    if (!string.IsNullOrEmpty(builder.Configuration.GetConnectionString("Default")))
+    {
+        app.UseHangfireDashboard("/admin/hangfire", new DashboardOptions
+        {
+            Authorization = Array.Empty<Hangfire.Dashboard.IDashboardAuthorizationFilter>()
+        });
+
+        RecurringJob.AddOrUpdate<IReplenishmentService>(
+            "replenishment-auto-scan",
+            service => service.GenerateTasksAsync(Guid.Parse("00000000-0000-0000-0000-000000000001"), "FEFO"),
+            "*/15 * * * *");
+    }
 
     app.MapGet("/api/system/health-summary", async (IConfiguration config, HealthCheckService healthCheckService) =>
     {
@@ -300,6 +334,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the Putaway database");
         }
+
+        try
+        {
+            var replenishmentDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Replenishment.Contexts.ReplenishmentDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(replenishmentDb.Database);
+            Log.Information("Replenishment database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Replenishment database");
+        }
     }
 
     // Run Database Seeding
@@ -351,7 +396,10 @@ try
             ("putaway_slotting.read", "Xem cấu hình và đề xuất cất hàng", "Putaway"),
             ("putaway_slotting.create", "Thực hiện và từ chối đề xuất cất hàng", "Putaway"),
             ("allocation_reservation.read", "Xem danh sách giữ hàng và tồn khả dụng", "Allocation"),
-            ("allocation_reservation.create", "Thực hiện phân bổ và giải phóng giữ hàng", "Allocation")
+            ("allocation_reservation.create", "Thực hiện phân bổ và giải phóng giữ hàng", "Allocation"),
+            ("replenishment.read", "Xem cấu hình và nhiệm vụ bổ sung", "Replenishment"),
+            ("replenishment.create", "Tạo cấu hình bổ sung", "Replenishment"),
+            ("replenishment.execute", "Chạy quét và hoàn tất bổ sung", "Replenishment")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

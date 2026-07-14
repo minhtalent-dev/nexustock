@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.Putaway",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.Allocation", "backend\modules\Nexustock.Modules.Allocation\Nexustock.Modules.Allocation.csproj", "{254867F5-2FAD-41AD-80C1-4FFA6D1E9D29}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.Replenishment", "backend\modules\Nexustock.Modules.Replenishment\Nexustock.Modules.Replenishment.csproj", "{AAD42813-D998-4515-8549-B4E43E6D85E6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -90,6 +92,10 @@ Global
 		{254867F5-2FAD-41AD-80C1-4FFA6D1E9D29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{254867F5-2FAD-41AD-80C1-4FFA6D1E9D29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{254867F5-2FAD-41AD-80C1-4FFA6D1E9D29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAD42813-D998-4515-8549-B4E43E6D85E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAD42813-D998-4515-8549-B4E43E6D85E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAD42813-D998-4515-8549-B4E43E6D85E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAD42813-D998-4515-8549-B4E43E6D85E6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4EB60904-0E24-4328-8674-70CA3A8F9D31} = {5090C821-0136-4C60-9261-9E336B58EBBD}
@@ -105,5 +111,6 @@ Global
 		{689D8D2A-6777-4FF1-AA01-46428F0FEA8C} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 		{0281A477-7589-4EBD-9EF0-C59946BF0B57} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 		{254867F5-2FAD-41AD-80C1-4FFA6D1E9D29} = {8759F8F8-F565-43C2-906A-B45B8244239A}
+		{AAD42813-D998-4515-8549-B4E43E6D85E6} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 	EndGlobalSection
 EndGlobal

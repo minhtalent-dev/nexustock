@@ -1,5 +1,18 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 0.6.0 - Bổ sung hàng Pick Face tự động và thiết bị cầm tay (Phase 14)
+*Ngày cập nhật: 14/07/2026*
+
+### Tính năng mới
+- **Bổ sung hàng tự động (Replenishment)**: Hỗ trợ thiết lập quy tắc mức tồn kho tối thiểu (Min) và tối đa (Max) cho sản phẩm tại các vị trí lấy hàng (Pick Face). Hệ thống tự động tính toán nhu cầu bổ sung dựa trên tồn kho khả dụng hiện tại kết hợp lượng hàng đang vận chuyển để tạo nhiệm vụ di chuyển hàng từ khu vực lưu trữ (Bulk) về Pick Face.
+- **Phân bổ theo FEFO/FIFO**: Thuật toán tự động sắp xếp các lô hàng Bulk nguồn theo nguyên tắc hạn dùng trước xuất trước (FEFO) hoặc nhập trước xuất trước (FIFO). Tự động khóa giữ tồn kho ở Bulk nguồn khi tạo nhiệm vụ để tránh trùng lặp.
+- **Quy trình hoàn thành & hủy nhiệm vụ**:
+  - Hỗ trợ hoàn thành nhiệm vụ bổ sung hàng bằng cách quét kệ Bulk -> quét số lô -> quét kệ Pick Face -> nhập số lượng thực tế.
+  - Tự động ghi nhận sự cố chênh lệch số lượng thực tế (nếu có) thành phiếu lỗi để kiểm tra, đồng thời tự động sinh lịch sử dịch chuyển tồn kho chi tiết.
+  - Hủy nhiệm vụ bổ sung hàng để giải phóng hoàn toàn lượng tồn kho đang bị khóa giữ.
+- **Tự động hóa quét định kỳ**: Tích hợp công cụ chạy ngầm tự động quét và sinh nhiệm vụ bổ sung hàng định kỳ, quản trị trực tiếp trên bảng điều khiển quản lý.
+- **Giao diện di động cầm tay (RF Scanner)**: Thiết kế màn hình di động 3 bước dành riêng cho quy trình bổ sung hàng, nâng cao tốc độ và độ chính xác khi vận chuyển.
+
 ## Phiên bản 0.5.0 - Quét mã cầm tay, Kiểm kê kho, Cất hàng tự động và Phân bổ giữ hàng (Phase 8, 9, 12 & 13)
 *Ngày cập nhật: 13/07/2026*
 

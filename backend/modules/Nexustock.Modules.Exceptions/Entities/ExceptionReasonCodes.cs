@@ -10,6 +10,7 @@ public static class ExceptionReasonCodes
     public const string LocationLocked = "LOCATION_LOCKED";
     public const string BarcodeInvalid = "BARCODE_INVALID";
     public const string HardwareError = "HARDWARE_ERROR";
+    public const string ReplenishmentDiscrepancy = "REPLENISHMENT_DISCREPANCY";
 
     public static readonly HashSet<string> All = new()
     {
@@ -18,6 +19,7 @@ public static class ExceptionReasonCodes
         LotMismatch,
         LocationLocked,
         BarcodeInvalid,
-        HardwareError
+        HardwareError,
+        ReplenishmentDiscrepancy
     };
 }
