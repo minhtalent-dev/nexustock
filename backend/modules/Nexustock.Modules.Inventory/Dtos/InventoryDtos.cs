@@ -15,6 +15,7 @@ public class InventoryBalanceResponseDto
     public decimal QtyOnHand { get; set; }
     public decimal QtyReserved { get; set; }
     public decimal QtyAvailable { get; set; }
+    public Guid? LpnId { get; set; }
 }
 
 public class MoveInventoryRequestDto

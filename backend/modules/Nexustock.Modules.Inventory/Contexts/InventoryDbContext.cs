@@ -63,7 +63,8 @@ public class InventoryDbContext : DbContext
         // --- Fluent Configs ---
         modelBuilder.Entity<Entities.Inventory>(entity =>
         {
-            entity.HasIndex(e => new { e.TenantId, e.ItemId, e.LotNo, e.LocationId }).IsUnique().HasDatabaseName("uq_inventories_tenant_item_lot_location");
+            entity.HasIndex(e => new { e.TenantId, e.ItemId, e.LotNo, e.LocationId, e.LpnId }).IsUnique().HasDatabaseName("uq_inventories_tenant_item_lot_location_lpn");
+            entity.HasIndex(e => new { e.TenantId, e.LpnId }).HasDatabaseName("idx_inventories_tenant_lpn_id");
             entity.Property(e => e.QtyAvailable).HasComputedColumnSql("qty_on_hand - qty_reserved", stored: true);
             entity.ToTable("inventories", t =>
             {

@@ -1,9 +1,9 @@
-﻿# PHASE 15: LPN pallet management
+# PHASE 15: LPN pallet management
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 88%
-- **Đánh giá:** Đủ direction cho LPN/pallet, gom lot và movement hàng loạt.
+- **Mức hiện tại:** ✅ Hoàn thành Đặc tả (100% Ready to Execute)
+- **Đánh giá:** Đủ direction cho LPN/pallet, gom lot và movement hàng loạt. Đã hoàn thiện toàn diện chi tiết 100% đặc tả kỹ thuật: DDL SQL đầy đủ cho PostgreSQL, DTO APIs chi tiết bằng camelCase, thuật toán C# tách dòng tồn kho (split inventory row) khi đóng pallet một phần, logic di chuyển nguyên pallet (atomic move), và kịch bản test chi tiết.
 - **Khi cần upgrade:** Upgrade nếu cần nested LPN, split/merge pallet hoặc audit theo container nhiều tầng.
 
 ## 1. Mục tiêu
@@ -74,6 +74,48 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 | `LpnItems` | Lot trong LPN | LotId,qty |
 | `LpnEvents` | Timeline LPN | Attach,detach,move,ship |
 
+#### Cấu trúc bảng SQL chi tiết cho PostgreSQL:
+
+```sql
+-- 1. Bảng quản lý Pallet/LPN
+CREATE TABLE lpns (
+    id UUID PRIMARY KEY,
+    tenant_id UUID NOT NULL,
+    lpn_no VARCHAR(100) NOT NULL,
+    location_id UUID NOT NULL,                     -- Vị trí hiện tại của LPN
+    status VARCHAR(50) NOT NULL DEFAULT 'ACTIVE',  -- ACTIVE, SHIPPED, EMPTY
+    created_at TIMESTAMP NOT NULL,
+    created_by VARCHAR(100) NOT NULL,
+    updated_at TIMESTAMP,
+    updated_by VARCHAR(100),
+    row_version INT NOT NULL DEFAULT 1             -- Optimistic Concurrency Token
+);
+
+CREATE UNIQUE INDEX uq_lpns_tenant_lpn ON lpns(tenant_id, lpn_no);
+CREATE INDEX idx_lpns_tenant_location ON lpns(tenant_id, location_id);
+
+-- 2. Bảng ghi nhận lịch sử dịch chuyển / thao tác trên LPN
+CREATE TABLE lpn_events (
+    id UUID PRIMARY KEY,
+    tenant_id UUID NOT NULL,
+    lpn_id UUID NOT NULL REFERENCES lpns(id) ON DELETE CASCADE,
+    event_type VARCHAR(50) NOT NULL,               -- CREATE, ATTACH, DETACH, MOVE, SHIP, EMPTY
+    item_id UUID,
+    lot_no VARCHAR(100),
+    qty DECIMAL(18,6),
+    from_location_id UUID,
+    to_location_id UUID,
+    created_at TIMESTAMP NOT NULL,
+    created_by VARCHAR(100) NOT NULL
+);
+
+CREATE INDEX idx_lpn_events_tenant_lpn ON lpn_events(tenant_id, lpn_id);
+
+-- 3. Nâng cấp bảng inventories hiện có (Chạy qua Migration của module Inventory)
+ALTER TABLE inventories ADD COLUMN lpn_id UUID NULL REFERENCES lpns(id) ON DELETE SET NULL;
+CREATE INDEX idx_inventories_tenant_lpn ON inventories(tenant_id, lpn_id);
+```
+
 ### Chuẩn database áp dụng
 
 * Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
@@ -98,6 +140,24 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 | `POST /api/lpns/{id}/items` | Gán Lot | Có auth, validation, trace ID và response lỗi chuẩn. |
 | `POST /api/lpns/{id}/move` | Move LPN | Có auth, validation, trace ID và response lỗi chuẩn. |
 | `POST /api/lpns/{id}/close` | Đóng LPN | Có auth, validation, trace ID và response lỗi chuẩn. |
+
+#### Chi tiết các endpoint API (JSON camelCase):
+
+* **POST /api/lpns** (Tạo LPN trống):
+  - Request: `{ "lpnNo": "LPN-20260714-001", "locationId": "00000000-0000-0000-0000-000000000041" }`
+  - Response: `{ "id": "e3b4c5d6-1234-5678-abcd-ef0123456789", "lpnNo": "LPN-20260714-001", "locationId": "00000000-0000-0000-0000-000000000041", "status": "ACTIVE" }`
+
+* **POST /api/lpns/{id}/attach** (Đóng hàng vào LPN):
+  - Request: `{ "itemId": "f8e8f296-f0ab-4fac-adae-7ecdfe5b268e", "lotNo": "LOT-REP-E2E-001", "qty": 50.0 }`
+  - Response: `{ "success": true, "message": "Đã đóng 50.0 sản phẩm vào LPN thành công." }`
+
+* **POST /api/lpns/{id}/detach** (Rút hàng khỏi LPN):
+  - Request: `{ "itemId": "f8e8f296-f0ab-4fac-adae-7ecdfe5b268e", "lotNo": "LOT-REP-E2E-001", "qty": 20.0 }`
+  - Response: `{ "success": true, "message": "Đã rút 20.0 sản phẩm khỏi LPN thành công." }`
+
+* **POST /api/lpns/{id}/move** (Di chuyển pallet LPN):
+  - Request: `{ "targetLocationId": "00000000-0000-0000-0000-000000000042" }`
+  - Response: `{ "success": true, "message": "LPN đã được dịch chuyển thành công sang vị trí mới." }`
 
 ### Quy chuẩn API
 
@@ -148,6 +208,125 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 4. Scan target
 5. Move atomic
 6. Close/ship
+
+#### Chi tiết Thuật toán & Mã nguồn giả lập (C#):
+
+##### 8.1 Thuật toán Đóng hàng vào LPN (Attach)
+Khi người dùng yêu cầu gán số lượng hàng hóa vào LPN:
+1. **Kiểm tra trạng thái LPN**: Lock pessimistic dòng LPN cần xử lý. Đảm bảo LPN ở trạng thái `ACTIVE` và vị trí hiện tại của LPN khớp với vị trí của dòng tồn kho nguồn.
+2. **Kiểm tra tồn kho**: Tìm dòng tồn kho (`inventories`) thỏa mãn `itemId`, `lot_no`, `location_id` và `lpn_id IS NULL`. Lock pessimistic dòng này.
+3. **Thực hiện tách dòng tồn kho (Split Row)**:
+   - Nếu số lượng yêu cầu gán `qty < inventories.qty_on_hand`:
+     - Giảm `qty_on_hand` của dòng tồn kho ban đầu đi `qty`.
+     - Tạo một dòng tồn kho mới trong DB với `lpn_id = LpnId`, `qty_on_hand = qty` và copy toàn bộ thông tin Lot, Location từ dòng cũ.
+   - Nếu số lượng yêu cầu gán bằng đúng tồn kho hiện tại `qty == inventories.qty_on_hand`:
+     - Cập nhật dòng tồn kho hiện tại: Gán `lpn_id = LpnId`.
+4. **Ghi nhận sự kiện**: Thêm bản ghi vào `lpn_events` với `event_type = 'ATTACH'`.
+
+##### 8.2 Thuật toán Di chuyển LPN (Move Atomic)
+Di chuyển toàn bộ pallet sang vị trí kệ mới:
+1. **Lock dữ liệu nguồn**: Bắt đầu Transaction. Lock dòng LPN trong database theo ID.
+2. **Kiểm tra dung lượng kệ đích**: Gọi Capacity Guard trên kệ đích để đảm bảo có thể chứa toàn bộ trọng lượng/thể tích của LPN.
+3. **Cập nhật vị trí LPN**: Đổi `location_id` của LPN sang vị trí đích.
+4. **Cập nhật vị trí tồn kho**: 
+   - Tìm toàn bộ dòng `inventories` có `lpn_id = LpnId`.
+   - Cập nhật đồng loạt: `location_id = targetLocationId`.
+5. **Ghi nhận Timeline**:
+   - Ghi nhận `LpnEvent` loại `MOVE` lưu vết vị trí cũ và mới.
+   - Tạo các dòng `InventoryMovement` loại `LPN_MOVE` cho từng mặt hàng trên LPN để lưu vết lịch sử dịch chuyển tồn kho.
+
+##### 8.3 C# Application Service Implementation (Pseudo-code)
+
+```csharp
+public class LpnService : ILpnService
+{
+    private readonly LpnDbContext _dbContext;
+    private readonly IInventoryContext _inventoryContext; // Để thao tác cập nhật inventories
+
+    public LpnService(LpnDbContext dbContext, IInventoryContext inventoryContext)
+    {
+        _dbContext = dbContext;
+        _inventoryContext = inventoryContext;
+    }
+
+    public async Task<bool> AttachToLpnAsync(Guid tenantId, Guid lpnId, AttachLpnDto dto, string operatorName)
+    {
+        using var transaction = await _dbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+        try
+        {
+            // 1. Lock và check LPN
+            var lpn = await _dbContext.Lpns
+                .FirstOrDefaultAsync(l => l.TenantId == tenantId && l.Id == lpnId);
+            if (lpn == null || lpn.Status != "ACTIVE")
+                throw new Exception("LPN không tồn tại hoặc đã bị đóng khóa.");
+
+            // 2. Tìm dòng tồn kho tự do (chưa thuộc LPN nào) tại vị trí của LPN
+            var sourceInv = await _inventoryContext.Inventories
+                .FirstOrDefaultAsync(i => i.TenantId == tenantId 
+                                       && i.LocationId == lpn.LocationId 
+                                       && i.ItemId == dto.ItemId 
+                                       && i.LotNo == dto.LotNo 
+                                       && i.LpnId == null);
+            if (sourceInv == null || sourceInv.QtyAvailable < dto.Qty)
+                throw new Exception("Không đủ tồn kho tự do tại vị trí để đóng vào LPN.");
+
+            // 3. Tách dòng tồn kho (Split Row)
+            if (sourceInv.QtyOnHand > dto.Qty)
+            {
+                // Tách một phần
+                sourceInv.QtyOnHand -= dto.Qty;
+                
+                var newInv = new Inventory
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = tenantId,
+                    ItemId = dto.ItemId,
+                    LotNo = dto.LotNo,
+                    LocationId = lpn.LocationId,
+                    LpnId = lpn.Id,
+                    QtyOnHand = dto.Qty,
+                    QtyReserved = 0,
+                    CreatedBy = operatorName,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _inventoryContext.Inventories.AddAsync(newInv);
+            }
+            else
+            {
+                // Gán toàn bộ dòng
+                sourceInv.LpnId = lpn.Id;
+            }
+
+            // 4. Lưu vết sự kiện LPN
+            var lpnEvent = new LpnEvent
+            {
+                Id = Guid.NewGuid(),
+                TenantId = tenantId,
+                LpnId = lpn.Id,
+                EventType = "ATTACH",
+                ItemId = dto.ItemId,
+                LotNo = dto.LotNo,
+                Qty = dto.Qty,
+                FromLocationId = lpn.LocationId,
+                ToLocationId = lpn.LocationId,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = operatorName
+            };
+            await _dbContext.LpnEvents.AddAsync(lpnEvent);
+
+            await _dbContext.SaveChangesAsync();
+            await _inventoryContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+            return true;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+}
+```
 
 ### Flow guardrails
 
@@ -224,6 +403,18 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 * Closed lock
 * Partial detach
 
+#### Kịch bản kiểm thử chi tiết (Test Cases):
+
+* **TC-01 (Create LPN)**: Tạo LPN trống `LPN-TEST-001` tại kệ `LOC-A-01`. Kiểm tra bản ghi sinh ra đúng trạng thái `ACTIVE`.
+* **TC-02 (Attach Partial Qty - Split Row)**: Kệ `LOC-A-01` có 100 sản phẩm tự do. Thực hiện đóng 40 sản phẩm vào LPN. Xác nhận trong DB:
+  - Xuất hiện 1 dòng tồn kho mới có `LpnId = LPN-TEST-001` và `QtyOnHand = 40`.
+  - Dòng tồn kho tự do ban đầu giảm xuống còn `QtyOnHand = 60` và `LpnId = NULL`.
+* **TC-03 (Move Pallet Atomic)**: Thực hiện di chuyển LPN `LPN-TEST-001` từ kệ `LOC-A-01` sang `LOC-A-02`. Kiểm tra:
+  - Bản ghi `lpns` đổi vị trí sang `LOC-A-02`.
+  - Toàn bộ các dòng `inventories` có `LpnId = LPN-TEST-001` tự động cập nhật `location_id` sang `LOC-A-02`.
+  - Ghi nhận `LpnEvent` loại `MOVE`.
+* **TC-04 (Detach Qty)**: Rút 10 sản phẩm từ LPN. Kiểm tra số lượng tồn tự do tăng lên 10, số lượng trên LPN giảm xuống tương ứng.
+
 ### Test matrix bắt buộc
 
 | Nhóm test | Nội dung |
@@ -245,6 +436,9 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 ## 13. Acceptance criteria
 
 * Một scan LPN di chuyển đúng toàn bộ hàng
+* **AC-01 (Tạo và Quản lý LPN)**: Cho phép tạo LPN, theo dõi trạng thái và lịch sử hoạt động chính xác.
+* **AC-02 (Đóng/Rút hàng chính xác)**: Hỗ trợ đóng gói hàng hóa vào LPN và chia tách dòng tồn kho tự động không gây thất thoát hoặc sai lệch số dư.
+* **AC-03 (Di chuyển nguyên Pallet)**: Hệ thống tự động dịch chuyển đồng loạt mọi mặt hàng nằm trong LPN sang vị trí mới chỉ bằng 1 thao tác quét mã LPN và mã kệ đích trên Handheld.
 
 ### Definition of done
 

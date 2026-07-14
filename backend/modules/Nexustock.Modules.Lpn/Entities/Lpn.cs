@@ -2,10 +2,10 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Nexustock.Modules.Inventory.Entities;
+namespace Nexustock.Modules.Lpn.Entities;
 
-[Table("inventories")]
-public class Inventory
+[Table("lpns")]
+public class Lpn
 {
     [Key]
     [Column("id")]
@@ -14,33 +14,18 @@ public class Inventory
     [Column("tenant_id")]
     public Guid TenantId { get; set; }
 
-    [Column("item_id")]
-    public Guid ItemId { get; set; }
-
     [Required]
     [MaxLength(100)]
-    [Column("lot_no")]
-    public string LotNo { get; set; } = null!;
+    [Column("lpn_no")]
+    public string LpnNo { get; set; } = null!;
 
     [Column("location_id")]
     public Guid LocationId { get; set; }
 
-    [Column("qty_on_hand")]
-    public decimal QtyOnHand { get; set; }
-
-    [Column("qty_reserved")]
-    public decimal QtyReserved { get; set; }
-
-    [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-    [Column("qty_available")]
-    public decimal QtyAvailable { get; set; }
-
-    [Column("lpn_id")]
-    public Guid? LpnId { get; set; }
-
-    [ConcurrencyCheck]
-    [Column("row_version")]
-    public int RowVersion { get; set; } = 1;
+    [Required]
+    [MaxLength(50)]
+    [Column("status")]
+    public string Status { get; set; } = "ACTIVE"; // ACTIVE, SHIPPED, EMPTY
 
     [Column("created_at")]
     public DateTime CreatedAt { get; set; }
@@ -56,4 +41,8 @@ public class Inventory
     [MaxLength(100)]
     [Column("updated_by")]
     public string? UpdatedBy { get; set; }
+
+    [Timestamp]
+    [Column("xmin", TypeName = "xid")]
+    public uint RowVersion { get; set; }
 }

@@ -13,6 +13,9 @@ using Nexustock.Modules.Putaway;
 using Nexustock.Modules.Allocation;
 using Nexustock.Modules.Replenishment;
 using Nexustock.Modules.Replenishment.Services;
+using Nexustock.Modules.Lpn;
+using Nexustock.Modules.Lpn.Contexts;
+using Nexustock.Modules.Lpn.Services;
 using Hangfire;
 using Hangfire.PostgreSql;
 using Serilog;
@@ -92,6 +95,7 @@ try
     builder.Services.AddPutawayModule(builder.Configuration);
     builder.Services.AddAllocationModule(builder.Configuration);
     builder.Services.AddReplenishmentModule(builder.Configuration);
+    builder.Services.AddLpnModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -293,6 +297,17 @@ try
 
         try
         {
+            var lpnDb = scope.ServiceProvider.GetRequiredService<LpnDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(lpnDb.Database);
+            Log.Information("Lpn database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Lpn database");
+        }
+
+        try
+        {
             var inventoryDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Inventory.Contexts.InventoryDbContext>();
             await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(inventoryDb.Database);
             Log.Information("Inventory database migrated successfully.");
@@ -399,7 +414,11 @@ try
             ("allocation_reservation.create", "Thực hiện phân bổ và giải phóng giữ hàng", "Allocation"),
             ("replenishment.read", "Xem cấu hình và nhiệm vụ bổ sung", "Replenishment"),
             ("replenishment.create", "Tạo cấu hình bổ sung", "Replenishment"),
-            ("replenishment.execute", "Chạy quét và hoàn tất bổ sung", "Replenishment")
+            ("replenishment.execute", "Chạy quét và hoàn tất bổ sung", "Replenishment"),
+            ("lpn.read", "Xem thông tin LPN", "LPN"),
+            ("lpn.create", "Tạo mới LPN", "LPN"),
+            ("lpn.update", "Đóng/Rút và di chuyển LPN", "LPN"),
+            ("lpn.execute", "Thực hiện quét LPN di động", "LPN")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

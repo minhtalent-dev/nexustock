@@ -49,6 +49,7 @@ public class InventoryController : ControllerBase
         [FromQuery] Guid? itemId,
         [FromQuery] Guid? locationId,
         [FromQuery] string? lotNo,
+        [FromQuery] Guid? lpnId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 100)
     {
@@ -63,6 +64,7 @@ public class InventoryController : ControllerBase
         if (itemId.HasValue) query = query.Where(i => i.ItemId == itemId.Value);
         if (locationId.HasValue) query = query.Where(i => i.LocationId == locationId.Value);
         if (!string.IsNullOrWhiteSpace(lotNo)) query = query.Where(i => i.LotNo == lotNo);
+        if (lpnId.HasValue) query = query.Where(i => i.LpnId == lpnId.Value);
 
         var totalCount = await query.CountAsync();
         var items = await query
@@ -94,7 +96,8 @@ public class InventoryController : ControllerBase
             LocationCode = locations.TryGetValue(i.LocationId, out var lCode) ? lCode : "Unknown Location",
             QtyOnHand = i.QtyOnHand,
             QtyReserved = i.QtyReserved,
-            QtyAvailable = i.QtyOnHand - i.QtyReserved
+            QtyAvailable = i.QtyOnHand - i.QtyReserved,
+            LpnId = i.LpnId
         }).ToList();
 
         return Ok(new { items = response, totalCount });
