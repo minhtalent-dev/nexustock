@@ -2,7 +2,7 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** ✅ Sẵn sàng thực thi (95% Completed)
+- **Mức hiện tại:** ✅ Hoàn thành (100% Completed)
 - **Đánh giá:** Đã hoàn thiện toàn diện chi tiết 95% đặc tả kỹ thuật: cấu trúc bảng `ReplenishmentRules` và `ReplenishmentTasks` kèm khóa ngoại, index PostgreSQL, API DTOs camelCase chi tiết, thuật toán quét min/max và chọn nguồn bổ sung (FIFO/FEFO) tối ưu, tích hợp sâu vào hệ thống nhiệm vụ di động `MobileTasks` của nhân viên kho, kịch bản test integration chi tiết và thiết kế màn hình Next.js.
 - **Khi cần upgrade:** Upgrade nếu cần thêm tính năng dự báo nhu cầu (Forecast Replenishment) dựa trên AI hoặc tích hợp định tuyến xe nâng nâng cao.
 
