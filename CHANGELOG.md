@@ -1,9 +1,11 @@
 # Lịch sử cập nhật dự án
 
-## Phiên bản 0.5.0 - Quét mã cầm tay (RF/Mobile) và Kiểm kê kho (Phase 8 & 9)
+## Phiên bản 0.5.0 - Quét mã cầm tay, Kiểm kê kho, Cất hàng tự động và Phân bổ giữ hàng (Phase 8, 9, 12 & 13)
 *Ngày cập nhật: 13/07/2026*
 
 ### Tính năng mới
+- **Cất hàng tự động (Putaway slotting - Phase 12)**: Đề xuất vị trí cất hàng tối ưu dựa trên quy tắc phân vùng, sức chứa và khoảng cách di chuyển thực tế. Bản đồ lưới 2D Grid hỗ trợ hiển thị trực quan các kệ đề xuất, kệ đã chứa hàng và kệ trống.
+- **Phân bổ giữ hàng tối ưu (Allocation & reservation - Phase 13)**: Thuật toán phân bổ theo nguyên tắc FEFO/FIFO, tích hợp tie-break và pessimistic locking chống deadlock đồng thời (Resource Ordering). Hỗ trợ giải phóng tồn giữ hàng hết hạn tự động theo lô thông qua background worker.
 - **Giao diện di động cầm tay (Handheld UI)**: Thiết kế giao diện di động chuyên dụng, tối ưu kích thước màn hình thiết bị cầm tay RF của nhân viên kho, hỗ trợ bẫy trạng thái kết nối mạng thời gian thực.
 - **Tự động giao việc tối ưu khoảng cách**: Áp dụng mô hình hồ việc chung cho nhân viên tự nhận việc (Claim task). Hệ thống tự động tính toán và ưu tiên giao các nhiệm vụ có vị trí kệ (Location) gần vị trí khai báo hiện tại của nhân viên đó nhất để giảm thiểu quãng đường di chuyển.
 - **Dịch chuyển kho cơ động (Movement)**: Cho phép quét mã vạch để thực hiện dịch chuyển vị trí lưu trữ của các lô hàng trực tiếp trên thiết bị cầm tay.

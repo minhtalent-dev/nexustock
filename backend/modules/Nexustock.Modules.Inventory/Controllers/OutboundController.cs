@@ -111,6 +111,7 @@ public class OutboundController : ControllerBase
             ItemCode = products.TryGetValue(i.ItemId, out var p2) ? p2.Code : "Unknown Code",
             UomName = uoms.TryGetValue(i.UomId, out var u) ? u : "Unknown Uom",
             i.RequestedQty,
+            i.AllocatedQty,
             i.PickedQty,
             i.PackedQty
         }).ToList();

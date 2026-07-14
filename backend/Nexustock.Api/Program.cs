@@ -10,6 +10,7 @@ using Nexustock.Modules.Inventory;
 using Nexustock.Modules.Exceptions;
 using Nexustock.Modules.Rules;
 using Nexustock.Modules.Putaway;
+using Nexustock.Modules.Allocation;
 using Serilog;
 using System.Text.Json;
 
@@ -85,6 +86,7 @@ try
     builder.Services.AddExceptionsModule(builder.Configuration);
     builder.Services.AddRulesModule(builder.Configuration);
     builder.Services.AddPutawayModule(builder.Configuration);
+    builder.Services.AddAllocationModule(builder.Configuration);
 
     // JWT Authentication
     var jwtSecretKey = builder.Configuration["JWT_SECRET_KEY"] ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
@@ -347,7 +349,9 @@ try
             ("rule_engine_foundation.create", "Tạo mới luật động", "Rules"),
             ("rule_engine_foundation.update", "Cập nhật luật động", "Rules"),
             ("putaway_slotting.read", "Xem cấu hình và đề xuất cất hàng", "Putaway"),
-            ("putaway_slotting.create", "Thực hiện và từ chối đề xuất cất hàng", "Putaway")
+            ("putaway_slotting.create", "Thực hiện và từ chối đề xuất cất hàng", "Putaway"),
+            ("allocation_reservation.read", "Xem danh sách giữ hàng và tồn khả dụng", "Allocation"),
+            ("allocation_reservation.create", "Thực hiện phân bổ và giải phóng giữ hàng", "Allocation")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

@@ -34,6 +34,7 @@ public class InventoryDbContext : DbContext
     public DbSet<ScanEvent> ScanEvents { get; set; } = null!;
     public DbSet<OfflineOperation> OfflineOperations { get; set; } = null!;
     public DbSet<MobileTask> MobileTasks { get; set; } = null!;
+    public DbSet<AllocationReservation> AllocationReservations { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -57,12 +58,18 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<ScanEvent>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<OfflineOperation>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<MobileTask>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<AllocationReservation>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
 
         // --- Fluent Configs ---
         modelBuilder.Entity<Entities.Inventory>(entity =>
         {
             entity.HasIndex(e => new { e.TenantId, e.ItemId, e.LotNo, e.LocationId }).IsUnique().HasDatabaseName("uq_inventories_tenant_item_lot_location");
             entity.Property(e => e.QtyAvailable).HasComputedColumnSql("qty_on_hand - qty_reserved", stored: true);
+            entity.ToTable("inventories", t =>
+            {
+                t.HasCheckConstraint("chk_inventory_balances_qty_reserved", "qty_reserved >= 0.0");
+                t.HasCheckConstraint("chk_inventory_balances_qty_available", "qty_on_hand >= qty_reserved");
+            });
         });
 
         modelBuilder.Entity<LocationLock>(entity =>
@@ -136,6 +143,14 @@ public class InventoryDbContext : DbContext
         {
             entity.HasIndex(e => new { e.TenantId, e.AssignedUser, e.Status }).HasDatabaseName("idx_mobile_tasks_tenant_assigned");
             entity.HasIndex(e => new { e.TenantId, e.LocationId, e.Status }).HasDatabaseName("idx_mobile_tasks_loc_status");
+        });
+
+        modelBuilder.Entity<AllocationReservation>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.Status }).HasDatabaseName("idx_allocation_reservations_tenant_status");
+            entity.HasIndex(e => new { e.TenantId, e.ShipmentLineId }).HasDatabaseName("idx_allocation_reservations_shipment_line");
+            entity.HasIndex(e => new { e.TenantId, e.InventoryBalanceId }).HasDatabaseName("idx_allocation_reservations_balance");
+            entity.HasIndex(e => e.ExpiresAt).HasDatabaseName("idx_allocation_reservations_expiry").HasFilter("\"status\" = 'ACTIVE'");
         });
     }
 }

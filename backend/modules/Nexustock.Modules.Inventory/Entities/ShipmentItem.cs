@@ -31,4 +31,16 @@ public class ShipmentItem
 
     [Column("packed_qty")]
     public decimal PackedQty { get; set; }
+
+    [Column("allocated_qty")]
+    public decimal AllocatedQty { get; set; }
+
+    [Required]
+    [MaxLength(50)]
+    [Column("status")]
+    public string Status { get; set; } = "Unallocated"; // Unallocated, PartiallyAllocated, Allocated
+
+    [ConcurrencyCheck]
+    [Column("row_version")]
+    public int RowVersion { get; set; } = 1;
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Nexustock.Modules.Inventory.Contexts;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Nexustock.Modules.Inventory.Migrations
 {
     [DbContext(typeof(InventoryDbContext))]
-    partial class InventoryDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260713092312_AddAllocationTable")]
+    partial class AddAllocationTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -83,9 +86,6 @@ namespace Nexustock.Modules.Inventory.Migrations
                     b.HasIndex("ExpiresAt")
                         .HasDatabaseName("idx_allocation_reservations_expiry")
                         .HasFilter("\"status\" = 'ACTIVE'");
-
-                    b.HasIndex("TenantId", "InventoryBalanceId")
-                        .HasDatabaseName("idx_allocation_reservations_balance");
 
                     b.HasIndex("TenantId", "ShipmentLineId")
                         .HasDatabaseName("idx_allocation_reservations_shipment_line");
@@ -165,12 +165,7 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .IsUnique()
                         .HasDatabaseName("uq_inventories_tenant_item_lot_location");
 
-                    b.ToTable("inventories", null, t =>
-                        {
-                            t.HasCheckConstraint("chk_inventory_balances_qty_available", "qty_on_hand >= qty_reserved");
-
-                            t.HasCheckConstraint("chk_inventory_balances_qty_reserved", "qty_reserved >= 0.0");
-                        });
+                    b.ToTable("inventories");
                 });
 
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.InventoryMovement", b =>

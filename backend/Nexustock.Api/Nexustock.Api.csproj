@@ -35,6 +35,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.Exceptions\Nexustock.Modules.Exceptions.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Rules\Nexustock.Modules.Rules.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Putaway\Nexustock.Modules.Putaway.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Allocation\Nexustock.Modules.Allocation.csproj" />
   </ItemGroup>
 
 </Project>

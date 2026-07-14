@@ -5,6 +5,7 @@
 - **Mức hiện tại:** ✅ Hoàn thành (100% Completed)
 - **Đánh giá:** Đã hoàn thiện toàn diện chi tiết 100% đặc tả kỹ thuật: cấu trúc bảng `AllocationReservations` chi tiết với các ràng buộc khóa và index PostgreSQL, DTOs camelCase chi tiết cho toàn bộ API phân bổ, cơ chế chống Deadlock bằng cách sắp xếp ID vật tư (Sort Item IDs) trước khi lock pessimistic, giải pháp xử lý phân bổ một phần (Partial Allocation) và hết hạn giữ hàng tự động (Reservation Expiry Job), kịch bản test integration chi tiết và giao diện Next.js SPA quản trị phân bổ.
 - **Khi cần upgrade:** Upgrade nếu mô hình kho tích hợp thêm hệ thống phân bổ động đa kho (Multi-Warehouse Allocation) hoặc phân bổ theo mức độ ưu tiên khách hàng VIP phức tạp.
+- **Ghi chú hoàn thành thực tế (13/07/2026):** Triển khai thành công 100% các yêu cầu trong Monorepo. Đã chạy thử nghiệm tự động tích hợp thành công thông qua PowerShell script và kiểm định giao diện qua browser subagent (không lỗi crash). Xem chi tiết tại [walkthrough.md](file:///C:/Users/mes/.gemini/antigravity-ide/brain/351f5272-8b7d-40ac-81e4-99c8201ab03c/walkthrough.md).
 
 ## 1. Mục tiêu
 

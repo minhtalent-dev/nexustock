@@ -29,6 +29,7 @@ import {
   ClipboardCheck,
   AlertCircle,
   Sliders,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -93,6 +94,7 @@ const navGroups: NavGroup[] = [
     title: "Xuất kho",
     links: [
       { href: "/admin/outbound", label: "Đơn xuất kho", icon: Truck, permission: "Outbound.Shipments.View" },
+      { href: "/admin/allocation", label: "Phân bổ giữ hàng", icon: Layers, permission: "allocation_reservation.read" },
     ],
   },
   {
