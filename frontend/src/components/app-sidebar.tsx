@@ -31,6 +31,7 @@ import {
   Sliders,
   Layers,
   RefreshCw,
+  GitFork,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -109,6 +110,7 @@ const navGroups: NavGroup[] = [
       { href: "/admin/replenishment", label: "Bổ sung hàng", icon: RefreshCw, permission: "replenishment.read" },
       { href: "/admin/lpn", label: "Quản lý Pallet (LPN)", icon: Layers, permission: "lpn.read" },
       { href: "/admin/serial", label: "Truy vết mã Serial", icon: ClipboardList, permission: "serial.read" },
+      { href: "/admin/genealogy", label: "Phả hệ vật tư", icon: GitFork, permission: "material_genealogy.read" },
     ],
   },
   {
@@ -282,7 +284,7 @@ export default function AppSidebar() {
 
       {/* Footer */}
       <div className="mt-2 text-[10px] text-zinc-600 font-mono text-center">
-        <span>v0.17.0 (Phase 17 RMA)</span>
+        <span>v0.19.0 (Phase 19 Genealogy)</span>
       </div>
     </aside>
   );
