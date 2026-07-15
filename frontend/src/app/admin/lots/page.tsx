@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,7 +126,11 @@ export default function LotsPage() {
                 ) : (
                   lots.map((l) => (
                     <TableRow key={l.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/20">
-                      <TableCell className="text-white font-semibold">{l.lotNo}</TableCell>
+                      <TableCell className="text-white font-semibold">
+                        <Link href={`/admin/genealogy/${l.lotNo}`} className="text-indigo-400 hover:underline">
+                          {l.lotNo}
+                        </Link>
+                      </TableCell>
                       <TableCell className="text-zinc-300">
                         <div>
                           <p>{l.itemName}</p>

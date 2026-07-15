@@ -18,6 +18,8 @@ using Nexustock.Modules.Serial;
 using Nexustock.Modules.Rma;
 using Nexustock.Modules.Wave;
 using Nexustock.Modules.Wave.Contexts;
+using Nexustock.Modules.MaterialGenealogy.Contexts;
+using Nexustock.Modules.MaterialGenealogy;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -103,6 +105,7 @@ try
     builder.Services.AddSerialModule(builder.Configuration);
     builder.Services.AddRmaModule(builder.Configuration);
     builder.Services.AddWaveModule(builder.Configuration);
+    builder.Services.AddMaterialGenealogyModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -388,6 +391,17 @@ try
         catch (Exception ex)
         {
             Log.Error(ex, "An error occurred while migrating the Wave database");
+        }
+
+        try
+        {
+            var genealogyDb = scope.ServiceProvider.GetRequiredService<MaterialGenealogyDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(genealogyDb.Database);
+            Log.Information("MaterialGenealogy database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the MaterialGenealogy database");
         }
     }
 

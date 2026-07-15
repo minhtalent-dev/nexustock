@@ -1,9 +1,14 @@
 # Lịch sử cập nhật dự án
 
-## Phiên bản 0.8.0 - Đợt Lấy Hàng Wave Picking và Bàn Phân Chia Put-Wall Động (Phase 18)
+## Phiên bản 0.8.0 - Đợt Lấy Hàng Wave Picking, Bàn Phân Chia Put-Wall Động và Truy vết Phả hệ Vật tư (Phase 18 & 19)
 *Ngày cập nhật: 15/07/2026*
 
 ### Tính năng mới
+- **Truy vết Phả hệ Vật tư (Material Genealogy - Phase 19)**: Thiết lập phân hệ mới cho phép quản lý vòng đời, phả hệ, liên kết Lot cha/con thông qua các quan hệ chia tách (SPLIT), gộp lô (MERGE), đóng gói lại (REPACK).
+- **Thuật toán ngăn ngừa chu kỳ (Prevent Cycle Guardrail)**: Sử dụng thuật toán DFS duyệt ngược mọi tổ tiên để chặn đứng hoàn toàn việc liên kết vòng tròn làm hỏng cấu trúc dữ liệu phả hệ.
+- **Phong tỏa nhánh khẩn cấp (Cascade Hold)**: Hỗ trợ tự động khóa hàng loạt trạng thái QC (`HOLD`) cho toàn bộ các Lot con cháu hạ nguồn từ một Lot gốc bị phát hiện lỗi chất lượng thượng nguồn, chốt chặn độ sâu đệ quy tối đa `MAX_DEPTH = 50` để bảo đảm hiệu năng database.
+- **Đồng bộ tồn kho liên module**: Cập nhật trừ/cộng tồn kho Lot cha và con đồng thời trong một Database Transaction, tích hợp ghi nhận SerialEvent phục vụ truy vết Serial.
+- **Giao diện cây phả hệ trực quan**: Màn hình Next.js vẽ sơ đồ kết nối cha con dạng cây Fluent Design kèm hiển thị trực quan trạng thái QC (ô viền đỏ rực rỡ có bóng mờ khi Lot bị Hold) và nút khóa chất lượng khẩn cấp.
 - **Gom đơn hàng Wave Picking (Wave Builder - Phase 18)**: Gom nhiều đơn xuất kho (Shipment) đang mở cùng Zone thành đợt lấy hàng tổng hợp để tối ưu hóa quãng đường di chuyển của nhân viên kho.
 - **Tự động sinh Pick Task tích hợp**: Liên kết chặt chẽ module Allocation và Inventory. Tự động sinh ra nhiệm vụ lấy hàng lẻ (`PickTask`) từ kết quả giữ hàng (`AllocationReservation`), sau đó gộp nhóm thành các nhiệm vụ lấy hàng tổng hợp (`WavePickTask`).
 - **Xác nhận lấy hàng tổng hợp**: Cập nhật tồn kho tại vị trí kệ nguồn và tự động dịch chuyển số lượng thực tế lấy được sang vị trí tạm thời `LOC-SORT-01` (Khu vực phân chia).
@@ -13,7 +18,7 @@
   - Hỗ trợ flash animation (nhấp nháy màu cam) để chỉ dẫn nhân viên khi quét barcode/serial của sản phẩm.
   - Tích hợp âm thanh "bíp" (Web Audio API) khi quét thành công hoặc khi hoàn thành đầy đủ một ô Put-Wall.
 - **Phân quyền bảo mật**: Seed quyền hệ thống `Wave.Manage` để kiểm soát các API và giao diện đợt Wave.
-- **Kiểm thử tích hợp tự động**: Viết kịch bản kiểm thử E2E tích hợp [verify_wave_picking.ps1](file:///d:/1_Project/48_Nexustock/tests/verify_wave_picking.ps1) chạy thành công 100% tự động hóa toàn bộ quy trình.
+- **Kiểm thử tích hợp tự động**: Viết kịch bản kiểm thử E2E tích hợp [verify_wave_picking.ps1](file:///d:/1_Project/48_Nexustock/tests/verify_wave_picking.ps1) và [verify_genealogy.ps1](file:///d:/1_Project/48_Nexustock/tests/verify_genealogy.ps1) chạy thành công 100% tự động hóa toàn bộ quy trình.
 
 ## Phiên bản 0.7.0 - Quản lý Pallet/LPN, Truy vết mã Serial và Xử lý hàng trả về RMA (Phase 15, 16 & 17)
 *Ngày cập nhật: 15/07/2026*

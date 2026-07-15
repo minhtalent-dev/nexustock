@@ -39,6 +39,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.Lpn", "ba
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.Serial", "backend\modules\Nexustock.Modules.Serial\Nexustock.Modules.Serial.csproj", "{8FBF351F-E49D-4319-9815-BBFC95E7C102}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.MaterialGenealogy", "backend\modules\Nexustock.Modules.MaterialGenealogy\Nexustock.Modules.MaterialGenealogy.csproj", "{F3BD4403-8183-4C7C-9C6E-AF897931CE9A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,6 +110,10 @@ Global
 		{8FBF351F-E49D-4319-9815-BBFC95E7C102}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FBF351F-E49D-4319-9815-BBFC95E7C102}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FBF351F-E49D-4319-9815-BBFC95E7C102}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3BD4403-8183-4C7C-9C6E-AF897931CE9A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3BD4403-8183-4C7C-9C6E-AF897931CE9A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3BD4403-8183-4C7C-9C6E-AF897931CE9A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3BD4403-8183-4C7C-9C6E-AF897931CE9A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4EB60904-0E24-4328-8674-70CA3A8F9D31} = {5090C821-0136-4C60-9261-9E336B58EBBD}
@@ -126,5 +132,6 @@ Global
 		{AAD42813-D998-4515-8549-B4E43E6D85E6} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 		{28927EE6-CA72-4E37-91F6-B704F2088936} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 		{8FBF351F-E49D-4319-9815-BBFC95E7C102} = {8759F8F8-F565-43C2-906A-B45B8244239A}
+		{F3BD4403-8183-4C7C-9C6E-AF897931CE9A} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 	EndGlobalSection
 EndGlobal
