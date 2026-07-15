@@ -197,7 +197,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 16 | Serial tracking | ✅ Hoàn thành | Hoàn tất module backend Serial, migrations PostgreSQL, seed permissions, API quét nhận/validate picking/import CSV, UI Next.js quản lý timeline và màn hình quét nhận di động, verify_serial.ps1 integration test pass 100% | 2026-07-15 | Đã kiểm thử UI qua browser subagent pass 100% |
 | 17 | RMA return flow | ✅ Hoàn thành | Hoàn tất module backend RMA, migrations PostgreSQL, seed permissions, logic xử lý trả hàng (Nhận -> QC Restock/Scrap), UI Next.js quản lý và xử lý QC nhanh, verify_rma.ps1 integration test pass 100% | 2026-07-15 | Đã kiểm thử tích hợp E2E và UI dashboard pass 100%. Đã fix lỗi Over Capacity bằng logic ưu tiên kệ Staging. |
 | 18 | Wave picking | ✅ Hoàn thành | Hoàn tất module backend Wave, migrations PostgreSQL, seed permissions, API gom đợt/release/sort/complete, giao diện Next.js Wave Builder/Detail/Put-Wall động (nhấp nháy & bíp), E2E integration test verify_wave_picking.ps1 pass 100% | 2026-07-15 | Đã chạy tích hợp verify_wave_picking.ps1 pass 100% và hoàn thành bàn Put-Wall động. |
-| 19 | Material genealogy | ⬜ Chưa bắt đầu | — | — | — |
+| 19 | Material genealogy | 🔄 Đang thực hiện | Hoàn tất đặc tả chi tiết phả hệ Lot 100% execution-ready | 2026-07-15 | Bắt đầu triển khai |
 | 20 | Local Agent foundation | ⬜ Chưa bắt đầu | — | — | — |
 | 21 | Scale integration | ⬜ Chưa bắt đầu | — | — | — |
 | 22 | Label printing | ⬜ Chưa bắt đầu | — | — | — |
