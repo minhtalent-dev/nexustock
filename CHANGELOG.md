@@ -1,10 +1,17 @@
 # Lịch sử cập nhật dự án
 
-## Phiên bản 0.7.0 - Quản lý Pallet/LPN và di chuyển nguyên khối (Phase 15)
+## Phiên bản 0.7.0 - Quản lý Pallet/LPN và Truy vết mã Serial (Phase 15 & 16)
 *Ngày cập nhật: 15/07/2026*
 
 ### Tính năng mới
 - **Quản lý Pallet/LPN (License Plate Number)**: Hỗ trợ gom nhiều lô hàng hóa khác nhau lên cùng một mã Pallet/LPN để theo dõi và di chuyển nguyên khối.
+- **Truy vết mã Serial (Serial Tracking)**: Hỗ trợ quản lý vòng đời và truy vết dòng thời gian hoạt động của từng đơn vị sản phẩm cụ thể bằng số Serial.
+- **Import Serial hàng loạt qua CSV**: Cho phép đăng ký hàng loạt mã Serial bằng cách tải lên file CSV trong quá trình nhận hàng (Inbound/Receive), bên cạnh việc quét mã thủ công.
+- **Đồng bộ xác thực vị trí (Validation & Concurrency)**: Kiểm tra chéo vị trí kệ và trạng thái Serial khi picking. Sử dụng concurrency token `xmin` để chống tranh chấp khi quét trùng mã trên nhiều thiết bị di động đồng thời.
+- **Giao diện Web & Handheld Mobile**:
+  - Web: Trang truy vết mã Serial, hiển thị timeline chi tiết các sự kiện (RECEIVE, QC, PICK, SHIP) và công cụ import CSV.
+  - Mobile: Màn hình quét nhận mã Serial hỗ trợ tự động lấy nét (autofocus) và quét liên tục.
+- **Phân quyền bảo mật**: Seed thêm 4 quyền hệ thống mới: `serial.read`, `serial.create`, `serial.update`, `serial.execute`.
 - **Thuật toán Attach/Detach (Đóng/Rút hàng)**: Tự động chia tách dòng tồn kho (Split Row) khi đóng hoặc rút một phần số lượng từ pallet, xử lý chính xác tỷ lệ số lượng khóa giữ (QtyReserved) để tránh lệch Allocation.
 - **Dịch chuyển nguyên Pallet (Atomic Move)**: Cập nhật vị trí kệ của LPN và đồng loạt tất cả các dòng tồn kho thuộc LPN đó trong cùng một Database Transaction. Tích hợp ghi nhận lịch sử dịch chuyển (InventoryMovement) và sự kiện LPN (LpnEvent).
 - **Giao diện Web & Handheld Mobile**:

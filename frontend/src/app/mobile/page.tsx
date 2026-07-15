@@ -3,7 +3,7 @@
 import Link from "next/link";
 import MobileShell from "@/components/mobile/mobile-shell";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Box, ClipboardCheck, CornerDownLeft, Move, PackageOpen, RefreshCw, Layers } from "lucide-react";
+import { ArrowRight, Box, ClipboardCheck, CornerDownLeft, Move, PackageOpen, RefreshCw, Layers, Smartphone } from "lucide-react";
 
 export default function MobileMenuPage() {
   const menuItems = [
@@ -40,6 +40,13 @@ export default function MobileMenuPage() {
       description: "Quét di chuyển nguyên khối Pallet",
       icon: <Layers className="h-6 w-6 text-indigo-500" />,
       href: "/mobile/lpn",
+      disabled: false,
+    },
+    {
+      title: "Nhận mã Serial",
+      description: "Quét nhận serial cho vật tư",
+      icon: <Smartphone className="h-6 w-6 text-emerald-500" />,
+      href: "/mobile/serial",
       disabled: false,
     },
     {

@@ -1,4 +1,4 @@
-﻿namespace Nexustock.Modules.MasterData.DTOs;
+namespace Nexustock.Modules.MasterData.DTOs;
 
 public sealed record ProductConfigDto(
     string IqcCheckType,
@@ -38,6 +38,7 @@ public sealed record ProductDto(
     string BaseUomCode,
     string BaseUomName,
     bool IsActive,
+    bool IsSerialTracked,
     int RowVersion,
     ProductConfigDto Config,
     IReadOnlyList<PackageDto> Packages
@@ -76,6 +77,7 @@ public sealed record UpsertProductRequest(
     string? Barcode,
     Guid BaseUomId,
     bool IsActive,
+    bool IsSerialTracked,
     int? RowVersion,
     UpsertProductConfigRequest Config,
     IReadOnlyList<UpsertPackageRequest> Packages

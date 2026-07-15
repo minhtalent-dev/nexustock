@@ -103,7 +103,8 @@ public class ProductService : IProductService
             Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
             Barcode = string.IsNullOrWhiteSpace(request.Barcode) ? null : request.Barcode.Trim().ToUpperInvariant(),
             BaseUomId = request.BaseUomId,
-            IsActive = request.IsActive
+            IsActive = request.IsActive,
+            IsSerialTracked = request.IsSerialTracked
         };
 
         var config = new ProductConfig
@@ -167,6 +168,7 @@ public class ProductService : IProductService
         product.Barcode = string.IsNullOrWhiteSpace(request.Barcode) ? null : request.Barcode.Trim().ToUpperInvariant();
         product.BaseUomId = request.BaseUomId;
         product.IsActive = request.IsActive;
+        product.IsSerialTracked = request.IsSerialTracked;
         product.UpdatedAt = DateTimeOffset.UtcNow;
         product.RowVersion++;
 
@@ -340,6 +342,7 @@ public class ProductService : IProductService
             p.BaseUom?.Code ?? string.Empty,
             p.BaseUom?.Name ?? string.Empty,
             p.IsActive,
+            p.IsSerialTracked,
             p.RowVersion,
             configDto,
             pkgDtos

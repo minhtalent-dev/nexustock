@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Nexustock.Modules.MasterData.Entities;
@@ -35,6 +35,9 @@ public class Product
 
     [Column("is_active")]
     public bool IsActive { get; set; } = true;
+
+    [Column("is_serial_tracked")]
+    public bool IsSerialTracked { get; set; } = false;
 
     [Column("created_at")]
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

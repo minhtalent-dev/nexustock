@@ -38,6 +38,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.Allocation\Nexustock.Modules.Allocation.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Replenishment\Nexustock.Modules.Replenishment.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Lpn\Nexustock.Modules.Lpn.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Serial\Nexustock.Modules.Serial.csproj" />
   </ItemGroup>
 
 </Project>

@@ -14,6 +14,7 @@ using Nexustock.Modules.Allocation;
 using Nexustock.Modules.Replenishment;
 using Nexustock.Modules.Replenishment.Services;
 using Nexustock.Modules.Lpn;
+using Nexustock.Modules.Serial;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -96,6 +97,7 @@ try
     builder.Services.AddAllocationModule(builder.Configuration);
     builder.Services.AddReplenishmentModule(builder.Configuration);
     builder.Services.AddLpnModule(builder.Configuration);
+    builder.Services.AddSerialModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -418,7 +420,11 @@ try
             ("lpn.read", "Xem thông tin LPN", "LPN"),
             ("lpn.create", "Tạo mới LPN", "LPN"),
             ("lpn.update", "Đóng/Rút và di chuyển LPN", "LPN"),
-            ("lpn.execute", "Thực hiện quét LPN di động", "LPN")
+            ("lpn.execute", "Thực hiện quét LPN di động", "LPN"),
+            ("serial.read", "Xem thông tin mã Serial", "Serial"),
+            ("serial.create", "Đăng ký nhận mã Serial", "Serial"),
+            ("serial.update", "Cập nhật và sửa đổi mã Serial", "Serial"),
+            ("serial.execute", "Xác thực và quét Serial di động", "Serial")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
