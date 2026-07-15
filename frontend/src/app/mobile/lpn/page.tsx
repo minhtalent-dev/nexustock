@@ -71,8 +71,8 @@ export default function MobileLpnPage() {
     setLoading(true);
     try {
       // 1. Kiểm tra vị trí kệ đích có hợp lệ không
-      const locsRes = await api.get<any[]>("/masterdata/locations");
-      const matchedLoc = locsRes.data.find(
+      const locsRes = await api.get<{ items: any[] }>("/master-data/storage-locations");
+      const matchedLoc = (locsRes.data.items || []).find(
         (l: any) => l.code.toUpperCase() === barcode.toUpperCase()
       );
 

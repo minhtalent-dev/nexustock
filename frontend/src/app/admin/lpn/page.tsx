@@ -99,15 +99,15 @@ export default function LpnPage() {
 
   const fetchMetadata = async () => {
     try {
-      const prodRes = await api.get<Product[]>("/masterdata/products");
-      setProducts(prodRes.data || []);
+      const prodRes = await api.get<{ items: Product[] }>("/master-data/products");
+      setProducts(prodRes.data.items || []);
     } catch {
       // Bỏ qua nếu chưa có dữ liệu
     }
 
     try {
-      const locRes = await api.get<StorageLocation[]>("/masterdata/locations");
-      setLocations(locRes.data || []);
+      const locRes = await api.get<{ items: StorageLocation[] }>("/master-data/storage-locations");
+      setLocations(locRes.data.items || []);
     } catch {
       // Bỏ qua
     }
