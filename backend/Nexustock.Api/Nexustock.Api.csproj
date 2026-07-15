@@ -39,6 +39,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.Replenishment\Nexustock.Modules.Replenishment.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Lpn\Nexustock.Modules.Lpn.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Serial\Nexustock.Modules.Serial.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Rma\Nexustock.Modules.Rma.csproj" />
   </ItemGroup>
 
 </Project>

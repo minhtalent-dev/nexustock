@@ -15,6 +15,7 @@ using Nexustock.Modules.Replenishment;
 using Nexustock.Modules.Replenishment.Services;
 using Nexustock.Modules.Lpn;
 using Nexustock.Modules.Serial;
+using Nexustock.Modules.Rma;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -98,6 +99,7 @@ try
     builder.Services.AddReplenishmentModule(builder.Configuration);
     builder.Services.AddLpnModule(builder.Configuration);
     builder.Services.AddSerialModule(builder.Configuration);
+    builder.Services.AddRmaModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -362,6 +364,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the Replenishment database");
         }
+
+        try
+        {
+            var rmaDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Rma.Contexts.RmaDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(rmaDb.Database);
+            Log.Information("Rma database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Rma database");
+        }
     }
 
     // Run Database Seeding
@@ -421,10 +434,11 @@ try
             ("lpn.create", "Tạo mới LPN", "LPN"),
             ("lpn.update", "Đóng/Rút và di chuyển LPN", "LPN"),
             ("lpn.execute", "Thực hiện quét LPN di động", "LPN"),
-            ("serial.read", "Xem thông tin mã Serial", "Serial"),
-            ("serial.create", "Đăng ký nhận mã Serial", "Serial"),
-            ("serial.update", "Cập nhật và sửa đổi mã Serial", "Serial"),
-            ("serial.execute", "Xác thực và quét Serial di động", "Serial")
+            ("serial.execute", "Xác thực và quét Serial di động", "Serial"),
+            ("rma.read", "Xem danh sách trả hàng RMA", "RMA"),
+            ("rma.create", "Tạo yêu cầu trả hàng RMA", "RMA"),
+            ("rma.update", "Tiếp nhận hàng trả RMA", "RMA"),
+            ("rma.qc", "Kiểm định và xử lý hàng RMA", "RMA")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

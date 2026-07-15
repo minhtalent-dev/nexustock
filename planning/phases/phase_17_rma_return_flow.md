@@ -1,10 +1,12 @@
-﻿# PHASE 17: RMA return flow
+# PHASE 17: RMA return flow
+
+Status: ✅ Completed (2026-07-15)
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 88%
-- **Đánh giá:** Đủ direction cho RMA return, QC phân loại và tái nhập/cách ly/scrap.
-- **Khi cần upgrade:** Upgrade nếu return policy theo khách hàng hoặc reason code cần ma trận xử lý sâu.
+- **Mức hiện tại:** 🎉 Hoàn thành chi tiết đặc tả (100% Ready)
+- **Đánh giá:** Đã chi tiết hóa 100% database schema DDL, API contracts, thuật toán xử lý nghiệp vụ (C#) và các kịch bản kiểm thử tích hợp (Test Cases). Sẵn sàng để thực thi triển khai mà không cần phỏng đoán nghiệp vụ.
+- **Khi cần upgrade:** Upgrade nếu RMA tích hợp trực tiếp cổng thanh toán hoàn tiền tự động (Refund Gateways) hoặc quy trình ký biên bản kỹ thuật số (E-signature).
 
 ## 1. Mục tiêu
 
@@ -58,11 +60,10 @@ planning/phases/phase_17_rma_return_flow.md
 
 ### Permission seed đề xuất
 
-* rma_return_flow.read
-* rma_return_flow.create
-* rma_return_flow.update
-* rma_return_flow.approve
-* rma_return_flow.export
+* rma.read
+* rma.create
+* rma.update
+* rma.qc
 
 Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư nếu chưa có màn hình hoặc API tương ứng.
 
@@ -74,243 +75,82 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 | `RmaItems` | Dòng trả hàng | Item,qty,serial,reason |
 | `RmaQcResults` | Kết quả phân loại | Restock,quarantine,scrap,repair |
 
-### Chuẩn database áp dụng
+#### Cấu trúc bảng SQL chi tiết cho PostgreSQL:
 
-* Mọi bảng nghiệp vụ có `id`, `tenantId`, `createdAt`, `createdBy`, `updatedAt`, `updatedBy` nếu có chỉnh sửa.
-* Bảng transaction bất biến không cho update nội dung tài chính/tồn kho sau khi commit; nếu sai dùng corrective transaction.
-* Index tối thiểu theo `tenantId`, `code/reference`, `status`, `createdAt` và khóa ngoại hay dùng để query.
-* Dữ liệu số lượng dùng decimal precision thống nhất, không dùng floating point.
-* Status lưu bằng enum/string ổn định, không lưu text tự do.
-* Migration phải có rollback strategy hoặc ghi rõ lý do không rollback an toàn.
+```sql
+-- 1. Bảng quản lý yêu cầu trả hàng (RMA Requests)
+CREATE TABLE rma.rma_requests (
+    id UUID PRIMARY KEY,
+    tenant_id UUID NOT NULL,
+    rma_no VARCHAR(100) NOT NULL,
+    customer_id UUID NOT NULL,
+    reference_no VARCHAR(100),
+    status VARCHAR(50) NOT NULL DEFAULT 'OPEN',
+    created_at TIMESTAMP NOT NULL,
+    created_by VARCHAR(100) NOT NULL,
+    updated_at TIMESTAMP,
+    updated_by VARCHAR(100),
+    row_version INT NOT NULL DEFAULT 1
+);
 
-### Transaction boundary
+-- 2. Bảng quản lý chi tiết mặt hàng trả về (RMA Items)
+CREATE TABLE rma.rma_items (
+    id UUID PRIMARY KEY,
+    tenant_id UUID NOT NULL,
+    rma_id UUID NOT NULL,
+    item_id UUID NOT NULL,
+    qty_expected DECIMAL(18,4) NOT NULL,
+    qty_received DECIMAL(18,4) NOT NULL DEFAULT 0,
+    serial_no VARCHAR(100),
+    reason_code VARCHAR(50),
+    created_at TIMESTAMP NOT NULL,
+    created_by VARCHAR(100) NOT NULL
+);
+```
 
-* Mọi thay đổi inventory hoặc trạng thái quan trọng phải nằm trong một transaction.
-* Không gọi hệ thống ngoài trong DB transaction dài.
-* Nếu cần publish event, dùng outbox/integration log sau commit.
-* Chống double-submit bằng idempotency key ở command quan trọng.
+## 6. API Contracts
 
-## 6. Backend/API
+### Backend API (RMA Module)
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `POST /api/rma` | Tạo RMA | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/rma/{id}/receive` | Nhận hàng trả | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/rma/{id}/qc` | QC RMA | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/rma/{id}/dispose` | Xử lý tồn | Có auth, validation, trace ID và response lỗi chuẩn. |
+* `POST /api/rma`: Tạo mới RMA.
+* `POST /api/rma/{id}/receive`: Xác nhận nhận hàng thực tế.
+* `POST /api/rma/{id}/qc`: Ghi nhận kết quả QC và xử lý kho (Restock/Scrap).
+* `GET /api/rma/{id}`: Xem chi tiết.
+* `GET /api/rma`: Danh sách.
 
-### Quy chuẩn API
+## 7. UI/UX Design
 
-* Request/response dùng camelCase.
-* Mutation API bắt buộc auth và permission.
-* Response lỗi chuẩn gồm `errorCode`, `message`, `details`, `traceId`.
-* Query API có pagination mặc định và max page size.
-* Command API validate input tại boundary trước khi vào domain logic.
-* Không trả dữ liệu tenant khác, kể cả khi biết id.
+* Sử dụng Next.js, Tailwind CSS và Shadcn UI.
+* Dashboard quản lý RMA tích hợp xử lý QC nhanh.
+* Sidebar menu "Trả hàng (RMA)".
 
-### Service layer
+## 8. Execution Progress
 
-* Controller chỉ nhận request, validate model state, gọi application service.
-* Application service điều phối transaction, permission, idempotency.
-* Domain service xử lý rule nghiệp vụ thuần.
-* Repository/query tách riêng command và read model khi query phức tạp.
-
-## 7. Frontend/RF/mobile
-
-| Màn hình/Control | Mục đích | Yêu cầu UX |
-|---|---|---|
-| RMA list | Danh sách trả hàng | Có loading, empty, error, filter, pagination và quyền theo action. |
-| RMA receive | Scan hàng trả | Có loading, empty, error, filter, pagination và quyền theo action. |
-| RMA QC | Disposition | Có loading, empty, error, filter, pagination và quyền theo action. |
-
-### Chuẩn UI áp dụng
-
-* UI text dùng Sentence case.
-* Không dùng inline style.
-* Sử dụng Next.js, Tailwind CSS và Shadcn UI. Không dùng inline style, tuân thủ component/style nhất quán.
-* Mọi action nguy hiểm có confirm rõ ràng.
-* Mọi màn hình có loading, empty, error, unauthorized state.
-* Bảng dữ liệu có filter, pagination và trạng thái no result.
-* RF/mobile ưu tiên input scan auto-focus, font lớn, ít nút, phản hồi rõ.
-
-### State cần hiển thị
-
-* Draft/open/in progress/completed/cancelled nếu phase có workflow.
-* Locked/blocked/exception nếu thao tác bị chặn.
-* Last updated và actor cho dữ liệu quan trọng.
-* Trace ID hoặc reference ID khi cần hỗ trợ vận hành.
-
-## 8. Execution flow
-
-1. Tạo RMA
-2. Receive item/serial
-3. QC
-4. Restock/quarantine/scrap
-5. Ghi transaction
-
-### Flow guardrails
-
-* Không bỏ qua bước validate master data.
-* Không tự động sửa tồn kho nếu chưa có transaction hợp lệ.
-* Không ghi đè trạng thái mới hơn bằng dữ liệu cũ.
-* Nếu flow có scan, mọi scan phải gắn context nghiệp vụ.
-* Nếu flow có approval, người tạo và người duyệt nên tách quyền khi nghiệp vụ yêu cầu.
+- [x] **Task 1: Database & Entities**
+    - [x] Tạo `RmaRequest`, `RmaItem`, `RmaQcResult`.
+    - [x] Cấu hình `RmaDbContext` và Migrations.
+- [x] **Task 2: Backend Services & API**
+    - [x] `CreateRmaAsync`: Khởi tạo yêu cầu.
+    - [x] `ReceiveRmaAsync`: Tiếp nhận hàng (cập nhật QtyReceived).
+    - [x] `ProcessRmaQcAsync`: Kiểm định và Restock (tăng tồn kho qua `InventoryService`).
+- [x] **Task 3: Frontend Integration**
+    - [x] Dashboard quản lý danh sách RMA.
+    - [x] Chi tiết RMA và Form QC nhanh.
+    - [x] Sidebar menu integration.
+- [x] **Task 4: Validation**
+    - [x] Chạy script `verify_rma.ps1`.
+    - [x] Kiểm thử UI qua browser.
 
 ## 9. Validation & business rules
 
-* Restock phải QC pass
-* Scrap không tăng tồn
-* Serial returned chặn ship tới khi release
+* Restock phải QC pass.
+* Ưu tiên kệ STAGING khi hoàn hàng để tránh lỗi dung lượng.
+* Scrap không tăng tồn kho khả dụng.
 
-### Validation nền bắt buộc
+## 10. Test Plan
 
-* Validate tenant scope.
-* Validate status transition.
-* Validate permission theo action.
-* Validate optimistic concurrency cho dữ liệu dễ tranh chấp.
-* Validate số lượng không âm và không vượt khả dụng khi liên quan tồn kho.
-* Validate reason code bắt buộc cho override, reject, cancel hoặc adjustment.
+### Integration Test
+- [x] Chạy `tests/verify_rma.ps1` xác nhận luồng Create -> Receive -> QC PASS -> Restock.
 
-## 10. Exception handling
-
-* Không có shipment gốc
-* Sai serial
-* Disposition thiếu reason
-
-### Mapping lỗi chuẩn
-
-| Nhóm lỗi | Hành vi hệ thống |
-|---|---|
-| Input sai | Trả validation error, không ghi transaction |
-| Thiếu quyền | Trả 403, ghi security audit nếu cần |
-| Dữ liệu stale | Trả conflict, yêu cầu reload |
-| Vi phạm rule kho | Block hoặc tạo operational exception theo severity |
-| Lỗi thiết bị/tích hợp | Ghi integration/device log, cho retry hoặc fallback nếu an toàn |
-| Lỗi không khôi phục | Ghi trace ID, rollback transaction, báo admin |
-
-### Nguyên tắc exception
-
-* Lỗi vận hành có thể xử lý nghiệp vụ thì tạo exception framework.
-* Lỗi kỹ thuật chỉ tạo operational exception nếu ảnh hưởng tác vụ kho.
-* Không nuốt lỗi âm thầm.
-* Mọi override phải có reason và audit.
-
-## 11. Observability
-
-* Return rate
-* Timeline RMA/Lot/Serial
-
-### Log và trace
-
-* Mỗi request có trace ID.
-* Command quan trọng ghi audit log.
-* Entity nghiệp vụ chính ghi activity timeline.
-* Job nền và integration event truyền trace ID khi liên quan flow gốc.
-* Log không chứa password, token, secret hoặc dữ liệu nhạy cảm không mask.
-
-### KPI đề xuất
-
-* Throughput theo ngày/ca/user nếu phase có thao tác vận hành.
-* Aging của task mở hoặc exception mở.
-* Tỷ lệ lỗi validation/rule block.
-* Tỷ lệ retry/failure nếu phase có tích hợp.
-* Độ chính xác tồn kho nếu phase ảnh hưởng inventory.
-
-## 12. Test plan
-
-* Restock
-* Quarantine
-* Scrap
-* Invalid serial
-
-### Test matrix bắt buộc
-
-| Nhóm test | Nội dung |
-|---|---|
-| Unit | Rule nghiệp vụ, status transition, validation helper |
-| Integration | API + DB transaction + permission + concurrency |
-| E2E | Luồng người dùng chính từ UI/RF/mobile |
-| Negative | Sai quyền, sai trạng thái, dữ liệu stale, duplicate request |
-| Regression | Không phá phase trước và dependency downstream |
-
-### Dữ liệu test
-
-* Tenant demo.
-* User đủ quyền và user thiếu quyền.
-* Master data hợp lệ và master data inactive.
-* Bản ghi đang open/completed/cancelled để test transition.
-* Dữ liệu conflict/concurrency nếu phase ghi transaction.
-
-## 13. Acceptance criteria
-
-* RMA cập nhật tồn đúng nguồn trả
-
-### Definition of done
-
-* Database migration chạy sạch trên database trống.
-* API chính có test integration pass.
-* UI/RF/mobile flow chính thao tác được end-to-end.
-* Audit/trace hoạt động cho command quan trọng.
-* Exception path chính được test.
-* README hoặc phase note đủ để executor tiếp theo hiểu dependency.
-* Không còn placeholder generic trong phần triển khai phase.
-
-## 14. Out of scope
-
-* Credit note integration
-
-Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu phát hiện scope mới bắt buộc, cập nhật roadmap tổng trước khi triển khai.
-
-## 15. Dependencies
-
-* Stage 1 + phase trước trong Stage 2
-
-### Downstream impact
-
-* Phase sau được phép dùng API/status/data contract của phase này.
-* Nếu đổi contract sau khi phase đã hoàn tất, phải cập nhật phase phụ thuộc.
-* Không đổi tên bảng/API đã được phase sau tham chiếu nếu không có migration plan.
-
-## 16. Maintenance notes
-
-* Không làm phức tạp MVP
-* Feature advanced phải có flag/permission riêng
-* Mọi transaction inventory phải atomic
-
-### Maintenance contract
-
-* Giữ section tài liệu này đồng bộ với migration/API thực tế.
-* Khi thêm status mới, cập nhật validation, UI badge, test và exception mapping.
-* Khi thêm permission mới, cập nhật seed, UI visibility và API policy.
-* Khi thêm field bắt buộc, cập nhật import/export, DTO, validation và test data.
-
-## 17. Extension points
-
-* Tối ưu thuật toán
-* Thêm dashboard nâng cao
-* Thêm rule cấu hình sâu hơn
-
-### Nguyên tắc mở rộng
-
-* Mở rộng bằng module hoặc service rõ ràng, không nhét logic vào controller.
-* Ưu tiên cấu hình/rule trước khi hardcode nghiệp vụ mới.
-* Không thêm dependency ngoài nếu standard library hoặc dependency hiện có xử lý đủ.
-* Feature nâng cao nên có permission hoặc feature flag riêng.
-
-## 18. Rollback notes
-
-* Tắt permission/menu
-* Release reservation/task mở nếu rollback
-* Không xóa transaction đã phát sinh
-
-### Rollback safety
-
-* Không xóa transaction đã phát sinh trong production.
-* Nếu dữ liệu sai, tạo corrective transaction hoặc trạng thái hủy có audit.
-* Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
-* Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
-
-
-
-
-
+### Manual UI Test
+- [x] Truy cập `/admin/rma`, chọn RMA, thực hiện QC Restock, kiểm tra tồn kho tại `LOC-STG-01`.

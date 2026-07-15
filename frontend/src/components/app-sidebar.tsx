@@ -74,6 +74,7 @@ const navGroups: NavGroup[] = [
     links: [
       { href: "/master-data/partners", label: "Đối tác", icon: Users, permission: "MasterData.Partners.View" },
       { href: "/master-data/reasons", label: "Mã lý do", icon: Tag, permission: "MasterData.Reasons.View" },
+      { href: "/admin/rma", label: "Trả hàng (RMA)", icon: RefreshCw, permission: "rma.read" },
     ],
   },
   {
@@ -280,7 +281,7 @@ export default function AppSidebar() {
 
       {/* Footer */}
       <div className="mt-2 text-[10px] text-zinc-600 font-mono text-center">
-        <span>v0.11.0 (Phase 11 UI)</span>
+        <span>v0.17.0 (Phase 17 RMA)</span>
       </div>
     </aside>
   );
