@@ -194,7 +194,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 13 | Allocation & reservation | ✅ Hoàn thành | Hoàn tất module backend Allocation, migrations PostgreSQL, seed permissions, thuật toán phân bổ FEFO/FIFO chống deadlock (Resource Ordering), background worker dọn dẹp giữ hàng hết hạn theo lô, giao diện Next.js quản lý phân bổ và E2E test integration pass 100%. | 2026-07-13 | Đã chạy integration test verify_allocation.ps1 và kiểm thử UI thực tế qua browser subagent pass 100%. |
 | 14 | Replenishment | ✅ Hoàn thành | Thiết lập quy trình bổ sung pick face tự động theo min/max: DDL bảng ReplenishmentRules/Tasks, API camelCase, thuật toán chọn nguồn tối ưu và tích hợp vào MobileTasks handheld | 2026-07-14 | Đã chạy tích hợp E2E verify_replenishment.ps1 và kiểm thử UI trực quan qua browser subagent pass 100% |
 | 15 | LPN pallet management | ✅ Hoàn thành | Hoàn tất module backend Lpn, migrations PostgreSQL, seed permissions, thuật toán đóng hàng/rút hàng (split row xử lý QtyReserved) và dịch chuyển atomic nguyên khối pallet, UI Next.js quản lý và Mobile handheld quét dịch chuyển kệ, verify_lpn.ps1 integration test pass 100% | 2026-07-15 | Đã chạy tích hợp verify_lpn.ps1 và kiểm thử UI trực quan qua browser subagent pass 100%. |
-| 16 | Serial tracking | ⬜ Chưa bắt đầu | — | — | — |
+| 16 | Serial tracking | ⬜ Chưa bắt đầu | Hoàn tất Đặc tả (100% Ready to Execute): DDL PostgreSQL, API camelCase, thuật toán validate serial khi picking, kịch bản test chi tiết verify_serial.ps1 | 2026-07-15 | Sẵn sàng triển khai |
 | 17 | RMA return flow | ⬜ Chưa bắt đầu | — | — | — |
 | 18 | Wave picking | ⬜ Chưa bắt đầu | — | — | — |
 | 19 | Material genealogy | ⬜ Chưa bắt đầu | — | — | — |
