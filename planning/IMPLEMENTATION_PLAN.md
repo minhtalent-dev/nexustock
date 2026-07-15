@@ -196,7 +196,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 15 | LPN pallet management | ✅ Hoàn thành | Hoàn tất module backend Lpn, migrations PostgreSQL, seed permissions, thuật toán đóng hàng/rút hàng (split row xử lý QtyReserved) và dịch chuyển atomic nguyên khối pallet, UI Next.js quản lý và Mobile handheld quét dịch chuyển kệ, verify_lpn.ps1 integration test pass 100% | 2026-07-15 | Đã chạy tích hợp verify_lpn.ps1 và kiểm thử UI trực quan qua browser subagent pass 100%. |
 | 16 | Serial tracking | ✅ Hoàn thành | Hoàn tất module backend Serial, migrations PostgreSQL, seed permissions, API quét nhận/validate picking/import CSV, UI Next.js quản lý timeline và màn hình quét nhận di động, verify_serial.ps1 integration test pass 100% | 2026-07-15 | Đã kiểm thử UI qua browser subagent pass 100% |
 | 17 | RMA return flow | ✅ Hoàn thành | Hoàn tất module backend RMA, migrations PostgreSQL, seed permissions, logic xử lý trả hàng (Nhận -> QC Restock/Scrap), UI Next.js quản lý và xử lý QC nhanh, verify_rma.ps1 integration test pass 100% | 2026-07-15 | Đã kiểm thử tích hợp E2E và UI dashboard pass 100%. Đã fix lỗi Over Capacity bằng logic ưu tiên kệ Staging. |
-| 18 | Wave picking | ⬜ Chưa bắt đầu | — | — | — |
+| 18 | Wave picking | 🔄 Đang thực hiện | Thiết lập kế hoạch chi tiết Phase 18: DDL PostgreSQL, APIs C# DTO/Controller, UI Wave Builder, Mobile handheld flow, và kịch bản verify_wave_picking.ps1 | 2026-07-15 | Spec đạt 95% Ready to Implement. |
 | 19 | Material genealogy | ⬜ Chưa bắt đầu | — | — | — |
 | 20 | Local Agent foundation | ⬜ Chưa bắt đầu | — | — | — |
 | 21 | Scale integration | ⬜ Chưa bắt đầu | — | — | — |

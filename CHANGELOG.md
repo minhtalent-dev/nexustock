@@ -1,5 +1,20 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 0.8.0 - Đợt Lấy Hàng Wave Picking và Bàn Phân Chia Put-Wall Động (Phase 18)
+*Ngày cập nhật: 15/07/2026*
+
+### Tính năng mới
+- **Gom đơn hàng Wave Picking (Wave Builder - Phase 18)**: Gom nhiều đơn xuất kho (Shipment) đang mở cùng Zone thành đợt lấy hàng tổng hợp để tối ưu hóa quãng đường di chuyển của nhân viên kho.
+- **Tự động sinh Pick Task tích hợp**: Liên kết chặt chẽ module Allocation và Inventory. Tự động sinh ra nhiệm vụ lấy hàng lẻ (`PickTask`) từ kết quả giữ hàng (`AllocationReservation`), sau đó gộp nhóm thành các nhiệm vụ lấy hàng tổng hợp (`WavePickTask`).
+- **Xác nhận lấy hàng tổng hợp**: Cập nhật tồn kho tại vị trí kệ nguồn và tự động dịch chuyển số lượng thực tế lấy được sang vị trí tạm thời `LOC-SORT-01` (Khu vực phân chia).
+- **Phân loại Put-Wall động (Put-Wall Sortation)**: Bàn phân chia vật lý ảo với các ô Slot động. Tự động sắp xếp các Shipment vào các ô dựa trên Guid tăng dần (Deterministic Slot Assignment).
+- **Trực quan hóa chỉ dẫn Put-Wall**:
+  - Giao diện tối Fluent Design hiển thị trạng thái các ô Slot (`Empty`, `Sorting`, `Complete`).
+  - Hỗ trợ flash animation (nhấp nháy màu cam) để chỉ dẫn nhân viên khi quét barcode/serial của sản phẩm.
+  - Tích hợp âm thanh "bíp" (Web Audio API) khi quét thành công hoặc khi hoàn thành đầy đủ một ô Put-Wall.
+- **Phân quyền bảo mật**: Seed quyền hệ thống `Wave.Manage` để kiểm soát các API và giao diện đợt Wave.
+- **Kiểm thử tích hợp tự động**: Viết kịch bản kiểm thử E2E tích hợp [verify_wave_picking.ps1](file:///d:/1_Project/48_Nexustock/tests/verify_wave_picking.ps1) chạy thành công 100% tự động hóa toàn bộ quy trình.
+
 ## Phiên bản 0.7.0 - Quản lý Pallet/LPN, Truy vết mã Serial và Xử lý hàng trả về RMA (Phase 15, 16 & 17)
 *Ngày cập nhật: 15/07/2026*
 

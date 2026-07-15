@@ -97,6 +97,7 @@ const navGroups: NavGroup[] = [
     links: [
       { href: "/admin/outbound", label: "Đơn xuất kho", icon: Truck, permission: "Outbound.Shipments.View" },
       { href: "/admin/allocation", label: "Phân bổ giữ hàng", icon: Layers, permission: "allocation_reservation.read" },
+      { href: "/admin/waves", label: "Lấy hàng Wave", icon: Layers, permission: "Wave.Manage" },
     ],
   },
   {

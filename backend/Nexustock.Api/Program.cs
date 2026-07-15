@@ -16,6 +16,8 @@ using Nexustock.Modules.Replenishment.Services;
 using Nexustock.Modules.Lpn;
 using Nexustock.Modules.Serial;
 using Nexustock.Modules.Rma;
+using Nexustock.Modules.Wave;
+using Nexustock.Modules.Wave.Contexts;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -100,6 +102,7 @@ try
     builder.Services.AddLpnModule(builder.Configuration);
     builder.Services.AddSerialModule(builder.Configuration);
     builder.Services.AddRmaModule(builder.Configuration);
+    builder.Services.AddWaveModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -375,6 +378,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the Rma database");
         }
+
+        try
+        {
+            var waveDb = scope.ServiceProvider.GetRequiredService<WaveDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(waveDb.Database);
+            Log.Information("Wave database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Wave database");
+        }
     }
 
     // Run Database Seeding
@@ -438,7 +452,8 @@ try
             ("rma.read", "Xem danh sách trả hàng RMA", "RMA"),
             ("rma.create", "Tạo yêu cầu trả hàng RMA", "RMA"),
             ("rma.update", "Tiếp nhận hàng trả RMA", "RMA"),
-            ("rma.qc", "Kiểm định và xử lý hàng RMA", "RMA")
+            ("rma.qc", "Kiểm định và xử lý hàng RMA", "RMA"),
+            ("Wave.Manage", "Quản lý Wave Picking", "Wave")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
