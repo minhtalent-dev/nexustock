@@ -1,5 +1,17 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 0.7.0 - Quản lý Pallet/LPN và di chuyển nguyên khối (Phase 15)
+*Ngày cập nhật: 15/07/2026*
+
+### Tính năng mới
+- **Quản lý Pallet/LPN (License Plate Number)**: Hỗ trợ gom nhiều lô hàng hóa khác nhau lên cùng một mã Pallet/LPN để theo dõi và di chuyển nguyên khối.
+- **Thuật toán Attach/Detach (Đóng/Rút hàng)**: Tự động chia tách dòng tồn kho (Split Row) khi đóng hoặc rút một phần số lượng từ pallet, xử lý chính xác tỷ lệ số lượng khóa giữ (QtyReserved) để tránh lệch Allocation.
+- **Dịch chuyển nguyên Pallet (Atomic Move)**: Cập nhật vị trí kệ của LPN và đồng loạt tất cả các dòng tồn kho thuộc LPN đó trong cùng một Database Transaction. Tích hợp ghi nhận lịch sử dịch chuyển (InventoryMovement) và sự kiện LPN (LpnEvent).
+- **Giao diện Web & Handheld Mobile**:
+  - Web: Trang quản lý danh sách LPN, tạo LPN trống, đóng hàng, dịch chuyển kệ và xem lịch sử dòng thời gian sự kiện của LPN.
+  - Mobile: Màn hình quét mã LPN -> quét kệ đích -> xác nhận di chuyển nguyên khối nhanh gọn bằng thiết bị cầm tay.
+- **Phân quyền bảo mật**: Seed thêm 4 quyền hệ thống mới: `lpn.read`, `lpn.create`, `lpn.update`, `lpn.execute`.
+
 ## Phiên bản 0.6.0 - Bổ sung hàng Pick Face tự động và thiết bị cầm tay (Phase 14)
 *Ngày cập nhật: 14/07/2026*
 
