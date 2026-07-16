@@ -20,6 +20,7 @@ using Nexustock.Modules.Wave;
 using Nexustock.Modules.Wave.Contexts;
 using Nexustock.Modules.MaterialGenealogy.Contexts;
 using Nexustock.Modules.MaterialGenealogy;
+using Nexustock.Modules.LocalAgent;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -106,6 +107,7 @@ try
     builder.Services.AddRmaModule(builder.Configuration);
     builder.Services.AddWaveModule(builder.Configuration);
     builder.Services.AddMaterialGenealogyModule(builder.Configuration);
+    builder.Services.AddLocalAgentModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -402,6 +404,17 @@ try
         catch (Exception ex)
         {
             Log.Error(ex, "An error occurred while migrating the MaterialGenealogy database");
+        }
+
+        try
+        {
+            var localAgentDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.LocalAgent.Contexts.LocalAgentDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(localAgentDb.Database);
+            Log.Information("LocalAgent database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the LocalAgent database");
         }
     }
 

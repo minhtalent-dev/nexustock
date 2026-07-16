@@ -42,6 +42,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.Rma\Nexustock.Modules.Rma.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Wave\Nexustock.Modules.Wave.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.MaterialGenealogy\Nexustock.Modules.MaterialGenealogy.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.LocalAgent\Nexustock.Modules.LocalAgent.csproj" />
   </ItemGroup>
 
 </Project>
