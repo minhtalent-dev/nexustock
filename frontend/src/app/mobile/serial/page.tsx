@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import MobileShell from "@/components/mobile/mobile-shell";
 import ScanInput from "@/components/mobile/scan-input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
-import { ArrowLeft, Box, CheckCircle, RefreshCw, Smartphone, Layers, MapPin } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { ArrowLeft, Box, CheckCircle, Smartphone, MapPin } from "lucide-react";
 
 interface Product {
   id: string;
@@ -31,9 +32,8 @@ export default function MobileSerialPage() {
   const [scannedSerials, setScannedSerials] = useState<string[]>([]);
   
   const [currentStep, setCurrentStep] = useState<"SCAN_PRODUCT" | "SCAN_LOCATION" | "SCAN_SERIAL">("SCAN_PRODUCT");
-  const [loading, setLoading] = useState(false);
 
-  const fetchMetadata = async () => {
+  const fetchMetadata = useCallback(async () => {
     try {
       const prodRes = await api.get<{ items: Product[] }>("/master-data/products");
       setProducts(prodRes.data.items || []);
@@ -43,11 +43,11 @@ export default function MobileSerialPage() {
     } catch {
       showError("Không thể tải metadata từ hệ thống.");
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchMetadata();
-  }, []);
+    queueMicrotask(() => void fetchMetadata());
+  }, [fetchMetadata]);
 
   const handleScanProduct = (barcode: string) => {
     const matched = products.find(p => p.code.toUpperCase() === barcode.toUpperCase());
@@ -83,7 +83,6 @@ export default function MobileSerialPage() {
       return;
     }
 
-    setLoading(true);
     try {
       await api.post("/serials/receive", {
         itemId: selectedProduct.id,
@@ -92,10 +91,8 @@ export default function MobileSerialPage() {
       });
       setScannedSerials(prev => [serialNo, ...prev]);
       showSuccess(`Đã nhận thành công mã serial: ${serialNo}`);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi khi nhận mã serial.");
-    } finally {
-      setLoading(false);
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi nhận mã serial."));
     }
   };
 

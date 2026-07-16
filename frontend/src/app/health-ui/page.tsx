@@ -44,13 +44,18 @@ export default function HealthUi() {
   };
 
   useEffect(() => {
-    setMounted(true);
-    const timeout = window.setTimeout(fetchHealth, 0);
-    const interval = window.setInterval(fetchHealth, 10000);
+    let interval: number;
+    const timeout = window.setTimeout(() => {
+      queueMicrotask(() => {
+        setMounted(true);
+        void fetchHealth();
+        interval = window.setInterval(fetchHealth, 10000);
+      });
+    }, 0);
 
     return () => {
       window.clearTimeout(timeout);
-      window.clearInterval(interval);
+      if (interval) window.clearInterval(interval);
     };
   }, []);
 

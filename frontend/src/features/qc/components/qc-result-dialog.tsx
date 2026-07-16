@@ -1,15 +1,16 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import api from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
-import { Upload, FileText, X, Check, AlertTriangle } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { Upload, FileText, X } from "lucide-react";
 
 interface QcResultDialogProps {
   isOpen: boolean;
@@ -43,8 +44,8 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
       const uploadedUrl = res.data.url;
       setAttachmentRefs((prev) => (prev ? `${prev},${uploadedUrl}` : uploadedUrl));
       showSuccess("Tải tài liệu lên thành công.");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi tải tệp lên.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi tải tệp lên."));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -69,8 +70,8 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
       showSuccess("Ghi nhận kết quả QC thành công.");
       onSuccess();
       onClose();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi gửi kết quả QC.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi gửi kết quả QC."));
     } finally {
       setLoading(false);
     }
@@ -149,7 +150,7 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
                       <div key={i} className="flex items-center justify-between p-2 bg-zinc-800 rounded border border-zinc-750 text-xs">
                         <div className="flex items-center gap-2 overflow-hidden truncate">
                           {isImg ? (
-                            <img src={url} alt="QC preview" className="w-8 h-8 rounded object-cover flex-shrink-0" />
+                            <Image src={url} alt="QC preview" width={32} height={32} className="w-8 h-8 rounded object-cover flex-shrink-0" />
                           ) : (
                             <FileText className="w-5 h-5 text-zinc-400 flex-shrink-0" />
                           )}

@@ -11,6 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Nexustock.LocalAgent;
+using Nexustock.LocalAgent.Devices.Scale;
 
 namespace Nexustock.LocalAgent;
 
@@ -26,6 +27,19 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         // Đăng ký dịch vụ
+        builder.Services.AddSingleton(config.Scale);
+        builder.Services.AddSingleton<ScaleFrameParser>();
+        builder.Services.AddSingleton<IScaleDevice>(sp =>
+        {
+            var scaleConfig = sp.GetRequiredService<ScaleDeviceConfig>();
+            if (string.Equals(scaleConfig.Mode, "serial", StringComparison.OrdinalIgnoreCase))
+            {
+                return new SerialScaleDevice(scaleConfig);
+            }
+
+            return new MockScaleDevice(scaleConfig, sp.GetRequiredService<ScaleFrameParser>());
+        });
+        builder.Services.AddHostedService<ScaleDeviceHostedService>();
         builder.Services.AddSingleton<WebSocketHandler>();
         if (!string.Equals(Environment.GetEnvironmentVariable("NEXUSTOCK_AGENT_DISABLE_WORKER"), "true", StringComparison.OrdinalIgnoreCase))
         {

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { LocalAgentClient, AgentStatusInfo, AgentStatus } from "@/lib/local-agent-client";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +31,6 @@ interface StationResponseDto {
 
 export default function LocalAgentAdminPage() {
   const [stations, setStations] = useState<StationResponseDto[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [search, setSearch] = useState("");
@@ -61,25 +61,19 @@ export default function LocalAgentAdminPage() {
   const [revokeDescription, setRevokeDescription] = useState("");
   const [isRevoking, setIsRevoking] = useState(false);
 
-  useEffect(() => {
-    fetchStations();
-    scanLocalAgent();
-  }, [page, search]);
-
-  const fetchStations = async () => {
+  const fetchStations = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await api.get(`/agent/stations?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`);
+      const response = await api.get<{ items: StationResponseDto[]; totalCount: number }>(`/agent/stations?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`);
       setStations(response.data.items);
-      setTotalCount(response.data.totalCount);
-    } catch (err: any) {
-      toast.error("Lỗi lấy danh sách trạm: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Lỗi lấy danh sách trạm: " + getHttpErrorMessage(err, "Không thể tải dữ liệu."));
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page, pageSize, search]);
 
-  const scanLocalAgent = async () => {
+  const scanLocalAgent = useCallback(async () => {
     setIsScanning(true);
     setLocalAgentInfo({ status: "connecting" });
     try {
@@ -90,12 +84,19 @@ export default function LocalAgentAdminPage() {
       } else if (info.status === "unpaired") {
         toast.warning(`Tìm thấy Local Agent (Port ${info.port}) nhưng chưa được ghép cặp.`);
       }
-    } catch (err) {
+    } catch {
       setLocalAgentInfo({ status: "port_unavailable", error: "Không tìm thấy Local Agent hoạt động." });
     } finally {
       setIsScanning(false);
     }
-  };
+  }, [agentClient]);
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      void fetchStations();
+      void scanLocalAgent();
+    });
+  }, [fetchStations, scanLocalAgent]);
 
   const handlePairAgent = async () => {
     if (!localAgentInfo.port) {
@@ -115,8 +116,8 @@ export default function LocalAgentAdminPage() {
       fetchStations();
       setPairingCode("");
       setPairingStationCode("");
-    } catch (err: any) {
-      toast.error(err.message || "Lỗi ghép cặp.");
+    } catch (err: unknown) {
+      toast.error(getHttpErrorMessage(err, "Lỗi ghép cặp."));
     } finally {
       setIsPairing(false);
     }
@@ -137,8 +138,8 @@ export default function LocalAgentAdminPage() {
       setGeneratedCode(response.data.pairingCode);
       setCodeExpiresAt(response.data.expiresAt);
       toast.success("Sinh mã ghép cặp thành công!");
-    } catch (err: any) {
-      toast.error("Lỗi sinh mã: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Lỗi sinh mã: " + getHttpErrorMessage(err, "Không thể sinh mã."));
     } finally {
       setIsGeneratingCode(false);
     }
@@ -159,8 +160,8 @@ export default function LocalAgentAdminPage() {
       fetchStations();
       // Quét lại để cập nhật trạng thái Agent cục bộ nếu chính trạm này bị revoke
       scanLocalAgent();
-    } catch (err: any) {
-      toast.error("Lỗi thu hồi trạm: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Lỗi thu hồi trạm: " + getHttpErrorMessage(err, "Không thể thu hồi."));
     } finally {
       setIsRevoking(false);
     }

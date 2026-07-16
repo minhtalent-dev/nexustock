@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useCallback, useEffect, useState, use } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { AlertCircle, ArrowLeft, Check, Lock, Play, Send } from "lucide-react";
 import Link from "next/link";
 
@@ -64,23 +65,23 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  const fetchDetails = async () => {
+  const fetchDetails = useCallback(async () => {
     try {
       const res = await api.get<DetailsResponse>(`/stocktakes/${id}`);
       if (res.data) {
         setStocktake(res.data.stocktake);
         setItems(res.data.items || []);
       }
-    } catch (err) {
+    } catch {
       showError("Không thể tải thông tin chi tiết đợt kiểm kê");
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
-    fetchDetails();
-  }, [id]);
+    queueMicrotask(() => void fetchDetails());
+  }, [fetchDetails]);
 
   const handleStart = async () => {
     setActionLoading(true);
@@ -88,8 +89,8 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
       await api.post(`/stocktakes/${id}/start`);
       showSuccess("Đã bắt đầu kiểm kê. Các kệ đã bị phong tỏa!");
       fetchDetails();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể bắt đầu kiểm kê");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể bắt đầu kiểm kê"));
     } finally {
       setActionLoading(false);
     }
@@ -120,8 +121,8 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
       showSuccess("Ghi nhận số lượng đếm thành công!");
       setCountingModalOpen(false);
       fetchDetails();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi ghi nhận kết quả đếm");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi ghi nhận kết quả đếm"));
     } finally {
       setActionLoading(false);
     }
@@ -137,8 +138,8 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
       showSuccess(res.data.message || "Thao tác thành công!");
       setApproveModalOpen(false);
       fetchDetails();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi phê duyệt điều chỉnh");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi phê duyệt điều chỉnh"));
     } finally {
       setActionLoading(false);
     }
@@ -238,7 +239,7 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
             {stocktake.status === "Draft" ? (
               <div className="py-8 text-center text-muted-foreground flex flex-col items-center gap-2">
                 <Lock className="h-8 w-8 text-muted-foreground" />
-                <span>Bấm "Bắt đầu kiểm kê" để quét danh sách tồn hiện tại và phong tỏa các vị trí kệ.</span>
+                <span>Bấm &quot;Bắt đầu kiểm kê&quot; để quét danh sách tồn hiện tại và phong tỏa các vị trí kệ.</span>
               </div>
             ) : items.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground">Không có vật tư nào trong khu vực kiểm kê.</div>

@@ -168,9 +168,9 @@ namespace Nexustock.Modules.Inventory.Migrations
                     b.HasIndex("TenantId", "LpnId")
                         .HasDatabaseName("idx_inventories_tenant_lpn_id");
 
-                    b.HasIndex("TenantId", "ItemId", "LotNo", "LocationId")
+                    b.HasIndex("TenantId", "ItemId", "LotNo", "LocationId", "LpnId")
                         .IsUnique()
-                        .HasDatabaseName("uq_inventories_tenant_item_lot_location");
+                        .HasDatabaseName("uq_inventories_tenant_item_lot_location_lpn");
 
                     b.ToTable("inventories", null, t =>
                         {
@@ -388,6 +388,63 @@ namespace Nexustock.Modules.Inventory.Migrations
                     b.ToTable("Lots");
                 });
 
+            modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.ManualWeightOverride", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ApprovedBy")
+                        .HasColumnType("uuid")
+                        .HasColumnName("approved_by");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("created_by");
+
+                    b.Property<decimal>("ManualWeight")
+                        .HasColumnType("numeric")
+                        .HasColumnName("manual_weight");
+
+                    b.Property<string>("PackageNo")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("package_no");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("ShipmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("shipment_id");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("tenant_id");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("used_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "ShipmentId", "PackageNo", "UsedAt")
+                        .HasDatabaseName("idx_manual_weight_overrides_lookup");
+
+                    b.ToTable("manual_weight_overrides");
+                });
+
             modelBuilder.Entity("Nexustock.Modules.Inventory.Entities.MobileDevice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -541,11 +598,19 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("created_by");
 
+                    b.Property<Guid?>("ManualOverrideId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("manual_override_id");
+
                     b.Property<string>("PackageNo")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("package_no");
+
+                    b.Property<bool>("ScaleStable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("scale_stable");
 
                     b.Property<Guid>("ShipmentId")
                         .HasColumnType("uuid")
@@ -574,7 +639,16 @@ namespace Nexustock.Modules.Inventory.Migrations
                         .HasColumnType("numeric")
                         .HasColumnName("weight");
 
+                    b.Property<string>("WeightSource")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("weight_source");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TenantId", "ManualOverrideId")
+                        .HasDatabaseName("idx_packing_records_tenant_manual_override");
 
                     b.HasIndex("TenantId", "PackageNo")
                         .IsUnique()

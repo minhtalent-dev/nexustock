@@ -45,6 +45,7 @@ public static class DependencyInjection
         // Register Services
         services.AddScoped<ITenantProvider, TenantProvider>();
         services.AddScoped<IInventoryService, InventoryService>();
+        services.AddScoped<IWeightValidationService, WeightValidationService>();
 
         return services;
     }

@@ -59,7 +59,7 @@ export default function AuditPage() {
   const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
-      const params: any = {
+      const params: Record<string, string | number> = {
         page,
         pageSize,
       };
@@ -70,15 +70,15 @@ export default function AuditPage() {
 
       const res = await api.get<AuditLogResponse>("/audit-logs", { params });
       setData(res.data);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải nhật ký hệ thống.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải nhật ký hệ thống."));
     } finally {
       setLoading(false);
     }
   }, [page, pageSize, activeParams]);
 
   useEffect(() => {
-    fetchLogs();
+    queueMicrotask(() => void fetchLogs());
   }, [fetchLogs]);
 
   const handleApplyFilter = (e: React.FormEvent) => {

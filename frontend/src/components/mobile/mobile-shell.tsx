@@ -7,10 +7,9 @@ export default function MobileShell({ children }: { children: React.ReactNode })
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
+    queueMicrotask(() => setIsOnline(navigator.onLine));
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-
-    setIsOnline(navigator.onLine);
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 

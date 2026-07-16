@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Nexustock.LocalAgent.Devices.Scale;
 
 namespace Nexustock.LocalAgent;
 
@@ -17,10 +18,12 @@ public class WebSocketHandler
 {
     private readonly ILogger<WebSocketHandler> _logger;
     private readonly HttpClient _httpClient;
+    private readonly IScaleDevice _scaleDevice;
 
-    public WebSocketHandler(ILogger<WebSocketHandler> logger)
+    public WebSocketHandler(ILogger<WebSocketHandler> logger, IScaleDevice scaleDevice)
     {
         _logger = logger;
+        _scaleDevice = scaleDevice;
         _httpClient = new HttpClient();
     }
 
@@ -50,7 +53,7 @@ public class WebSocketHandler
                 ms.Seek(0, SeekOrigin.Begin);
                 using var reader = new StreamReader(ms, Encoding.UTF8);
                 var rawMessage = await reader.ReadToEndAsync();
-                
+
                 await ProcessMessageAsync(webSocket, rawMessage, config);
             }
         }
@@ -81,7 +84,6 @@ public class WebSocketHandler
             return;
         }
 
-        // 2. Định tuyến theo message type
         switch (msg.Type)
         {
             case "agent.status.request":
@@ -98,6 +100,22 @@ public class WebSocketHandler
 
             case "agent.reset.request":
                 await HandleResetRequestAsync(webSocket, msg, config);
+                break;
+
+            case "scale.status.request":
+                await HandleScaleStatusRequestAsync(webSocket, msg);
+                break;
+
+            case "scale.weight.subscribe":
+                await HandleScaleSubscribeAsync(webSocket, msg);
+                break;
+
+            case "scale.zero.request":
+                await HandleScaleZeroAsync(webSocket, msg, config);
+                break;
+
+            case "scale.tare.request":
+                await HandleScaleTareAsync(webSocket, msg, config);
                 break;
 
             default:
@@ -121,6 +139,62 @@ public class WebSocketHandler
         await SendResponseAsync(webSocket, msg.MessageId, "agent.status.response", responsePayload);
     }
 
+    private async Task HandleScaleStatusRequestAsync(WebSocket webSocket, WebSocketMessage msg)
+    {
+        await SendResponseAsync(webSocket, msg.MessageId, "scale.status.response", ToScalePayload(_scaleDevice.Current));
+    }
+
+    private async Task HandleScaleSubscribeAsync(WebSocket webSocket, WebSocketMessage msg)
+    {
+        await SendResponseAsync(webSocket, msg.MessageId, "scale.weightChanged", ToScalePayload(_scaleDevice.Current));
+    }
+
+    private async Task HandleScaleZeroAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
+    {
+        if (!await EnsureSignedScaleCommandAsync(webSocket, msg, config)) return;
+        await _scaleDevice.ZeroAsync(CancellationToken.None);
+        await SendResponseAsync(webSocket, msg.MessageId, "scale.zero.response", new { success = true });
+    }
+
+    private async Task HandleScaleTareAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
+    {
+        if (!await EnsureSignedScaleCommandAsync(webSocket, msg, config)) return;
+        await _scaleDevice.TareAsync(CancellationToken.None);
+        await SendResponseAsync(webSocket, msg.MessageId, "scale.tare.response", new { success = true });
+    }
+
+    private async Task<bool> EnsureSignedScaleCommandAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
+    {
+        if (!IsAgentPaired(config))
+        {
+            await SendErrorAsync(webSocket, msg.MessageId, "agent.unpaired", "Trạm chưa được ghép cặp.");
+            return false;
+        }
+
+        if (!WebSocketSecurity.VerifySignedPayload(msg, config, out var errorCode, out var errorMessage))
+        {
+            await SendErrorAsync(webSocket, msg.MessageId, errorCode, errorMessage);
+            return false;
+        }
+
+        return true;
+    }
+
+    private static object ToScalePayload(ScaleReading reading)
+    {
+        return new
+        {
+            deviceId = reading.DeviceId,
+            weightKg = reading.WeightKg,
+            stable = reading.Stable,
+            rawFrame = reading.RawFrame,
+            profile = reading.Profile,
+            connectionState = reading.ConnectionState,
+            errorCode = reading.ErrorCode,
+            timestamp = reading.Timestamp.ToString("o")
+        };
+    }
+
     private async Task HandlePairRequestAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
     {
         if (IsAgentPaired(config))
@@ -141,7 +215,6 @@ public class WebSocketHandler
         }
         catch
         {
-            // Payload format error
         }
 
         if (string.IsNullOrEmpty(stationCode) || string.IsNullOrEmpty(pairingCode))
@@ -150,7 +223,6 @@ public class WebSocketHandler
             return;
         }
 
-        // Gọi Backend confirm-pair
         var backendUrl = $"{config.BackendBaseUrl.TrimEnd('/')}/api/agent/stations/confirm-pair";
         var confirmPayload = new
         {
@@ -176,7 +248,6 @@ public class WebSocketHandler
                 return;
             }
 
-            // Mã hóa bằng DPAPI và lưu
             var scope = Enum.Parse<DataProtectionScope>(config.DpapiScope);
             var encryptedToken = DpapiSecretStorage.Encrypt(confirmResult.AgentToken, scope);
 
@@ -202,37 +273,14 @@ public class WebSocketHandler
 
     private async Task HandlePingCommandAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
     {
-        if (!IsAgentPaired(config))
-        {
-            await SendErrorAsync(webSocket, msg.MessageId, "agent.unpaired", "Trạm chưa được ghép cặp.");
-            return;
-        }
-
-        if (!WebSocketSecurity.VerifySignedPayload(msg, config, out var errorCode, out var errorMessage))
-        {
-            await SendErrorAsync(webSocket, msg.MessageId, errorCode, errorMessage);
-            return;
-        }
-
-        // Response pong
+        if (!await EnsureSignedScaleCommandAsync(webSocket, msg, config)) return;
         await SendResponseAsync(webSocket, msg.MessageId, "agent.command.pong", new { });
     }
 
     private async Task HandleResetRequestAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
     {
-        if (!IsAgentPaired(config))
-        {
-            await SendErrorAsync(webSocket, msg.MessageId, "agent.unpaired", "Trạm chưa được ghép cặp.");
-            return;
-        }
+        if (!await EnsureSignedScaleCommandAsync(webSocket, msg, config)) return;
 
-        if (!WebSocketSecurity.VerifySignedPayload(msg, config, out var errorCode, out var errorMessage))
-        {
-            await SendErrorAsync(webSocket, msg.MessageId, errorCode, errorMessage);
-            return;
-        }
-
-        // Thực hiện reset trạm
         config.StationId = null;
         config.StationCode = null;
         config.EncryptedAgentToken = null;
@@ -272,7 +320,6 @@ public class WebSocketHandler
 
         await SendResponseAsync(webSocket, messageId, "agent.error", errPayload);
     }
-
 
     private class ConfirmResponseDto
     {

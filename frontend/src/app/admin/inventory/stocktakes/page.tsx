@@ -5,7 +5,8 @@ import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { showError, showSuccess } from "@/lib/toast";
+import { showError } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { ClipboardCheck, Plus, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
@@ -24,21 +25,21 @@ export default function StocktakesPage() {
   const [stocktakes, setStocktakes] = useState<Stocktake[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const fetchStocktakes = async () => {
+  const fetchStocktakes = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<Stocktake[]>("/stocktakes");
       setStocktakes(res.data || []);
-    } catch (err) {
-      showError("Không thể tải danh sách đợt kiểm kê.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách đợt kiểm kê."));
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchStocktakes();
-  }, []);
+    queueMicrotask(() => void fetchStocktakes());
+  }, [fetchStocktakes]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

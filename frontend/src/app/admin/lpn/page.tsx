@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess } from "@/lib/toast";
-import { RefreshCw, Layers, Plus, Trash2, ArrowRight, ClipboardList, CheckCircle, Settings, X, LogIn, LogOut } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { RefreshCw, Layers, Plus, ArrowRight, ClipboardList, Settings, X, LogIn } from "lucide-react";
 
 interface Lpn {
   id: string;
@@ -85,19 +86,19 @@ export default function LpnPage() {
   const [showAttachModal, setShowAttachModal] = useState(false);
   const [showMoveModal, setShowMoveModal] = useState(false);
 
-  const fetchLpns = async () => {
+  const fetchLpns = useCallback(async () => {
     setLoadingLpns(true);
     try {
       const res = await api.get<Lpn[]>("/lpns");
       setLpns(res.data || []);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải danh sách LPN.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách LPN."));
     } finally {
       setLoadingLpns(false);
     }
-  };
+  }, []);
 
-  const fetchMetadata = async () => {
+  const fetchMetadata = useCallback(async () => {
     try {
       const prodRes = await api.get<{ items: Product[] }>("/master-data/products");
       setProducts(prodRes.data.items || []);
@@ -111,7 +112,7 @@ export default function LpnPage() {
     } catch {
       // Bỏ qua
     }
-  };
+  }, []);
 
   const fetchLpnDetails = async (lpn: Lpn) => {
     setLoadingDetails(true);
@@ -125,17 +126,19 @@ export default function LpnPage() {
         params: { lpnId: lpn.id }
       });
       setLpnItems(balancesRes.data?.items || []);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải chi tiết LPN.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải chi tiết LPN."));
     } finally {
       setLoadingDetails(false);
     }
   };
 
   useEffect(() => {
-    fetchLpns();
-    fetchMetadata();
-  }, []);
+    queueMicrotask(() => {
+      void fetchLpns();
+      void fetchMetadata();
+    });
+  }, [fetchLpns, fetchMetadata]);
 
   const handleSelectLpn = (lpn: Lpn) => {
     setSelectedLpn(lpn);
@@ -158,8 +161,8 @@ export default function LpnPage() {
       if (res.data) {
         handleSelectLpn(res.data);
       }
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi tạo LPN.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi tạo LPN."));
     } finally {
       setSubmittingLpn(false);
     }
@@ -179,8 +182,8 @@ export default function LpnPage() {
       setAttachForm({ itemId: "", lotNo: "", qty: 0 });
       setShowAttachModal(false);
       fetchLpnDetails(selectedLpn);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi đóng hàng.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi đóng hàng."));
     }
   };
 
@@ -203,8 +206,8 @@ export default function LpnPage() {
       });
       showSuccess("Đã rút hàng khỏi LPN.");
       fetchLpnDetails(selectedLpn);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi rút hàng.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi rút hàng."));
     }
   };
 
@@ -224,8 +227,8 @@ export default function LpnPage() {
       setSelectedLpn(updatedLpn);
       fetchLpns();
       fetchLpnDetails(updatedLpn);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi dịch chuyển LPN.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi dịch chuyển LPN."));
     }
   };
 

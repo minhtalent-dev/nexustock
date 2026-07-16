@@ -156,19 +156,32 @@ function saveCollapsed(state: Record<string, boolean>) {
 export default function AppSidebar() {
   const pathname = usePathname();
   const { permissions, logout, user } = useAuth();
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
     const saved = loadCollapsed();
     const initial: Record<string, boolean> = {};
     navGroups.forEach((g) => {
       if (g.title in saved) {
         initial[g.title] = saved[g.title];
       } else {
-        initial[g.title] = !isGroupActive(g, pathname, permissions);
+        initial[g.title] = true; // Safe fallback, defer active expansion to useEffect
       }
     });
-    setCollapsed(initial);
+    return initial;
+  });
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      const saved = loadCollapsed();
+      const initial: Record<string, boolean> = {};
+      navGroups.forEach((g) => {
+        if (g.title in saved) {
+          initial[g.title] = saved[g.title];
+        } else {
+          initial[g.title] = !isGroupActive(g, pathname, permissions);
+        }
+      });
+      setCollapsed(initial);
+    });
   }, [permissions, pathname]);
 
   const toggle = (title: string) => {

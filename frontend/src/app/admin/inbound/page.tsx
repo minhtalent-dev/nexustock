@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
-import { FileDown, Plus, ClipboardList, CheckCircle2, AlertCircle, Eye } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { Plus, ClipboardList, Eye } from "lucide-react";
 
 interface InboundOrderResponseDto {
   id: string;
@@ -75,20 +76,20 @@ export default function InboundPage() {
   const [items, setItems] = useState<OrderItemInput[]>([]);
   const [saving, setSaving] = useState(false);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
       const url = statusFilter ? `/inbound/orders?status=${statusFilter}` : "/inbound/orders";
       const res = await api.get<InboundOrderResponseDto[]>(url);
       setOrders(res.data);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải danh sách phiếu nhập.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách phiếu nhập."));
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
 
-  const fetchMetadata = async () => {
+  const fetchMetadata = useCallback(async () => {
     try {
       const [partnersRes, productsRes, uomsRes] = await Promise.all([
         api.get<{ items: PartnerDto[] }>("/master-data/partners"),
@@ -99,18 +100,18 @@ export default function InboundPage() {
       setPartners(partnersRes.data.items || []);
       setProducts(productsRes.data.items || []);
       setUoms(uomsRes.data.items || []);
-    } catch (err: any) {
+    } catch {
       showError("Không thể tải thông tin đối tác/vật tư.");
     }
-  };
-
-  useEffect(() => {
-    fetchOrders();
-  }, [statusFilter]);
-
-  useEffect(() => {
-    fetchMetadata();
   }, []);
+
+  useEffect(() => {
+    queueMicrotask(() => void fetchOrders());
+  }, [fetchOrders]);
+
+  useEffect(() => {
+    queueMicrotask(() => void fetchMetadata());
+  }, [fetchMetadata]);
 
   const openCreate = () => {
     setPartnerId("");
@@ -127,7 +128,7 @@ export default function InboundPage() {
     setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const updateItemRow = (index: number, field: keyof OrderItemInput, value: any) => {
+  const updateItemRow = <K extends keyof OrderItemInput>(index: number, field: K, value: OrderItemInput[K]) => {
     setItems((prev) =>
       prev.map((item, i) => (i === index ? { ...item, [field]: value } : item))
     );
@@ -159,8 +160,8 @@ export default function InboundPage() {
       showSuccess("Tạo phiếu nhập hàng thành công.");
       setIsOpen(false);
       fetchOrders();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi tạo phiếu nhập.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi tạo phiếu nhập."));
     } finally {
       setSaving(false);
     }

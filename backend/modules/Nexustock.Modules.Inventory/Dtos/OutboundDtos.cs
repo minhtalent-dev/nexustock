@@ -57,4 +57,37 @@ public class CompletePackingRequestDto
     [Required]
     [Range(0.0001, 9999999999)]
     public decimal Weight { get; set; }
+
+    [Required]
+    [MaxLength(50)]
+    public string WeightSource { get; set; } = "scale";
+
+    public bool? ScaleStable { get; set; }
+
+    public Guid? ManualOverrideId { get; set; }
+}
+
+public class ManualWeightOverrideRequestDto
+{
+    [Required]
+    public Guid ShipmentId { get; set; }
+
+    [Required]
+    [MaxLength(100)]
+    public string PackageNo { get; set; } = null!;
+
+    [Required]
+    [Range(0.0001, 9999999999)]
+    public decimal ManualWeight { get; set; }
+
+    [Required]
+    [MaxLength(500)]
+    public string Reason { get; set; } = null!;
+}
+
+public class ManualWeightOverrideResponseDto
+{
+    public Guid ManualOverrideId { get; set; }
+    public decimal ManualWeight { get; set; }
+    public string WeightSource { get; set; } = "manual_override";
 }

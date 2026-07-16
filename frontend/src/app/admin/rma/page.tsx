@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { RefreshCw, Undo2, CheckCircle2, FlaskConical, AlertTriangle, PackageSearch } from "lucide-react";
 
 interface RmaItem {
@@ -38,21 +39,21 @@ export default function RmaPage() {
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  const fetchRmas = async () => {
+  const fetchRmas = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<RmaRequest[]>("/rma");
       setRmas(res.data || []);
-    } catch (err: any) {
+    } catch {
       showError("Không thể tải danh sách RMA.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchRmas();
-  }, []);
+    queueMicrotask(() => void fetchRmas());
+  }, [fetchRmas]);
 
   const handleProcessQc = async (rmaId: string, item: RmaItem, disposition: string) => {
     setProcessing(true);
@@ -76,8 +77,8 @@ export default function RmaPage() {
          const updated = await api.get<RmaRequest>(`/rma/${rmaId}`);
          setSelectedRma(updated.data);
       }
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi khi xử lý QC.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi xử lý QC."));
     } finally {
       setProcessing(false);
     }

@@ -26,7 +26,7 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
   const [tree, setTree] = useState<GenealogyNode | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchTree = async () => {
+  const fetchTree = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<GenealogyNode>(`/genealogy/lots/${lotNo}/tree`);
@@ -36,7 +36,7 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
     } finally {
       setLoading(false);
     }
-  };
+  }, [lotNo]);
 
   const handleHoldBranch = async () => {
     if (!confirm(`Bạn có chắc chắn muốn phong tỏa toàn bộ nhánh từ Lot ${lotNo} trở xuống?`)) return;
@@ -48,14 +48,14 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
       });
       showSuccess("Đã phong tỏa toàn bộ nhánh Lot thành công.");
       fetchTree();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi phong tỏa nhánh.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi phong tỏa nhánh."));
     }
   };
 
   useEffect(() => {
-    fetchTree();
-  }, [lotNo]);
+    queueMicrotask(() => void fetchTree());
+  }, [fetchTree]);
 
   const renderNode = (node: GenealogyNode) => {
     const isHold = node.status === "HOLD";

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { LayoutDashboard, Activity, Package, MapPin, Shield } from "lucide-react";
 import AppSidebar from "@/components/app-sidebar";
 import BreadcrumbNav from "@/components/breadcrumb-nav";
 

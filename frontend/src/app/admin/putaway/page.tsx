@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess } from "@/lib/toast";
-import { MapPin, Search, RefreshCw, Layers, CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { MapPin, Search, RefreshCw, Layers, CheckCircle2, XCircle } from "lucide-react";
 
 interface InventoryBalance {
   id: string;
@@ -52,6 +52,11 @@ interface ZoneLocation {
   status: "PROPOSED" | "OCCUPIED" | "FREE";
 }
 
+interface LotInfo {
+  id: string;
+  itemId: string;
+}
+
 export default function PutawayPage() {
   const [balances, setBalances] = useState<InventoryBalance[]>([]);
   const [loadingBalances, setLoadingBalances] = useState(false);
@@ -71,19 +76,19 @@ export default function PutawayPage() {
   const [rejectReasonCode, setRejectReasonCode] = useState("LOC_FULL");
   const [rejectNote, setRejectNote] = useState("");
 
-  const fetchBalances = async () => {
+  const fetchBalances = useCallback(async () => {
     setLoadingBalances(true);
     try {
       const res = await api.get<{ items: InventoryBalance[] }>("/inventory/balances?pageSize=100");
       // Filter out items in regular storage locations if needed, or show all to allow putaway
       // In WMS, we prioritize items in Staging/Receiving locations. Let's show all and let user filter.
       setBalances(res.data.items || []);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải số dư tồn kho.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải số dư tồn kho."));
     } finally {
       setLoadingBalances(false);
     }
-  };
+  }, []);
 
   const handleFetchProposals = async (item: InventoryBalance) => {
     setActiveItem(item);
@@ -93,8 +98,8 @@ export default function PutawayPage() {
     try {
       // Find the Lot ID first (balances might not have lotId directly, but we can look up lot details or pass item properties)
       // Since lotId is required, let's fetch the lot by lotNo and itemId first
-      const lotRes = await api.get<any[]>(`/lots/${item.lotNo}`);
-      const matchingLot = lotRes.data.find(l => l.itemId === item.itemId);
+      const lotRes = await api.get<LotInfo[]>(`/lots/${item.lotNo}`);
+      const matchingLot = lotRes.data.find((l) => l.itemId === item.itemId);
       if (!matchingLot) {
         showError("Không tìm thấy thông tin lô hàng tương ứng để lấy đề xuất.");
         setLoadingProposals(false);
@@ -107,8 +112,8 @@ export default function PutawayPage() {
         // Pre-select the highest score proposal
         setSelectedCandidate(res.data.proposals[0]);
       }
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải đề xuất cất hàng.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải đề xuất cất hàng."));
     } finally {
       setLoadingProposals(false);
     }
@@ -135,11 +140,11 @@ export default function PutawayPage() {
       setActiveItem(null);
       setSelectedCandidate(null);
       fetchBalances();
-    } catch (err: any) {
-      if (err.response?.status === 409) {
+    } catch (err: unknown) {
+      if (api.isAxiosError?.(err) && err.response?.status === 409) {
         showError("Vị trí kệ đã thay đổi số dư, vui lòng làm mới danh sách đề xuất.");
       } else {
-        showError(err.response?.data?.message || "Lỗi xác nhận cất hàng.");
+        showError(getHttpErrorMessage(err, "Lỗi xác nhận cất hàng."));
       }
     } finally {
       setSubmitting(false);
@@ -171,14 +176,14 @@ export default function PutawayPage() {
       }
       setRejectingProposal(null);
       setRejectNote("");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi ghi nhận từ chối đề xuất.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi ghi nhận từ chối đề xuất."));
     }
   };
 
   useEffect(() => {
-    fetchBalances();
-  }, []);
+    queueMicrotask(() => void fetchBalances());
+  }, [fetchBalances]);
 
   const filteredBalances = balances.filter(b => 
     b.lotNo.toLowerCase().includes(searchQuery.toLowerCase()) ||

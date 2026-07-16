@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { Plus, Trash2 } from "lucide-react";
 
 interface PartnerDto {
@@ -59,17 +60,19 @@ export function CreateShipmentDialog({ isOpen, onClose, onSuccess }: CreateShipm
 
       const uomRes = await api.get<{ items: UomDto[] }>("/master-data/uoms");
       setUoms(uomRes.data.items || []);
-    } catch (err) {
+    } catch {
       showError("Không thể tải dữ liệu danh mục.");
     }
   };
 
   useEffect(() => {
     if (isOpen) {
-      fetchMasterData();
-      setShipmentNo(`SO-${Date.now()}`);
-      setPartnerId("");
-      setSelectedItems([{ itemId: "", uomId: "", requestedQty: 1 }]);
+      queueMicrotask(() => {
+        void fetchMasterData();
+        setShipmentNo(`SO-${Date.now()}`);
+        setPartnerId("");
+        setSelectedItems([{ itemId: "", uomId: "", requestedQty: 1 }]);
+      });
     }
   }, [isOpen]);
 
@@ -82,9 +85,10 @@ export function CreateShipmentDialog({ isOpen, onClose, onSuccess }: CreateShipm
     setSelectedItems(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateItemRow = (index: number, field: keyof SelectedItem, value: any) => {
+  const updateItemRow = (index: number, field: keyof SelectedItem, value: string | number) => {
     setSelectedItems(prev => {
       const copy = [...prev];
+      // @ts-expect-error type override
       copy[index] = { ...copy[index], [field]: value };
       return copy;
     });
@@ -115,8 +119,8 @@ export function CreateShipmentDialog({ isOpen, onClose, onSuccess }: CreateShipm
       showSuccess("Tạo đơn xuất kho thành công.");
       onSuccess();
       onClose();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tạo đơn xuất.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tạo đơn xuất."));
     } finally {
       setSaving(false);
     }

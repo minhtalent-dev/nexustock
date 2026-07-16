@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess } from "@/lib/toast";
-import { RefreshCw, Layers, PlusCircle, CheckCircle2, ArrowRight } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { RefreshCw, Layers, PlusCircle, ArrowRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface WaveListResponse {
@@ -38,35 +39,35 @@ export default function WavesPage() {
   const [creating, setCreating] = useState(false);
   const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const fetchWaves = async () => {
+  const fetchWaves = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<WaveListResponse[]>("/waves");
       setWaves(res.data || []);
-    } catch (err: any) {
+    } catch {
       showError("Không thể tải danh sách Waves.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchOpenShipments = async () => {
+  const fetchOpenShipments = useCallback(async () => {
     setLoadingShipments(true);
     try {
       const res = await api.get<ShipmentResponse[]>("/outbound/shipments");
       // Lọc các Shipment ở trạng thái Open
-      const openOnes = (res.data || []).filter(s => s.status === "Open" || s.status === "Waving");
+      const openOnes = (res.data || []).filter((s) => s.status === "Open" || s.status === "Waving");
       setOpenShipments(openOnes);
-    } catch (err: any) {
+    } catch {
       showError("Không thể tải danh sách đơn xuất.");
     } finally {
       setLoadingShipments(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchWaves();
-  }, []);
+    queueMicrotask(() => void fetchWaves());
+  }, [fetchWaves]);
 
   const handleToggleCreateForm = () => {
     setShowCreateForm(!showCreateForm);
@@ -96,8 +97,8 @@ export default function WavesPage() {
       showSuccess("Tạo đợt Wave thành công.");
       setShowCreateForm(false);
       fetchWaves();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi khi tạo Wave.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi tạo Wave."));
     } finally {
       setCreating(false);
     }

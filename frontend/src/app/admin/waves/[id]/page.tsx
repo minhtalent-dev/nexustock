@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useCallback, useEffect, useState, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { RefreshCw, ArrowLeft, Play, LayoutGrid, CheckSquare, Layers } from "lucide-react";
 
 interface WaveItemDetail {
@@ -51,26 +51,25 @@ interface WaveDetailResponse {
 export default function WaveDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const waveId = resolvedParams.id;
-  const router = useRouter();
   const [wave, setWave] = useState<WaveDetailResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [processing, setProcessing] = useState(false);
 
-  const fetchWaveDetails = async () => {
+  const fetchWaveDetails = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<WaveDetailResponse>(`/waves/${waveId}`);
       setWave(res.data);
-    } catch (err: any) {
+    } catch {
       showError("Không thể tải chi tiết đợt Wave.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [waveId]);
 
   useEffect(() => {
-    fetchWaveDetails();
-  }, [waveId]);
+    queueMicrotask(() => void fetchWaveDetails());
+  }, [fetchWaveDetails]);
 
   const handleReleaseWave = async () => {
     setProcessing(true);
@@ -78,8 +77,8 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
       await api.post(`/waves/${waveId}/release`);
       showSuccess("Đã giải phóng đợt lấy hàng (Release Wave).");
       fetchWaveDetails();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi khi release Wave.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi release Wave."));
     } finally {
       setProcessing(false);
     }
@@ -91,8 +90,8 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
       await api.post(`/waves/${waveId}/complete`);
       showSuccess("Hoàn thành phân chia đợt Wave.");
       fetchWaveDetails();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi khi hoàn thành Wave.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi hoàn thành Wave."));
     } finally {
       setProcessing(false);
     }

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { showError, showSuccess } from "@/lib/toast";
 import api from "@/lib/api";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { ArrowLeft, Move, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
@@ -20,8 +21,11 @@ interface OfflineMove {
 
 export default function MovementPage() {
   const [loading, setLoading] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
-  const [offlineQueue, setOfflineQueue] = useState<OfflineMove[]>([]);
+  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
+  const [offlineQueue, setOfflineQueue] = useState<OfflineMove[]>(() => {
+    const stored = localStorage.getItem("nexustock_offline_movements");
+    return stored ? (JSON.parse(stored) as OfflineMove[]) : [];
+  });
 
   // Form State
   const [fromLoc, setFromLoc] = useState("");
@@ -32,17 +36,10 @@ export default function MovementPage() {
   const [currentStep, setCurrentStep] = useState<"SCAN_FROM" | "SCAN_LOT" | "INPUT_QTY" | "SCAN_TO" | "CONFIRM">("SCAN_FROM");
 
   useEffect(() => {
-    setIsOnline(navigator.onLine);
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-
-    // Load offline queue from LocalStorage
-    const stored = localStorage.getItem("nexustock_offline_movements");
-    if (stored) {
-      setOfflineQueue(JSON.parse(stored));
-    }
 
     return () => {
       window.removeEventListener("online", handleOnline);
@@ -64,8 +61,8 @@ export default function MovementPage() {
       setFromLoc(barcode);
       showSuccess("Đã quét vị trí nguồn.");
       setCurrentStep("SCAN_LOT");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Vị trí không hợp lệ hoặc bị khóa!");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Vị trí không hợp lệ hoặc bị khóa!"));
     } finally {
       setLoading(false);
     }
@@ -80,8 +77,8 @@ export default function MovementPage() {
       setLotNo(barcode);
       showSuccess("Đã quét số lô.");
       setCurrentStep("INPUT_QTY");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lô hàng không tồn tại!");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lô hàng không tồn tại!"));
     } finally {
       setLoading(false);
     }
@@ -109,8 +106,8 @@ export default function MovementPage() {
       setToLoc(barcode);
       showSuccess("Đã quét vị trí đích.");
       setCurrentStep("CONFIRM");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Vị trí đích không hợp lệ!");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Vị trí đích không hợp lệ!"));
     } finally {
       setLoading(false);
     }
@@ -126,7 +123,7 @@ export default function MovementPage() {
       qty: parsedQty
     };
 
-    const clientOperationId = `OP-MOVE-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const clientOperationId = `OP-MOVE-${crypto.randomUUID()}`;
 
     if (!isOnline) {
       // Lưu offline
@@ -156,8 +153,8 @@ export default function MovementPage() {
       });
       showSuccess("Thực hiện dịch chuyển kho thành công!");
       resetForm();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Dịch chuyển kho thất bại!");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Dịch chuyển kho thất bại!"));
     } finally {
       setLoading(false);
     }
@@ -170,8 +167,8 @@ export default function MovementPage() {
       await api.post("/mobile/offline-sync", { operations: offlineQueue });
       showSuccess("Đồng bộ toàn bộ dữ liệu offline thành công!");
       saveOfflineQueue([]);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi đồng bộ dữ liệu ngoại tuyến.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi đồng bộ dữ liệu ngoại tuyến."));
     } finally {
       setLoading(false);
     }

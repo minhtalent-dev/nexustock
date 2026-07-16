@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,8 +9,9 @@ import { showError, showSuccess } from "@/lib/toast";
 import { CreateShipmentDialog } from "@/features/outbound/components/create-dialog";
 import { CompletePickDialog } from "@/features/outbound/components/pick-dialog";
 import { CompletePackingDialog } from "@/features/outbound/components/pack-dialog";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { 
-  Truck, Plus, ArrowRightLeft, FileCheck, CheckCircle2,
+  Truck, Plus, ArrowRightLeft,
   RefreshCw, ClipboardCheck, ArrowUpRight
 } from "lucide-react";
 
@@ -72,19 +73,19 @@ export default function OutboundPage() {
   const [isPickOpen, setIsPickOpen] = useState(false);
   const [isPackOpen, setIsPackOpen] = useState(false);
 
-  const fetchShipments = async () => {
+  const fetchShipments = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<ShipmentDto[]>("/outbound/shipments");
       setShipments(res.data || []);
-    } catch (err) {
+    } catch {
       showError("Không thể tải danh sách đơn xuất.");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const fetchShipmentDetails = async (id: string) => {
+  const fetchShipmentDetails = useCallback(async (id: string) => {
     setDetailLoading(true);
     try {
       const res = await api.get<{
@@ -98,16 +99,16 @@ export default function OutboundPage() {
       setShipmentItems(res.data.items || []);
       setPickTasks(res.data.picks || []);
       setPackings(res.data.packings || []);
-    } catch (err) {
+    } catch {
       showError("Không thể tải chi tiết đơn xuất.");
     } finally {
       setDetailLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchShipments();
-  }, []);
+    queueMicrotask(() => void fetchShipments());
+  }, [fetchShipments]);
 
   const handleSelectShipment = (s: ShipmentDto) => {
     fetchShipmentDetails(s.id);
@@ -119,8 +120,8 @@ export default function OutboundPage() {
       showSuccess("Đã sinh nhiệm vụ lấy hàng thành công.");
       fetchShipments();
       fetchShipmentDetails(id);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể sinh nhiệm vụ pick.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể sinh nhiệm vụ pick."));
     }
   };
 

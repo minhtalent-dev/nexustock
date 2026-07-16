@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,9 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
-import { Settings, Plus, ClipboardList, ShieldCheck, FileText, Loader2, ArrowRight } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { Settings, Plus, ClipboardList, ShieldCheck, FileText, Loader2 } from "lucide-react";
 
 interface ConditionDto {
   field: string;
@@ -53,7 +53,6 @@ export default function RulesPage() {
   const [activeTab, setActiveTab] = useState<"rules" | "logs">("rules");
   const [rules, setRules] = useState<RuleDto[]>([]);
   const [logs, setLogs] = useState<RuleExecutionLogDto[]>([]);
-  const [totalLogs, setTotalLogs] = useState(0);
   const [loading, setLoading] = useState(false);
   const [logPage, setLogPage] = useState(1);
   const [logPageSize] = useState(20);
@@ -78,21 +77,21 @@ export default function RulesPage() {
   // Details Dialog State
   const [selectedRule, setSelectedRule] = useState<RuleDto | null>(null);
 
-  const fetchRules = async () => {
+  const fetchRules = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<RuleDto[]>("/rules", {
         params: { type: typeFilter || undefined }
       });
       setRules(res.data);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải danh sách luật.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách luật."));
     } finally {
       setLoading(false);
     }
-  };
+  }, [typeFilter]);
 
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<{ items: RuleExecutionLogDto[]; totalCount: number }>("/rules/logs", {
@@ -103,21 +102,22 @@ export default function RulesPage() {
         }
       });
       setLogs(res.data.items);
-      setTotalLogs(res.data.totalCount);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải lịch sử chạy luật.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải lịch sử chạy luật."));
     } finally {
       setLoading(false);
     }
-  };
+  }, [logPage, logPageSize, logTypeFilter]);
 
   useEffect(() => {
-    if (activeTab === "rules") {
-      fetchRules();
-    } else {
-      fetchLogs();
-    }
-  }, [activeTab, typeFilter, logTypeFilter, logPage]);
+    queueMicrotask(() => {
+      if (activeTab === "rules") {
+        void fetchRules();
+      } else {
+        void fetchLogs();
+      }
+    });
+  }, [activeTab, fetchRules, fetchLogs]);
 
   const handleAddCondition = () => {
     setConditions([...conditions, { field: "", operator: "EQUALS", value: "" }]);
@@ -156,8 +156,8 @@ export default function RulesPage() {
       setIsCreateOpen(false);
       resetForm();
       fetchRules();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi khi tạo mới luật.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi tạo mới luật."));
     } finally {
       setCreating(false);
     }

@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess } from "@/lib/toast";
-import { RefreshCw, Play, Trash2, ArrowRight, Layers, ClipboardList, CheckCircle, HelpCircle, Settings, Plus, X } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { RefreshCw, Play, Layers, ClipboardList, CheckCircle, Settings, Plus, X } from "lucide-react";
 
 interface ReplenishmentRule {
   id: string;
@@ -70,31 +71,31 @@ export default function ReplenishmentPage() {
   const [operatorName, setOperatorName] = useState("");
   const [submittingComplete, setSubmittingComplete] = useState(false);
 
-  const fetchRules = async () => {
+  const fetchRules = useCallback(async () => {
     setLoadingRules(true);
     try {
       const res = await api.get<ReplenishmentRule[]>("/replenishment/rules");
       setRules(res.data || []);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải danh sách quy tắc bổ sung.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách quy tắc bổ sung."));
     } finally {
       setLoadingRules(false);
     }
-  };
+  }, []);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     setLoadingTasks(true);
     try {
       const res = await api.get<ReplenishmentTask[]>("/replenishment/tasks");
       setTasks(res.data || []);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải danh sách nhiệm vụ bổ sung.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách nhiệm vụ bổ sung."));
     } finally {
       setLoadingTasks(false);
     }
-  };
+  }, []);
 
-  const fetchMetadata = async () => {
+  const fetchMetadata = useCallback(async () => {
     try {
       const prodRes = await api.get<Product[]>("/masterdata/products");
       setProducts(prodRes.data || []);
@@ -108,13 +109,15 @@ export default function ReplenishmentPage() {
     } catch {
       // Bỏ qua lỗi
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchRules();
-    fetchTasks();
-    fetchMetadata();
-  }, []);
+    queueMicrotask(() => {
+      void fetchRules();
+      void fetchTasks();
+      void fetchMetadata();
+    });
+  }, [fetchRules, fetchTasks, fetchMetadata]);
 
   const handleCreateRule = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,12 +128,12 @@ export default function ReplenishmentPage() {
 
     setSubmittingRule(true);
     try {
-      const res = await api.post("/replenishment/rules", newRule);
+      await api.post("/replenishment/rules", newRule);
       showSuccess("Tạo quy tắc bổ sung thành công.");
       setNewRule({ itemId: "", locationId: "", minQty: 10, maxQty: 50 });
       fetchRules();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi tạo quy tắc bổ sung.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi tạo quy tắc bổ sung."));
     } finally {
       setSubmittingRule(false);
     }
@@ -143,8 +146,8 @@ export default function ReplenishmentPage() {
       const generatedCount = res.data?.length || 0;
       showSuccess(`Đã quét bổ sung hoàn tất. Đã sinh ${generatedCount} nhiệm vụ mới.`);
       fetchTasks();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi chạy tiến trình bổ sung hàng.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi chạy tiến trình bổ sung hàng."));
     } finally {
       setRunningEngine(false);
     }
@@ -159,8 +162,8 @@ export default function ReplenishmentPage() {
       await api.post(`/replenishment/tasks/${taskId}/cancel`);
       showSuccess("Đã hủy bỏ nhiệm vụ thành công.");
       fetchTasks();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi hủy nhiệm vụ bổ sung.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi hủy nhiệm vụ bổ sung."));
     }
   };
 
@@ -187,8 +190,8 @@ export default function ReplenishmentPage() {
       showSuccess("Xác nhận hoàn tất nhiệm vụ bổ sung thành công.");
       setCompletingTask(null);
       fetchTasks();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi xác nhận hoàn tất nhiệm vụ.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi xác nhận hoàn tất nhiệm vụ."));
     } finally {
       setSubmittingComplete(false);
     }

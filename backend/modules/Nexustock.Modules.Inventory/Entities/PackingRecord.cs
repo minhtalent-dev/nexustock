@@ -27,6 +27,17 @@ public class PackingRecord
 
     [Required]
     [MaxLength(50)]
+    [Column("weight_source")]
+    public string WeightSource { get; set; } = "scale";
+
+    [Column("scale_stable")]
+    public bool ScaleStable { get; set; }
+
+    [Column("manual_override_id")]
+    public Guid? ManualOverrideId { get; set; }
+
+    [Required]
+    [MaxLength(50)]
     [Column("status")]
     public string Status { get; set; } = "Open";
 

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { ArrowLeft, CheckCircle2, AlertTriangle, Plus, ShieldAlert } from "lucide-react";
 
 interface InboundOrderResponseDto {
@@ -45,7 +45,6 @@ interface LocationDto {
 
 export default function ReceivePage() {
   const params = useParams();
-  const router = useRouter();
   const orderId = params.id as string;
 
   const [order, setOrder] = useState<InboundOrderResponseDto | null>(null);
@@ -62,32 +61,34 @@ export default function ReceivePage() {
   const [productionDate, setProductionDate] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const fetchOrderDetails = async () => {
+  const fetchOrderDetails = useCallback(async () => {
     try {
       const res = await api.get<InboundOrderResponseDto>(`/inbound/orders/${orderId}`);
       setOrder(res.data);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải chi tiết phiếu nhập.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải chi tiết phiếu nhập."));
     }
-  };
+  }, [orderId]);
 
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
     try {
       const res = await api.get<{ items: LocationDto[] }>("/master-data/storage-locations");
       setLocations(res.data.items || []);
-    } catch (err: any) {
+    } catch {
       showError("Không thể tải danh sách vị trí kho.");
     }
-  };
+  }, []);
 
   useEffect(() => {
-    const init = async () => {
-      setLoading(true);
-      await Promise.all([fetchOrderDetails(), fetchLocations()]);
-      setLoading(false);
-    };
-    init();
-  }, [orderId]);
+    queueMicrotask(() => {
+      const init = async () => {
+        setLoading(true);
+        await Promise.all([fetchOrderDetails(), fetchLocations()]);
+        setLoading(false);
+      };
+      void init();
+    });
+  }, [fetchOrderDetails, fetchLocations]);
 
   const openReceiveDialog = (item: InboundOrderItemResponseDto) => {
     setSelectedItem(item);
@@ -131,25 +132,10 @@ export default function ReceivePage() {
       showSuccess(`Đã nhận hàng thành công cho vật tư ${selectedItem.itemName}.`);
       setIsOpen(false);
       await fetchOrderDetails();
-    } catch (err: any) {
-      showError(err.response?.data?.message || err.response?.data || "Lỗi khi nhận hàng.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi nhận hàng."));
     } finally {
       setSaving(false);
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    switch (status.toUpperCase()) {
-      case "COMPLETED":
-        return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Hoàn thành</Badge>;
-      case "RECEIVING":
-        return <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">Đang nhận</Badge>;
-      case "OPEN":
-        return <Badge className="bg-blue-500/10 text-blue-500 border-blue-500/20">Mới tạo</Badge>;
-      case "CANCELLED":
-        return <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20">Đã hủy</Badge>;
-      default:
-        return <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20">{status}</Badge>;
     }
   };
 

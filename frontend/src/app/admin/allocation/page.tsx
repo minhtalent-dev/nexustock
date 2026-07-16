@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess } from "@/lib/toast";
-import { RefreshCw, Play, Trash2, ArrowRight, Layers, ClipboardList, CheckCircle, HelpCircle } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { RefreshCw, Play, Trash2, Layers, ClipboardList, CheckCircle } from "lucide-react";
 
 interface Shipment {
   id: string;
@@ -31,15 +32,6 @@ interface ShipmentLine {
   status: string;
 }
 
-interface AllocationReservation {
-  id: string;
-  locationCode: string;
-  lotNo: string;
-  qty: number;
-  status: string;
-  expiresAt: string;
-}
-
 export default function AllocationPage() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [loadingShipments, setLoadingShipments] = useState(false);
@@ -53,30 +45,30 @@ export default function AllocationPage() {
   const [ttlMinutes, setTtlMinutes] = useState(1440);
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchShipments = async () => {
+  const fetchShipments = useCallback(async () => {
     setLoadingShipments(true);
     try {
       const res = await api.get<Shipment[]>("/outbound/shipments");
       setShipments(res.data || []);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải danh sách đơn xuất.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách đơn xuất."));
     } finally {
       setLoadingShipments(false);
     }
-  };
+  }, []);
 
-  const fetchShipmentLines = async (shipment: Shipment) => {
+  const fetchShipmentLines = useCallback(async (shipment: Shipment) => {
     setActiveShipment(shipment);
     setLoadingLines(true);
     try {
       const res = await api.get<{ shipment: Shipment; items: ShipmentLine[] }>(`/outbound/shipments/${shipment.id}`);
       setShipmentLines(res.data.items || []);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải chi tiết đơn hàng.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải chi tiết đơn hàng."));
     } finally {
       setLoadingLines(false);
     }
-  };
+  }, []);
 
   const handleRunAllocation = async () => {
     if (!activeShipment) return;
@@ -94,8 +86,8 @@ export default function AllocationPage() {
       // Refresh
       fetchShipmentLines(activeShipment);
       fetchShipments();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi phân bổ tồn kho.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi phân bổ tồn kho."));
     } finally {
       setSubmitting(false);
     }
@@ -113,16 +105,16 @@ export default function AllocationPage() {
       // Refresh
       fetchShipmentLines(activeShipment);
       fetchShipments();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi giải phóng phân bổ.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi giải phóng phân bổ."));
     } finally {
       setSubmitting(false);
     }
   };
 
   useEffect(() => {
-    fetchShipments();
-  }, []);
+    queueMicrotask(() => void fetchShipments());
+  }, [fetchShipments]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

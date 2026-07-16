@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 
 interface LocationDto {
   id: string;
@@ -49,22 +50,22 @@ export function MoveInventoryDialog({
   const [reasonCode, setReasonCode] = useState("");
   const [saving, setSaving] = useState(false);
 
-  const fetchLocations = async () => {
+  const fetchLocations = useCallback(async () => {
     try {
       const res = await api.get<{ items: LocationDto[] }>("/master-data/storage-locations");
       // Filter out the source location
       const list = (res.data.items || []).filter(l => l.id !== fromLocationId);
       setLocations(list);
-    } catch (err) {
+    } catch {
       showError("Không thể tải danh sách vị trí kho.");
     }
-  };
+  }, [fromLocationId]);
 
-  const fetchReasons = async () => {
+  const fetchReasons = useCallback(async () => {
     try {
       const res = await api.get<{ items: ReasonDto[] }>("/master-data/reasons");
       setReasons(res.data.items || []);
-    } catch (err) {
+    } catch {
       // Fallback local reasons if API fails
       setReasons([
         { id: "1", code: "ROUTINE_QC", name: "Kiểm tra chất lượng định kỳ" },
@@ -72,17 +73,19 @@ export function MoveInventoryDialog({
         { id: "3", code: "DAMAGE_COMPROMISE", name: "Nghi ngờ hư hại sản phẩm" }
       ]);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
-      fetchLocations();
-      fetchReasons();
-      setQty(maxQty);
-      setToLocationId("");
-      setReasonCode("");
+      queueMicrotask(() => {
+        void fetchLocations();
+        void fetchReasons();
+        setQty(maxQty);
+        setToLocationId("");
+        setReasonCode("");
+      });
     }
-  }, [isOpen, fromLocationId, maxQty]);
+  }, [fetchLocations, fetchReasons, isOpen, maxQty]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,8 +119,8 @@ export function MoveInventoryDialog({
       showSuccess("Dịch chuyển tồn kho thành công.");
       onSuccess();
       onClose();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể thực hiện dịch chuyển.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể thực hiện dịch chuyển."));
     } finally {
       setSaving(false);
     }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 
@@ -20,27 +21,26 @@ interface Zone {
 
 export default function NewStocktakePage() {
   const router = useRouter();
-  const [stocktakeNo, setStocktakeNo] = useState("");
+  const [stocktakeNo, setStocktakeNo] = useState(() => {
+    const now = new Date();
+    return `SC-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}-${now.getHours().toString().padStart(2, "0")}${now.getMinutes().toString().padStart(2, "0")}`;
+  });
   const [zoneId, setZoneId] = useState<string | null>(null);
   const [zones, setZones] = useState<Zone[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    // Generate auto stocktake number: SC-YYYYMMDD-HHMM
-    const now = new Date();
-    const formatted = `SC-${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}-${now.getHours().toString().padStart(2, "0")}${now.getMinutes().toString().padStart(2, "0")}`;
-    setStocktakeNo(formatted);
-
-    const fetchZones = async () => {
-      try {
-        const res = await api.get<Zone[]>("/storage-zones");
-        setZones(res.data || []);
-      } catch (err) {
-        showError("Không thể tải danh sách khu vực kho.");
-      }
-    };
-    fetchZones();
+  const fetchZones = useCallback(async () => {
+    try {
+      const res = await api.get<Zone[]>("/storage-zones");
+      setZones(res.data || []);
+    } catch {
+      showError("Không thể tải danh sách khu vực kho.");
+    }
   }, []);
+
+  useEffect(() => {
+    queueMicrotask(() => void fetchZones());
+  }, [fetchZones]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,8 +57,8 @@ export default function NewStocktakePage() {
       });
       showSuccess("Tạo đợt kiểm kê nháp thành công!");
       router.push(`/admin/inventory/stocktakes/${res.data.id}`);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Tạo đợt kiểm kê thất bại");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Tạo đợt kiểm kê thất bại"));
     } finally {
       setSubmitting(false);
     }
@@ -94,7 +94,13 @@ export default function NewStocktakePage() {
 
             <div className="space-y-2">
               <Label htmlFor="zone">Phạm vi khu vực (Storage Zone)</Label>
-              <Select onValueChange={(val) => setZoneId(val)} defaultValue="ALL">
+              <Select onValueChange={(val) => {
+                if (val === "ALL") {
+                  setZoneId(null);
+                } else {
+                  setZoneId(val);
+                }
+              }} defaultValue="ALL">
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn khu vực kiểm kê" />
                 </SelectTrigger>

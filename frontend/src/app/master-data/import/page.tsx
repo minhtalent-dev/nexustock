@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import BreadcrumbNav from "@/components/breadcrumb-nav";
 import api from "@/lib/api";
 import { showError, showSuccess, showWarning } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 
 interface ImportRowErrorDto {
   rowIndex: number;
@@ -55,8 +55,8 @@ export default function ImportPage() {
       } else {
         showWarning(`Phát hiện ${res.data.errorRows} dòng dữ liệu lỗi.`);
       }
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải lên file.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải lên file."));
     } finally {
       setLoading(false);
     }
@@ -71,8 +71,8 @@ export default function ImportPage() {
       showSuccess("Duyệt nhập dữ liệu thành công.");
       setResult(null);
       setFile(null);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Duyệt nhập dữ liệu thất bại.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Duyệt nhập dữ liệu thất bại."));
     } finally {
       setLoading(false);
     }

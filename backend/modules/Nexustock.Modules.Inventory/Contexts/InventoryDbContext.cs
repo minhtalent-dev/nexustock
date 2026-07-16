@@ -26,6 +26,7 @@ public class InventoryDbContext : DbContext
     public DbSet<ShipmentItem> ShipmentItems { get; set; } = null!;
     public DbSet<PickTask> PickTasks { get; set; } = null!;
     public DbSet<PackingRecord> PackingRecords { get; set; } = null!;
+    public DbSet<ManualWeightOverride> ManualWeightOverrides { get; set; } = null!;
     public DbSet<Stocktake> Stocktakes { get; set; } = null!;
     public DbSet<StocktakeItem> StocktakeItems { get; set; } = null!;
     public DbSet<StockAdjustment> StockAdjustments { get; set; } = null!;
@@ -50,6 +51,7 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<ShipmentItem>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<PickTask>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<PackingRecord>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<ManualWeightOverride>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<Stocktake>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<StocktakeItem>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<StockAdjustment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
@@ -101,6 +103,12 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<PackingRecord>(entity =>
         {
             entity.HasIndex(e => new { e.TenantId, e.PackageNo }).IsUnique().HasDatabaseName("uq_packing_records_tenant_package");
+            entity.HasIndex(e => new { e.TenantId, e.ManualOverrideId }).HasDatabaseName("idx_packing_records_tenant_manual_override");
+        });
+
+        modelBuilder.Entity<ManualWeightOverride>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.ShipmentId, e.PackageNo, e.UsedAt }).HasDatabaseName("idx_manual_weight_overrides_lookup");
         });
 
         modelBuilder.Entity<Stocktake>(entity =>

@@ -6,6 +6,7 @@ import ScanInput from "@/components/mobile/scan-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import api from "@/lib/api";
 import { ArrowLeft, Box, ClipboardCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -41,8 +42,8 @@ export default function PickingPage() {
       } else {
         showError(res.data.message || "Không có nhiệm vụ nào sẵn sàng.");
       }
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể lấy nhiệm vụ mới.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể lấy nhiệm vụ mới."));
     } finally {
       setLoading(false);
     }
@@ -55,8 +56,8 @@ export default function PickingPage() {
       setUserLocation(barcode); // Cập nhật vị trí hiện tại
       showSuccess("Xác nhận vị trí kệ thành công!");
       setCurrentStep("SCAN_LOT");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Vị trí kệ không hợp lệ!");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Vị trí kệ không hợp lệ!"));
     } finally {
       setLoading(false);
     }
@@ -68,8 +69,8 @@ export default function PickingPage() {
       await api.post("/mobile/scan/validate", { barcode, context: "LOT" });
       showSuccess("Xác nhận số lô hàng thành công!");
       setCurrentStep("INPUT_QTY");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lô hàng không tồn tại trong kho!");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lô hàng không tồn tại trong kho!"));
     } finally {
       setLoading(false);
     }
@@ -83,8 +84,8 @@ export default function PickingPage() {
       showSuccess("Hoàn thành nhiệm vụ lấy hàng!");
       setTask(null);
       setCurrentStep("CLAIM");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi hoàn tất nhiệm vụ.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi hoàn tất nhiệm vụ."));
     } finally {
       setLoading(false);
     }

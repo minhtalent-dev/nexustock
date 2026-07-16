@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 
 interface ReasonDto {
   id: string;
@@ -37,7 +38,7 @@ export function LockLocationDialog({
     try {
       const res = await api.get<{ items: ReasonDto[] }>("/master-data/reasons");
       setReasons(res.data.items || []);
-    } catch (err) {
+    } catch {
       setReasons([
         { id: "1", code: "MAINTENANCE", name: "Bảo trì ô kệ" },
         { id: "2", code: "CLEANING", name: "Dọn dẹp vệ sinh" },
@@ -48,9 +49,11 @@ export function LockLocationDialog({
 
   useEffect(() => {
     if (isOpen) {
-      fetchReasons();
-      setLockType("ALL");
-      setReasonCode("");
+      queueMicrotask(() => {
+        void fetchReasons();
+        setLockType("ALL");
+        setReasonCode("");
+      });
     }
   }, [isOpen]);
 
@@ -70,8 +73,8 @@ export function LockLocationDialog({
       showSuccess(`Đã khóa vị trí ${locationCode} thành công.`);
       onSuccess();
       onClose();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể khóa vị trí.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể khóa vị trí."));
     } finally {
       setSaving(false);
     }

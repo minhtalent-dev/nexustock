@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import api from "@/lib/api";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 
 interface HoldReleaseDialogProps {
   isOpen: boolean;
@@ -72,8 +73,8 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
       }
       onSuccess();
       onClose();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi xử lý yêu cầu.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi xử lý yêu cầu."));
     } finally {
       setLoading(false);
     }

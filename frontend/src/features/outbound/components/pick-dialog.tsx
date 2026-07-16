@@ -34,7 +34,7 @@ export function CompletePickDialog({
 
   useEffect(() => {
     if (isOpen) {
-      setPickedQty(allocatedQty);
+      queueMicrotask(() => setPickedQty(allocatedQty));
     }
   }, [isOpen, allocatedQty]);
 
@@ -57,8 +57,8 @@ export function CompletePickDialog({
       showSuccess("Hoàn thành nhiệm vụ lấy hàng.");
       onSuccess();
       onClose();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể hoàn tất nhiệm vụ lấy hàng.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể hoàn tất nhiệm vụ lấy hàng."));
     } finally {
       setSaving(false);
     }

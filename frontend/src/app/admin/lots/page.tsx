@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { Search, Tag, AlertCircle } from "lucide-react";
 
 interface LotResponseDto {
@@ -40,12 +41,8 @@ export default function LotsPage() {
     try {
       const res = await api.get<LotResponseDto[]>(`/lots/${searchLotNo.trim()}`);
       setLots(res.data);
-    } catch (err: any) {
-      if (err.response?.status === 404) {
-        setLots([]);
-      } else {
-        showError(err.response?.data?.message || "Lỗi khi tra cứu lô hàng.");
-      }
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi tra cứu lô hàng."));
     } finally {
       setLoading(false);
     }

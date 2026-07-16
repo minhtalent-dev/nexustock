@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { MoveInventoryDialog } from "@/features/inventory/components/move-dialog";
 import { LockLocationDialog } from "@/features/inventory/components/lock-dialog";
 import { 
@@ -35,12 +36,6 @@ interface LocationDto {
   lockReasonCode?: string;
 }
 
-interface LocationLockDto {
-  locationId: string;
-  lockType: string;
-  reasonCode: string;
-}
-
 export default function InventoryPage() {
   const [balances, setBalances] = useState<InventoryBalance[]>([]);
   const [locations, setLocations] = useState<LocationDto[]>([]);
@@ -60,7 +55,7 @@ export default function InventoryPage() {
   const [isMoveOpen, setIsMoveOpen] = useState(false);
   const [isLockOpen, setIsLockOpen] = useState(false);
 
-  const fetchBalances = async () => {
+  const fetchBalances = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<{ items: InventoryBalance[] }>("/inventory/balances", {
@@ -81,14 +76,14 @@ export default function InventoryPage() {
       }
 
       setBalances(list);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải số dư tồn kho.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải số dư tồn kho."));
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchItem, searchLoc, searchLot]);
 
-  const fetchLocationsAndLocks = async () => {
+  const fetchLocationsAndLocks = useCallback(async () => {
     setLocLoading(true);
     try {
       // Fetch Master Locations
@@ -106,17 +101,19 @@ export default function InventoryPage() {
       // Wait, let's add a list of active locks in the state. When the page is loaded, we can fetch locations,
       // and when we try to lock/unlock, we update the local state.
       // Better yet! Let's update the local lock state when lock/unlock is clicked, and keep track of it in activeLocks.
-    } catch (err) {
+    } catch {
       showError("Không thể tải thông tin vị trí ô kệ.");
     } finally {
       setLocLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchBalances();
-    fetchLocationsAndLocks();
-  }, []);
+    queueMicrotask(() => {
+      void fetchBalances();
+      void fetchLocationsAndLocks();
+    });
+  }, [fetchBalances, fetchLocationsAndLocks]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,8 +153,8 @@ export default function InventoryPage() {
         return copy;
       });
       fetchLocationsAndLocks();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể mở khóa vị trí.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể mở khóa vị trí."));
     }
   };
 

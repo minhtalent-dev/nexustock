@@ -29,6 +29,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
+  const getErrorMessage = (err: unknown, fallback: string) => {
+    if (typeof err === "object" && err !== null && "response" in err) {
+      const response = (err as { response?: { data?: { message?: string } } }).response;
+      return response?.data?.message || fallback;
+    }
+
+    return fallback;
+  };
+
   const parseJwt = (token: string): User | null => {
     try {
       const base64Url = token.split(".")[1];
@@ -76,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchPermissions]);
 
   useEffect(() => {
-    restoreSession();
+    queueMicrotask(() => void restoreSession());
   }, [restoreSession]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
@@ -94,15 +103,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const permRes = await api.get<string[]>("/me/permissions");
         setPermissions(permRes.data);
-      } catch (e) {
+      } catch {
         setPermissions([]);
       }
 
       showSuccess("Đăng nhập thành công!");
       router.push("/");
       return true;
-    } catch (err: any) {
-      const msg = err.response?.data?.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err, "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
       showError(msg);
       return false;
     }

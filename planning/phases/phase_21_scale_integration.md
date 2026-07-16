@@ -1,4 +1,4 @@
-﻿# PHASE 21: Scale integration
+# PHASE 21: Scale integration
 
 ## Execution spec maturity
 
@@ -160,17 +160,17 @@ graph TD
 
 ### 14.2 Local Agent implementation checklist
 
-- [ ] Thêm thư mục `local-agent/Nexustock.LocalAgent/Devices/Scale/`.
-- [ ] Thêm model cấu hình `ScaleDeviceConfig`: `enabled`, `mode`, `portName`, `baudRate`, `parity`, `dataBits`, `stopBits`, `lineEnding`, `scaleProfile`, `stableWindowMs`, `stableToleranceKg`, `minimumWeightKg`, `readTimeoutMs`.
-- [ ] Thêm `IScaleDevice` với các hàm tối thiểu: `StartAsync`, `StopAsync`, `ZeroAsync`, `TareAsync`, event/stream weight reading.
-- [ ] Thêm `ScaleFrameParser` profile-based, parse được tối thiểu frame mẫu `ST,GS,+0012.35kg`, `US,GS,+0012.38kg`, `12.35 kg`.
-- [ ] Thêm `StableWeightFilter` pure logic, không phụ thuộc SerialPort để unit test nhanh.
-- [ ] Thêm WebSocket messages:
+- [x] Thêm thư mục `local-agent/Nexustock.LocalAgent/Devices/Scale/`.
+- [x] Thêm model cấu hình `ScaleDeviceConfig`: `enabled`, `mode`, `portName`, `baudRate`, `parity`, `dataBits`, `stopBits`, `lineEnding`, `scaleProfile`, `stableWindowMs`, `stableToleranceKg`, `minimumWeightKg`, `readTimeoutMs`.
+- [x] Thêm `IScaleDevice` với các hàm tối thiểu: `StartAsync`, `StopAsync`, `ZeroAsync`, `TareAsync`, event/stream weight reading.
+- [x] Thêm `ScaleFrameParser` profile-based, parse được tối thiểu frame mẫu `ST,GS,+0012.35kg`, `US,GS,+0012.38kg`, `12.35 kg`.
+- [x] Thêm `StableWeightFilter` pure logic, không phụ thuộc SerialPort để unit test nhanh.
+- [x] Thêm WebSocket messages:
   - `scale.status.request` -> `scale.status.response`
   - `scale.weight.subscribe` -> stream `scale.weightChanged`
   - `scale.zero.request` -> `scale.zero.response`
   - `scale.tare.request` -> `scale.tare.response`
-- [ ] Mọi command sau paired mode phải dùng HMAC guard Phase 20; không cho browser gửi command unsigned.
+- [x] Mọi command sau paired mode phải dùng HMAC guard Phase 20; không cho browser gửi command unsigned.
 
 ### 14.3 WebSocket event contract
 
@@ -202,21 +202,21 @@ Error payload chuẩn:
 
 ### 14.4 Backend implementation checklist
 
-- [ ] Tạo module theo convention hiện tại: `backend/modules/Nexustock.Modules.ScaleIntegration/` thay vì snake_case.
-- [ ] Seed permission `scale.override` vào catalog quyền.
-- [ ] Seed reason codes nhóm `SCALE_OVERRIDE`: `DEVICE_COMM_ERR`, `SCALE_UNSTABLE`, `DEVICE_CALIBRATION`, `OPERATION_APPROVED`.
-- [ ] Tạo bảng `ManualWeightOverrides` và API `POST /api/packing/weight/manual`.
-- [ ] API response/DTO bắt buộc camelCase: `overrideId`, `manualWeight`, `reasonCode`, `cartonNo`.
-- [ ] Validate `manualWeight > 0`, giới hạn precision 4 số lẻ, bắt buộc `reasonCode`, bắt buộc quyền `scale.override`.
-- [ ] Ghi audit log không chứa raw token, không ghi thông tin nhạy cảm từ Local Agent config.
+- [x] Tạo module theo convention hiện tại: `backend/modules/Nexustock.Modules.ScaleIntegration/` thay vì snake_case.
+- [x] Seed permission `scale.override` vào catalog quyền.
+- [x] Seed reason codes nhóm `SCALE_OVERRIDE`: `DEVICE_COMM_ERR`, `SCALE_UNSTABLE`, `DEVICE_CALIBRATION`, `OPERATION_APPROVED`.
+- [x] Tạo bảng `ManualWeightOverrides` và API `POST /api/packing/weight/manual`.
+- [x] API response/DTO bắt buộc camelCase: `overrideId`, `manualWeight`, `reasonCode`, `cartonNo`.
+- [x] Validate `manualWeight > 0`, giới hạn precision 4 số lẻ, bắt buộc `reasonCode`, bắt buộc quyền `scale.override`.
+- [x] Ghi audit log không chứa raw token, không ghi thông tin nhạy cảm từ Local Agent config.
 
 ### 14.5 Frontend implementation checklist
 
-- [ ] Tích hợp panel cân vào packing UI hiện có, không tạo flow đóng gói song song.
-- [ ] UI hiển thị rõ 4 trạng thái: `connected`, `unstable`, `stable`, `error`.
-- [ ] Disable nút hoàn tất carton nếu `stable !== true` và chưa có override hợp lệ.
-- [ ] Dialog nhập tay bắt buộc chọn reason code, nhập số cân hợp lệ và ghi chú khi lý do là lỗi thiết bị.
-- [ ] Không lưu `AgentToken` hoặc secret Local Agent trong browser.
+- [x] Tích hợp panel cân vào packing UI hiện có, không tạo flow đóng gói song song.
+- [x] UI hiển thị rõ 4 trạng thái: `connected`, `unstable`, `stable`, `error`.
+- [x] Disable nút hoàn tất carton nếu `stable !== true` và chưa có override hợp lệ.
+- [x] Dialog nhập tay bắt buộc chọn reason code, nhập số cân hợp lệ và ghi chú khi lý do là lỗi thiết bị.
+- [x] Không lưu `AgentToken` hoặc secret Local Agent trong browser.
 
 ### 14.6 Test gate bắt buộc trước khi cập nhật hoàn thành
 
@@ -338,3 +338,21 @@ Acceptance test tối thiểu:
 - Tài liệu hướng dẫn end-user cho Weighing Panel phải có ảnh hoặc walkthrough khi triển khai UI xong.
 - Nếu có profile cân thật mới, cập nhật raw-frame fixture và `scaleProfile` mapping vào tài liệu vận hành.
 
+## 19. Completion evidence
+
+- **Trạng thái:** ✅ Hoàn thành
+- **Ngày hoàn thành:** 2026-07-16
+- **Kết quả gate:** Pass 100% nghiêm ngặt (Strict Gate: 0 Errors / 0 Warnings) chuẩn Production.
+
+### Evidence đã chạy
+
+- Local Agent build pass (0 warnings / 0 errors): `dotnet build local-agent/Nexustock.LocalAgent/Nexustock.LocalAgent.csproj --no-restore`.
+- Parser/filter pass: `tests/verify_scale_parser.ps1`.
+- WebSocket/HMAC pass: `tests/verify_scale_websocket.ps1`.
+- Manual override API pass: `tests/verify_scale_manual_override.ps1`.
+- Frontend lint pass nghiêm ngặt ở cấu hình Production (0 errors / 0 warnings): `npm run lint --prefix frontend -- --max-warnings 0`.
+
+### Ghi chú vận hành
+
+- Cấu hình ESLint đã được trả về trạng thái nghiêm ngặt nhất cho môi trường Production (toàn bộ quy tắc `set-state-in-effect`, `no-explicit-any` và `purity` hoạt động ở mức `"error"` thay vì `"warn"`).
+- Toàn bộ nợ kỹ thuật (warnings debt) của frontend đã được làm sạch và giải quyết triệt để 100%.

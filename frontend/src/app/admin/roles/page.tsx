@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { useConfirmDialog } from "@/lib/confirm-dialog";
 import { ShieldAlert, ShieldCheck, Plus, Trash2, Save, Sparkles } from "lucide-react";
 
@@ -41,31 +42,7 @@ export default function RolesPage() {
   const [roleDesc, setRoleDesc] = useState("");
   const [savingRole, setSavingRole] = useState(false);
 
-  const fetchRoles = async () => {
-    setLoading(true);
-    try {
-      const res = await api.get<RoleDto[]>("/roles");
-      setRoles(res.data);
-      if (res.data.length > 0 && !selectedRole) {
-        selectRole(res.data[0]);
-      }
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải danh sách vai trò.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchAllPermissions = async () => {
-    try {
-      const res = await api.get<Permission[]>("/permissions");
-      setAllPermissions(res.data);
-    } catch (err: any) {
-      showError("Không thể tải danh mục quyền hạn.");
-    }
-  };
-
-  const selectRole = async (role: RoleDto) => {
+  const selectRole = useCallback(async (role: RoleDto) => {
     setSelectedRole(role);
     try {
       const res = await api.get<Permission[]>(`/roles/${role.id}/permissions`);
@@ -74,12 +51,38 @@ export default function RolesPage() {
       showError("Không thể tải quyền của vai trò.");
       setRolePermissions([]);
     }
-  };
+  }, []);
+
+  const fetchRoles = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.get<RoleDto[]>("/roles");
+      setRoles(res.data);
+      if (res.data.length > 0 && !selectedRole) {
+        void selectRole(res.data[0]);
+      }
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách vai trò."));
+    } finally {
+      setLoading(false);
+    }
+  }, [selectRole, selectedRole]);
+
+  const fetchAllPermissions = useCallback(async () => {
+    try {
+      const res = await api.get<Permission[]>("/permissions");
+      setAllPermissions(res.data);
+    } catch {
+      showError("Không thể tải danh mục quyền hạn.");
+    }
+  }, []);
 
   useEffect(() => {
-    fetchRoles();
-    fetchAllPermissions();
-  }, []);
+    queueMicrotask(() => {
+      void fetchRoles();
+      void fetchAllPermissions();
+    });
+  }, [fetchRoles, fetchAllPermissions]);
 
   const openCreateRole = () => {
     setRoleName("");
@@ -98,8 +101,8 @@ export default function RolesPage() {
       setIsRoleOpen(false);
       await fetchRoles();
       selectRole(res.data);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi tạo vai trò.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi tạo vai trò."));
     } finally {
       setSavingRole(false);
     }
@@ -121,8 +124,8 @@ export default function RolesPage() {
       showSuccess("Xóa vai trò thành công.");
       setSelectedRole(null);
       fetchRoles();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi xóa vai trò.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi xóa vai trò."));
     }
   };
 
@@ -140,8 +143,8 @@ export default function RolesPage() {
         permissionIds: rolePermissions,
       });
       showSuccess(`Cập nhật quyền hạn cho vai trò "${selectedRole.name}" thành công.`);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi lưu quyền hạn.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi lưu quyền hạn."));
     } finally {
       setSavingPermissions(false);
     }

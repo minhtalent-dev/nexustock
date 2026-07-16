@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { showError, showSuccess } from "@/lib/toast";
-import { RefreshCw, ClipboardList, CheckCircle, FileText, Upload, Plus, Timeline } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { RefreshCw, ClipboardList, Upload } from "lucide-react";
 
 interface SerialNumber {
   id: string;
@@ -63,21 +64,21 @@ export default function SerialPage() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchSerials = async () => {
+  const fetchSerials = useCallback(async () => {
     setLoadingSerials(true);
     try {
       const res = await api.get<SerialNumber[]>("/serials", {
         params: { query: searchQuery }
       });
       setSerials(res.data || []);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải danh sách Serial.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách Serial."));
     } finally {
       setLoadingSerials(false);
     }
-  };
+  }, [searchQuery]);
 
-  const fetchMetadata = async () => {
+  const fetchMetadata = useCallback(async () => {
     try {
       const prodRes = await api.get<{ items: Product[] }>("/master-data/products");
       setProducts(prodRes.data.items || []);
@@ -87,24 +88,26 @@ export default function SerialPage() {
       const locRes = await api.get<{ items: StorageLocation[] }>("/master-data/storage-locations");
       setLocations(locRes.data.items || []);
     } catch {}
-  };
+  }, []);
 
   const fetchTimeline = async (serial: SerialNumber) => {
     setLoadingTimeline(true);
     try {
       const res = await api.get<SerialEvent[]>(`/serials/${serial.serialNo}`);
       setTimelineEvents(res.data || []);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải lịch sử sự kiện Serial.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải lịch sử sự kiện Serial."));
     } finally {
       setLoadingTimeline(false);
     }
   };
 
   useEffect(() => {
-    fetchSerials();
-    fetchMetadata();
-  }, []);
+    queueMicrotask(() => {
+      void fetchSerials();
+      void fetchMetadata();
+    });
+  }, [fetchSerials, fetchMetadata]);
 
   const handleSelectSerial = (serial: SerialNumber) => {
     setSelectedSerial(serial);
@@ -130,8 +133,8 @@ export default function SerialPage() {
       setShowImportModal(false);
       setImportForm({ itemId: "", locationId: "" });
       fetchSerials();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Import tệp lỗi hoặc có mã trùng.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Import tệp lỗi hoặc có mã trùng."));
     }
   };
 

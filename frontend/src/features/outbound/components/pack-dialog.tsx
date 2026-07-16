@@ -1,12 +1,29 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import api from "@/lib/api";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { showError, showSuccess } from "@/lib/toast";
+import { useLocalScale } from "@/features/outbound/hooks/use-local-scale";
+
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
+interface ManualOverrideResponse {
+  manualOverrideId: string;
+  manualWeight: number;
+}
 
 interface CompletePackingDialogProps {
   isOpen: boolean;
@@ -24,38 +41,92 @@ export function CompletePackingDialog({
   shipmentNo,
 }: CompletePackingDialogProps) {
   const [packageNo, setPackageNo] = useState("");
-  const [weight, setWeight] = useState<number>(0);
+  const [manualMode, setManualMode] = useState(false);
+  const [manualWeight, setManualWeight] = useState("");
+  const [manualReason, setManualReason] = useState("");
   const [saving, setSaving] = useState(false);
+  const { status, reading, error, reconnect } = useLocalScale(isOpen);
+
+  const weight = reading?.weightKg ?? 0;
+  const parsedManualWeight = Number(manualWeight);
+  const canSubmitScale = status === "connected" && Boolean(reading?.stable) && weight > 0;
+  const canSubmitManual = parsedManualWeight > 0 && manualReason.trim().length > 0;
+  const canSubmit = !saving && Boolean(packageNo.trim()) && (manualMode ? canSubmitManual : canSubmitScale);
+
+  const statusLabel = useMemo(() => {
+    if (status === "connected" && reading?.stable) return "Stable";
+    if (status === "connected") return "Live";
+    if (status === "connecting") return "Connecting";
+    if (status === "unavailable") return "Unavailable";
+    if (status === "error") return "Error";
+    return "Idle";
+  }, [reading?.stable, status]);
 
   useEffect(() => {
     if (isOpen) {
-      setPackageNo(`PKG-${shipmentNo}-${Date.now().toString().slice(-4)}`);
-      setWeight(0);
+      queueMicrotask(() => {
+        setPackageNo(`PKG-${shipmentNo}-${Date.now().toString().slice(-4)}`);
+        setManualMode(false);
+        setManualWeight("");
+        setManualReason("");
+      });
     }
   }, [isOpen, shipmentNo]);
+
+  const completeWithScale = async () => {
+    await api.post(`/outbound/packing/${shipmentId}/complete`, {
+      packageNo: packageNo.trim(),
+      weight,
+      weightSource: "scale",
+      scaleStable: true
+    });
+  };
+
+  const completeWithManualOverride = async () => {
+    const overrideRes = await api.post<ManualOverrideResponse>("/outbound/packing/weight/manual", {
+      shipmentId,
+      packageNo: packageNo.trim(),
+      manualWeight: parsedManualWeight,
+      reason: manualReason.trim(),
+    });
+
+    await api.post(`/outbound/packing/${shipmentId}/complete`, {
+      packageNo: packageNo.trim(),
+      weight: overrideRes.data.manualWeight,
+      weightSource: "manual_override",
+      scaleStable: false,
+      manualOverrideId: overrideRes.data.manualOverrideId,
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!packageNo.trim()) {
-      showError("Vui lòng nhập mã kiện hàng.");
+      showError("Package number is required.");
       return;
     }
-    if (weight <= 0) {
-      showError("Cân nặng phải lớn hơn 0.");
+    if (!manualMode && !canSubmitScale) {
+      showError("Stable scale weight is required before packing.");
+      return;
+    }
+    if (manualMode && !canSubmitManual) {
+      showError("Manual weight and override reason are required.");
       return;
     }
 
     setSaving(true);
     try {
-      await api.post(`/outbound/packing/${shipmentId}/complete`, {
-        packageNo: packageNo.trim(),
-        weight
-      });
-      showSuccess("Hoàn thành đóng gói đơn xuất.");
+      if (manualMode) {
+        await completeWithManualOverride();
+      } else {
+        await completeWithScale();
+      }
+      showSuccess("Packing completed.");
       onSuccess();
       onClose();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể hoàn thành đóng gói.");
+    } catch (err: unknown) {
+      const message = (err as ApiError).response?.data?.message || "Cannot complete packing.";
+      showError(message);
     } finally {
       setSaving(false);
     }
@@ -63,41 +134,84 @@ export function CompletePackingDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
-          <DialogTitle>Xác nhận đóng gói (Packing)</DialogTitle>
+          <DialogTitle>Confirm packing</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 py-4">
-          <div className="grid grid-cols-3 items-center gap-4">
-            <Label className="text-right">Mã đơn xuất</Label>
-            <div className="col-span-2 text-sm font-semibold">{shipmentNo}</div>
-          </div>
-          <div className="grid grid-cols-3 items-center gap-4">
-            <Label htmlFor="packageNo" className="text-right">Mã kiện hàng</Label>
-            <Input
-              id="packageNo"
-              value={packageNo}
-              onChange={(e) => setPackageNo(e.target.value)}
-              className="col-span-2"
-              autoFocus
-            />
-          </div>
-          <div className="grid grid-cols-3 items-center gap-4">
-            <Label htmlFor="weight" className="text-right">Cân nặng (kg)</Label>
-            <Input
-              id="weight"
-              type="number"
-              step="any"
-              min={0.0001}
-              value={weight}
-              onChange={(e) => setWeight(parseFloat(e.target.value) || 0)}
-              className="col-span-2"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 py-2">
+          <Alert>
+            <AlertTitle className="flex items-center justify-between gap-3">
+              Local scale
+              <Badge variant={reading?.stable ? "default" : "secondary"}>{statusLabel}</Badge>
+            </AlertTitle>
+            <AlertDescription>
+              {error || "Packing prefers stable Local Agent scale readings. Manual override requires approval reason."}
+            </AlertDescription>
+          </Alert>
+
+          <FieldGroup>
+            <Field orientation="responsive">
+              <FieldLabel>Shipment</FieldLabel>
+              <div className="text-sm font-semibold">{shipmentNo}</div>
+            </Field>
+            <Field orientation="responsive">
+              <FieldLabel htmlFor="packageNo">Package number</FieldLabel>
+              <Input
+                id="packageNo"
+                value={packageNo}
+                onChange={(e) => setPackageNo(e.target.value)}
+                autoFocus
+              />
+            </Field>
+            <Field orientation="responsive">
+              <FieldLabel htmlFor="weight">Scale weight (kg)</FieldLabel>
+              <Input
+                id="weight"
+                type="number"
+                value={weight.toFixed(3)}
+                readOnly
+                aria-invalid={!reading?.stable && !manualMode}
+              />
+              <FieldDescription>
+                Source: {reading?.deviceId ?? "Local Agent"} · {reading?.connectionState ?? status}
+              </FieldDescription>
+            </Field>
+          </FieldGroup>
+
+          {manualMode ? (
+            <FieldGroup>
+              <Field orientation="responsive">
+                <FieldLabel htmlFor="manualWeight">Manual weight (kg)</FieldLabel>
+                <Input
+                  id="manualWeight"
+                  type="number"
+                  min="0.001"
+                  step="0.001"
+                  value={manualWeight}
+                  onChange={(e) => setManualWeight(e.target.value)}
+                  aria-invalid={!canSubmitManual}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="manualReason">Override reason</FieldLabel>
+                <Textarea
+                  id="manualReason"
+                  value={manualReason}
+                  onChange={(e) => setManualReason(e.target.value)}
+                  placeholder="Example: Scale unavailable, supervisor approved manual weight."
+                  aria-invalid={!manualReason.trim()}
+                />
+              </Field>
+            </FieldGroup>
+          ) : null}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>Hủy</Button>
-            <Button type="submit" disabled={saving}>Xác nhận đóng gói</Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
+            <Button type="button" variant="secondary" onClick={reconnect} disabled={saving || status === "connecting"}>Reconnect scale</Button>
+            <Button type="button" variant="secondary" onClick={() => setManualMode((value) => !value)} disabled={saving}>
+              {manualMode ? "Use scale" : "Manual override"}
+            </Button>
+            <Button type="submit" disabled={!canSubmit}>Complete packing</Button>
           </DialogFooter>
         </form>
       </DialogContent>

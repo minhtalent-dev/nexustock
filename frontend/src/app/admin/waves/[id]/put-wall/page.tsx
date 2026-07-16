@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef, use } from "react";
+import { useCallback, useEffect, useState, useRef, use } from "react";
 import Link from "next/link";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { showError, showSuccess } from "@/lib/toast";
-import { ArrowLeft, LayoutGrid, ScanBarcode, CheckCircle2, AlertCircle } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { ArrowLeft, LayoutGrid, ScanBarcode, CheckCircle2 } from "lucide-react";
 
 interface WaveItemDetail {
   id: string;
@@ -44,6 +45,10 @@ interface SortResponse {
   isSlotComplete: boolean;
 }
 
+interface WindowWithWebkitAudio extends Window {
+  webkitAudioContext?: typeof AudioContext;
+}
+
 export default function PutWallPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const waveId = resolvedParams.id;
@@ -55,9 +60,11 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Tạo âm thanh beep bằng Web Audio API
-  const playBeep = (type: "success" | "complete" | "error") => {
+  const playBeep = useCallback((type: "success" | "complete" | "error") => {
     try {
-      const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const AudioContextClass = window.AudioContext || (window as WindowWithWebkitAudio).webkitAudioContext;
+      if (!AudioContextClass) return;
+      const audioCtx = new AudioContextClass();
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
 
@@ -87,25 +94,25 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
     } catch (e) {
       console.warn("Không thể phát âm thanh", e);
     }
-  };
+  }, []);
 
-  const fetchWaveDetails = async () => {
+  const fetchWaveDetails = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<WaveDetailResponse>(`/waves/${waveId}`);
       setWave(res.data);
-    } catch (err: any) {
+    } catch {
       showError("Không thể tải chi tiết Put-Wall.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [waveId]);
 
   useEffect(() => {
-    fetchWaveDetails();
+    queueMicrotask(() => void fetchWaveDetails());
     // Tự động focus vào ô quét barcode
-    if (inputRef.current) inputRef.current.focus();
-  }, [waveId]);
+    inputRef.current?.focus();
+  }, [fetchWaveDetails]);
 
   const handleSortSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,9 +142,9 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
       setTimeout(() => {
         setFlashingSlot(null);
       }, 3000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       playBeep("error");
-      showError(err.response?.data?.message || "Lỗi khi quét phân loại sản phẩm.");
+      showError(getHttpErrorMessage(err, "Lỗi khi quét phân loại sản phẩm."));
     } finally {
       if (inputRef.current) inputRef.current.focus();
     }

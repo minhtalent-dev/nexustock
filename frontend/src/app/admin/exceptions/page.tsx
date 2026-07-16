@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { AlertCircle, UserCheck, ShieldAlert, CheckCircle2, History, Loader2 } from "lucide-react";
 
 interface ExceptionDto {
@@ -43,7 +44,7 @@ export default function ExceptionsPage() {
   const [exceptions, setExceptions] = useState<ExceptionDto[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const [page] = useState(1);
   const [pageSize] = useState(20);
 
   // Filters
@@ -68,7 +69,7 @@ export default function ExceptionsPage() {
   const [resolveNote, setResolveNote] = useState("");
   const [resolving, setResolving] = useState(false);
 
-  const fetchExceptions = async () => {
+  const fetchExceptions = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<{ items: ExceptionDto[]; totalCount: number }>("/exceptions/open", {
@@ -81,16 +82,16 @@ export default function ExceptionsPage() {
       });
       setExceptions(res.data.items);
       setTotalCount(res.data.totalCount);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải danh sách ngoại lệ.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách ngoại lệ."));
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, severityFilter, typeFilter]);
 
   useEffect(() => {
-    fetchExceptions();
-  }, [page, severityFilter, typeFilter]);
+    queueMicrotask(() => void fetchExceptions());
+  }, [fetchExceptions]);
 
   const viewDetails = async (exc: ExceptionDto) => {
     setSelectedException(exc);
@@ -98,7 +99,7 @@ export default function ExceptionsPage() {
     try {
       const res = await api.get<ExceptionEventDto[]>(`/exceptions/${exc.id}/events`);
       setEvents(res.data);
-    } catch (err: any) {
+    } catch {
       showError("Không thể tải lịch sử sự kiện ngoại lệ.");
     } finally {
       setLoadingEvents(false);
@@ -117,8 +118,8 @@ export default function ExceptionsPage() {
       // Refresh details
       viewDetails(selectedException);
       fetchExceptions();
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi khi gán người xử lý.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi gán người xử lý."));
     } finally {
       setAssigning(false);
     }
@@ -139,8 +140,8 @@ export default function ExceptionsPage() {
       setIsResolveOpen(false);
       setSelectedException(null); // Close detail
       fetchExceptions();
-    } catch (err: any) {
-      showError(err.response?.data?.message || err.response?.data?.detail || "Lỗi khi giải quyết ngoại lệ.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi giải quyết ngoại lệ."));
     } finally {
       setResolving(false);
     }

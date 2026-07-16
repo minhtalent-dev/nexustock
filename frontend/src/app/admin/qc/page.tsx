@@ -1,18 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { showError, showSuccess } from "@/lib/toast";
+import { showError } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { QcResultDialog } from "@/features/qc/components/qc-result-dialog";
 import { HoldReleaseDialog } from "@/features/qc/components/hold-release-dialog";
 import { 
-  CheckSquare, Search, AlertCircle, Unlock, Lock, Ban, 
+  CheckSquare, Search, Unlock, Lock, Ban, 
   RefreshCw, ClipboardCheck, AlertOctagon 
 } from "lucide-react";
 
@@ -53,17 +53,17 @@ export default function QcPage() {
   const [activeLot, setActiveLot] = useState<{ id: string; lotNo: string; qcRequestId?: string } | null>(null);
   const [dialogMode, setDialogMode] = useState<"result" | "hold" | "release" | "reject" | null>(null);
 
-  const fetchQueue = async () => {
+  const fetchQueue = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<QcQueueItem[]>("/qc/queue");
       setQueue(res.data);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải danh sách hàng chờ QC.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải danh sách hàng chờ QC."));
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const handleLookup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,16 +74,16 @@ export default function QcPage() {
     try {
       const res = await api.get<LotDetails[]>(`/lots/${lookupLotNo.trim()}`);
       setLookupResult(res.data);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không tìm thấy lô hàng.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không tìm thấy lô hàng."));
     } finally {
       setLookupLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchQueue();
-  }, []);
+    queueMicrotask(() => void fetchQueue());
+  }, [fetchQueue]);
 
   const openQcDialog = (item: QcQueueItem) => {
     setActiveLot({ id: item.lotId, lotNo: item.lotNo, qcRequestId: item.id });

@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
 import api from "@/lib/api";
-import { ArrowLeft, Box, ClipboardCheck, ArrowRight, RefreshCw } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { ArrowLeft, Box, ArrowRight, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
 interface MobileTask {
@@ -31,6 +32,26 @@ interface ReplenishmentTaskDetail {
   targetLocationCode: string;
   lotNo: string;
   requestedQty: number;
+}
+
+interface ReplenishmentTaskApiItem {
+  id: string;
+  itemId: string;
+  sourceLocationId: string;
+  targetLocationId: string;
+  lotNo: string;
+  requestedQty: number;
+}
+
+interface StorageLocation {
+  id: string;
+  code: string;
+}
+
+interface Product {
+  id: string;
+  code: string;
+  name: string;
 }
 
 export default function MobileReplenishmentPage() {
@@ -65,17 +86,17 @@ export default function MobileReplenishmentPage() {
 
         // 2. Fetch chi tiết ReplenishmentTask tương ứng
         // Vì API GET /api/replenishment/tasks trả về tất cả, ta lọc theo ID
-        const tasksRes = await api.get<any[]>("/replenishment/tasks");
+        const tasksRes = await api.get<ReplenishmentTaskApiItem[]>("/replenishment/tasks");
         const detail = tasksRes.data.find((t) => t.id === claimedTask.referenceId);
 
         if (detail) {
           // Load location codes để hiển thị trực quan
-          const locsRes = await api.get<any[]>("/masterdata/locations");
+          const locsRes = await api.get<StorageLocation[]>("/masterdata/locations");
           const sourceLoc = locsRes.data.find((l) => l.id === detail.sourceLocationId);
           const targetLoc = locsRes.data.find((l) => l.id === detail.targetLocationId);
 
           // Load sản phẩm
-          const prodsRes = await api.get<any[]>("/masterdata/products");
+          const prodsRes = await api.get<Product[]>("/masterdata/products");
           const prod = prodsRes.data.find((p) => p.id === detail.itemId);
 
           setTaskDetail({
@@ -101,8 +122,8 @@ export default function MobileReplenishmentPage() {
       } else {
         showError(res.data.message || "Không còn nhiệm vụ bổ sung nào sẵn sàng.");
       }
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể lấy nhiệm vụ mới.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể lấy nhiệm vụ mới."));
     } finally {
       setLoading(false);
     }
@@ -121,8 +142,8 @@ export default function MobileReplenishmentPage() {
       setUserLocation(barcode);
       showSuccess("Đã xác nhận kệ nguồn thành công!");
       setCurrentStep("SCAN_LOT");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Vị trí kệ nguồn không hợp lệ!");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Vị trí kệ nguồn không hợp lệ!"));
     } finally {
       setLoading(false);
     }
@@ -140,8 +161,8 @@ export default function MobileReplenishmentPage() {
       await api.post("/mobile/scan/validate", { barcode, context: "LOT" });
       showSuccess("Đã xác nhận số lô sản phẩm thành công!");
       setCurrentStep("SCAN_TARGET_LOC");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Mã số lô sản phẩm không hợp lệ!");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Mã số lô sản phẩm không hợp lệ!"));
     } finally {
       setLoading(false);
     }
@@ -159,8 +180,8 @@ export default function MobileReplenishmentPage() {
       await api.post("/mobile/scan/validate", { barcode, context: "LOCATION" });
       showSuccess("Đã xác nhận kệ đích Pick Face thành công!");
       setCurrentStep("INPUT_QTY");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Vị trí kệ đích không hợp lệ!");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Vị trí kệ đích không hợp lệ!"));
     } finally {
       setLoading(false);
     }
@@ -186,8 +207,8 @@ export default function MobileReplenishmentPage() {
       setMobileTask(null);
       setTaskDetail(null);
       setCurrentStep("CLAIM");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Gặp lỗi khi hoàn thành nhiệm vụ bổ sung.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Gặp lỗi khi hoàn thành nhiệm vụ bổ sung."));
     } finally {
       setLoading(false);
     }

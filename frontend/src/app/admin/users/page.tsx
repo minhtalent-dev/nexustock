@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
-import { Users, UserPlus, Shield, Check, X } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/toast";
+import { Users, UserPlus, Check, X } from "lucide-react";
 
 interface UserDto {
   id: string;
@@ -45,7 +46,7 @@ export default function UsersPage() {
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [usersRes, rolesRes] = await Promise.all([
@@ -54,16 +55,16 @@ export default function UsersPage() {
       ]);
       setUsers(usersRes.data);
       setRoles(rolesRes.data);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải dữ liệu.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải dữ liệu."));
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    queueMicrotask(() => void fetchData());
+  }, [fetchData]);
 
   const openCreate = () => {
     setEditingUser(null);
@@ -109,9 +110,8 @@ export default function UsersPage() {
       }
       setIsOpen(false);
       fetchData();
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.response?.data?.errors?.[0] || "Lỗi thao tác.";
-      showError(msg);
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi thao tác."));
     } finally {
       setSaving(false);
     }

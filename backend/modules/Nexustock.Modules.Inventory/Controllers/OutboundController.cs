@@ -23,17 +23,20 @@ public class OutboundController : ControllerBase
     private readonly MasterDataDbContext _masterContext;
     private readonly ITenantProvider _tenantProvider;
     private readonly IUserPermissionService _permissionService;
+    private readonly IWeightValidationService _weightValidationService;
 
     public OutboundController(
         InventoryDbContext context,
         MasterDataDbContext masterContext,
         ITenantProvider tenantProvider,
-        IUserPermissionService permissionService)
+        IUserPermissionService permissionService,
+        IWeightValidationService weightValidationService)
     {
         _context = context;
         _masterContext = masterContext;
         _tenantProvider = tenantProvider;
         _permissionService = permissionService;
+        _weightValidationService = weightValidationService;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -460,6 +463,68 @@ public class OutboundController : ControllerBase
         }
     }
 
+    [HttpPost("packing/weight/manual")]
+    public async Task<IActionResult> CreateManualWeightOverride([FromBody] ManualWeightOverrideRequestDto dto)
+    {
+        if (!await HasPermissionAsync("Outbound.Packing.Execute"))
+        {
+            return Forbid();
+        }
+
+        var tenantId = GetTenantId();
+        var username = User.Identity?.Name ?? "System";
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { errorCode = "USER_INVALID", message = "Không xác định được người dùng hiện tại" });
+        }
+
+        var packageNo = dto.PackageNo.Trim();
+        var reason = dto.Reason.Trim();
+        if (string.IsNullOrWhiteSpace(packageNo) || string.IsNullOrWhiteSpace(reason))
+        {
+            return BadRequest(new { errorCode = "MANUAL_OVERRIDE_INVALID", message = "Số kiện và lý do nhập tay là bắt buộc" });
+        }
+
+        var shipment = await _context.Shipments.FirstOrDefaultAsync(s => s.Id == dto.ShipmentId && s.TenantId == tenantId);
+        if (shipment == null)
+        {
+            return NotFound(new { errorCode = "SHIPMENT_NOT_FOUND", message = "Không tìm thấy đơn xuất" });
+        }
+
+        if (shipment.Status != "Picking" && shipment.Status != "Allocated")
+        {
+            return BadRequest(new { errorCode = "INVALID_SHIPMENT_STATUS", message = "Trạng thái đơn xuất không hợp lệ để nhập cân nặng thủ công" });
+        }
+
+        var duplicatePackage = await _context.PackingRecords.AnyAsync(p => p.TenantId == tenantId && p.PackageNo == packageNo);
+        if (duplicatePackage)
+        {
+            return BadRequest(new { errorCode = "DUPLICATE_PACKAGE_NO", message = "Số kiện đã tồn tại" });
+        }
+
+        var manualOverride = new ManualWeightOverride
+        {
+            Id = Guid.NewGuid(),
+            TenantId = tenantId,
+            ShipmentId = shipment.Id,
+            PackageNo = packageNo,
+            ManualWeight = dto.ManualWeight,
+            Reason = reason,
+            ApprovedBy = userId,
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = username
+        };
+        _context.ManualWeightOverrides.Add(manualOverride);
+        await _context.SaveChangesAsync();
+
+        return Ok(new ManualWeightOverrideResponseDto
+        {
+            ManualOverrideId = manualOverride.Id,
+            ManualWeight = manualOverride.ManualWeight
+        });
+    }
+
     [HttpPost("packing/{shipmentId:guid}/complete")]
     public async Task<IActionResult> CompletePacking(Guid shipmentId, [FromBody] CompletePackingRequestDto dto)
     {
@@ -470,6 +535,11 @@ public class OutboundController : ControllerBase
 
         var tenantId = GetTenantId();
         var username = User.Identity?.Name ?? "System";
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdClaim, out var userId))
+        {
+            return Unauthorized(new { errorCode = "USER_INVALID", message = "Không xác định được người dùng hiện tại" });
+        }
 
         var shipment = await _context.Shipments.FirstOrDefaultAsync(s => s.Id == shipmentId && s.TenantId == tenantId);
         if (shipment == null)
@@ -485,13 +555,22 @@ public class OutboundController : ControllerBase
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
+            var validation = await _weightValidationService.ValidateAsync(dto, shipment, tenantId, userId, HttpContext.RequestAborted);
+            if (!validation.Success)
+            {
+                return BadRequest(new { errorCode = validation.ErrorCode, message = validation.Message });
+            }
+
             var packingRecord = new PackingRecord
             {
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
                 ShipmentId = shipmentId,
                 PackageNo = dto.PackageNo,
-                Weight = dto.Weight,
+                Weight = validation.Weight,
+                WeightSource = validation.WeightSource,
+                ScaleStable = validation.ScaleStable,
+                ManualOverrideId = validation.ManualOverrideId,
                 Status = "Completed",
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = username

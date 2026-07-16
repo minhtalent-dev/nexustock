@@ -4,8 +4,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 import { showError, showInfo, showSuccess, showWarning } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { useConfirmDialog } from "@/lib/confirm-dialog";
-import type { OperationResult, PagedResult } from "@/types/master-data";
+import type { PagedResult } from "@/types/master-data";
 
 type FieldType = "text" | "number" | "checkbox" | "select";
 
@@ -66,15 +67,15 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
     try {
       const res = await api.get<PagedResult<TItem>>(endpoint, { params });
       setData(res.data);
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Không thể tải dữ liệu.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể tải dữ liệu."));
     } finally {
       setLoading(false);
     }
   }, [endpoint, params]);
 
   useEffect(() => {
-    fetchData();
+    queueMicrotask(() => void fetchData());
   }, [fetchData]);
 
   const openCreate = () => {
@@ -115,9 +116,8 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
       }
       closeDialog();
       await fetchData();
-    } catch (err: any) {
-      const result = err.response?.data as OperationResult | undefined;
-      showError(result?.message || err.response?.data?.message || "Không thể lưu dữ liệu.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Không thể lưu dữ liệu."));
     } finally {
       setSaving(false);
     }
@@ -140,9 +140,8 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
       await api.delete(`${endpoint}/${item.id}`);
       showSuccess("Xóa dữ liệu thành công.");
       await fetchData();
-    } catch (err: any) {
-      const result = err.response?.data as OperationResult | undefined;
-      showWarning(result?.message || err.response?.data?.message || "Không thể xóa dữ liệu.");
+    } catch (err: unknown) {
+      showWarning(getHttpErrorMessage(err, "Không thể xóa dữ liệu."));
     }
   };
 
@@ -163,7 +162,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          setPage(1);
+          queueMicrotask(() => setPage(1));
           fetchData();
         }}
         className="flex gap-3 mb-4"

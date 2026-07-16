@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
 import api from "@/lib/api";
-import { ArrowLeft, Box, ClipboardCheck, ArrowRight, RefreshCw, Layers } from "lucide-react";
+import { getHttpErrorMessage } from "@/lib/http-error";
+import { ArrowLeft, Box, ArrowRight, Layers } from "lucide-react";
 import Link from "next/link";
 
 interface Lpn {
@@ -26,15 +27,19 @@ interface LpnItem {
   qtyOnHand: number;
 }
 
+interface StorageLocation {
+  id: string;
+  code: string;
+}
+
 export default function MobileLpnPage() {
   const [lpn, setLpn] = useState<Lpn | null>(null);
   const [lpnItems, setLpnItems] = useState<LpnItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<"SCAN_LPN" | "SCAN_TARGET_LOC" | "CONFIRM">("SCAN_LPN");
 
-  const [targetLocation, setTargetLocation] = useState<any>(null);
+  const [targetLocation, setTargetLocation] = useState<StorageLocation | null>(null);
   const [targetLocationCode, setTargetLocationCode] = useState("");
-  const [operatorName, setOperatorName] = useState("");
 
   const handleScanLpn = async (barcode: string) => {
     setLoading(true);
@@ -60,8 +65,8 @@ export default function MobileLpnPage() {
 
       showSuccess("Quét mã LPN thành công!");
       setCurrentStep("SCAN_TARGET_LOC");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi khi kiểm tra mã LPN.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi khi kiểm tra mã LPN."));
     } finally {
       setLoading(false);
     }
@@ -71,9 +76,9 @@ export default function MobileLpnPage() {
     setLoading(true);
     try {
       // 1. Kiểm tra vị trí kệ đích có hợp lệ không
-      const locsRes = await api.get<{ items: any[] }>("/master-data/storage-locations");
+      const locsRes = await api.get<{ items: StorageLocation[] }>("/master-data/storage-locations");
       const matchedLoc = (locsRes.data.items || []).find(
-        (l: any) => l.code.toUpperCase() === barcode.toUpperCase()
+        (l) => l.code.toUpperCase() === barcode.toUpperCase()
       );
 
       if (!matchedLoc) {
@@ -90,8 +95,8 @@ export default function MobileLpnPage() {
       setTargetLocationCode(barcode);
       showSuccess("Quét kệ đích thành công!");
       setCurrentStep("CONFIRM");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi kiểm tra kệ đích.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi kiểm tra kệ đích."));
     } finally {
       setLoading(false);
     }
@@ -113,8 +118,8 @@ export default function MobileLpnPage() {
       setTargetLocation(null);
       setTargetLocationCode("");
       setCurrentStep("SCAN_LPN");
-    } catch (err: any) {
-      showError(err.response?.data?.message || "Lỗi dịch chuyển pallet.");
+    } catch (err: unknown) {
+      showError(getHttpErrorMessage(err, "Lỗi dịch chuyển pallet."));
     } finally {
       setLoading(false);
     }
