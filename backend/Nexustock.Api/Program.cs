@@ -480,7 +480,10 @@ try
             ("rma.create", "Tạo yêu cầu trả hàng RMA", "RMA"),
             ("rma.update", "Tiếp nhận hàng trả RMA", "RMA"),
             ("rma.qc", "Kiểm định và xử lý hàng RMA", "RMA"),
-            ("Wave.Manage", "Quản lý Wave Picking", "Wave")
+            ("Wave.Manage", "Quản lý Wave Picking", "Wave"),
+            ("local_agent.view", "Xem trạng thái trạm và thiết bị", "LocalAgent"),
+            ("local_agent.pair", "Thực hiện ghép cặp trạm mới", "LocalAgent"),
+            ("local_agent.revoke", "Thu hồi quyền của trạm làm việc", "LocalAgent")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

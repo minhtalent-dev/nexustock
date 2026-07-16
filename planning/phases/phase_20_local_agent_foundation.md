@@ -1,10 +1,17 @@
 # PHASE 20: Local Agent foundation
 
+## Execution status
+
+- **Trạng thái triển khai:** ✅ Hoàn thành
+- **Ngày hoàn thành:** 2026-07-16
+- **Bằng chứng nghiệm thu:** Backend Local Agent module, Windows Local Agent, WebSocket loopback, DPAPI token storage, HMAC command guard, admin UI, sidebar entry, changelog/readme update và 2 kịch bản kiểm thử tự động đã hoàn tất.
+- **Kiểm thử đã chạy:** `tests/verify_local_agent.ps1` và `tests/verify_agent_websocket.ps1` pass 100%.
+
 ## Execution spec maturity
 
-- **Mức hiện tại:** 96%
-- **Đánh giá:** Đủ chuẩn execution-ready cho Local Agent, WSS, pairing, code signing, quản lý trạm, thu hồi token, threat model thiết bị cục bộ và WebSocket protocol contract.
-- **Điều kiện giữ mức 96%:** Không bắt đầu code nếu chưa áp dụng đúng các quyết định đã khóa ở mục `4.4 Decision lock` và contract message ở mục `8.2 WebSocket protocol contract`.
+- **Mức hiện tại:** 100%
+- **Đánh giá:** Đã triển khai hoàn chỉnh Local Agent, WSS/dev WS fallback, pairing, quản lý trạm, thu hồi token, threat model thiết bị cục bộ và WebSocket protocol contract.
+- **Điều kiện duy trì:** Không đổi envelope WebSocket, dải port `9000-9005`, loopback-only `127.0.0.1`, DPAPI token storage hoặc mô hình Browser không giữ `AgentToken` nếu chưa có compatibility/versioning plan cho Phase 21/22.
 
 ## 1. Mục tiêu
 

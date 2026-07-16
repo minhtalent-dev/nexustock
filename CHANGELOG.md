@@ -1,5 +1,22 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 0.9.0 - Nền tảng kết nối thiết bị ngoại vi và WebSocket Local Agent (Phase 20)
+*Ngày cập nhật: 16/07/2026*
+
+### Tính năng mới
+- **Kết nối thiết bị ngoại vi (Local Agent Foundation - Phase 20)**: Phát triển dịch vụ chạy ngầm Windows Service để kết nối các thiết bị phần cứng tại trạm làm việc (cân điện tử, máy in tem) với hệ thống Web qua giao thức WebSocket bảo mật.
+- **Mã hóa DPAPI (Data Protection API)**: Bảo vệ Token ghép cặp (`AgentToken`) ở tầng hệ điều hành Windows sử dụng LocalMachine/CurrentUser scope, lưu trữ an toàn trong ProgramData và không bao giờ để lộ khóa ra trình duyệt.
+- **Xác thực chữ ký HMAC-SHA256**: Cơ chế ký ủy quyền từ Backend. Trình duyệt (Browser) không nắm giữ Token mà gọi API Backend ký Payload trước khi chuyển tiếp lệnh tới Agent cục bộ để thực thi.
+- **Tự động dò cổng & WebSocket Server**: Agent tự quét dải cổng từ `9000-9005` trên localhost `127.0.0.1` để tự động chọn cổng trống khởi chạy Kestrel WebSocket. Hỗ trợ xác thực nguồn gốc kết nối (Origin Allowlist) và nạp chứng chỉ SSL.
+- **Bảo vệ chống Replay và Brute-force**:
+  - Giới hạn sai lệch thời gian tin nhắn tối đa 30 giây (Time Skew Check).
+  - Tự động khóa mã ghép cặp (Pairing Code) trong 3 phút sau 5 lần nhập sai liên tiếp (Brute-force lockout).
+- **Heartbeat & Tự động thu hồi cục bộ**: Background worker của Agent định kỳ gửi thông tin thiết bị lên Backend mỗi 30 giây. Khi quản trị viên thực hiện lệnh thu hồi trạm (Revoke), Agent tự động phát hiện lỗi 403 Forbidden và xóa sạch khóa bảo mật cục bộ.
+- **Giao diện Web Admin & Client Helper**:
+  - Trang quản trị Next.js trực quan hóa trạng thái quét kết nối, tạo mã ghép cặp, theo dõi danh sách trạm (kèm tên máy tính cục bộ) và thu hồi quyền trạm làm việc.
+  - Client helper TypeScript tích hợp quét dải cổng nhanh và điều phối bắt tay ghép cặp WebSocket.
+- **Kiểm thử tích hợp tự động**: Viết kịch bản kiểm thử E2E tích hợp [verify_local_agent.ps1](file:///d:/1_Project/48_Nexustock/tests/verify_local_agent.ps1) và [verify_agent_websocket.ps1](file:///d:/1_Project/48_Nexustock/tests/verify_agent_websocket.ps1) chạy thành công 100%.
+
 ## Phiên bản 0.8.0 - Đợt Lấy Hàng Wave Picking, Bàn Phân Chia Put-Wall Động và Truy vết Phả hệ Vật tư (Phase 18 & 19)
 *Ngày cập nhật: 15/07/2026*
 

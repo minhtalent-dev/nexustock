@@ -12,6 +12,8 @@ public class AgentPairingCode
     public Guid TenantId { get; set; }
     [Required, MaxLength(50)]
     public string StationCode { get; set; } = null!;
+    [Required, MaxLength(100)]
+    public string StationName { get; set; } = null!;
     [Required, MaxLength(256)]
     public string CodeHash { get; set; } = null!;
     public DateTime ExpiresAt { get; set; }

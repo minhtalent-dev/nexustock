@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Nexustock.Modules.LocalAgent.Contexts;
@@ -13,6 +14,10 @@ namespace Nexustock.Modules.LocalAgent.Services;
 
 public class LocalAgentService : ILocalAgentService
 {
+    private const int MaxPageSize = 100;
+    private const int MaxHeartbeatDevices = 50;
+    private static readonly Regex StationCodeRegex = new("^[A-Za-z0-9_-]{1,50}$", RegexOptions.Compiled);
+    private static readonly Regex PairingCodeRegex = new("^[0-9]{6}$", RegexOptions.Compiled);
     private readonly LocalAgentDbContext _dbContext;
 
     public LocalAgentService(LocalAgentDbContext dbContext)
@@ -22,7 +27,9 @@ public class LocalAgentService : ILocalAgentService
 
     public async Task<PairingCodeResponseDto> GeneratePairingCodeAsync(Guid tenantId, string username, GeneratePairingCodeRequestDto dto)
     {
-        // 1. Tạo OTP 6 chữ số
+        ValidateStationCode(dto.StationCode);
+        var stationName = NormalizeRequired(dto.Name, 100, "Tên trạm không hợp lệ.");
+
         var codeInt = RandomNumberGenerator.GetInt32(100000, 1000000);
         var plainCode = codeInt.ToString();
         var codeHash = ComputeSha256(plainCode);
@@ -43,6 +50,7 @@ public class LocalAgentService : ILocalAgentService
             Id = Guid.NewGuid(),
             TenantId = tenantId,
             StationCode = dto.StationCode,
+            StationName = stationName,
             CodeHash = codeHash,
             ExpiresAt = expiresAt,
             CreatedBy = username,
@@ -63,22 +71,35 @@ public class LocalAgentService : ILocalAgentService
 
     public async Task<ConfirmPairResponseDto> ConfirmPairAsync(ConfirmPairRequestDto dto)
     {
-        // Public API: Cần tìm code trên mọi tenant
-        var activeCode = await _dbContext.AgentPairingCodes
-            .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => x.StationCode == dto.StationCode && x.ConsumedAt == null && x.ExpiresAt > DateTime.UtcNow);
+        ValidateStationCode(dto.StationCode);
+        ValidatePairingCode(dto.PairingCode);
+        var machineName = NormalizeOptional(dto.MachineName, 100);
 
-        if (activeCode == null)
+        var activeCodes = await _dbContext.AgentPairingCodes
+            .IgnoreQueryFilters()
+            .Where(x => x.StationCode == dto.StationCode && x.ConsumedAt == null && x.ExpiresAt > DateTime.UtcNow)
+            .OrderBy(x => x.CreatedAt)
+            .ToListAsync();
+
+        if (activeCodes.Count == 0)
         {
             throw new InvalidOperationException("Mã ghép cặp không hợp lệ hoặc đã hết hạn.");
         }
+
+        var hash = ComputeSha256(dto.PairingCode);
+        var matchedCodes = activeCodes.Where(x => x.CodeHash == hash).ToList();
+        if (matchedCodes.Select(x => x.TenantId).Distinct().Count() > 1)
+        {
+            throw new InvalidOperationException("Mã ghép cặp không hợp lệ hoặc đã hết hạn.");
+        }
+
+        var activeCode = matchedCodes.SingleOrDefault() ?? activeCodes[^1];
 
         if (activeCode.IsLocked)
         {
             throw new InvalidOperationException("Mã ghép cặp đã bị khóa do thử sai quá nhiều lần.");
         }
 
-        var hash = ComputeSha256(dto.PairingCode);
         if (activeCode.CodeHash != hash)
         {
             activeCode.InvalidAttempts++;
@@ -94,7 +115,7 @@ public class LocalAgentService : ILocalAgentService
                 Id = Guid.NewGuid(),
                 TenantId = activeCode.TenantId,
                 EventType = "pairingRejected",
-                MachineName = dto.MachineName,
+                MachineName = machineName,
                 Message = $"Ghép cặp thất bại cho trạm {dto.StationCode} (Thử sai lần thứ {activeCode.InvalidAttempts})",
                 CreatedAt = DateTime.UtcNow
             };
@@ -125,10 +146,10 @@ public class LocalAgentService : ILocalAgentService
                 Id = Guid.NewGuid(),
                 TenantId = activeCode.TenantId,
                 StationCode = dto.StationCode,
-                Name = dto.StationCode,
+                Name = string.IsNullOrWhiteSpace(activeCode.StationName) ? dto.StationCode : activeCode.StationName,
                 TokenHash = tokenHash,
                 Status = "active",
-                MachineName = dto.MachineName,
+                MachineName = machineName,
                 CreatedAt = DateTime.UtcNow
             };
             _dbContext.AgentStations.Add(station);
@@ -136,8 +157,9 @@ public class LocalAgentService : ILocalAgentService
         else
         {
             station.TokenHash = tokenHash;
+            station.Name = string.IsNullOrWhiteSpace(activeCode.StationName) ? station.Name : activeCode.StationName;
             station.Status = "active";
-            station.MachineName = dto.MachineName;
+            station.MachineName = machineName;
             station.UpdatedAt = DateTime.UtcNow;
         }
 
@@ -150,7 +172,7 @@ public class LocalAgentService : ILocalAgentService
             TenantId = activeCode.TenantId,
             StationId = station.Id,
             EventType = "paired",
-            MachineName = dto.MachineName,
+            MachineName = machineName,
             Message = $"Ghép cặp thành công trạm {dto.StationCode}",
             CreatedAt = DateTime.UtcNow
         };
@@ -165,16 +187,24 @@ public class LocalAgentService : ILocalAgentService
         };
     }
 
-    public async Task<HeartbeatResponseDto> HeartbeatAsync(Guid tenantId, Guid stationId, string token, HeartbeatRequestDto dto)
+    public async Task<HeartbeatResponseDto> HeartbeatAsync(Guid stationId, string token, HeartbeatRequestDto dto)
     {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            throw new UnauthorizedAccessException("Token xác thực trạm không hợp lệ.");
+        }
+        ValidateHeartbeat(dto);
+
         var station = await _dbContext.AgentStations
             .IgnoreQueryFilters()
-            .FirstOrDefaultAsync(x => x.TenantId == tenantId && x.Id == stationId);
+            .FirstOrDefaultAsync(x => x.Id == stationId);
 
         if (station == null)
         {
             throw new KeyNotFoundException("Không tìm thấy trạm làm việc.");
         }
+
+        var tenantId = station.TenantId;
 
         if (station.Status == "revoked")
         {
@@ -215,14 +245,18 @@ public class LocalAgentService : ILocalAgentService
             throw new UnauthorizedAccessException("Token xác thực trạm không hợp lệ.");
         }
 
-        // Cập nhật trạng thái thiết bị
         var existingDevices = await _dbContext.DeviceStatuses
+            .IgnoreQueryFilters() // Query devices globally since station is loaded globally
             .Where(x => x.StationId == stationId)
             .ToListAsync();
+        var devicesById = existingDevices.ToDictionary(x => x.DeviceId, StringComparer.OrdinalIgnoreCase);
 
         foreach (var devDto in dto.Devices)
         {
-            var device = existingDevices.FirstOrDefault(x => x.DeviceId == devDto.DeviceId);
+            var deviceId = NormalizeRequired(devDto.DeviceId, 50, "Mã thiết bị không hợp lệ.");
+            var deviceType = NormalizeRequired(devDto.DeviceType, 30, "Loại thiết bị không hợp lệ.");
+            var connectionState = NormalizeRequired(devDto.ConnectionState, 20, "Trạng thái thiết bị không hợp lệ.");
+            devicesById.TryGetValue(deviceId, out var device);
             if (device == null)
             {
                 device = new DeviceStatus
@@ -230,9 +264,9 @@ public class LocalAgentService : ILocalAgentService
                     Id = Guid.NewGuid(),
                     TenantId = tenantId,
                     StationId = stationId,
-                    DeviceId = devDto.DeviceId,
-                    DeviceType = devDto.DeviceType,
-                    ConnectionState = devDto.ConnectionState,
+                    DeviceId = deviceId,
+                    DeviceType = deviceType,
+                    ConnectionState = connectionState,
                     LastHeartbeatAt = DateTime.UtcNow,
                     LastErrorMessage = devDto.LastErrorMessage
                 };
@@ -240,7 +274,8 @@ public class LocalAgentService : ILocalAgentService
             }
             else
             {
-                device.ConnectionState = devDto.ConnectionState;
+                device.DeviceType = deviceType;
+                device.ConnectionState = connectionState;
                 device.LastHeartbeatAt = DateTime.UtcNow;
                 device.LastErrorMessage = devDto.LastErrorMessage;
                 _dbContext.Entry(device).State = EntityState.Modified;
@@ -255,6 +290,10 @@ public class LocalAgentService : ILocalAgentService
 
     public async Task<PaginatedListDto<StationResponseDto>> GetStationsAsync(Guid tenantId, int page, int pageSize, string? search)
     {
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, MaxPageSize);
+        search = NormalizeOptional(search, 100);
+
         var query = _dbContext.AgentStations.AsQueryable(); // query filter tự áp dụng tenantId
         
         if (!string.IsNullOrEmpty(search))
@@ -325,6 +364,62 @@ public class LocalAgentService : ILocalAgentService
         _dbContext.AgentConnectionEvents.Add(revokeEvent);
 
         await _dbContext.SaveChangesAsync();
+    }
+
+    private static void ValidateStationCode(string stationCode)
+    {
+        if (string.IsNullOrWhiteSpace(stationCode) || !StationCodeRegex.IsMatch(stationCode))
+        {
+            throw new InvalidOperationException("Mã trạm không hợp lệ.");
+        }
+    }
+
+    private static void ValidatePairingCode(string pairingCode)
+    {
+        if (string.IsNullOrWhiteSpace(pairingCode) || !PairingCodeRegex.IsMatch(pairingCode))
+        {
+            throw new InvalidOperationException("Mã ghép cặp không hợp lệ.");
+        }
+    }
+
+    private static void ValidateHeartbeat(HeartbeatRequestDto dto)
+    {
+        if (dto.Devices == null)
+        {
+            throw new InvalidOperationException("Danh sách thiết bị không hợp lệ.");
+        }
+
+        if (dto.Devices.Count > MaxHeartbeatDevices)
+        {
+            throw new InvalidOperationException("Số lượng thiết bị vượt giới hạn cho phép.");
+        }
+    }
+
+    private static string NormalizeRequired(string value, int maxLength, string errorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        var normalized = value.Trim();
+        if (normalized.Length > maxLength)
+        {
+            throw new InvalidOperationException(errorMessage);
+        }
+
+        return normalized;
+    }
+
+    private static string? NormalizeOptional(string? value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        var normalized = value.Trim();
+        return normalized.Length > maxLength ? normalized[..maxLength] : normalized;
     }
 
     private static string ComputeSha256(string input)

@@ -32,6 +32,7 @@ import {
   Layers,
   RefreshCw,
   GitFork,
+  Monitor,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -120,6 +121,7 @@ const navGroups: NavGroup[] = [
       { href: "/admin/roles", label: "Vai trò & Quyền", icon: Lock, permission: "Identity.Roles.View" },
       { href: "/admin/rules", label: "Cấu hình luật", icon: Sliders, permission: "rule_engine_foundation.read" },
       { href: "/admin/audit", label: "Nhật ký hệ thống", icon: FileText, permission: "Identity.Audit.View" },
+      { href: "/admin/local-agent", label: "Local Agent", icon: Monitor, permission: "local_agent.view" },
     ],
   },
 ];

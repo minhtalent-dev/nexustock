@@ -2,9 +2,10 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 88%
-- **Đánh giá:** Đủ direction cho scale integration qua COM, ổn định số cân và fallback nhập tay.
-- **Khi cần upgrade:** Upgrade khi có model cân thật, protocol frame và sai số thiết bị cụ thể.
+- **Mức hiện tại:** 96%
+- **Đánh giá:** Đã đủ chuẩn execution-ready cho scale integration sau rà soát `rp1`: Local Agent COM reader, parser, stable-weight algorithm, WebSocket event contract, manual override API, audit log và test strategy đã có phạm vi thực thi rõ.
+- **Điều kiện duy trì:** Không triển khai phụ thuộc vào model cân thật duy nhất. Bắt buộc có simulator/raw-frame fixture để test tự động; khi có thiết bị thật chỉ thêm adapter profile, không đổi contract WebSocket/API đã khóa.
+- **Phần còn mở có kiểm soát:** Sai số hiệu chuẩn cuối cùng, raw frame vendor-specific và lệnh Zero/Tare vật lý sẽ cấu hình theo profile cân, không hardcode vào luồng nghiệp vụ.
 
 ## 1. Mục tiêu
 
@@ -142,4 +143,198 @@ graph TD
 - Local Agent kết nối và đọc ổn định số cân từ cân mô phỏng.
 - Số cân hiển thị tức thời trên Web UI đóng gói, không có độ trễ cảm nhận (>500ms).
 - Thao tác nhập cân tay ghi đầy đủ log audit vào bảng `ManualWeightOverrides` và được chặn quyền đúng.
+
+## 14. rp1 execution readiness addendum
+
+### 14.1 Decision lock
+
+| Chủ đề | Quyết định Phase 21 | Lý do |
+|---|---|---|
+| Transport | Tái sử dụng Local Agent WebSocket Phase 20, không mở HTTP/LAN endpoint mới | Giữ loopback-only và không tăng bề mặt tấn công |
+| Device abstraction | `IScaleDevice` + 2 implementation: `SerialScaleDevice`, `MockScaleDevice` | Test được không cần cân thật, không khóa vendor sớm |
+| Parser | Profile-based regex/frame parser theo cấu hình `scaleProfile` | Hỗ trợ nhiều cân RS-232 mà không đổi code nghiệp vụ |
+| Stable algorithm | Sliding window theo `stableWindowMs`, `stableToleranceKg`, `minimumWeightKg` | Chống rung cân, đủ deterministic để test |
+| Unit | Lưu kg dạng `decimal(18,4)` | Tránh sai số float khi tính đóng gói |
+| Manual override | Chỉ backend ghi nhận, cần permission `scale.override` + reason code `SCALE_OVERRIDE` | Browser không tự bypass rule đóng gói |
+| Zero/Tare | Ưu tiên command vật lý nếu profile hỗ trợ; fallback software offset có audit event | Không chặn MVP khi cân không hỗ trợ command |
+
+### 14.2 Local Agent implementation checklist
+
+- [ ] Thêm thư mục `local-agent/Nexustock.LocalAgent/Devices/Scale/`.
+- [ ] Thêm model cấu hình `ScaleDeviceConfig`: `enabled`, `mode`, `portName`, `baudRate`, `parity`, `dataBits`, `stopBits`, `lineEnding`, `scaleProfile`, `stableWindowMs`, `stableToleranceKg`, `minimumWeightKg`, `readTimeoutMs`.
+- [ ] Thêm `IScaleDevice` với các hàm tối thiểu: `StartAsync`, `StopAsync`, `ZeroAsync`, `TareAsync`, event/stream weight reading.
+- [ ] Thêm `ScaleFrameParser` profile-based, parse được tối thiểu frame mẫu `ST,GS,+0012.35kg`, `US,GS,+0012.38kg`, `12.35 kg`.
+- [ ] Thêm `StableWeightFilter` pure logic, không phụ thuộc SerialPort để unit test nhanh.
+- [ ] Thêm WebSocket messages:
+  - `scale.status.request` -> `scale.status.response`
+  - `scale.weight.subscribe` -> stream `scale.weightChanged`
+  - `scale.zero.request` -> `scale.zero.response`
+  - `scale.tare.request` -> `scale.tare.response`
+- [ ] Mọi command sau paired mode phải dùng HMAC guard Phase 20; không cho browser gửi command unsigned.
+
+### 14.3 WebSocket event contract
+
+```json
+{
+  "messageId": "uuid",
+  "type": "scale.weightChanged",
+  "timestamp": "2026-07-16T07:00:00Z",
+  "payload": {
+    "deviceId": "scale_01",
+    "weightKg": 12.3500,
+    "stable": true,
+    "rawFrame": "ST,GS,+0012.35kg",
+    "profile": "generic-rs232",
+    "connectionState": "connected"
+  }
+}
+```
+
+Error payload chuẩn:
+
+| Code | Khi dùng | UI action |
+|---|---|---|
+| `scale.port_busy` | COM port bị process khác giữ | Hiển thị hướng dẫn đóng app cân khác |
+| `scale.parse_failed` | Quá 10 frame liên tiếp không parse được | Yêu cầu kiểm tra profile/baudrate |
+| `scale.disconnected` | Mất cổng COM hoặc timeout | Cho phép manual override nếu có quyền |
+| `scale.unstable` | Weight dao động ngoài tolerance | Chặn hoàn tất carton |
+| `scale.command_unsupported` | Cân không hỗ trợ Zero/Tare vật lý | Dùng software offset nếu được cấu hình |
+
+### 14.4 Backend implementation checklist
+
+- [ ] Tạo module theo convention hiện tại: `backend/modules/Nexustock.Modules.ScaleIntegration/` thay vì snake_case.
+- [ ] Seed permission `scale.override` vào catalog quyền.
+- [ ] Seed reason codes nhóm `SCALE_OVERRIDE`: `DEVICE_COMM_ERR`, `SCALE_UNSTABLE`, `DEVICE_CALIBRATION`, `OPERATION_APPROVED`.
+- [ ] Tạo bảng `ManualWeightOverrides` và API `POST /api/packing/weight/manual`.
+- [ ] API response/DTO bắt buộc camelCase: `overrideId`, `manualWeight`, `reasonCode`, `cartonNo`.
+- [ ] Validate `manualWeight > 0`, giới hạn precision 4 số lẻ, bắt buộc `reasonCode`, bắt buộc quyền `scale.override`.
+- [ ] Ghi audit log không chứa raw token, không ghi thông tin nhạy cảm từ Local Agent config.
+
+### 14.5 Frontend implementation checklist
+
+- [ ] Tích hợp panel cân vào packing UI hiện có, không tạo flow đóng gói song song.
+- [ ] UI hiển thị rõ 4 trạng thái: `connected`, `unstable`, `stable`, `error`.
+- [ ] Disable nút hoàn tất carton nếu `stable !== true` và chưa có override hợp lệ.
+- [ ] Dialog nhập tay bắt buộc chọn reason code, nhập số cân hợp lệ và ghi chú khi lý do là lỗi thiết bị.
+- [ ] Không lưu `AgentToken` hoặc secret Local Agent trong browser.
+
+### 14.6 Test gate bắt buộc trước khi cập nhật hoàn thành
+
+```powershell
+dotnet build local-agent/Nexustock.LocalAgent/Nexustock.LocalAgent.csproj --no-restore
+powershell -ExecutionPolicy Bypass -File tests/verify_scale_parser.ps1
+powershell -ExecutionPolicy Bypass -File tests/verify_scale_websocket.ps1
+powershell -ExecutionPolicy Bypass -File tests/verify_scale_manual_override.ps1
+```
+
+Acceptance test tối thiểu:
+
+- Parser đọc đúng 3 raw frame mẫu và reject frame lỗi.
+- Stable filter chỉ trả `stable=true` khi toàn bộ window nằm trong tolerance.
+- WebSocket phát `scale.weightChanged` trong mock mode dưới 500ms.
+- Unsigned Zero/Tare command bị chặn trong paired mode.
+- Manual override thiếu reason code bị từ chối.
+- Manual override đúng quyền ghi DB và audit log.
+- Packing completion bị chặn khi cân chưa stable và chưa có override.
+
+### 14.7 Execution order đề xuất
+
+1. Viết parser/filter pure logic trước, kèm test nhanh.
+2. Thêm mock scale mode vào Local Agent, xác minh WebSocket event.
+3. Thêm serial adapter `System.IO.Ports` sau khi contract event đã pass bằng mock.
+4. Thêm backend manual override + permission + reason code.
+5. Gắn weighing panel vào packing UI.
+6. Chạy full validation và chỉ cập nhật roadmap khi pass.
+
+## 15. Rollout plan
+
+### 15.1 Dev rollout
+
+1. Bật `MockScaleDevice` mặc định cho môi trường dev.
+2. Chạy parser/filter tests bằng raw-frame fixture, không cần thiết bị thật.
+3. Kết nối Web UI packing với Local Agent mock mode qua loopback WebSocket.
+4. Xác minh manual override API ghi DB và audit log đúng quyền.
+
+### 15.2 Pilot rollout
+
+1. Cấu hình 1 trạm đóng gói pilot với cân thật qua COM/RS-232.
+2. Chạy song song cân tự động và cân tay đối chứng trong 1 ca vận hành.
+3. Ghi nhận sai lệch giữa cân vật lý và trọng lượng xác nhận cuối cùng.
+4. Chỉ mở rộng khi tỷ lệ unstable/override nằm dưới ngưỡng vận hành đã chốt.
+
+### 15.3 Production rollout
+
+- Rollout theo warehouse/station, không bật toàn hệ thống một lần.
+- Mỗi station phải có `scaleProfile`, COM config và người phụ trách kiểm tra cân.
+- Giữ manual override làm fallback bắt buộc trong 2 tuần đầu sau go-live.
+
+## 16. Rollback plan
+
+### 16.1 Rollback kỹ thuật
+
+- Tắt `ScaleDeviceConfig.enabled` trên Local Agent để dừng đọc cân tự động.
+- Web UI trở về chế độ nhập cân tay có kiểm soát quyền `scale.override`.
+- Không xóa bảng `ManualWeightOverrides`; giữ audit trail phục vụ đối soát.
+
+### 16.2 Rollback nghiệp vụ
+
+- Nếu COM adapter lỗi hàng loạt, đóng gói vẫn tiếp tục bằng manual override bắt buộc reason code.
+- Nếu stable algorithm sai lệch, hạ `stableToleranceKg` hoặc tăng `stableWindowMs` theo cấu hình, không sửa code nóng.
+- Nếu vendor scale không tương thích frame, thêm profile parser mới và giữ profile cũ nguyên trạng.
+
+### 16.3 Điều kiện rollback
+
+- Tỷ lệ `scale.parse_failed` vượt ngưỡng 5% trong 1 ca.
+- Tỷ lệ manual override vượt ngưỡng 5% tổng lượt cân/ngày.
+- Có chênh lệch cân gây sai packing confirmation hoặc khiếu nại vận hành.
+
+## 17. Operational runbook
+
+### 17.1 Checklist xử lý sự cố tại trạm
+
+| Tình huống | Kiểm tra nhanh | Hành động |
+|---|---|---|
+| Không nhận cân | COM port, dây RS-232/USB, baudrate | Restart Local Agent, kiểm tra thiết bị trong Device Manager |
+| Cân nhảy liên tục | Mặt bàn cân, rung nền, vật chưa đứng yên | Chờ ổn định, tăng `stableWindowMs` nếu cần |
+| Frame không parse | `scaleProfile`, line ending, raw frame mẫu | Chọn profile đúng hoặc thêm parser profile mới |
+| Zero/Tare không chạy | Profile có hỗ trợ command vật lý không | Dùng software offset hoặc thao tác trực tiếp trên cân |
+| Web UI không kết nối | Local Agent port, Origin allowlist, pairing status | Pairing lại station hoặc kiểm tra WebSocket Phase 20 |
+
+### 17.2 Monitoring/KPI
+
+- `scale.weightChanged` latency p95 dưới 500ms.
+- Tỷ lệ manual override/ngày dưới 5%.
+- Tỷ lệ parse fail theo station dưới 2%.
+- Tỷ lệ unstable quá 10 giây dưới 3% lượt cân.
+- Mọi override phải có `reasonCode`, `createdBy`, `createdAt`, `cartonNo`.
+
+### 17.3 Audit review
+
+- Báo cáo cuối ngày nhóm `ManualWeightOverrides` theo station, user, reason code.
+- Cảnh báo nếu một user tạo override bất thường so với trung bình kho.
+- Đối chiếu carton có `weightSource=manual` trong các đơn hàng có khiếu nại.
+
+## 18. Definition of done
+
+### 18.1 Technical DoD
+
+- Local Agent build pass.
+- Parser/filter unit tests pass.
+- WebSocket mock scale integration pass.
+- Serial COM adapter chạy được với simulator hoặc cân thật pilot.
+- HMAC guard chặn mọi command scale unsigned trong paired mode.
+- Không lưu token/secret Local Agent trong browser hoặc log.
+
+### 18.2 Business DoD
+
+- Packing UI chỉ cho hoàn tất carton khi cân ổn định hoặc manual override hợp lệ.
+- Manual override bắt buộc quyền `scale.override` và reason code nhóm `SCALE_OVERRIDE`.
+- Audit log đủ thông tin người thực hiện, thời gian, carton, cân tự động nếu có, cân nhập tay và lý do.
+- Người vận hành có runbook xử lý lỗi cân phổ biến.
+
+### 18.3 Documentation DoD
+
+- [IMPLEMENTATION_PLAN.md](file:///d:/1_Project/48_Nexustock/planning/IMPLEMENTATION_PLAN.md) chỉ được cập nhật Phase 21 hoàn thành sau khi test gate pass 100%.
+- Tài liệu hướng dẫn end-user cho Weighing Panel phải có ảnh hoặc walkthrough khi triển khai UI xong.
+- Nếu có profile cân thật mới, cập nhật raw-frame fixture và `scaleProfile` mapping vào tài liệu vận hành.
 
