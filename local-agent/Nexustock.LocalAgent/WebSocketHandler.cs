@@ -9,8 +9,8 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Nexustock.LocalAgent.Devices.Scale;
+using Nexustock.LocalAgent.Devices.Printer;
 
 namespace Nexustock.LocalAgent;
 
@@ -19,11 +19,15 @@ public class WebSocketHandler
     private readonly ILogger<WebSocketHandler> _logger;
     private readonly HttpClient _httpClient;
     private readonly IScaleDevice _scaleDevice;
+    private readonly IPrinterQueue _printerQueue;
+    private readonly IEnumerable<IPrinterDevice> _printers;
 
-    public WebSocketHandler(ILogger<WebSocketHandler> logger, IScaleDevice scaleDevice)
+    public WebSocketHandler(ILogger<WebSocketHandler> logger, IScaleDevice scaleDevice, IPrinterQueue printerQueue, IEnumerable<IPrinterDevice> printers)
     {
         _logger = logger;
         _scaleDevice = scaleDevice;
+        _printerQueue = printerQueue;
+        _printers = printers;
         _httpClient = new HttpClient();
     }
 
@@ -118,6 +122,14 @@ public class WebSocketHandler
                 await HandleScaleTareAsync(webSocket, msg, config);
                 break;
 
+            case "printer.status.request":
+                await HandlePrinterStatusRequestAsync(webSocket, msg);
+                break;
+
+            case "printer.print.request":
+                await HandlePrinterPrintRequestAsync(webSocket, msg, config);
+                break;
+
             default:
                 await SendErrorAsync(webSocket, msg.MessageId, "agent.unknown_type", $"Không hỗ trợ message type: {msg.Type}");
                 break;
@@ -151,19 +163,19 @@ public class WebSocketHandler
 
     private async Task HandleScaleZeroAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
     {
-        if (!await EnsureSignedScaleCommandAsync(webSocket, msg, config)) return;
+        if (!await EnsureSignedCommandAsync(webSocket, msg, config)) return;
         await _scaleDevice.ZeroAsync(CancellationToken.None);
         await SendResponseAsync(webSocket, msg.MessageId, "scale.zero.response", new { success = true });
     }
 
     private async Task HandleScaleTareAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
     {
-        if (!await EnsureSignedScaleCommandAsync(webSocket, msg, config)) return;
+        if (!await EnsureSignedCommandAsync(webSocket, msg, config)) return;
         await _scaleDevice.TareAsync(CancellationToken.None);
         await SendResponseAsync(webSocket, msg.MessageId, "scale.tare.response", new { success = true });
     }
 
-    private async Task<bool> EnsureSignedScaleCommandAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
+    private async Task<bool> EnsureSignedCommandAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
     {
         if (!IsAgentPaired(config))
         {
@@ -178,6 +190,73 @@ public class WebSocketHandler
         }
 
         return true;
+    }
+
+    private async Task HandlePrinterStatusRequestAsync(WebSocket webSocket, WebSocketMessage msg)
+    {
+        string? printerCode = null;
+        if (msg.Payload.ValueKind == JsonValueKind.Object && msg.Payload.TryGetProperty("printerCode", out var prop))
+        {
+            printerCode = prop.GetString();
+        }
+
+        if (string.IsNullOrEmpty(printerCode))
+        {
+            await SendErrorAsync(webSocket, msg.MessageId, "printer.invalid_payload", "Thiếu printerCode.");
+            return;
+        }
+
+        var printer = _printers.FirstOrDefault(p => p.PrinterCode == printerCode);
+        if (printer == null)
+        {
+            await SendErrorAsync(webSocket, msg.MessageId, "printer.not_found", $"Không tìm thấy máy in {printerCode}.");
+            return;
+        }
+
+        var status = await printer.GetStatusAsync(CancellationToken.None);
+        await SendResponseAsync(webSocket, msg.MessageId, "printer.status.response", status);
+    }
+
+    private async Task HandlePrinterPrintRequestAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
+    {
+        if (!await EnsureSignedCommandAsync(webSocket, msg, config)) return;
+
+        string? printerCode = null;
+        string? rawCommand = null;
+        if (msg.Payload.ValueKind == JsonValueKind.Object)
+        {
+            if (msg.Payload.TryGetProperty("printerCode", out var pProp)) printerCode = pProp.GetString();
+            if (msg.Payload.TryGetProperty("rawCommand", out var rProp)) rawCommand = rProp.GetString();
+        }
+
+        if (string.IsNullOrEmpty(printerCode) || string.IsNullOrEmpty(rawCommand))
+        {
+            await SendErrorAsync(webSocket, msg.MessageId, "printer.invalid_payload", "Thiếu printerCode hoặc rawCommand.");
+            return;
+        }
+
+        var printer = _printers.FirstOrDefault(p => p.PrinterCode == printerCode);
+        if (printer == null)
+        {
+            await SendErrorAsync(webSocket, msg.MessageId, "printer.not_found", $"Không tìm thấy máy in {printerCode}.");
+            return;
+        }
+
+        // Đẩy vào hàng đợi để in tuần tự
+        _printerQueue.Enqueue(printerCode, async (ct) =>
+        {
+            try
+            {
+                var result = await printer.PrintAsync(rawCommand, ct);
+                // Gửi thông báo kết quả về cho client (không bắt buộc theo job ID nếu dùng request-response pattern đơn giản,
+                // nhưng ở đây ta gửi tin nhắn báo trạng thái hoàn tất)
+                await SendResponseAsync(webSocket, msg.MessageId, "printer.print.response", new { success = result });
+            }
+            catch (Exception ex)
+            {
+                await SendErrorAsync(webSocket, msg.MessageId, "printer.failed", $"Lỗi khi in: {ex.Message}");
+            }
+        });
     }
 
     private static object ToScalePayload(ScaleReading reading)
@@ -273,13 +352,13 @@ public class WebSocketHandler
 
     private async Task HandlePingCommandAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
     {
-        if (!await EnsureSignedScaleCommandAsync(webSocket, msg, config)) return;
+        if (!await EnsureSignedCommandAsync(webSocket, msg, config)) return;
         await SendResponseAsync(webSocket, msg.MessageId, "agent.command.pong", new { });
     }
 
     private async Task HandleResetRequestAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
     {
-        if (!await EnsureSignedScaleCommandAsync(webSocket, msg, config)) return;
+        if (!await EnsureSignedCommandAsync(webSocket, msg, config)) return;
 
         config.StationId = null;
         config.StationCode = null;

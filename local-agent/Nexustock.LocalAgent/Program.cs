@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Nexustock.LocalAgent;
 using Nexustock.LocalAgent.Devices.Scale;
+using Nexustock.LocalAgent.Devices.Printer;
 
 namespace Nexustock.LocalAgent;
 
@@ -40,6 +41,21 @@ public class Program
             return new MockScaleDevice(scaleConfig, sp.GetRequiredService<ScaleFrameParser>());
         });
         builder.Services.AddHostedService<ScaleDeviceHostedService>();
+
+        builder.Services.AddSingleton<IPrinterQueue, PrinterQueue>();
+        foreach (var printer in config.Printers)
+        {
+            builder.Services.AddSingleton<IPrinterDevice>(sp =>
+            {
+                if (string.Equals(printer.Mode, "mock", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new MockPrinterDevice(printer);
+                }
+                // Placeholder cho các mode khác (TCP/Windows) sẽ thêm sau
+                return new MockPrinterDevice(printer);
+            });
+        }
+
         builder.Services.AddSingleton<WebSocketHandler>();
         if (!string.Equals(Environment.GetEnvironmentVariable("NEXUSTOCK_AGENT_DISABLE_WORKER"), "true", StringComparison.OrdinalIgnoreCase))
         {

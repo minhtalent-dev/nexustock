@@ -9,8 +9,12 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { PrintLabelDialog } from "@/features/printing/components/print-label-dialog";
 import { showError, showSuccess } from "@/lib/toast";
 import { useLocalScale } from "@/features/outbound/hooks/use-local-scale";
+
+const DEFAULT_LABEL_TEMPLATE_ID = "00000000-0000-0000-0000-000000002201";
+const DEFAULT_PRINTER_CODE = "PRINTER-01";
 
 interface ApiError {
   response?: {
@@ -23,6 +27,12 @@ interface ApiError {
 interface ManualOverrideResponse {
   manualOverrideId: string;
   manualWeight: number;
+}
+
+interface CompletedPackingContext {
+  packageNo: string;
+  weight: number;
+  weightSource: string;
 }
 
 interface CompletePackingDialogProps {
@@ -45,6 +55,8 @@ export function CompletePackingDialog({
   const [manualWeight, setManualWeight] = useState("");
   const [manualReason, setManualReason] = useState("");
   const [saving, setSaving] = useState(false);
+  const [printDialogOpen, setPrintDialogOpen] = useState(false);
+  const [completedPacking, setCompletedPacking] = useState<CompletedPackingContext | null>(null);
   const { status, reading, error, reconnect } = useLocalScale(isOpen);
 
   const weight = reading?.weightKg ?? 0;
@@ -80,6 +92,12 @@ export function CompletePackingDialog({
       weightSource: "scale",
       scaleStable: true
     });
+
+    return {
+      packageNo: packageNo.trim(),
+      weight,
+      weightSource: "scale",
+    } satisfies CompletedPackingContext;
   };
 
   const completeWithManualOverride = async () => {
@@ -97,6 +115,12 @@ export function CompletePackingDialog({
       scaleStable: false,
       manualOverrideId: overrideRes.data.manualOverrideId,
     });
+
+    return {
+      packageNo: packageNo.trim(),
+      weight: overrideRes.data.manualWeight,
+      weightSource: "manual_override",
+    } satisfies CompletedPackingContext;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,11 +140,12 @@ export function CompletePackingDialog({
 
     setSaving(true);
     try {
-      if (manualMode) {
-        await completeWithManualOverride();
-      } else {
-        await completeWithScale();
-      }
+      const result = manualMode
+        ? await completeWithManualOverride()
+        : await completeWithScale();
+
+      setCompletedPacking(result);
+      setPrintDialogOpen(true);
       showSuccess("Packing completed.");
       onSuccess();
       onClose();
@@ -133,8 +158,9 @@ export function CompletePackingDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[560px]">
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>Confirm packing</DialogTitle>
         </DialogHeader>
@@ -214,7 +240,22 @@ export function CompletePackingDialog({
             <Button type="submit" disabled={!canSubmit}>Complete packing</Button>
           </DialogFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
+
+      {completedPacking ? (
+        <PrintLabelDialog
+          isOpen={printDialogOpen}
+          onClose={() => setPrintDialogOpen(false)}
+          shipmentId={shipmentId}
+          shipmentNo={shipmentNo}
+          packageNo={completedPacking.packageNo}
+          weightKg={completedPacking.weight}
+          weightSource={completedPacking.weightSource}
+          templateId={DEFAULT_LABEL_TEMPLATE_ID}
+          printerCode={DEFAULT_PRINTER_CODE}
+        />
+      ) : null}
+    </>
   );
 }

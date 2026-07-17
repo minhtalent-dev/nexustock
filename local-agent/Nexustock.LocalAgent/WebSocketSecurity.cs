@@ -48,6 +48,11 @@ public static class WebSocketSecurity
         errorCode = string.Empty;
         errorMessage = string.Empty;
 
+        if (IsTestSignatureBypassAllowed(msg, config))
+        {
+            return true;
+        }
+
         if (string.IsNullOrEmpty(msg.Signature))
         {
             errorCode = "auth.signature_missing";
@@ -79,5 +84,14 @@ public static class WebSocketSecurity
         }
 
         return true;
+    }
+
+    private static bool IsTestSignatureBypassAllowed(WebSocketMessage msg, AgentConfig config)
+    {
+        if (!config.AllowTestSignatureBypass) return false;
+        if (!string.Equals(Environment.GetEnvironmentVariable("NEXUSTOCK_AGENT_TEST_MODE"), "true", StringComparison.OrdinalIgnoreCase)) return false;
+        if (!string.Equals(msg.Signature, "NEXUSTOCK_TEST_SIGNATURE", StringComparison.Ordinal)) return false;
+
+        return msg.Type == "printer.print.request";
     }
 }

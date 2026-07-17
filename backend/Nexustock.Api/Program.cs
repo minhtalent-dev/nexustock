@@ -21,6 +21,7 @@ using Nexustock.Modules.Wave.Contexts;
 using Nexustock.Modules.MaterialGenealogy.Contexts;
 using Nexustock.Modules.MaterialGenealogy;
 using Nexustock.Modules.LocalAgent;
+using Nexustock.Modules.LabelPrinting;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -108,6 +109,7 @@ try
     builder.Services.AddWaveModule(builder.Configuration);
     builder.Services.AddMaterialGenealogyModule(builder.Configuration);
     builder.Services.AddLocalAgentModule(builder.Configuration);
+    builder.Services.AddLabelPrintingModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -416,6 +418,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the LocalAgent database");
         }
+
+        try
+        {
+            var labelPrintingDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.LabelPrinting.Contexts.LabelPrintingDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(labelPrintingDb.Database);
+            Log.Information("LabelPrinting database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the LabelPrinting database");
+        }
     }
 
     // Run Database Seeding
@@ -483,7 +496,10 @@ try
             ("Wave.Manage", "Quản lý Wave Picking", "Wave"),
             ("local_agent.view", "Xem trạng thái trạm và thiết bị", "LocalAgent"),
             ("local_agent.pair", "Thực hiện ghép cặp trạm mới", "LocalAgent"),
-            ("local_agent.revoke", "Thu hồi quyền của trạm làm việc", "LocalAgent")
+            ("local_agent.revoke", "Thu hồi quyền của trạm làm việc", "LocalAgent"),
+            ("label_printing.view", "Xem lệnh in tem", "LabelPrinting"),
+            ("label_printing.print", "Thực hiện in tem", "LabelPrinting"),
+            ("label_printing.reprint", "Thực hiện in lại tem", "LabelPrinting")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

@@ -144,6 +144,15 @@ public class OutboundController : ControllerBase
 
         var packingRecords = await _context.PackingRecords
             .Where(p => p.ShipmentId == id && p.TenantId == tenantId)
+            .Select(p => new
+            {
+                p.Id,
+                p.PackageNo,
+                p.Weight,
+                p.Status,
+                p.CreatedAt,
+                p.CreatedBy
+            })
             .ToListAsync();
 
         var partner = await _masterContext.Partners.FirstOrDefaultAsync(p => p.Id == shipment.PartnerId);

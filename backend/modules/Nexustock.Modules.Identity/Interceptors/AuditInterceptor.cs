@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Nexustock.Modules.Identity.Entities;
+using Npgsql;
+using NpgsqlTypes;
 
 namespace Nexustock.Modules.Identity.Interceptors;
 
@@ -130,20 +132,20 @@ public class AuditInterceptor : SaveChangesInterceptor
 
             const string sql = @"
                 INSERT INTO ""AuditLogs"" (""Id"", ""UserId"", ""TenantId"", ""EntityName"", ""EntityId"", ""Action"", ""OldValues"", ""NewValues"", ""ChangedColumns"", ""TraceId"", ""Timestamp"")
-                VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9, @p10)";
+                VALUES (@Id, @UserId, @TenantId, @EntityName, @EntityId, @Action, @OldValues, @NewValues, @ChangedColumns, @TraceId, @Timestamp)";
 
             context.Database.ExecuteSqlRaw(sql,
-                Guid.NewGuid(),
-                entry.UserId,
-                entry.TenantId,
-                entry.EntityName,
-                entry.EntityId,
-                entry.Action,
-                oldValuesJson,
-                newValuesJson,
-                changedColumnsJson,
-                entry.TraceId,
-                DateTime.UtcNow);
+                Param("Id", Guid.NewGuid(), NpgsqlDbType.Uuid),
+                Param("UserId", entry.UserId, NpgsqlDbType.Uuid),
+                Param("TenantId", entry.TenantId, NpgsqlDbType.Uuid),
+                Param("EntityName", entry.EntityName, NpgsqlDbType.Text),
+                Param("EntityId", entry.EntityId, NpgsqlDbType.Text),
+                Param("Action", entry.Action, NpgsqlDbType.Text),
+                Param("OldValues", oldValuesJson, NpgsqlDbType.Text),
+                Param("NewValues", newValuesJson, NpgsqlDbType.Text),
+                Param("ChangedColumns", changedColumnsJson, NpgsqlDbType.Text),
+                Param("TraceId", entry.TraceId, NpgsqlDbType.Text),
+                Param("Timestamp", DateTime.UtcNow, NpgsqlDbType.TimestampTz));
         }
     }
 
@@ -157,24 +159,33 @@ public class AuditInterceptor : SaveChangesInterceptor
 
             const string sql = @"
                 INSERT INTO ""AuditLogs"" (""Id"", ""UserId"", ""TenantId"", ""EntityName"", ""EntityId"", ""Action"", ""OldValues"", ""NewValues"", ""ChangedColumns"", ""TraceId"", ""Timestamp"")
-                VALUES ({0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10})";
+                VALUES (@Id, @UserId, @TenantId, @EntityName, @EntityId, @Action, @OldValues, @NewValues, @ChangedColumns, @TraceId, @Timestamp)";
 
-            await context.Database.ExecuteSqlRawAsync(sql, new object[] {
-                Guid.NewGuid(),
-                entry.UserId,
-                entry.TenantId,
-                entry.EntityName,
-                entry.EntityId,
-                entry.Action,
-                oldValuesJson,
-                newValuesJson,
-                changedColumnsJson,
-                entry.TraceId,
-                DateTime.UtcNow
+            await context.Database.ExecuteSqlRawAsync(sql, new[] {
+                Param("Id", Guid.NewGuid(), NpgsqlDbType.Uuid),
+                Param("UserId", entry.UserId, NpgsqlDbType.Uuid),
+                Param("TenantId", entry.TenantId, NpgsqlDbType.Uuid),
+                Param("EntityName", entry.EntityName, NpgsqlDbType.Text),
+                Param("EntityId", entry.EntityId, NpgsqlDbType.Text),
+                Param("Action", entry.Action, NpgsqlDbType.Text),
+                Param("OldValues", oldValuesJson, NpgsqlDbType.Text),
+                Param("NewValues", newValuesJson, NpgsqlDbType.Text),
+                Param("ChangedColumns", changedColumnsJson, NpgsqlDbType.Text),
+                Param("TraceId", entry.TraceId, NpgsqlDbType.Text),
+                Param("Timestamp", DateTime.UtcNow, NpgsqlDbType.TimestampTz)
             }, cancellationToken);
         }
     }
+
+    private static NpgsqlParameter Param(string name, object? value, NpgsqlDbType type)
+    {
+        return new NpgsqlParameter(name, type)
+        {
+            Value = value ?? DBNull.Value
+        };
+    }
 }
+
 
 internal class AuditEntry
 {

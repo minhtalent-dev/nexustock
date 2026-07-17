@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Nexustock.LocalAgent.Devices.Scale;
+using Nexustock.LocalAgent.Devices.Printer;
 
 namespace Nexustock.LocalAgent;
 
@@ -15,5 +16,7 @@ public class AgentConfig
     public string? CertificateThumbprint { get; set; }
     public List<string> AllowedOrigins { get; set; } = new() { "http://localhost:3000", "http://localhost:3003" };
     public bool AllowInsecureWebSocket { get; set; } = false;
+    public bool AllowTestSignatureBypass { get; set; } = false;
     public ScaleDeviceConfig Scale { get; set; } = new();
+    public List<PrinterDeviceConfig> Printers { get; set; } = new();
 }

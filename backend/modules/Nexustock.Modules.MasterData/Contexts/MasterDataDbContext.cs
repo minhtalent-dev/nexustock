@@ -169,7 +169,11 @@ public class MasterDataDbContext : DbContext
         modelBuilder.Entity<ReasonCode>().HasData(
             new ReasonCode { Id = Guid.Parse("00000000-0000-0000-0000-000000000051"), TenantId = defaultTenantId, Code = "HOLD-QC", ReasonType = "HOLD", Description = "Chờ QC kiểm tra chất lượng", CreatedBy = "SYSTEM", RowVersion = 1 },
             new ReasonCode { Id = Guid.Parse("00000000-0000-0000-0000-000000000052"), TenantId = defaultTenantId, Code = "ADJ-COUNT", ReasonType = "INVENTORY_ADJUSTMENT", Description = "Điều chỉnh số lượng kiểm kê", CreatedBy = "SYSTEM", RowVersion = 1 },
-            new ReasonCode { Id = Guid.Parse("00000000-0000-0000-0000-000000000053"), TenantId = defaultTenantId, Code = "STOCKTAKE", ReasonType = "HOLD", Description = "Khóa vị trí phục vụ kiểm kê chu kỳ", CreatedBy = "SYSTEM", RowVersion = 1 }
+            new ReasonCode { Id = Guid.Parse("00000000-0000-0000-0000-000000000053"), TenantId = defaultTenantId, Code = "STOCKTAKE", ReasonType = "HOLD", Description = "Khóa vị trí phục vụ kiểm kê chu kỳ", CreatedBy = "SYSTEM", RowVersion = 1 },
+            new ReasonCode { Id = Guid.Parse("00000000-0000-0000-0000-000000002251"), TenantId = defaultTenantId, Code = "LABEL_DAMAGED", ReasonType = "LABEL_REPRINT", Description = "Tem bị hỏng", CreatedBy = "SYSTEM", RowVersion = 1 },
+            new ReasonCode { Id = Guid.Parse("00000000-0000-0000-0000-000000002252"), TenantId = defaultTenantId, Code = "PRINTER_JAM", ReasonType = "LABEL_REPRINT", Description = "Máy in bị kẹt", CreatedBy = "SYSTEM", RowVersion = 1 },
+            new ReasonCode { Id = Guid.Parse("00000000-0000-0000-0000-000000002253"), TenantId = defaultTenantId, Code = "WRONG_LABEL_APPLIED", ReasonType = "LABEL_REPRINT", Description = "Dán sai tem", CreatedBy = "SYSTEM", RowVersion = 1 },
+            new ReasonCode { Id = Guid.Parse("00000000-0000-0000-0000-000000002254"), TenantId = defaultTenantId, Code = "SUPERVISOR_APPROVED", ReasonType = "LABEL_REPRINT", Description = "Quản lý phê duyệt in lại", CreatedBy = "SYSTEM", RowVersion = 1 }
         );
 
         modelBuilder.Entity<Permission>().HasData(Nexustock.Modules.MasterData.Permissions.AppPermissions.All);
