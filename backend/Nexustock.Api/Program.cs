@@ -24,6 +24,7 @@ using Nexustock.Modules.LocalAgent;
 using Nexustock.Modules.LabelPrinting;
 using Nexustock.Modules.ErpIntegration;
 using Nexustock.Modules.Webhook;
+using Nexustock.Modules.Observability;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -114,6 +115,7 @@ try
     builder.Services.AddLabelPrintingModule(builder.Configuration);
     builder.Services.AddErpIntegrationModule(builder.Configuration);
     builder.Services.AddWebhookModule(builder.Configuration);
+    builder.Services.AddObservabilityModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");

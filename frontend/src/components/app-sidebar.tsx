@@ -132,6 +132,9 @@ const navGroups: NavGroup[] = [
       { href: "/admin/rules", label: "Cấu hình luật", icon: Sliders, permission: "rule_engine_foundation.read" },
       { href: "/admin/audit", label: "Nhật ký hệ thống", icon: FileText, permission: "Identity.Audit.View" },
       { href: "/admin/local-agent", label: "Local Agent", icon: Monitor, permission: "local_agent.view" },
+      { href: "/admin/observability", label: "Giám sát vận hành", icon: Activity, permission: "observability.read" },
+      { href: "/admin/observability/alerts", label: "Trung tâm cảnh báo", icon: AlertCircle, permission: "observability.read" },
+      { href: "/admin/observability/timeline", label: "Dòng thời gian hoạt động", icon: ClipboardList, permission: "observability.read" },
     ],
   },
 ];

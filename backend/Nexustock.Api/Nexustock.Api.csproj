@@ -46,6 +46,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.LabelPrinting\Nexustock.Modules.LabelPrinting.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.ErpIntegration\Nexustock.Modules.ErpIntegration.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Webhook\Nexustock.Modules.Webhook.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Observability\Nexustock.Modules.Observability.csproj" />
   </ItemGroup>
 
 </Project>
