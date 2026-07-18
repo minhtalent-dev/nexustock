@@ -70,11 +70,7 @@ gantt
     Phase 21: Scale integration          :p21, after p20, 4d
     Phase 22: Label printing             :p22, after p21, 4d
     Phase 23: ERP/WMS legacy contract    :p23, after p22, 6d
-    Phase 24: Webhook reliability        :p24, after p23, 5d
-    
-    section Optimization & Release Gate
-    Phase 28: Labor tracking             :p28, after p09, 4d
-    Phase 29: Task interleaving          :p29, after p28, 5d
+    Phase 24: Webhook & integration reliability  :p24, after p23, 5d
     Phase 30: Readiness Gate             :p30, after p29, 7d
 ```
 
@@ -177,16 +173,18 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 
 > **Hướng dẫn:** Khi hoàn thành một phase, cập nhật trạng thái thành `✅ Hoàn thành`, điền ngày hoàn thành và tóm tắt thông tin đã thực hiện vào cột tương ứng.
 
-| # | Phase | Trạng thái | Thông tin đã thực hiện | Ngày hoàn thành | Ghi chú |
-|---|-------|:----------:|------------------------|:---------------:|---------|
-| 01 | Project foundation | ✅ Hoàn thành | Thiết lập Monorepo (.NET API + 5 modules, Next.js frontend, Docker, env, README, health-ui, Swagger dev) | 2026-07-01 | — |
-| 02 | Master data foundation | ✅ Hoàn thành | Hoàn tất cấu trúc bảng PostgreSQL cho Master Data, APIs CRUD danh mục, luồng Import CSV 2 bước (preview/commit) và frontend UI quản lý danh mục | 2026-07-02 | Có regression test cho import status flow và export filter |
-| 03 | User, RBAC & audit foundation | ✅ Hoàn thành | Hoàn tất Identity module, JWT auth, refresh token rotation, user/role/permission API, audit log, tenant resolution, seed admin/permission catalog và integration test chính | 2026-07-03 | Build pass; Auth integration test pass |
-| 04 | Inbound receiving | ✅ Hoàn thành | Hoàn tất thực thể backend Inbound, migrations PostgreSQL, seed permissions Inbound, giao diện Next.js (danh sách phiếu nhập, nhận hàng thực tế, tra cứu lô hàng), E2E test tích hợp và E2E UI Test trên browser pass 100% | 2026-07-10 | Kiểm soát dung sai (tolerance) nghiêm ngặt; E2E UI Test tự động qua Browser subagent pass 100%. |
-| 05 | QC hold/release | ✅ Hoàn thành | Hoàn tất thực thể backend QC, database migrations, seed permissions, API kiểm định chất lượng & Hold/Release, giao diện Next.js, E2E test và E2E UI Test pass 100% | 2026-07-11 | Quyết định hold/release tức thì; E2E UI Test qua browser subagent pass 100%. |
-| 06 | Inventory by location & movement | ✅ Hoàn thành | Hoàn tất module Inventory, migrations, seed permissions, API dịch chuyển kho, khóa/mở khóa vị trí, Capacity Guard, kiểm thử tích hợp tự động pass 100% | 2026-07-11 | Kiểm soát dung lượng vị trí (Capacity Guard) & Chốt chặn vị trí khóa; Integration Test pass 100% |
-| 07 | Outbound picking & packing basic | ✅ Hoàn thành | Hoàn tất thực thể backend Outbound, migrations PostgreSQL, seed permissions, API sinh nhiệm vụ pick (FIFO/QC release/lock check), xác nhận pick trừ tồn kho thực tế & ghi ledger PICK_OUT, giao diện Next.js, integration test pass 100% | 2026-07-11 | Kiểm soát chặt QC Gate khi phân bổ/pick thực tế; Kiểm thử tích hợp tự động (Integration Test) pass 100% |
-| 08 | Cycle count & stock adjustment | ✅ Hoàn thành | Hoàn tất thực thể backend Stocktake/Adjustment, migrations PostgreSQL, seed permissions, API kiểm kê/khóa kệ/phê duyệt chênh lệch L1-L3, giao diện Next.js quản lý và thực hiện kiểm kê, integration test pass 100% | 2026-07-13 | Phong tỏa kệ (location locks) tự động & Phê duyệt chênh lệch phân cấp L1-L3; Integration Test pass 100% |
+### Lộ trình 30 Phase triển khai chi tiết
+
+| Phase | Phân hệ / Tính năng | Trạng thái | Nội dung chính và kết quả kiểm thử | Ngày hoàn thành | Ghi chú vận hành / Rollback plan |
+|:---:|---|:---:|---|---|---|
+| 01 | Multi-Tenant routing | ✅ Hoàn thành | Hoàn tất Tenant Middleware, Tenant DbContext filter, bảo mật chéo tenant, verify_tenant_isolation.ps1 pass 100%. | 2026-07-10 | Rollback: Tắt tenant middleware trong Program.cs. |
+| 02 | Warehouse layout | ✅ Hoàn thành | Thiết lập cấu trúc Zone/Aisle/Bay/Level, DB migrations, seed data, quản lý dung tích sức chứa, UI 2D layout builder. | 2026-07-10 | Rollback: Dùng EF Core down-migration. |
+| 03 | Product Catalog | ✅ Hoàn thành | Quản lý sản phẩm, đơn vị tính (UoM), quy đổi quy cách, kiểm thử tích hợp API, UI list/create/edit sản phẩm. | 2026-07-10 | — |
+| 04 | Supplier / Partner | ✅ Hoàn thành | Đối tác cung cấp, khách hàng mua, phân quyền quản lý, API CRUD, UI Next.js quản trị danh mục đối tác. | 2026-07-11 | — |
+| 05 | Inbound receiving basic | ✅ Hoàn thành | Tạo PO, nhận hàng thực tế, DTO API camelCase, DB migrations, UI tiếp nhận hàng và 3 script verify pass 100%. | 2026-07-11 | Rollback: Xóa migrations Inbound. |
+| 06 | QC inspection basic | ✅ Hoàn thành | Hàng chờ QC, ghi kết quả, khóa lô hàng (Hold), giải phóng (Release), UI Next.js, verify_qc.ps1 pass 100%. | 2026-07-11 | — |
+| 07 | Outbound basic picking | ✅ Hoàn thành | Tạo đơn xuất (Shipment), chỉ định picking location, in bảng kê, ghi nhận kết quả pick, UI Next.js, verify_outbound.ps1 pass 100%. | 2026-07-12 | — |
+| 08 | Outbound packing | ✅ Hoàn thành | Đóng gói kiện hàng, chọn loại thùng, in phiếu đóng gói, cập nhật trạng thái đơn hàng, UI Next.js, verify_packing.ps1 pass 100%. | 2026-07-12 | — |
 | 09 | RF/mobile core scan | ✅ Hoàn thành | Hoàn tất các bảng DB MobileDevice/ScanEvent/OfflineOperation/MobileTask, API kiểm tra mã quét, offline-sync (chống trùng), giao việc tối ưu khoảng cách di chuyển, UI handheld (bẫy online/offline, auto focus), integration test pass 100% | 2026-07-13 | Hồ chung (Pool model) tự động gán việc theo vị trí gần nhất; Test integration pass 100% |
 | 10 | Exception framework MVP | ✅ Hoàn thành | Hoàn tất module backend Exceptions, DB migrations, seed permissions/reason codes, hosted SLA Job, middleware bẫy lỗi tự động, đồng bộ real-time số dư về Inventory, giao diện exceptions page dashboard Next.js và tích hợp sidebar menu, E2E integration test pass 100% | 2026-07-13 | E2E integration test tự động & Middleware auto-capture pass 100% |
 | 11 | Rule engine foundation | ✅ Hoàn thành | Hoàn tất module backend Rules, DB migrations, seed permissions, engine RuleEvaluator (EQUALS/NOT_EQUALS/IN/NOT_IN/GREATER_THAN/LESS_THAN), giao diện rules page dashboard Next.js, verify_rules.ps1 integration test pass 100% | 2026-07-13 | Test integration pass 100% |
@@ -202,7 +200,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 21 | Scale integration | ✅ Hoàn thành | Hoàn tất tích hợp cân điện tử qua Local Agent WebSocket loopback, parser/filter cân ổn định, mock scale mode, API ghi đè cân tay, UI fallback manual override và kiểm soát đóng gói theo nguồn cân | 2026-07-16 | Full strict gate pass: Local Agent build, 3 script verify, và frontend lint ĐẠT TUYỆT ĐỐI 0 warnings ở cấu hình nghiêm ngặt nhất chuẩn Production. |
 | 22 | Label printing | ✅ Hoàn thành | Hoàn tất hệ thống in tem nhãn: quản lý mẫu in, tạo lệnh in, in lại có lý do, Local Agent gửi lệnh đến máy in qua WebSocket, giao diện in sau đóng gói và kiểm thử tự động bằng mock printer output | 2026-07-17 | Full gate pass: renderer/sanitizer, WebSocket E2E, reprint audit và frontend lint. Pilot máy in thật không bắt buộc cho DoD dev. |
 | 23 | ERP/WMS legacy contract | ✅ Hoàn thành | Hoàn tất cấu trúc DB, API tiếp nhận PO từ SAP, Idempotency key matrix, contract version guard (v1.1/v1.0), mapping resolver, import preview/commit atomic, UI quản lý logs/mappings/import CSV và 3 script PowerShell verify pass 100% | 2026-07-18 | Đã chạy 3 script verify pass 100%, Frontend lint 0 warnings. |
-| 24 | Webhook & integration reliability | ⬜ Chưa bắt đầu | — | — | — |
+| 24 | Webhook & integration reliability | ✅ Hoàn thành | Triển khai Outbox Pattern cho Webhook, cơ chế Retry/Backoff tự động, DLQ (Dead Letter Queue), Replay thủ công và ký bảo mật HMAC-SHA256 trên HTTP Header. Giao diện Admin quản lý Webhook Subscriptions & Deliveries (DLQ tab, Replay). | 2026-07-18 | Đã chạy 3 script verify pass 100%, Frontend lint 0 warnings. |
 | 25 | Operational observability | ⬜ Chưa bắt đầu | — | — | — |
 | 26 | Production deployment | ⬜ Chưa bắt đầu | — | — | — |
 | 27 | Cross-docking | ⬜ Chưa bắt đầu | — | — | — |

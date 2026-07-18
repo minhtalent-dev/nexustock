@@ -120,6 +120,8 @@ const navGroups: NavGroup[] = [
       { href: "/admin/integrations/messages", label: "Nhật ký tích hợp", icon: FileText, permission: "integration.view" },
       { href: "/admin/integrations/mappings", label: "Ánh xạ dữ liệu", icon: GitFork, permission: "integration.view" },
       { href: "/admin/integrations/import", label: "Import tích hợp", icon: Upload, permission: "integration.import" },
+      { href: "/admin/webhooks/subscriptions", label: "Webhook Subscriptions", icon: Layers, permission: "webhook.manage" },
+      { href: "/admin/webhooks/deliveries", label: "Webhook Deliveries", icon: ClipboardList, permission: "webhook.manage" },
     ],
   },
   {

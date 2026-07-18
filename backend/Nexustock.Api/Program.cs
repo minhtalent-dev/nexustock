@@ -23,6 +23,7 @@ using Nexustock.Modules.MaterialGenealogy;
 using Nexustock.Modules.LocalAgent;
 using Nexustock.Modules.LabelPrinting;
 using Nexustock.Modules.ErpIntegration;
+using Nexustock.Modules.Webhook;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -112,6 +113,7 @@ try
     builder.Services.AddLocalAgentModule(builder.Configuration);
     builder.Services.AddLabelPrintingModule(builder.Configuration);
     builder.Services.AddErpIntegrationModule(builder.Configuration);
+    builder.Services.AddWebhookModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -442,6 +444,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the ErpIntegration database");
         }
+
+        try
+        {
+            var webhookDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Webhook.Contexts.WebhookDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(webhookDb.Database);
+            Log.Information("Webhook database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the Webhook database");
+        }
     }
 
     // Run Database Seeding
@@ -515,7 +528,9 @@ try
             ("label_printing.reprint", "Thực hiện in lại tem", "LabelPrinting"),
             ("integration.view", "Xem log tích hợp", "Integration"),
             ("integration.import", "Thực hiện import thủ công", "Integration"),
-            ("integration.export", "Xuất dữ liệu tồn kho", "Integration")
+            ("integration.export", "Xuất dữ liệu tồn kho", "Integration"),
+            ("webhook.manage", "Quản lý Webhook Subscription", "Webhook"),
+            ("webhook.replay", "Replay Webhook DLQ", "Webhook")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

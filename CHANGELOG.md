@@ -1,5 +1,18 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 1.1.0 - Cơ chế gửi tin Webhook tin cậy và Xử lý hàng đợi lỗi (Phase 24)
+*Ngày cập nhật: 18/07/2026*
+
+### Tính năng mới
+- **Hệ thống gửi tin Webhook tin cậy (Outbox Pattern)**: Đảm bảo dữ liệu gửi đi không bị mất mát khi có sự cố mạng. Các sự kiện hệ thống được ghi nhận đồng thời với thao tác nghiệp vụ và chuyển giao cho dịch vụ chạy ngầm xử lý.
+- **Tự động thử lại và hàng đợi lỗi (Retry & Dead Letter Queue)**: Khi kết nối đến hệ thống nhận tin bị gián đoạn, hệ thống tự động thử lại theo lịch trình giãn cách (1 phút, 5 phút, 15 phút, 1 giờ). Nếu thất bại quá 5 lần, tin nhắn được chuyển vào khu vực lưu trữ lỗi (DLQ).
+- **Gửi lại tin nhắn lỗi (Replay/Resend)**: Hỗ trợ người dùng kiểm tra thông tin chi tiết lỗi kết nối, nội dung gói tin lỗi và thực hiện gửi lại đơn lẻ hoặc gửi lại hàng loạt các tin nhắn trong hàng đợi lỗi qua giao diện quản trị.
+- **Ký bảo mật HMAC-SHA256**: Mỗi gói tin webhook gửi đi đều được ký bảo mật kèm dấu thời gian. Hệ thống nhận tin có thể sử dụng mã khóa bí mật được cung cấp để xác thực gói tin không bị thay đổi và đúng nguồn gốc.
+- **Giao diện Web quản trị Webhooks**:
+  - Trang quản trị endpoint nhận tin: Thêm mới, chỉnh sửa, bật/tắt nhận tin và xem mã khóa bí mật (chỉ hiển thị một lần duy nhất khi tạo để bảo mật).
+  - Trang theo dõi lịch sử gửi tin: Phân loại trạng thái tin nhắn (đang chờ, đã gửi, lỗi), lọc theo mã giao dịch và xem chi tiết lỗi kết nối hoặc nội dung payload thực tế.
+- **Tự động hóa kiểm thử**: Cung cấp 3 kịch bản kiểm thử tự động quy trình gửi tin, tự động thử lại/chuyển hàng đợi lỗi và cơ chế gửi lại tin nhắn lỗi.
+
 ## Phiên bản 0.9.0 - Nền tảng kết nối thiết bị ngoại vi và WebSocket Local Agent (Phase 20)
 *Ngày cập nhật: 16/07/2026*
 

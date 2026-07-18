@@ -7,10 +7,13 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Nexustock.Modules.ErpIntegration.Services;
 using Nexustock.Modules.ErpIntegration.Entities;
 using Nexustock.Modules.Inbound.Contexts;
 using Nexustock.Modules.Inbound.Entities;
+using Nexustock.Modules.Webhook.Services;
 
 namespace Nexustock.Modules.ErpIntegration.Controllers;
 
@@ -23,19 +26,25 @@ public class IntegrationInboundOrdersController : ControllerBase
     private readonly IContractVersionService _versionService;
     private readonly IIntegrationMappingService _mappingService;
     private readonly InboundDbContext _inboundContext;
+    private readonly IWebhookOutboxService _webhookOutbox;
+    private readonly ILogger<IntegrationInboundOrdersController> _logger;
 
     public IntegrationInboundOrdersController(
         ITenantProvider tenantProvider,
         IIdempotencyService idempotencyService,
         IContractVersionService versionService,
         IIntegrationMappingService mappingService,
-        InboundDbContext inboundContext)
+        InboundDbContext inboundContext,
+        IWebhookOutboxService webhookOutbox,
+        ILogger<IntegrationInboundOrdersController> logger)
     {
         _tenantProvider = tenantProvider;
         _idempotencyService = idempotencyService;
         _versionService = versionService;
         _mappingService = mappingService;
         _inboundContext = inboundContext;
+        _webhookOutbox = webhookOutbox;
+        _logger = logger;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -185,6 +194,24 @@ public class IntegrationInboundOrdersController : ControllerBase
 
             // Save successful response payload in idempotency log
             await _idempotencyService.SaveResponseAsync(tenantId, idempotencyKey, messageType, successResponse, "accepted");
+
+            // Enqueue Webhook outbound event (best-effort: không rollback business nếu enqueue fail)
+            try
+            {
+                var eventPayload = JsonSerializer.Serialize(new
+                {
+                    orderId = orderId.ToString(),
+                    orderNo,
+                    externalReference = extRef,
+                    traceId
+                });
+                await _webhookOutbox.EnqueueAsync(tenantId, "inbound.completed", eventPayload, traceId);
+            }
+            catch (Exception webhookEx)
+            {
+                // Log lỗi nhưng không fail request vì business đã commit thành công
+                _logger.LogWarning(webhookEx, "[WebhookOutbox] Enqueue inbound.completed thất bại. traceId={TraceId}", traceId);
+            }
 
             return StatusCode(201, successResponseObj);
         }
