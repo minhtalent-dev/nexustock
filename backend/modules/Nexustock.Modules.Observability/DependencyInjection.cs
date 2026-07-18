@@ -19,6 +19,7 @@ public static class DependencyInjection
         services.AddScoped<IActivityTimelineService, ActivityTimelineService>();
         services.AddScoped<ITraceLogService, TraceLogService>();
         services.AddScoped<IKpiSnapshotService, KpiSnapshotService>();
+        services.AddScoped<IFeatureFlagService, FeatureFlagService>();
 
         services.AddHostedService<KpiSnapshotJob>();
         services.AddHostedService<OperationalAlertEvaluatorJob>();

@@ -1,7 +1,22 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 1.2.0 - Tự động hóa triển khai, Đóng gói vận hành và Tính năng kiểm soát thông minh (Phase 26)
+*Ngày cập nhật: 18/07/2026*
+
+### Tính năng mới
+- **Đóng gói vận hành độc lập (Containerization)**: Hệ thống được đóng gói hoàn chỉnh thành các thành phần vận hành độc lập. Giúp việc cài đặt và mở rộng hệ thống diễn ra nhanh chóng, giảm thiểu xung đột môi trường.
+- **Tự động hóa chạy kiểm tra cơ sở dữ liệu**: Tách riêng quy trình kiểm tra và cập nhật cấu trúc cơ sở dữ liệu trước khi hệ thống khởi động. Giúp việc nâng cấp phiên bản diễn ra trơn tru mà không làm gián đoạn người dùng.
+- **Tính năng kiểm soát thông minh (Feature Flags)**:
+  - Cho phép người quản trị bật/tắt nhanh các chức năng mới của hệ thống theo cấu hình.
+  - Hỗ trợ phân quyền thử nghiệm trước cho một nhóm người dùng cụ thể hoặc triển khai thử nghiệm theo tỷ lệ phần trăm người dùng ngẫu nhiên để đánh giá độ ổn định.
+- **Các kịch bản sao lưu và khôi phục**:
+  - Hỗ trợ công cụ tự động sao lưu dữ liệu định kỳ, nén dữ liệu tối ưu và tự động dọn dẹp các bản sao lưu cũ để giải phóng tài nguyên.
+  - Xây dựng quy trình khôi phục và phục hồi nhanh hệ thống về phiên bản ổn định trước đó khi gặp sự cố nghiêm trọng.
+- **Tự động hóa kiểm tra sức khỏe hệ thống**: Cung cấp công cụ tự động kiểm tra định kỳ tính sẵn sàng kết nối của các thành phần dịch vụ để cảnh báo sớm sự cố.
+
 ## Phiên bản 1.1.0 - Cơ chế gửi tin Webhook tin cậy và Xử lý hàng đợi lỗi (Phase 24)
 *Ngày cập nhật: 18/07/2026*
+
 
 ### Tính năng mới
 - **Hệ thống gửi tin Webhook tin cậy (Outbox Pattern)**: Đảm bảo dữ liệu gửi đi không bị mất mát khi có sự cố mạng. Các sự kiện hệ thống được ghi nhận đồng thời với thao tác nghiệp vụ và chuyển giao cho dịch vụ chạy ngầm xử lý.

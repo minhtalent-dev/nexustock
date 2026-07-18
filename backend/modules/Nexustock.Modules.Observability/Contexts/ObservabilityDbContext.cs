@@ -11,10 +11,23 @@ public class ObservabilityDbContext : DbContext
     public DbSet<OperationalAlert> OperationalAlerts => Set<OperationalAlert>();
     public DbSet<KpiSnapshot> KpiSnapshots => Set<KpiSnapshot>();
     public DbSet<TraceLog> TraceLogs => Set<TraceLog>();
+    public DbSet<FeatureFlag> FeatureFlags => Set<FeatureFlag>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<FeatureFlag>(e =>
+        {
+            e.ToTable("FeatureFlags");
+            e.HasKey(x => x.Name);
+            e.Property(x => x.Name).HasMaxLength(100).IsRequired();
+            e.Property(x => x.Enabled).IsRequired();
+            e.Property(x => x.RolloutPercentage).IsRequired();
+            e.Property(x => x.WhitelistUserIds).HasColumnType("text");
+            e.Property(x => x.Description).HasColumnType("text");
+            e.Property(x => x.UpdatedAt).IsRequired();
+        });
 
         modelBuilder.Entity<ActivityTimelineEntry>(e =>
         {

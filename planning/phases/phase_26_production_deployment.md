@@ -2,9 +2,10 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 90%
-- **Đánh giá:** Đủ roadmap cho production deployment, Docker, health check, backup/restore và rollback.
-- **Khi cần upgrade:** Bắt buộc viết migration rehearsal checklist để nâng lên 95% trước production deployment.
+- **Mức hiện tại:** 95% execution-ready.
+- **Đánh giá rp1:** Đã rà soát Phase 26 với roadmap tổng, trạng thái Phase 25 hoàn thành và cấu trúc project hiện tại. Plan đủ để bắt đầu triển khai DevOps/platform nếu FOUNDER approve.
+- **Điểm đã nâng cấp:** Bổ sung migration rehearsal checklist, incident playbook, RTO/RPO, verify gates, secrets matrix, Docker Compose zero-downtime boundary và feature flag scope để tránh điểm mù khi triển khai.
+- **Khi cần upgrade:** Nâng lên 100% sau khi Docker image build pass, backup/restore rehearsal pass, health checks pass và rollback drill có bằng chứng.
 
 ## 1. Mục tiêu
 
@@ -33,7 +34,11 @@ Thiết lập hạ tầng đóng gói, triển khai và vận hành hệ thống
 ### Readiness checklist
 
 - Toàn bộ 25 phase nghiệp vụ WMS và tích hợp đã vượt qua kiểm thử local và tích hợp.
-- Quyền truy cập quản trị Server Production (SSH, Docker privileges) đã được cấp cho DevOps.
+- Phase 25 Operational Observability đã hoàn thành để cung cấp dashboard, trace ID, timeline, KPI và alert phục vụ deployment monitoring.
+- Quyền truy cập quản trị Server Production hoặc Staging (SSH, Docker privileges) đã được cấp cho DevOps.
+- Domain, TLS certificate, reverse proxy entrypoint và firewall rule đã có owner rõ ràng.
+- PostgreSQL production target đã có chính sách backup ngoài máy chủ hoặc volume an toàn.
+- Docker image tag/version strategy đã thống nhất: dùng immutable tag theo version/build number, không deploy bằng `latest`.
 
 ## 4. Setup
 
@@ -58,9 +63,19 @@ scripts/
 
 *Không tạo các bảng `DeploymentRecords` hay `BackupRecords` trong DB nghiệp vụ kho của WMS để tránh trộn lẫn trách nhiệm hệ thống.*
 
+### Boundary kiểm tra cấu trúc hiện tại
+
+- Thư mục [docker](file:///d:/1_Project/48_Nexustock/docker) hiện chưa tồn tại trước Phase 26; đây là deliverable mới của phase.
+- Thư mục [scripts](file:///d:/1_Project/48_Nexustock/scripts) hiện chưa tồn tại trước Phase 26; đây là deliverable mới của phase.
+- File [docker-compose.yml](file:///d:/1_Project/48_Nexustock/docker-compose.yml) đang là cấu hình local/dev; Phase 26 phải tạo `docker/docker-compose.prod.yml` riêng, không phá cấu hình dev hiện có.
+- Không đưa `.env.production` thật vào repo. Chỉ được commit `.env.production.example` không chứa secret thật.
+
 ### Cơ chế quản lý Migration Database:
 - Khi chạy container Backend bản Production, migration được kích hoạt thông qua dòng lệnh khởi chạy (Entrypoint Script) gọi CLI: `dotnet EF Database Update` trước khi start process chính của ứng dụng Web.
 - Nếu migration thất bại, tiến trình khởi động container bị hủy lập tức và container chuyển sang trạng thái `unhealthy` để chặn traffic.
+- Production chỉ cho phép **một migration runner duy nhất** tại một thời điểm. Không để nhiều API replicas cùng chạy migration.
+- Migration runner phải chạy sau pre-deploy backup và trước khi mở traffic.
+- Nếu migration có thay đổi phá tương thích ngược, bắt buộc chia thành expand/contract migration hoặc chuyển sang Phase 30 hardening để diễn tập riêng.
 
 ### Cơ chế Sao lưu Database (`db-backup.sh`):
 - Định kỳ chạy job cron (ví dụ: 01:00 AM hàng ngày) thực thi lệnh:
@@ -95,6 +110,24 @@ Hệ thống cung cấp 2 Endpoint Health Check riêng biệt, được cấu h�
 - Cấu hình bảo mật HTTP Headers (X-Frame-Options, X-Content-Type-Options, Content-Security-Policy).
 
 ## 8. Execution flow
+
+### 8.1 Deployment flow chuẩn
+
+1. Build image backend/frontend bằng immutable tag.
+2. Chạy backend build gate và frontend lint/build gate trước khi push image.
+3. Tạo backup pre-deploy và file checksum.
+4. Chạy migration runner duy nhất.
+5. Khởi động API/Web mới.
+6. Kiểm tra `/health/live` và `/health/ready`.
+7. Smoke test login, dashboard, webhook reliability và observability dashboard.
+8. Mở traffic qua reverse proxy hoặc compose service update.
+9. Theo dõi Phase 25 dashboard tối thiểu 15 phút: error rate, active alerts, DB connection, trace log.
+
+### 8.2 Zero-downtime boundary
+
+- Docker Compose đơn lẻ không bảo đảm zero-downtime tuyệt đối nếu không có reverse proxy/load balancer phía trước.
+- Mục tiêu Phase 26: **near-zero downtime** cho single-server deployment, downtime kỳ vọng dưới 5 giây khi service restart nhanh.
+- Zero-downtime đúng nghĩa cần ít nhất reverse proxy giữ old/new API song song hoặc orchestrator như Kubernetes/Swarm. Nếu production yêu cầu tuyệt đối 0 giây, nâng scope sang Phase 30.
 
 ### Kịch bản Triển khai và Rollback Khẩn cấp (Rollback Runbook Flow)
 
@@ -133,14 +166,30 @@ Khi phát hiện phiên bản mới bị lỗi nghiêm trọng trên production:
   - Chạy script backup để xuất file. Dựng một instance container DB phụ và chạy script restore. Kiểm tra dữ liệu sau restore trùng khớp 100% về checksum và số lượng dòng.
 - **Diễn tập Rollback:**
   - Triển khai mock update bị lỗi, thực thi quy trình rollback tag và verify hệ thống trở lại bình thường dưới 2 phút.
+- **Health check test:**
+  - `/health/live` trả 200 khi process sống.
+  - `/health/ready` trả 200 khi PostgreSQL/Redis sẵn sàng.
+  - `/health/ready` trả 503 khi DB hoặc Redis bị ngắt.
+  - Response không chứa connection string, password, token hoặc version chi tiết.
+- **Secret scan thủ công:**
+  - Kiểm tra không commit `.env.production` thật.
+  - Kiểm tra `docker-compose.prod.yml` chỉ tham chiếu biến môi trường, không chứa mật khẩu thật.
+- **Feature flag test:**
+  - Env override có quyền ưu tiên cao nhất.
+  - Tắt flag không cần redeploy image.
+  - Flag hết lifecycle có checklist cleanup.
 
 ## 13. Acceptance criteria
 
 - Quy trình build Docker thành công, không sinh lỗi biên dịch.
 - Chạy cụm container bằng docker-compose lên sạch, `/health/live` trả về 200.
-- File backup DB tạo ra đúng lịch, khôi phục thành công trên môi trường diễn tập (Staging).
-- Tuyệt đối không có bất kỳ file backend/frontend nghiệp vụ nào có logic code liên quan đến tác vụ deploy (Phase deployment sạch 100% code nghiệp vụ).
-- Feature flag hoạt động cho ít nhất 5 phase core (P04, P06, P07, P13, P18): bật/tắt không cần redeploy.
+- `/health/ready` kiểm tra được PostgreSQL và Redis, trả 503 đúng khi dependency lỗi.
+- File backup DB tạo ra đúng lịch, có checksum, khôi phục thành công trên môi trường diễn tập (Staging).
+- Rollback tag và restore DB rehearsal hoàn tất dưới 2 phút trên staging.
+- Tuyệt đối không có secret thật trong repo, image layer hoặc log triển khai.
+- Không trộn logic deploy vào module nghiệp vụ WMS.
+- Feature flag hoạt động cho ít nhất 5 phase core (P04, P06, P07, P13, P18): bật/tắt không cần rebuild image.
+- Phase 25 Observability dashboard hiển thị hệ thống ổn định sau deploy smoke test.
 
 ## 14. Feature Flag & Progressive Rollout
 
@@ -210,6 +259,81 @@ UPDATE "FeatureFlags" SET "enabled" = false WHERE "name" = 'FF_ALLOCATION_V2';
 ### 14.5 Flag Lifecycle — Cleanup Rule
 
 Flag phải được xóa khỏi codebase và DB trong vòng **2 sprint** sau khi Full Launch để tránh technical debt. Dev chính chịu trách nhiệm track lifecycle trong issue tracker.
+
+## 15. Secrets & Environment Matrix
+
+| Nhóm biến | Bắt buộc | Nơi lưu | Ghi chú |
+|---|:---:|---|---|
+| `ConnectionStrings__DefaultConnection` | Có | Server env / Docker secret | Không commit vào repo |
+| `Jwt__SigningKey` | Có | Server env / Docker secret | Tối thiểu 32 bytes entropy |
+| `Redis__ConnectionString` | Có | Server env / Docker secret | Không trả trong health body |
+| `Webhook__SigningSecret` | Có | Server env / Docker secret | Phục vụ Phase 24 HMAC |
+| `Observability__EnableKpiSnapshotJob` | Có | Env | Có thể tắt khi rollback tải DB |
+| `FF_*` | Tùy flag | Env ưu tiên cao nhất | Kill switch khẩn cấp |
+
+## 16. Migration Rehearsal Checklist
+
+### Pre-deploy
+
+- [ ] Xác nhận current git commit/tag và image tag đang chạy.
+- [ ] Tạo backup pre-deploy bằng `scripts/db-backup.sh`.
+- [ ] Xác nhận file `.md5` hợp lệ.
+- [ ] Chạy migration trên DB staging copy từ production backup.
+- [ ] Chạy smoke test API và frontend trên staging.
+
+### Deploy
+
+- [ ] Pull image tag mới.
+- [ ] Chạy migration runner duy nhất.
+- [ ] Start API/Web containers.
+- [ ] Kiểm tra `/health/live` và `/health/ready`.
+- [ ] Kiểm tra login admin, dashboard, observability, webhook subscriptions.
+
+### Post-deploy
+
+- [ ] Theo dõi Phase 25 active alerts trong 15 phút.
+- [ ] Kiểm tra container restart count = 0.
+- [ ] Kiểm tra DB connection không tăng bất thường.
+- [ ] Ghi nhận deployment evidence vào walkthrough/biên bản release.
+
+## 17. Incident Playbook
+
+| Incident | Tín hiệu | Hành động trong 5 phút đầu | Rollback |
+|---|---|---|---|
+| API không ready | `/health/ready` 503 | Kiểm tra DB/Redis env và logs container | Revert image tag trước |
+| Migration fail | migration runner exit != 0 | Không mở traffic, giữ version cũ | Restore pre-deploy backup nếu DB đã đổi |
+| DB connection spike | ready chập chờn, dashboard cảnh báo | Tắt job nặng bằng env, restart API | Revert image nếu không giảm |
+| Frontend blank page | Web 200 nhưng UI lỗi | Kiểm tra static build/nginx route | Revert frontend image tag |
+| Alert storm | Observability nhiều alert trùng | Tắt evaluator job bằng env | Giữ app read-only nếu cần |
+
+## 18. RTO/RPO Targets
+
+| Chỉ số | Mục tiêu Phase 26 | Điều kiện |
+|---|---:|---|
+| RTO rollback app | <= 2 phút | Image tag cũ còn local hoặc registry sẵn sàng |
+| RTO restore DB staging | <= 15 phút | Backup size nhỏ/trung bình, cùng host |
+| RPO backup daily | <= 24 giờ | Cron backup chạy hằng ngày |
+| RPO pre-deploy | <= 5 phút | Backup ngay trước deploy |
+| Downtime deploy single server | < 5 giây kỳ vọng | Không có migration khóa dài |
+
+## 19. Verification Commands
+
+```powershell
+dotnet build backend/Nexustock.Api/Nexustock.Api.csproj --no-restore
+npm run lint --prefix frontend -- --max-warnings 0
+docker compose -f docker/docker-compose.prod.yml config
+docker compose -f docker/docker-compose.prod.yml build
+powershell -ExecutionPolicy Bypass -File tests/verify_production_health.ps1
+powershell -ExecutionPolicy Bypass -File tests/verify_backup_restore.ps1
+powershell -ExecutionPolicy Bypass -File tests/verify_deployment_rollback.ps1
+git diff --check
+```
+
+## 20. rp1 Verdict
+
+- **Kết luận:** Phase 26 sau cập nhật đã đủ chuẩn để chuyển sang bước lập plan triển khai chi tiết hoặc execution sau approval.
+- **Không còn điểm mù lớn:** Docker structure, migration runner, backup/restore, health checks, rollback, secrets, feature flags và observability handoff đều đã có contract rõ.
+- **Blocker trước execution:** Cần xác nhận target môi trường chạy test là local Docker Desktop hay staging server thật để chọn đường dẫn backup, port publish, domain và TLS mode.
 
 
 

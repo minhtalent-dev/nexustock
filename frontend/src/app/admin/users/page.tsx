@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/toast";
+import { getHttpErrorMessage } from "@/lib/http-error";
 import { Users, UserPlus, Check, X } from "lucide-react";
 
 interface UserDto {

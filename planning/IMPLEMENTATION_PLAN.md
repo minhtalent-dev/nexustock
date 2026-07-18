@@ -229,7 +229,7 @@ Các deep spec dưới đây **không chặn Phase 01**. Đây là danh sách n�
 | Trước Phase 13 | Allocation algorithm spec | ✅ Đã hoàn thành (100% Ready) | Đã tích hợp cấu trúc DB, API DTOs, thuật toán chống Deadlock (Resource Ordering) và test cases vào tài liệu đặc tả Phase 13. |
 | Trước Phase 20 | Local Agent threat model | Nâng Phase 20 từ 90% lên 95% execution-ready | Làm rõ attack vector, Origin allowlist, pairing token, WSS/certificate trust, code signing, spoofing test case. |
 | Trước Phase 23 | SAP contract confirmation | ✅ Đã hoàn thành (100% Ready) | Làm rõ field mapping thật, error code matrix, idempotency, mapping resolver, preview/commit và 3 script verify pass 100%. |
-| Trước Phase 26/30 | Migration rehearsal & incident playbook | Nâng Phase 26/30 từ 90% lên 95% execution-ready | Làm rõ migration rehearsal checklist, RTO/RPO, backup restore proof, rollback timing và incident response theo lỗi lớn. |
+| Trước Phase 26/30 | Migration rehearsal & incident playbook | ✅ Phase 26 đã nâng lên 95% execution-ready | Đã bổ sung migration rehearsal checklist, incident playbook, RTO/RPO, secrets matrix, Docker Compose zero-downtime boundary, backup/restore proof và rollback timing vào Phase 26. Phase 30 tiếp tục hardening/UAT sau khi Phase 26 có evidence thật. |
 
 ### Nguyên tắc dùng backlog
 

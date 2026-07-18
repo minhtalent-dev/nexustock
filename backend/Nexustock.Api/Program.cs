@@ -184,7 +184,244 @@ try
         healthChecks.AddCheck("redis", new RedisHealthCheck(redisConnection));
     }
 
+    // Check for migrate-only mode
+    var migrateOnly = args.Contains("--migrate-only") || 
+                      string.Equals(builder.Configuration["NEXUSTOCK_MIGRATE_ONLY"], "true", StringComparison.OrdinalIgnoreCase);
+
     var app = builder.Build();
+
+    if (migrateOnly)
+    {
+        Log.Information("Running database migrations in one-shot mode...");
+        using (var scope = app.Services.CreateScope())
+        {
+            var success = true;
+            try
+            {
+                var identityDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Identity.Contexts.IdentityDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(identityDb.Database);
+                Log.Information("Identity database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Identity database");
+                success = false;
+            }
+
+            try
+            {
+                var masterDataDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.MasterData.Contexts.MasterDataDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(masterDataDb.Database);
+                Log.Information("MasterData database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the MasterData database");
+                success = false;
+            }
+
+            try
+            {
+                var inboundDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Inbound.Contexts.InboundDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(inboundDb.Database);
+                Log.Information("Inbound database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Inbound database");
+                success = false;
+            }
+
+            try
+            {
+                var qcDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Qc.Contexts.QcDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(qcDb.Database);
+                Log.Information("Qc database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Qc database");
+                success = false;
+            }
+
+            try
+            {
+                var lpnDb = scope.ServiceProvider.GetRequiredService<LpnDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(lpnDb.Database);
+                Log.Information("Lpn database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Lpn database");
+                success = false;
+            }
+
+            try
+            {
+                var inventoryDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Inventory.Contexts.InventoryDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(inventoryDb.Database);
+                Log.Information("Inventory database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Inventory database");
+                success = false;
+            }
+
+            try
+            {
+                var exceptionsDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Exceptions.Contexts.ExceptionsDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(exceptionsDb.Database);
+                Log.Information("Exceptions database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Exceptions database");
+                success = false;
+            }
+
+            try
+            {
+                var rulesDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Rules.Contexts.RulesDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(rulesDb.Database);
+                Log.Information("Rules database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Rules database");
+                success = false;
+            }
+
+            try
+            {
+                var putawayDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Putaway.Contexts.PutawayDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(putawayDb.Database);
+                Log.Information("Putaway database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Putaway database");
+                success = false;
+            }
+
+            try
+            {
+                var replenishmentDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Replenishment.Contexts.ReplenishmentDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(replenishmentDb.Database);
+                Log.Information("Replenishment database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Replenishment database");
+                success = false;
+            }
+
+            try
+            {
+                var rmaDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Rma.Contexts.RmaDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(rmaDb.Database);
+                Log.Information("Rma database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Rma database");
+                success = false;
+            }
+
+            try
+            {
+                var waveDb = scope.ServiceProvider.GetRequiredService<WaveDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(waveDb.Database);
+                Log.Information("Wave database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Wave database");
+                success = false;
+            }
+
+            try
+            {
+                var genealogyDb = scope.ServiceProvider.GetRequiredService<MaterialGenealogyDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(genealogyDb.Database);
+                Log.Information("MaterialGenealogy database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the MaterialGenealogy database");
+                success = false;
+            }
+
+            try
+            {
+                var localAgentDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.LocalAgent.Contexts.LocalAgentDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(localAgentDb.Database);
+                Log.Information("LocalAgent database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the LocalAgent database");
+                success = false;
+            }
+
+            try
+            {
+                var labelPrintingDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.LabelPrinting.Contexts.LabelPrintingDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(labelPrintingDb.Database);
+                Log.Information("LabelPrinting database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the LabelPrinting database");
+                success = false;
+            }
+
+            try
+            {
+                var erpIntegrationDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.ErpIntegration.Contexts.ErpIntegrationDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(erpIntegrationDb.Database);
+                Log.Information("ErpIntegration database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the ErpIntegration database");
+                success = false;
+            }
+
+            try
+            {
+                var webhookDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Webhook.Contexts.WebhookDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(webhookDb.Database);
+                Log.Information("Webhook database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Webhook database");
+                success = false;
+            }
+
+            try
+            {
+                var observabilityDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Observability.Contexts.ObservabilityDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(observabilityDb.Database);
+                Log.Information("Observability database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Observability database");
+                success = false;
+            }
+
+            if (!success)
+            {
+                Log.Fatal("One or more database migrations failed. Exiting with error code.");
+                Environment.Exit(1);
+            }
+
+            Log.Information("All database migrations completed successfully. Exiting.");
+            Environment.Exit(0);
+        }
+    }
 
     var uploadPath = app.Configuration["UploadSettings:UploadPath"] ?? "D:\\NexustockUploads";
     var requestPath = app.Configuration["UploadSettings:RequestPath"] ?? "/uploads";
@@ -268,194 +505,136 @@ try
         return Results.Json(summary, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     });
 
-    // Apply Migrations
-    using (var scope = app.Services.CreateScope())
+    // Apply Migrations in Development environment
+    if (app.Environment.IsDevelopment())
     {
-        try
+        using (var scope = app.Services.CreateScope())
         {
-            var identityDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Identity.Contexts.IdentityDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(identityDb.Database);
-            Log.Information("Identity database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Identity database");
-        }
+            try
+            {
+                var identityDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Identity.Contexts.IdentityDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(identityDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var masterDataDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.MasterData.Contexts.MasterDataDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(masterDataDb.Database);
-            Log.Information("MasterData database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the MasterData database");
-        }
+            try
+            {
+                var masterDataDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.MasterData.Contexts.MasterDataDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(masterDataDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var inboundDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Inbound.Contexts.InboundDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(inboundDb.Database);
-            Log.Information("Inbound database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Inbound database");
-        }
+            try
+            {
+                var inboundDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Inbound.Contexts.InboundDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(inboundDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var qcDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Qc.Contexts.QcDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(qcDb.Database);
-            Log.Information("Qc database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Qc database");
-        }
+            try
+            {
+                var qcDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Qc.Contexts.QcDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(qcDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var lpnDb = scope.ServiceProvider.GetRequiredService<LpnDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(lpnDb.Database);
-            Log.Information("Lpn database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Lpn database");
-        }
+            try
+            {
+                var lpnDb = scope.ServiceProvider.GetRequiredService<LpnDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(lpnDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var inventoryDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Inventory.Contexts.InventoryDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(inventoryDb.Database);
-            Log.Information("Inventory database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Inventory database");
-        }
+            try
+            {
+                var inventoryDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Inventory.Contexts.InventoryDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(inventoryDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var exceptionsDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Exceptions.Contexts.ExceptionsDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(exceptionsDb.Database);
-            Log.Information("Exceptions database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Exceptions database");
-        }
+            try
+            {
+                var exceptionsDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Exceptions.Contexts.ExceptionsDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(exceptionsDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var rulesDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Rules.Contexts.RulesDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(rulesDb.Database);
-            Log.Information("Rules database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Rules database");
-        }
+            try
+            {
+                var rulesDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Rules.Contexts.RulesDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(rulesDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var putawayDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Putaway.Contexts.PutawayDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(putawayDb.Database);
-            Log.Information("Putaway database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Putaway database");
-        }
+            try
+            {
+                var putawayDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Putaway.Contexts.PutawayDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(putawayDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var replenishmentDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Replenishment.Contexts.ReplenishmentDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(replenishmentDb.Database);
-            Log.Information("Replenishment database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Replenishment database");
-        }
+            try
+            {
+                var replenishmentDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Replenishment.Contexts.ReplenishmentDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(replenishmentDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var rmaDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Rma.Contexts.RmaDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(rmaDb.Database);
-            Log.Information("Rma database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Rma database");
-        }
+            try
+            {
+                var rmaDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Rma.Contexts.RmaDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(rmaDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var waveDb = scope.ServiceProvider.GetRequiredService<WaveDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(waveDb.Database);
-            Log.Information("Wave database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Wave database");
-        }
+            try
+            {
+                var waveDb = scope.ServiceProvider.GetRequiredService<WaveDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(waveDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var genealogyDb = scope.ServiceProvider.GetRequiredService<MaterialGenealogyDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(genealogyDb.Database);
-            Log.Information("MaterialGenealogy database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the MaterialGenealogy database");
-        }
+            try
+            {
+                var genealogyDb = scope.ServiceProvider.GetRequiredService<MaterialGenealogyDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(genealogyDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var localAgentDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.LocalAgent.Contexts.LocalAgentDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(localAgentDb.Database);
-            Log.Information("LocalAgent database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the LocalAgent database");
-        }
+            try
+            {
+                var localAgentDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.LocalAgent.Contexts.LocalAgentDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(localAgentDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var labelPrintingDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.LabelPrinting.Contexts.LabelPrintingDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(labelPrintingDb.Database);
-            Log.Information("LabelPrinting database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the LabelPrinting database");
-        }
+            try
+            {
+                var labelPrintingDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.LabelPrinting.Contexts.LabelPrintingDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(labelPrintingDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var erpIntegrationDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.ErpIntegration.Contexts.ErpIntegrationDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(erpIntegrationDb.Database);
-            Log.Information("ErpIntegration database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the ErpIntegration database");
-        }
+            try
+            {
+                var erpIntegrationDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.ErpIntegration.Contexts.ErpIntegrationDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(erpIntegrationDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
 
-        try
-        {
-            var webhookDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Webhook.Contexts.WebhookDbContext>();
-            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(webhookDb.Database);
-            Log.Information("Webhook database migrated successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "An error occurred while migrating the Webhook database");
+            try
+            {
+                var webhookDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Webhook.Contexts.WebhookDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(webhookDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
+
+            try
+            {
+                var observabilityDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Observability.Contexts.ObservabilityDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(observabilityDb.Database);
+            }
+            catch (Exception ex) { Log.Error(ex, "Migration error"); }
         }
     }
 
