@@ -1,4 +1,4 @@
-
+﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -42,6 +42,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.MaterialGenealogy", "backend\modules\Nexustock.Modules.MaterialGenealogy\Nexustock.Modules.MaterialGenealogy.csproj", "{F3BD4403-8183-4C7C-9C6E-AF897931CE9A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.LocalAgent", "backend\modules\Nexustock.Modules.LocalAgent\Nexustock.Modules.LocalAgent.csproj", "{C5FA8C88-F8D2-4CE4-9D94-6729B0D5D304}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.ErpIntegration", "backend\modules\Nexustock.Modules.ErpIntegration\Nexustock.Modules.ErpIntegration.csproj", "{0B1E05E3-011C-437C-A490-D139F451822B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -120,6 +122,10 @@ Global
 		{C5FA8C88-F8D2-4CE4-9D94-6729B0D5D304}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C5FA8C88-F8D2-4CE4-9D94-6729B0D5D304}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C5FA8C88-F8D2-4CE4-9D94-6729B0D5D304}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B1E05E3-011C-437C-A490-D139F451822B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B1E05E3-011C-437C-A490-D139F451822B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B1E05E3-011C-437C-A490-D139F451822B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B1E05E3-011C-437C-A490-D139F451822B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4EB60904-0E24-4328-8674-70CA3A8F9D31} = {5090C821-0136-4C60-9261-9E336B58EBBD}
@@ -140,5 +146,6 @@ Global
 		{8FBF351F-E49D-4319-9815-BBFC95E7C102} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 		{F3BD4403-8183-4C7C-9C6E-AF897931CE9A} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 		{C5FA8C88-F8D2-4CE4-9D94-6729B0D5D304} = {8759F8F8-F565-43C2-906A-B45B8244239A}
+		{0B1E05E3-011C-437C-A490-D139F451822B} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 	EndGlobalSection
 EndGlobal

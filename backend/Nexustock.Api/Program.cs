@@ -22,6 +22,7 @@ using Nexustock.Modules.MaterialGenealogy.Contexts;
 using Nexustock.Modules.MaterialGenealogy;
 using Nexustock.Modules.LocalAgent;
 using Nexustock.Modules.LabelPrinting;
+using Nexustock.Modules.ErpIntegration;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -110,6 +111,7 @@ try
     builder.Services.AddMaterialGenealogyModule(builder.Configuration);
     builder.Services.AddLocalAgentModule(builder.Configuration);
     builder.Services.AddLabelPrintingModule(builder.Configuration);
+    builder.Services.AddErpIntegrationModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -429,6 +431,17 @@ try
         {
             Log.Error(ex, "An error occurred while migrating the LabelPrinting database");
         }
+
+        try
+        {
+            var erpIntegrationDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.ErpIntegration.Contexts.ErpIntegrationDbContext>();
+            await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(erpIntegrationDb.Database);
+            Log.Information("ErpIntegration database migrated successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the ErpIntegration database");
+        }
     }
 
     // Run Database Seeding
@@ -499,7 +512,10 @@ try
             ("local_agent.revoke", "Thu hồi quyền của trạm làm việc", "LocalAgent"),
             ("label_printing.view", "Xem lệnh in tem", "LabelPrinting"),
             ("label_printing.print", "Thực hiện in tem", "LabelPrinting"),
-            ("label_printing.reprint", "Thực hiện in lại tem", "LabelPrinting")
+            ("label_printing.reprint", "Thực hiện in lại tem", "LabelPrinting"),
+            ("integration.view", "Xem log tích hợp", "Integration"),
+            ("integration.import", "Thực hiện import thủ công", "Integration"),
+            ("integration.export", "Xuất dữ liệu tồn kho", "Integration")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All

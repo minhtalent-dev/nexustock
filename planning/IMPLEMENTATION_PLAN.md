@@ -201,7 +201,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 20 | Local Agent foundation | ✅ Hoàn thành | Hoàn tất backend Local Agent module, 4 bảng quản lý trạm/thiết bị/ghép cặp/lịch sử kết nối, API pairing/confirm/heartbeat/revoke, Windows Local Agent loopback `127.0.0.1` port `9000-9005`, DPAPI bảo vệ token, WebSocket envelope + HMAC guard, UI quản trị trạm và sidebar menu | 2026-07-16 | Đã chạy `tests/verify_local_agent.ps1` và `tests/verify_agent_websocket.ps1` pass 100%. Browser không giữ `AgentToken` bản rõ; staging/prod giữ yêu cầu `wss://`. |
 | 21 | Scale integration | ✅ Hoàn thành | Hoàn tất tích hợp cân điện tử qua Local Agent WebSocket loopback, parser/filter cân ổn định, mock scale mode, API ghi đè cân tay, UI fallback manual override và kiểm soát đóng gói theo nguồn cân | 2026-07-16 | Full strict gate pass: Local Agent build, 3 script verify, và frontend lint ĐẠT TUYỆT ĐỐI 0 warnings ở cấu hình nghiêm ngặt nhất chuẩn Production. |
 | 22 | Label printing | ✅ Hoàn thành | Hoàn tất hệ thống in tem nhãn: quản lý mẫu in, tạo lệnh in, in lại có lý do, Local Agent gửi lệnh đến máy in qua WebSocket, giao diện in sau đóng gói và kiểm thử tự động bằng mock printer output | 2026-07-17 | Full gate pass: renderer/sanitizer, WebSocket E2E, reprint audit và frontend lint. Pilot máy in thật không bắt buộc cho DoD dev. |
-| 23 | ERP/WMS legacy contract | ⬜ Chưa bắt đầu | — | — | — |
+| 23 | ERP/WMS legacy contract | ✅ Hoàn thành | Hoàn tất cấu trúc DB, API tiếp nhận PO từ SAP, Idempotency key matrix, contract version guard (v1.1/v1.0), mapping resolver, import preview/commit atomic, UI quản lý logs/mappings/import CSV và 3 script PowerShell verify pass 100% | 2026-07-18 | Đã chạy 3 script verify pass 100%, Frontend lint 0 warnings. |
 | 24 | Webhook & integration reliability | ⬜ Chưa bắt đầu | — | — | — |
 | 25 | Operational observability | ⬜ Chưa bắt đầu | — | — | — |
 | 26 | Production deployment | ⬜ Chưa bắt đầu | — | — | — |
@@ -230,7 +230,7 @@ Các deep spec dưới đây **không chặn Phase 01**. Đây là danh sách n�
 |---|---|---|---|
 | Trước Phase 13 | Allocation algorithm spec | ✅ Đã hoàn thành (100% Ready) | Đã tích hợp cấu trúc DB, API DTOs, thuật toán chống Deadlock (Resource Ordering) và test cases vào tài liệu đặc tả Phase 13. |
 | Trước Phase 20 | Local Agent threat model | Nâng Phase 20 từ 90% lên 95% execution-ready | Làm rõ attack vector, Origin allowlist, pairing token, WSS/certificate trust, code signing, spoofing test case. |
-| Trước Phase 23 | SAP contract confirmation | Nâng Phase 23 từ 90% lên 95% execution-ready | Làm rõ field mapping thật, error code matrix, idempotency, retry/replay, SAP sandbox readiness và owner xác nhận. |
+| Trước Phase 23 | SAP contract confirmation | ✅ Đã hoàn thành (100% Ready) | Làm rõ field mapping thật, error code matrix, idempotency, mapping resolver, preview/commit và 3 script verify pass 100%. |
 | Trước Phase 26/30 | Migration rehearsal & incident playbook | Nâng Phase 26/30 từ 90% lên 95% execution-ready | Làm rõ migration rehearsal checklist, RTO/RPO, backup restore proof, rollback timing và incident response theo lỗi lớn. |
 
 ### Nguyên tắc dùng backlog

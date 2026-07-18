@@ -44,6 +44,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.MaterialGenealogy\Nexustock.Modules.MaterialGenealogy.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.LocalAgent\Nexustock.Modules.LocalAgent.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.LabelPrinting\Nexustock.Modules.LabelPrinting.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.ErpIntegration\Nexustock.Modules.ErpIntegration.csproj" />
   </ItemGroup>
 
 </Project>

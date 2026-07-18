@@ -115,6 +115,14 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    title: "Tích hợp ERP",
+    links: [
+      { href: "/admin/integrations/messages", label: "Nhật ký tích hợp", icon: FileText, permission: "integration.view" },
+      { href: "/admin/integrations/mappings", label: "Ánh xạ dữ liệu", icon: GitFork, permission: "integration.view" },
+      { href: "/admin/integrations/import", label: "Import tích hợp", icon: Upload, permission: "integration.import" },
+    ],
+  },
+  {
     title: "Hệ thống & Quyền",
     links: [
       { href: "/admin/users", label: "Người dùng", icon: Shield, permission: "Identity.Users.View" },
