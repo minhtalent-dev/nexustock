@@ -47,11 +47,17 @@ public class Program
         {
             builder.Services.AddSingleton<IPrinterDevice>(sp =>
             {
-                if (string.Equals(printer.Mode, "mock", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(printer.Mode, "tcp", StringComparison.OrdinalIgnoreCase))
                 {
-                    return new MockPrinterDevice(printer);
+                    return new TcpRawPrinterDevice(printer);
                 }
-                // Placeholder cho các mode khác (TCP/Windows) sẽ thêm sau
+
+                if (string.Equals(printer.Mode, "windows", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new WindowsRawPrinterDevice(printer);
+                }
+
+                // Mặc định: mock (dev/test)
                 return new MockPrinterDevice(printer);
             });
         }

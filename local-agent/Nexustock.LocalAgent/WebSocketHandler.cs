@@ -219,7 +219,19 @@ public class WebSocketHandler
 
     private async Task HandlePrinterPrintRequestAsync(WebSocket webSocket, WebSocketMessage msg, AgentConfig config)
     {
-        if (!await EnsureSignedCommandAsync(webSocket, msg, config)) return;
+        // Kiểm tra paired
+        if (!IsAgentPaired(config))
+        {
+            await SendErrorAsync(webSocket, msg.MessageId, "agent.unpaired", "Trạm chưa được ghép cặp.");
+            return;
+        }
+
+        // HMAC guard — error code phải là printer.unsigned_command theo Phase 22 spec
+        if (!WebSocketSecurity.VerifySignedPayload(msg, config, out _, out _))
+        {
+            await SendErrorAsync(webSocket, msg.MessageId, "printer.unsigned_command", "Lệnh in thiếu chữ ký hoặc chữ ký không hợp lệ. Chặn lệnh in.");
+            return;
+        }
 
         string? printerCode = null;
         string? rawCommand = null;
