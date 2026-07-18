@@ -202,7 +202,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 23 | ERP/WMS legacy contract | ✅ Hoàn thành | Hoàn tất cấu trúc DB, API tiếp nhận PO từ SAP, Idempotency key matrix, contract version guard (v1.1/v1.0), mapping resolver, import preview/commit atomic, UI quản lý logs/mappings/import CSV và 3 script PowerShell verify pass 100% | 2026-07-18 | Đã chạy 3 script verify pass 100%, Frontend lint 0 warnings. |
 | 24 | Webhook & integration reliability | ✅ Hoàn thành | Triển khai Outbox Pattern cho Webhook, cơ chế Retry/Backoff tự động, DLQ (Dead Letter Queue), Replay thủ công và ký bảo mật HMAC-SHA256 trên HTTP Header. Giao diện Admin quản lý Webhook Subscriptions & Deliveries (DLQ tab, Replay). | 2026-07-18 | Đã chạy 3 script verify pass 100%, Frontend lint 0 warnings. |
 | 25 | Operational observability  | ✅ Hoàn thành | Hoàn tất thiết kế observability: theo dõi trace log và che giấu dữ liệu nhạy cảm (sensitive masking), lưu vết dòng thời gian nghiệp vụ (Activity Timeline), tính toán KPI định kỳ qua hosted jobs và cảnh báo vận hành tự động (Operational Alerts) cùng giao diện Admin tích hợp đầy đủ. | 2026-07-18 | Full gate pass: Đã chạy 3 script verify pass 100%, Frontend lint ĐẠT TUYỆT ĐỐI 0 warnings. |
-| 26 | Production deployment | ⬜ Chưa bắt đầu | — | — | — |
+| 26 | Production deployment | ✅ Hoàn thành | Hoàn tất đóng gói docker, tách migration runner, scripts backup/restore, rollback và 3 kịch bản verify pass 100% | 2026-07-18 | — |
 | 27 | Cross-docking | ⬜ Chưa bắt đầu | — | — | — |
 | 28 | Labor tracking | ⬜ Chưa bắt đầu | — | — | — |
 | 29 | Task interleaving | ⬜ Chưa bắt đầu | — | — | — |
