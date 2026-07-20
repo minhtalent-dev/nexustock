@@ -52,7 +52,10 @@ public class LaborSessionTimeoutWorker : BackgroundService
                 var now = DateTimeOffset.UtcNow;
 
                 var timeoutSessions = await dbContext.LaborSessions
-                    .Where(s => (s.Status == "Running" || s.Status == "Paused") && s.TimeoutAt <= now)
+                    .Where(s =>
+                        (s.Status == "Running" || s.Status == "Paused") &&
+                        s.TimeoutAt.HasValue &&
+                        s.TimeoutAt <= now)
                     .Take(batchSize)
                     .ToListAsync(stoppingToken);
 
@@ -63,20 +66,21 @@ public class LaborSessionTimeoutWorker : BackgroundService
                     foreach (var session in timeoutSessions)
                     {
                         var originalStatus = session.Status;
+                        var timeoutAt = session.TimeoutAt ?? now;
                         session.Status = "TimedOut";
-                        session.CompletedAt = now;
+                        session.CompletedAt = timeoutAt;
                         session.UpdatedAt = now;
                         session.UpdatedBy = "LaborSessionTimeoutWorker";
 
                         // Nếu đang paused, tính toán phần pausedSeconds cho đến lúc timeoutAt
                         if (originalStatus == "Paused" && session.LastPausedAt != null)
                         {
-                            var delta = (int)(session.TimeoutAt.Value - session.LastPausedAt.Value).TotalSeconds;
+                            var delta = (int)(timeoutAt - session.LastPausedAt.Value).TotalSeconds;
                             if (delta >= 0) session.PausedSeconds += delta;
                             session.LastPausedAt = null;
                         }
 
-                        var totalSeconds = (int)(session.TimeoutAt.Value - session.StartedAt).TotalSeconds;
+                        var totalSeconds = (int)(timeoutAt - session.StartedAt).TotalSeconds;
                         var duration = totalSeconds - session.PausedSeconds;
                         session.DurationSeconds = Math.Max(0, duration);
 
@@ -89,9 +93,9 @@ public class LaborSessionTimeoutWorker : BackgroundService
                             EventType = "TimedOut",
                             Actor = "system",
                             OccurredAt = now,
-                            Payload = System.Text.Json.JsonSerializer.Serialize(new { 
-                                reason = "SLA threshold exceeded", 
-                                timeoutAt = session.TimeoutAt 
+                            Payload = System.Text.Json.JsonSerializer.Serialize(new {
+                                reason = "SLA threshold exceeded",
+                                timeoutAt
                             })
                         };
                         dbContext.LaborSessionEvents.Add(timeoutEvent);
