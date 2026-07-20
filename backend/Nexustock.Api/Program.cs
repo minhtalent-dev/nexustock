@@ -26,6 +26,7 @@ using Nexustock.Modules.ErpIntegration;
 using Nexustock.Modules.Webhook;
 using Nexustock.Modules.Observability;
 using Nexustock.Modules.CrossDocking;
+using Nexustock.Modules.LaborTracking;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -118,6 +119,7 @@ try
     builder.Services.AddWebhookModule(builder.Configuration);
     builder.Services.AddObservabilityModule(builder.Configuration);
     builder.Services.AddCrossDockingModule(builder.Configuration);
+    builder.Services.AddLaborTrackingModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -735,7 +737,11 @@ try
             ("cross_docking.read", "Xem danh sách cross-dock candidates", "CrossDocking"),
             ("cross_docking.create", "Đánh giá lô hàng cho cross-dock", "CrossDocking"),
             ("cross_docking.approve", "Chấp nhận/từ chối cross-dock candidate", "CrossDocking"),
-            ("cross_docking.export", "Xuất báo cáo cross-dock", "CrossDocking")
+            ("cross_docking.export", "Xuất báo cáo cross-dock", "CrossDocking"),
+            ("labor_tracking.read", "Xem danh sách và KPI labor tracking", "LaborTracking"),
+            ("labor_tracking.create", "Tạo phiên làm việc labor tracking", "LaborTracking"),
+            ("labor_tracking.update", "Cập nhật trạng thái session labor tracking", "LaborTracking"),
+            ("labor_tracking.delete", "Xóa dữ liệu hoặc đóng ca labor tracking", "LaborTracking")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
@@ -855,7 +861,25 @@ try
                 await observabilityDb.SaveChangesAsync();
                 Log.Information("Seeded FeatureFlag FF_CROSS_DOCKING_ENABLED.");
             }
+
+            // Seed FeatureFlag FF_LABOR_TRACKING_ENABLED
+            var hasLaborTrackingFlag = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(observabilityDb.FeatureFlags, f => f.Name == "FF_LABOR_TRACKING_ENABLED");
+            if (!hasLaborTrackingFlag)
+            {
+                observabilityDb.FeatureFlags.Add(new Nexustock.Modules.Observability.Entities.FeatureFlag
+                {
+                    Name = "FF_LABOR_TRACKING_ENABLED",
+                    Enabled = true,
+                    RolloutPercentage = 100,
+                    WhitelistUserIds = string.Empty,
+                    Description = "Enable Labor Tracking feature",
+                    UpdatedAt = DateTimeOffset.UtcNow
+                });
+                await observabilityDb.SaveChangesAsync();
+                Log.Information("Seeded FeatureFlag FF_LABOR_TRACKING_ENABLED.");
+            }
         }
+
     }
     catch (Exception ex)
     {

@@ -34,6 +34,8 @@ import {
   GitFork,
   Monitor,
   Zap,
+  Clock,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -114,6 +116,8 @@ const navGroups: NavGroup[] = [
       { href: "/admin/lpn", label: "Quản lý Pallet (LPN)", icon: Layers, permission: "lpn.read" },
       { href: "/admin/serial", label: "Truy vết mã Serial", icon: ClipboardList, permission: "serial.read" },
       { href: "/admin/genealogy", label: "Phả hệ vật tư", icon: GitFork, permission: "material_genealogy.read" },
+      { href: "/admin/labor", label: "Labor Dashboard", icon: BarChart3, permission: "labor_tracking.read" },
+      { href: "/admin/labor/sessions", label: "Lượt làm việc (Timer)", icon: Clock, permission: "labor_tracking.read" },
     ],
   },
   {

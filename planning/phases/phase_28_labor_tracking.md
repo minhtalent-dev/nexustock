@@ -2,9 +2,25 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 88%
-- **Đánh giá:** Đủ direction cho labor tracking theo task, user, ca và zone.
-- **Khi cần upgrade:** Upgrade nếu cần chuẩn năng suất, incentive hoặc phân tích hiệu suất nâng cao.
+- **Mức hiện tại:** 100% execution-ready.
+- **Đánh giá:** Đủ contract rõ để executor triển khai không suy đoán. Đã khóa các blind spots về nguồn task, ca làm việc, zone, trạng thái timer, KPI và tương thích RF/mobile hiện có.
+- **rp1 verdict:** Nâng từ 88% → 100% sau khi bổ sung module convention, DB schema chi tiết, API contract, status transition, KPI formula, timeout policy, feature flag, permission scope và test matrix nghiêm ngặt.
+
+## rp1 — Blind-spot closure matrix
+
+| Blind spot | Closure |
+|---|---|
+| Module path `backend/modules/labor_tracking` sai convention | Dùng `backend/modules/Nexustock.Modules.LaborTracking` và namespace `Nexustock.Modules.LaborTracking` để khớp toàn project. |
+| Nguồn task chưa rõ | Phase 28 không thay thế `MobileTask`, `PickTask`, `WavePickTask`; chỉ tạo labor session tham chiếu bằng `sourceTaskType` + `sourceTaskId`. |
+| `MobileTask` hiện chỉ có `Open/In_Progress/Completed` và thiếu timestamp start/complete | Labor module tự lưu `startedAt`, `pausedAt`, `resumedAt`, `completedAt`, `durationSeconds`; không sửa schema `MobileTasks` trong Phase 28. |
+| Ca làm việc chưa có master data | Tạo bảng `LaborShifts` riêng trong module LaborTracking. Nếu không tìm thấy shift đang mở, API start tự tạo shift ngày hiện tại cho user. |
+| Zone lấy từ đâu chưa rõ | Derive `zoneId` từ `StorageLocation.ZoneId` qua `locationId` của source task; nếu source task không có location thì lưu `zoneId = null` và KPI zone bỏ qua bản ghi này. |
+| Một user chạy nhiều task song song chưa khóa | Mặc định chặn song song: mỗi user chỉ có tối đa 1 `Running` labor session / tenant. Override không thuộc Phase 28. |
+| Pause/resume có cần không nhưng API cũ không có | Phase 28 triển khai pause/resume trong labor session riêng; không đổi endpoint RF/mobile cũ. |
+| KPI formula mơ hồ | Chuẩn hóa: throughput = `completedTaskCount`, active time = tổng `durationSeconds - pausedSeconds`, idle time = shift elapsed - active time, avg seconds/task = active time / completedTaskCount. |
+| Permission dư `approve/export` | Chỉ seed `labor_tracking.read`, `labor_tracking.create`, `labor_tracking.update`, `labor_tracking.export` nếu có export UI. Không seed `approve` vì không có approval flow. |
+| Feature flag chưa định danh | Flag cố định: `FF_LABOR_TRACKING_ENABLED`; mọi endpoint `/api/labor/*` phải gate flag. |
+| Phase 29 Task interleaving dependency | Phase 29 chỉ được đọc `LaborSessions` và KPI; không được thay đổi status hoặc duration của Phase 28. |
 
 ## 1. Mục tiêu
 
@@ -51,10 +67,34 @@ Stage trước đã ổn định và có dữ liệu vận hành thực tế.
 ### Cấu trúc module đề xuất
 
 ```text
-backend/modules/labor_tracking/
-frontend/features/labor_tracking/
+backend/modules/Nexustock.Modules.LaborTracking/
+  Nexustock.Modules.LaborTracking.csproj
+  DependencyInjection.cs
+  Contexts/LaborTrackingDbContext.cs
+  Contexts/LaborTrackingDbContextFactory.cs
+  Entities/LaborSession.cs
+  Entities/LaborSessionEvent.cs
+  Entities/LaborShift.cs
+  Services/ILaborTrackingService.cs
+  Services/LaborTrackingService.cs
+  Controllers/LaborController.cs
+  DTOs/LaborDtos.cs
+  Migrations/
+frontend/src/app/admin/labor/
+  page.tsx                  (labor KPI dashboard)
+  sessions/page.tsx         (labor sessions list)
+frontend/src/lib/api/labor.ts
+tests/verify_labor_tracking.ps1
 planning/phases/phase_28_labor_tracking.md
 ```
+
+**Dependencies `.csproj`:**
+- `Nexustock.Modules.Inventory` (`MobileTask`, `PickTask` lookup)
+- `Nexustock.Modules.Wave` (`WavePickTask` lookup)
+- `Nexustock.Modules.MasterData` (`StorageLocation.ZoneId` lookup)
+- `Nexustock.Modules.Identity` (user/permission context)
+- `Nexustock.Modules.Observability` (`IFeatureFlagService`, `IActivityTimelineService`, trace context)
+- `Npgsql.EntityFrameworkCore.PostgreSQL 8.0.11`
 
 ### Permission seed đề xuất
 
@@ -68,11 +108,72 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `LaborTasks` | Task lao động | Type,reference,user,status |
-| `LaborTaskEvents` | Event task | Start,pause,resume,complete |
-| `Shifts` | Ca làm việc | User,time range |
+### Schema chi tiết
+
+**`"LaborSessions"`**
+
+| Column | Type | Constraint | Ghi chú |
+|---|---|---|---|
+| `id` | `uuid` | PK | `gen_random_uuid()` |
+| `tenantId` | `uuid` | NOT NULL | Multi-tenant scope |
+| `sourceTaskType` | `varchar(50)` | NOT NULL | `MobileTask`, `PickTask`, `WavePickTask`, `Manual` |
+| `sourceTaskId` | `uuid` | nullable | ID task nguồn nếu có |
+| `referenceType` | `varchar(80)` | NOT NULL | Copy từ task nguồn hoặc nhập tay |
+| `referenceId` | `uuid` | nullable | Business reference |
+| `userId` | `varchar(200)` | NOT NULL | Username/login hiện có, không cần FK cứng |
+| `shiftId` | `uuid` | NOT NULL | FK mềm đến `LaborShifts.id` |
+| `locationId` | `uuid` | nullable | Từ source task |
+| `zoneId` | `uuid` | nullable | Derive từ `StorageLocation.ZoneId` |
+| `operationType` | `varchar(50)` | NOT NULL | `Picking`, `Putaway`, `Replenishment`, `Movement`, `Packing`, `Count`, `Manual` |
+| `status` | `varchar(30)` | NOT NULL | `Running`, `Paused`, `Completed`, `Cancelled`, `TimedOut` |
+| `startedAt` | `timestamptz` | NOT NULL | Start timer |
+| `completedAt` | `timestamptz` | nullable | End timer |
+| `durationSeconds` | `integer` | NOT NULL DEFAULT 0 | Active elapsed, exclude pause |
+| `pausedSeconds` | `integer` | NOT NULL DEFAULT 0 | Tổng thời gian pause |
+| `lastPausedAt` | `timestamptz` | nullable | Dùng tính resume |
+| `timeoutAt` | `timestamptz` | nullable | SLA timeout |
+| `createdAt` | `timestamptz` | NOT NULL DEFAULT now() | |
+| `createdBy` | `varchar(200)` | NOT NULL | |
+| `updatedAt` | `timestamptz` | nullable | |
+| `updatedBy` | `varchar(200)` | nullable | |
+| `rowVersion` | `xmin` | concurrency token | Optimistic concurrency |
+
+Index: `(tenantId, userId, status)`, `(tenantId, shiftId)`, `(tenantId, zoneId, startedAt)`, `(tenantId, sourceTaskType, sourceTaskId)`.
+Unique partial index: one active session per user where `status in ('Running','Paused')`.
+
+**`"LaborSessionEvents"`** (immutable audit)
+
+| Column | Type | Constraint | Ghi chú |
+|---|---|---|---|
+| `id` | `uuid` | PK | |
+| `tenantId` | `uuid` | NOT NULL | |
+| `sessionId` | `uuid` | NOT NULL | FK `LaborSessions.id` |
+| `eventType` | `varchar(40)` | NOT NULL | `Started`, `Paused`, `Resumed`, `Completed`, `Cancelled`, `TimedOut` |
+| `actor` | `varchar(200)` | NOT NULL | user hoặc `system` |
+| `reason` | `varchar(300)` | nullable | Bắt buộc khi cancel |
+| `payload` | `jsonb` | nullable | Snapshot dữ liệu nguồn |
+| `traceId` | `varchar(100)` | nullable | Trace ID |
+| `occurredAt` | `timestamptz` | NOT NULL DEFAULT now() | |
+
+Index: `(tenantId, sessionId)`, `(tenantId, occurredAt)`, `(tenantId, traceId)`.
+
+**`"LaborShifts"`**
+
+| Column | Type | Constraint | Ghi chú |
+|---|---|---|---|
+| `id` | `uuid` | PK | |
+| `tenantId` | `uuid` | NOT NULL | |
+| `userId` | `varchar(200)` | NOT NULL | Username/login hiện có |
+| `shiftCode` | `varchar(80)` | NOT NULL | Ví dụ `2026-07-20-DAY-admin` |
+| `startedAt` | `timestamptz` | NOT NULL | |
+| `endedAt` | `timestamptz` | nullable | |
+| `status` | `varchar(30)` | NOT NULL | `Open`, `Closed` |
+| `createdAt` | `timestamptz` | NOT NULL DEFAULT now() | |
+| `createdBy` | `varchar(200)` | NOT NULL | |
+
+Index: `(tenantId, userId, status)`, `(tenantId, shiftCode)`, `(tenantId, startedAt)`.
+
+**Migration strategy:** Tạo migration `AddLaborTrackingModule` trong `LaborTrackingDbContext` riêng. Không sửa schema `MobileTasks`, `PickTask`, `WavePickTask`, `StorageLocation`. Rollback safe nếu chưa có dữ liệu production: drop 3 bảng LaborTracking.
 
 ### Chuẩn database áp dụng
 
@@ -92,11 +193,50 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `POST /api/labor/tasks/{id}/start` | Start | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/labor/tasks/{id}/complete` | Complete | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `GET /api/labor/kpi` | KPI năng suất | Có auth, validation, trace ID và response lỗi chuẩn. |
+| API | Method | Permission | Ghi chú triển khai |
+|---|---|---|---|
+| `POST /api/labor/sessions/start` | Start timer | `labor_tracking.create` | Body `{ sourceTaskType, sourceTaskId?, operationType? }`. Gate feature flag. Chặn user có session active. |
+| `POST /api/labor/sessions/{id}/pause` | Pause timer | `labor_tracking.update` | Chỉ `Running → Paused`. |
+| `POST /api/labor/sessions/{id}/resume` | Resume timer | `labor_tracking.update` | Chỉ `Paused → Running`, cộng `pausedSeconds`. |
+| `POST /api/labor/sessions/{id}/complete` | Complete timer | `labor_tracking.update` | Chỉ `Running/Paused → Completed`, tính `durationSeconds`. |
+| `POST /api/labor/sessions/{id}/cancel` | Cancel timer | `labor_tracking.update` | Body `{ reason }`; reason bắt buộc. |
+| `GET /api/labor/sessions` | Session list | `labor_tracking.read` | Filter `userId`, `status`, `shiftId`, `zoneId`, `from`, `to`, pagination. |
+| `GET /api/labor/kpi` | KPI năng suất | `labor_tracking.read` | Filter `userId`, `shiftId`, `zoneId`, `operationType`, `from`, `to`. |
+| `GET /api/labor/shifts/current` | Current shift | `labor_tracking.read` | Trả shift đang mở của user; tự tạo khi start nếu chưa có. |
+
+**Request/Response contract tiêu biểu:**
+
+`POST /api/labor/sessions/start`
+```json
+// Request
+{ "sourceTaskType": "MobileTask", "sourceTaskId": "uuid", "operationType": "Picking" }
+// Response 200
+{ "sessionId": "uuid", "status": "Running", "startedAt": "2026-07-20T02:00:00Z", "shiftId": "uuid" }
+// Response 409
+{ "errorCode": "LABOR_SESSION_ALREADY_ACTIVE", "message": "User already has an active labor session.", "traceId": "..." }
+```
+
+`GET /api/labor/kpi`
+```json
+{
+  "from": "2026-07-20T00:00:00Z",
+  "to": "2026-07-20T23:59:59Z",
+  "summary": {
+    "completedTaskCount": 12,
+    "activeSeconds": 3600,
+    "pausedSeconds": 300,
+    "idleSeconds": 900,
+    "averageSecondsPerTask": 300,
+    "tasksPerHour": 12.0
+  },
+  "byUser": [],
+  "byShift": [],
+  "byZone": [],
+  "byOperationType": []
+}
+```
+
+**Feature flag gate:** Mọi API `/api/labor/*` check `FF_LABOR_TRACKING_ENABLED`; disabled trả `403 FEATURE_DISABLED`.
 
 ### Quy chuẩn API
 
@@ -118,8 +258,9 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 | Màn hình/Control | Mục đích | Yêu cầu UX |
 |---|---|---|
-| Mobile task timer | Đếm thời gian | Có loading, empty, error, filter, pagination và quyền theo action. |
-| Productivity dashboard | Năng suất | Có loading, empty, error, filter, pagination và quyền theo action. |
+| Labor session timer | Start/pause/resume/complete/cancel task | Mobile-first, nút lớn, timer rõ, confirm khi cancel, hiển thị active session hiện tại. |
+| Productivity dashboard | Năng suất theo user/shift/zone/operation | KPI cards, chart theo thời gian, filter ngày/ca/user/zone, bảng session drill-down. |
+| Labor sessions list | Review lịch sử thao tác | Filter, pagination, status badge, duration, source task link, trace ID. |
 
 ### Chuẩn UI áp dụng
 
@@ -140,11 +281,16 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 8. Execution flow
 
-1. User nhận task
-2. Start
-3. Pause nếu cần
-4. Complete
-5. Aggregate KPI
+1. User mở task RF/mobile hoặc supervisor tạo tracking thủ công.
+2. UI gọi `POST /api/labor/sessions/start` với `sourceTaskType/sourceTaskId`.
+3. Service validate tenant, permission, feature flag, source task tồn tại, user chưa có active session.
+4. Service resolve `locationId` và `zoneId` từ source task nếu có.
+5. Service lấy shift đang mở hoặc tự tạo `LaborShift` ngày hiện tại.
+6. Service tạo `LaborSession(status=Running)` và `LaborSessionEvent(Started)`.
+7. User pause/resume nếu bị gián đoạn; hệ thống cộng `pausedSeconds` khi resume.
+8. User complete task; service tính `durationSeconds = completedAt - startedAt - pausedSeconds`.
+9. API KPI aggregate từ `LaborSessions` completed theo filter user/shift/zone/operation.
+10. Timeline observability ghi event quan trọng để hỗ trợ truy vết.
 
 ### Flow guardrails
 
@@ -156,8 +302,16 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 9. Validation & business rules
 
-* Một user không chạy task trùng nếu không cho phép
-* Task có reference
+* Một user chỉ có tối đa 1 session active (`Running` hoặc `Paused`) trong cùng tenant.
+* `sourceTaskType` chỉ nhận: `MobileTask`, `PickTask`, `WavePickTask`, `Manual`.
+* `sourceTaskId` bắt buộc nếu `sourceTaskType != Manual`.
+* Source task phải cùng tenant và chưa ở trạng thái terminal không hợp lệ.
+* `operationType` chỉ nhận: `Picking`, `Putaway`, `Replenishment`, `Movement`, `Packing`, `Count`, `Manual`.
+* Transition hợp lệ: `Running → Paused`, `Paused → Running`, `Running/Paused → Completed`, `Running/Paused → Cancelled`, `Running/Paused → TimedOut`.
+* `complete` idempotent-safe: session đã `Completed` trả `409 LABOR_SESSION_INVALID_STATUS`, không cộng duration lần 2.
+* `cancel` bắt buộc `reason` khác rỗng.
+* `durationSeconds` không âm; nếu clock drift tạo kết quả âm thì trả conflict và ghi trace.
+* KPI chỉ tính session `Completed`; session `Cancelled/TimedOut` chỉ vào exception/aging metrics.
 
 ### Validation nền bắt buộc
 
@@ -170,9 +324,12 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 10. Exception handling
 
-* Quên complete
-* Timeout
-* User đổi ca
+* **Quên complete:** Hosted job đánh dấu `TimedOut` khi session vượt `timeoutAt`; ghi event `TimedOut`, không tự complete.
+* **Timeout:** Default timeout 8 giờ từ `startedAt`; có thể cấu hình bằng appsettings/env sau nhưng Phase 28 hardcode default rõ trong service.
+* **User đổi ca:** Nếu shift hiện tại đóng khi session đang chạy, session vẫn giữ `shiftId` cũ cho audit; complete vẫn hợp lệ.
+* **Task nguồn bị complete/cancel ở module khác:** Labor session không tự sửa task nguồn; nếu source task terminal trước khi labor complete, complete labor vẫn được phép nhưng event payload ghi `sourceTaskStatusAtComplete`.
+* **Duplicate start request:** Nếu user có active session, trả `409 LABOR_SESSION_ALREADY_ACTIVE` kèm session hiện tại nếu cùng tenant.
+* **Mất mạng RF/mobile:** Không thêm offline queue mới trong Phase 28; UI có thể gọi lại start/complete, backend idempotency dựa trên active-session guard.
 
 ### Mapping lỗi chuẩn
 
@@ -194,9 +351,11 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 11. Observability
 
-* Productivity
-* Idle time
-* Task aging
+* **Productivity:** `completedTaskCount`, `tasksPerHour`, `averageSecondsPerTask` theo user/shift/zone/operation.
+* **Idle time:** `shift elapsed - activeSeconds - pausedSeconds`, chỉ tính cho shift mở/đóng trong filter.
+* **Task aging:** session `Running/Paused` quá SLA và session `TimedOut`.
+* **Activity timeline:** ghi `LaborSessionStarted`, `LaborSessionPaused`, `LaborSessionResumed`, `LaborSessionCompleted`, `LaborSessionCancelled`, `LaborSessionTimedOut`.
+* **Trace:** mọi command trả `traceId`; log không chứa token/secret.
 
 ### Log và trace
 
@@ -216,9 +375,17 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 12. Test plan
 
-* Start/complete
-* Timeout
-* Aggregation
+* `verify_labor_tracking.ps1` tự đăng nhập admin, bật feature flag, tạo hoặc dùng `MobileTask` mở, chạy strict API tests.
+* Start session từ `MobileTask` hợp lệ → 200 `Running`.
+* Start session lần 2 cùng user → 409 `LABOR_SESSION_ALREADY_ACTIVE`.
+* Pause → 200 `Paused`; Resume → 200 `Running`.
+* Complete → 200 `Completed`, `durationSeconds >= 0`, có event timeline.
+* Complete lần 2 → 409 `LABOR_SESSION_INVALID_STATUS`.
+* Cancel thiếu reason → 400 validation error.
+* KPI endpoint trả `completedTaskCount >= 1` và group by user/shift/zone/operation.
+* Feature flag disabled → 403 `FEATURE_DISABLED`; script phục hồi flag bằng `finally`.
+* Unauthorized/permission thiếu → 401/403 đúng chuẩn.
+* `git diff --check`, backend build, frontend lint pass trước khi ghi hoàn thành.
 
 ### Test matrix bắt buộc
 
@@ -240,7 +407,13 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 13. Acceptance criteria
 
-* Đo được thời gian xử lý task chính
+* Đo được thời gian xử lý task chính qua `LaborSessions.durationSeconds`.
+* Supervisor xem được KPI theo user/shift/zone/operation trong dashboard.
+* User không thể chạy 2 labor sessions song song trong cùng tenant.
+* Pause/resume không làm sai active duration.
+* Completed/cancelled/timed-out session có audit event đầy đủ.
+* Feature flag và permission chặn đúng mọi endpoint.
+* Không sửa schema task nguồn (`MobileTasks`, `PickTask`, `WavePickTask`) trong Phase 28.
 
 ### Definition of done
 
@@ -254,13 +427,21 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 14. Out of scope
 
-* Payroll integration
+* Payroll integration.
+* Incentive/bonus calculation.
+* ML productivity scoring.
+* Auto task recommendation hoặc task interleaving; thuộc Phase 29.
+* Sửa lifecycle của `MobileTask`, `PickTask`, `WavePickTask` ngoài việc đọc trạng thái nguồn.
 
 Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu phát hiện scope mới bắt buộc, cập nhật roadmap tổng trước khi triển khai.
 
 ## 15. Dependencies
 
-* Stage 1-3 + phase trước trong Stage 4
+* Phase 09 RF/mobile core scan: `MobileTasks`, handheld/mobile task flow.
+* Phase 18 Wave picking: `WavePickTask` source task.
+* Phase 25 Operational observability: activity timeline, trace ID, feature flag service.
+* Phase 27 Cross-docking đã pass acceptance, không là runtime dependency trực tiếp.
+* MasterData `StorageLocation.ZoneId` để group KPI theo zone.
 
 ### Downstream impact
 
@@ -296,9 +477,11 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 
 ## 18. Rollback notes
 
-* Tắt feature flag
-* Clear recommendation queue
-* Giữ transaction đã commit bằng corrective flow
+* Tắt `FF_LABOR_TRACKING_ENABLED` để ẩn toàn bộ API/UI Labor.
+* Ẩn sidebar/menu Labor bằng permission hoặc feature flag.
+* Không xóa session đã ghi trong production; nếu cần thì mark `Cancelled`/`TimedOut` có reason và audit.
+* Rollback deployment image trước; xử lý dữ liệu Labor sau theo trace ID.
+* Rollback DB chỉ an toàn khi chưa có dữ liệu production: drop `LaborSessionEvents`, `LaborSessions`, `LaborShifts`.
 
 ### Rollback safety
 

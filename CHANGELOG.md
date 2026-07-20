@@ -1,5 +1,16 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 1.3.0 - Theo dõi hiệu suất lao động và KPI trực quan (Phase 28)
+*Ngày cập nhật: 20/07/2026*
+
+### Tính năng mới
+- **Giám sát thời gian làm việc thời gian thực**: Cung cấp công cụ bấm giờ đếm ngược tự động ghi nhận thời gian thực hiện nhiệm vụ của nhân viên kho, hỗ trợ tạm dừng khi nghỉ giữa ca và tự động đóng lượt làm việc khi hết ca hoặc giao việc khác.
+- **Báo cáo hiệu suất trực quan (KPI Dashboard)**: Giao diện quản lý cung cấp các chỉ số đo lường hiệu suất then chốt (số lượng công việc đã hoàn thành, tổng thời gian hoạt động thực tế, thời gian chờ việc, tỷ lệ năng suất trung bình theo giờ).
+- **Phân tích cơ cấu và xếp hạng năng suất**: 
+  - Biểu đồ phân tích cơ cấu loại hình công việc (lấy hàng, cất hàng, kiểm tra chất lượng) để tối ưu phân bổ nhân sự.
+  - Xếp hạng năng suất nhân viên và năng suất khu vực lưu trữ giúp phát hiện nhanh các điểm nghẽn trong vận hành kho.
+- **Kiểm soát quy trình thông minh**: Cơ chế chống đột biến thời gian (đồng hồ lệch hệ thống), cơ chế bắt buộc nhập lý do khi hủy lượt làm việc, và tự động liên kết dữ liệu với nguồn công việc di động hiện tại.
+
 ## Phiên bản 1.2.0 - Tự động hóa triển khai, Đóng gói vận hành và Tính năng kiểm soát thông minh (Phase 26)
 *Ngày cập nhật: 18/07/2026*
 
