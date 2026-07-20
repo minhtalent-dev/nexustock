@@ -28,19 +28,18 @@ const STATUS_COLORS: Record<string, string> = {
 export default function LaborSessionsPage() {
   const [sessions, setSessions] = React.useState<LaborSessionDto[]>([]);
   const [loading, setLoading] = React.useState(false);
-  const [total, setTotal] = React.useState(0);
-  const [page, setPage] = React.useState(1);
+  const [page] = React.useState(1);
   const [statusFilter, setStatusFilter] = React.useState("ALL");
   const [shiftInfo, setShiftInfo] = React.useState<CurrentShiftResponse | null>(null);
 
   // Realtime clock duration updates
-  const [now, setNow] = React.useState<number>(Date.now());
+  const [now, setNow] = React.useState<number>(0);
 
   // Start Session Modal
   const [startOpen, setStartOpen] = React.useState(false);
-  const [sourceTaskType, setSourceTaskType] = React.useState("PICKING");
+  const [sourceTaskType, setSourceTaskType] = React.useState("Manual");
   const [sourceTaskId, setSourceTaskId] = React.useState("");
-  const [operationType, setOperationType] = React.useState("PICKING");
+  const [operationType, setOperationType] = React.useState("Picking");
   const [locationId, setLocationId] = React.useState("");
   const [starting, setStarting] = React.useState(false);
 
@@ -68,7 +67,7 @@ export default function LaborSessionsPage() {
         pageSize: 10,
       });
       setSessions(res.items ?? []);
-      setTotal(res.total ?? 0);
+
     } catch (err) {
       showError(getHttpErrorMessage(err));
     } finally {
@@ -92,6 +91,10 @@ export default function LaborSessionsPage() {
   }, []);
 
   const handleStartSession = async () => {
+    if (sourceTaskType !== "Manual" && !sourceTaskId.trim()) {
+      showError("Source Task ID is required for task-based tracking.");
+      return;
+    }
     setStarting(true);
     try {
       const req: StartLaborSessionRequest = {
@@ -341,18 +344,19 @@ export default function LaborSessionsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PICKING">Picking</SelectItem>
-                  <SelectItem value="PUTAWAY">Putaway</SelectItem>
-                  <SelectItem value="PACKING">Packing</SelectItem>
-                  <SelectItem value="QC">Quality Control</SelectItem>
-                  <SelectItem value="CYCLE_COUNT">Cycle Counting</SelectItem>
+                  <SelectItem value="Manual">Manual</SelectItem>
+                  <SelectItem value="MobileTask">MobileTask</SelectItem>
+                  <SelectItem value="PickTask">PickTask</SelectItem>
+                  <SelectItem value="WavePickTask">WavePickTask</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-semibold">Source Task ID (Optional)</label>
+              <label className="text-sm font-semibold">
+                Source Task ID {sourceTaskType !== "Manual" && <span className="text-rose-500">*</span>}
+              </label>
               <Input
-                placeholder="Enter GUID or task reference..."
+                placeholder={sourceTaskType === "Manual" ? "Optional GUID..." : "Required Task GUID..."}
                 value={sourceTaskId}
                 onChange={(e) => setSourceTaskId(e.target.value)}
               />
@@ -364,11 +368,13 @@ export default function LaborSessionsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="PICKING">Picking</SelectItem>
-                  <SelectItem value="PUTAWAY">Putaway</SelectItem>
-                  <SelectItem value="PACKING">Packing</SelectItem>
-                  <SelectItem value="RECEIVING">Receiving</SelectItem>
-                  <SelectItem value="COUNTING">Counting</SelectItem>
+                  <SelectItem value="Picking">Picking</SelectItem>
+                  <SelectItem value="Putaway">Putaway</SelectItem>
+                  <SelectItem value="Replenishment">Replenishment</SelectItem>
+                  <SelectItem value="Movement">Movement</SelectItem>
+                  <SelectItem value="Packing">Packing</SelectItem>
+                  <SelectItem value="Count">Count</SelectItem>
+                  <SelectItem value="Manual">Manual</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -420,3 +426,4 @@ export default function LaborSessionsPage() {
     </div>
   );
 }
+

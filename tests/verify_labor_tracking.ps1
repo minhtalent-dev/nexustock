@@ -7,6 +7,7 @@ Write-Host "=== Labor Tracking Verification Script (Full Matrix) ===" -Foregroun
 Write-Host "Base URL: $BaseUrl" -ForegroundColor Gray
 
 $pass = 0
+$skip = 0
 $fail = 0
 
 function Invoke-Api {
@@ -36,8 +37,14 @@ function Invoke-Test {
         Write-Host "[PASS] $Name" -ForegroundColor Green
         $script:pass++
     } catch {
-        Write-Host "[FAIL] $Name — $_" -ForegroundColor Red
-        $script:fail++
+        if ($_.Exception.Message -like "SKIPPED:*") {
+            $reason = $_.Exception.Message.Substring(8)
+            Write-Host "[SKIP] $Name — $reason" -ForegroundColor Yellow
+            $script:skip++
+        } else {
+            Write-Host "[FAIL] $Name — $_" -ForegroundColor Red
+            $script:fail++
+        }
     }
 }
 
@@ -96,7 +103,7 @@ Invoke-Test "Scenario 1: Start session without required fields returns 400" {
 
 # --- SCENARIO 2: Unauthorized access => 401 ---
 Invoke-Test "Scenario 2: Call start without auth token returns 401" {
-    $body = @{ sourceTaskType = "Manual"; operationType = "PICKING" } | ConvertTo-Json
+    $body = @{ sourceTaskType = "Manual"; operationType = "Picking" } | ConvertTo-Json
     $r = Invoke-Api -Uri "$BaseUrl/api/labor/sessions/start" -Method POST -Body $body
     if ($r.StatusCode -ne 401) { throw "Expected 401, got $($r.StatusCode). Body: $($r.Body)" }
 }
@@ -106,7 +113,7 @@ $sessionId = $null
 Invoke-Test "Scenario 3: Start valid labor session returns 200 with session info" {
     $body = @{
         sourceTaskType = "Manual"
-        operationType  = "PICKING"
+        operationType  = "Picking"
     } | ConvertTo-Json -Depth 5
     $r = Invoke-Api -Uri "$BaseUrl/api/labor/sessions/start" -Method POST -Body $body -Headers $headers
     if ($r.StatusCode -ne 200) { throw "Expected 200, got $($r.StatusCode). Body: $($r.Body)" }
@@ -119,7 +126,7 @@ Invoke-Test "Scenario 3: Start valid labor session returns 200 with session info
 Invoke-Test "Scenario 4: Start session when one is active returns 409" {
     $body = @{
         sourceTaskType = "Manual"
-        operationType  = "PICKING"
+        operationType  = "Picking"
     } | ConvertTo-Json -Depth 5
     $r = Invoke-Api -Uri "$BaseUrl/api/labor/sessions/start" -Method POST -Body $body -Headers $headers
     if ($r.StatusCode -ne 409) { throw "Expected 409, got $($r.StatusCode). Body: $($r.Body)" }
@@ -129,7 +136,7 @@ Invoke-Test "Scenario 4: Start session when one is active returns 409" {
 
 # --- SCENARIO 5: Pause session => 200 ---
 Invoke-Test "Scenario 5: Pause active session returns 200" {
-    if (-not $script:sessionId) { throw "Skipped: No session ID from Scenario 3." }
+    if (-not $script:sessionId) { throw "SKIPPED: No session ID from Scenario 3." }
     $r = Invoke-Api -Uri "$BaseUrl/api/labor/sessions/$($script:sessionId)/pause" -Method POST -Headers $headers
     if ($r.StatusCode -ne 200) { throw "Expected 200, got $($r.StatusCode). Body: $($r.Body)" }
     $res = $r.Body | ConvertFrom-Json
@@ -138,7 +145,7 @@ Invoke-Test "Scenario 5: Pause active session returns 200" {
 
 # --- SCENARIO 6: Resume session => 200 ---
 Invoke-Test "Scenario 6: Resume paused session returns 200" {
-    if (-not $script:sessionId) { throw "Skipped: No session ID from Scenario 3." }
+    if (-not $script:sessionId) { throw "SKIPPED: No session ID from Scenario 3." }
     $r = Invoke-Api -Uri "$BaseUrl/api/labor/sessions/$($script:sessionId)/resume" -Method POST -Headers $headers
     if ($r.StatusCode -ne 200) { throw "Expected 200, got $($r.StatusCode). Body: $($r.Body)" }
     $res = $r.Body | ConvertFrom-Json
@@ -147,7 +154,7 @@ Invoke-Test "Scenario 6: Resume paused session returns 200" {
 
 # --- SCENARIO 7: Complete session => 200 ---
 Invoke-Test "Scenario 7: Complete session returns 200" {
-    if (-not $script:sessionId) { throw "Skipped: No session ID from Scenario 3." }
+    if (-not $script:sessionId) { throw "SKIPPED: No session ID from Scenario 3." }
     $r = Invoke-Api -Uri "$BaseUrl/api/labor/sessions/$($script:sessionId)/complete" -Method POST -Headers $headers
     if ($r.StatusCode -ne 200) { throw "Expected 200, got $($r.StatusCode). Body: $($r.Body)" }
     $res = $r.Body | ConvertFrom-Json
@@ -156,7 +163,7 @@ Invoke-Test "Scenario 7: Complete session returns 200" {
 
 # --- SCENARIO 8: Complete session again => 409 ---
 Invoke-Test "Scenario 8: Complete completed session returns 409" {
-    if (-not $script:sessionId) { throw "Skipped: No session ID from Scenario 3." }
+    if (-not $script:sessionId) { throw "SKIPPED: No session ID from Scenario 3." }
     $r = Invoke-Api -Uri "$BaseUrl/api/labor/sessions/$($script:sessionId)/complete" -Method POST -Headers $headers
     if ($r.StatusCode -ne 409) { throw "Expected 409, got $($r.StatusCode). Body: $($r.Body)" }
     $res = $r.Body | ConvertFrom-Json
@@ -166,7 +173,7 @@ Invoke-Test "Scenario 8: Complete completed session returns 409" {
 # --- SCENARIO 9: Cancel session validation => 400 ---
 $cancelSessionId = $null
 Invoke-Test "Scenario 9: Start session and cancel without reason returns 400" {
-    $body = @{ sourceTaskType = "Manual"; operationType  = "PICKING" } | ConvertTo-Json
+    $body = @{ sourceTaskType = "Manual"; operationType  = "Picking" } | ConvertTo-Json
     $rStart = Invoke-Api -Uri "$BaseUrl/api/labor/sessions/start" -Method POST -Body $body -Headers $headers
     if ($rStart.StatusCode -ne 200) { throw "Setup failed. Start active session status: $($rStart.StatusCode)" }
     $resStart = $rStart.Body | ConvertFrom-Json
@@ -181,7 +188,7 @@ Invoke-Test "Scenario 9: Start session and cancel without reason returns 400" {
 
 # --- SCENARIO 10: Cancel session with reason => 200 ---
 Invoke-Test "Scenario 10: Cancel session with reason returns 200" {
-    if (-not $script:cancelSessionId) { throw "Skipped: Setup missing cancelSessionId." }
+    if (-not $script:cancelSessionId) { throw "SKIPPED: Setup missing cancelSessionId." }
     $cancelBody = @{ reason = "User aborted task." } | ConvertTo-Json
     $r = Invoke-Api -Uri "$BaseUrl/api/labor/sessions/$($script:cancelSessionId)/cancel" -Method POST -Body $cancelBody -Headers $headers
     if ($r.StatusCode -ne 200) { throw "Expected 200, got $($r.StatusCode). Body: $($r.Body)" }
@@ -235,11 +242,11 @@ Invoke-Test "Scenario 14: Get current active shift information" {
 
 # --- SCENARIO 15: Feature flag gate ---
 Invoke-Test "Scenario 15: Disabled FF_LABOR_TRACKING_ENABLED returns 403 FEATURE_DISABLED" {
-    if ($SkipFeatureFlagMutation) { Write-Warning "Feature flag mutation skipped."; return }
+    if ($SkipFeatureFlagMutation) { throw "SKIPPED: Skip mutation parameter passed." }
     $toggled = Set-FeatureFlag -Name "FF_LABOR_TRACKING_ENABLED" -Enabled $false
-    if (-not $toggled) { Write-Warning "Could not toggle FeatureFlag. Skipping Scenario 15."; return }
+    if (-not $toggled) { throw "SKIPPED: Mutation endpoint not available." }
     try {
-        $body = @{ sourceTaskType = "Manual"; operationType = "PICKING" } | ConvertTo-Json -Depth 5
+        $body = @{ sourceTaskType = "Manual"; operationType = "Picking" } | ConvertTo-Json -Depth 5
         $r = Invoke-Api -Uri "$BaseUrl/api/labor/sessions/start" -Method POST -Body $body -Headers $headers
         if ($r.StatusCode -ne 403) { throw "Expected 403, got $($r.StatusCode). Body: $($r.Body)" }
         $res = $r.Body | ConvertFrom-Json
@@ -250,10 +257,12 @@ Invoke-Test "Scenario 15: Disabled FF_LABOR_TRACKING_ENABLED returns 403 FEATURE
 }
 
 Write-Host "`n=== Results ===" -ForegroundColor Cyan
-Write-Host "Passed: $pass / $($pass + $fail)" -ForegroundColor $(if ($fail -eq 0) { "Green" } else { "Yellow" })
+Write-Host "Passed: $pass" -ForegroundColor Green
+Write-Host "Skipped: $skip" -ForegroundColor Yellow
+Write-Host "Failed: $fail" -ForegroundColor $(if ($fail -eq 0) { "Green" } else { "Red" })
+
 if ($fail -gt 0) {
-    Write-Host "Failed: $fail" -ForegroundColor Red
     exit 1
 }
-Write-Host "All tests passed successfully!" -ForegroundColor Green
 exit 0
+

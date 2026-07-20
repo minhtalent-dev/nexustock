@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nexustock.Modules.LaborTracking.Contexts;
 using Nexustock.Modules.LaborTracking.Services;
+using Nexustock.Modules.LaborTracking.Jobs;
 
 namespace Nexustock.Modules.LaborTracking;
 
@@ -14,7 +15,9 @@ public static class DependencyInjection
             options.UseNpgsql(configuration.GetConnectionString("Default")));
 
         services.AddScoped<ILaborTrackingService, LaborTrackingService>();
+        services.AddHostedService<LaborSessionTimeoutWorker>();
 
         return services;
     }
 }
+

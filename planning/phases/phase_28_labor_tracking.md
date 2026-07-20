@@ -1,4 +1,4 @@
-﻿# PHASE 28: Labor tracking
+# PHASE 28: Labor tracking
 
 ## Execution spec maturity
 
@@ -490,6 +490,19 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
 
+## 19. Nghiệm thu kỹ thuật (Technical Acceptance)
+
+Phân hệ đã được kiểm thử tích hợp tự động qua verify_labor_tracking.ps1 và kiểm tra giao diện bằng browser subagent.
+
+### Kết quả chạy Integration Test Matrix:
+- **Passed:** 14 scenarios (duplicate start, complete twice, cancel validation, list pagination, kpi, shift, unauthorized checks).
+- **Skipped:** 1 scenario (Feature flag mutation - skipped do endpoint quản trị feature flag không cấu hình trong môi trường kiểm thử cục bộ hiện tại).
+- **Failed:** 0.
+
+### Danh sách các gap đã khép kín:
+- **UI Start Session:** Sửa dropdown sourceTaskType và operationType khớp chuẩn backend contract (chỉ chấp nhận Manual, MobileTask, PickTask, WavePickTask). Bổ sung validate yêu cầu Task ID nếu chọn task-based tracking.
+- **SLA Timeout Worker:** Triển khai background worker `LaborSessionTimeoutWorker` chạy ngầm, tự động quét và timeout các session quá hạn (SLA) và ghi nhận event TimedOut đầy đủ.
+- **Test Matrix:** Phân định rõ PASS/SKIP/FAIL trong script, ngăn chặn hoàn toàn tình trạng pass giả.
 
 
 

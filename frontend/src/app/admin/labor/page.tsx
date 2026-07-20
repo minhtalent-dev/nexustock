@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showError } from "@/lib/toast";
 import { getHttpErrorMessage } from "@/lib/http-error";
-import { RefreshCw, Clock, Users, CheckCircle, BarChart3, AlertCircle } from "lucide-react";
+import { RefreshCw, Clock, CheckCircle, BarChart3, AlertCircle } from "lucide-react";
 import {
   LaborThroughputTrendChart,
   LaborTasksPerHourTrendChart,

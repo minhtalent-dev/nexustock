@@ -467,8 +467,9 @@ public class LaborTrackingService : ILaborTrackingService
 
         // 5. Zone productivity
         var zoneProductivity = completed
-            .Where(x => x.ZoneId != null)
-            .GroupBy(x => x.ZoneId!.ToString())
+            .Where(x => x.ZoneId.HasValue)
+            .Select(x => new { ZoneId = x.ZoneId!.Value, x.DurationSeconds })
+            .GroupBy(x => x.ZoneId.ToString())
             .Select(g => {
                 var count = g.Count();
                 var active = g.Sum(x => x.DurationSeconds);
