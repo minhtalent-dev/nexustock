@@ -25,6 +25,7 @@ using Nexustock.Modules.LabelPrinting;
 using Nexustock.Modules.ErpIntegration;
 using Nexustock.Modules.Webhook;
 using Nexustock.Modules.Observability;
+using Nexustock.Modules.CrossDocking;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -116,6 +117,7 @@ try
     builder.Services.AddErpIntegrationModule(builder.Configuration);
     builder.Services.AddWebhookModule(builder.Configuration);
     builder.Services.AddObservabilityModule(builder.Configuration);
+    builder.Services.AddCrossDockingModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -411,6 +413,17 @@ try
                 Log.Error(ex, "An error occurred while migrating the Observability database");
                 success = false;
             }
+            try
+            {
+                var crossDockingDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.CrossDocking.Contexts.CrossDockingDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(crossDockingDb.Database);
+                Log.Information("CrossDocking database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the CrossDocking database");
+                success = false;
+            }
 
             if (!success)
             {
@@ -635,6 +648,13 @@ try
                 await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(observabilityDb.Database);
             }
             catch (Exception ex) { Log.Error(ex, "Migration error"); }
+            try
+            {
+                var crossDockingDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.CrossDocking.Contexts.CrossDockingDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(crossDockingDb.Database);
+                Log.Information("CrossDocking database migrated successfully.");
+            }
+            catch (Exception ex) { Log.Error(ex, "CrossDocking migration error"); }
         }
     }
 
@@ -711,7 +731,11 @@ try
             ("integration.import", "Thực hiện import thủ công", "Integration"),
             ("integration.export", "Xuất dữ liệu tồn kho", "Integration"),
             ("webhook.manage", "Quản lý Webhook Subscription", "Webhook"),
-            ("webhook.replay", "Replay Webhook DLQ", "Webhook")
+            ("webhook.replay", "Replay Webhook DLQ", "Webhook"),
+            ("cross_docking.read", "Xem danh sách cross-dock candidates", "CrossDocking"),
+            ("cross_docking.create", "Đánh giá lô hàng cho cross-dock", "CrossDocking"),
+            ("cross_docking.approve", "Chấp nhận/từ chối cross-dock candidate", "CrossDocking"),
+            ("cross_docking.export", "Xuất báo cáo cross-dock", "CrossDocking")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
@@ -812,6 +836,24 @@ try
                     await inventoryDb.SaveChangesAsync();
                     Log.Information("Seeded test Lot LOT-PUT-E2E-001 for Putaway E2E test.");
                 }
+            }
+
+            // Seed FeatureFlag FF_CROSS_DOCKING_ENABLED
+            var observabilityDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Observability.Contexts.ObservabilityDbContext>();
+            var hasCrossDockingFlag = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(observabilityDb.FeatureFlags, f => f.Name == "FF_CROSS_DOCKING_ENABLED");
+            if (!hasCrossDockingFlag)
+            {
+                observabilityDb.FeatureFlags.Add(new Nexustock.Modules.Observability.Entities.FeatureFlag
+                {
+                    Name = "FF_CROSS_DOCKING_ENABLED",
+                    Enabled = true,
+                    RolloutPercentage = 100,
+                    WhitelistUserIds = string.Empty,
+                    Description = "Enable Cross-docking feature",
+                    UpdatedAt = DateTimeOffset.UtcNow
+                });
+                await observabilityDb.SaveChangesAsync();
+                Log.Information("Seeded FeatureFlag FF_CROSS_DOCKING_ENABLED.");
             }
         }
     }

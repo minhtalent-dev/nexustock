@@ -33,6 +33,7 @@ import {
   RefreshCw,
   GitFork,
   Monitor,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -100,6 +101,7 @@ const navGroups: NavGroup[] = [
       { href: "/admin/outbound", label: "Đơn xuất kho", icon: Truck, permission: "Outbound.Shipments.View" },
       { href: "/admin/allocation", label: "Phân bổ giữ hàng", icon: Layers, permission: "allocation_reservation.read" },
       { href: "/admin/waves", label: "Lấy hàng Wave", icon: Layers, permission: "Wave.Manage" },
+      { href: "/admin/cross-docking", label: "Cross-docking", icon: Zap, permission: "cross_docking.read" },
     ],
   },
   {

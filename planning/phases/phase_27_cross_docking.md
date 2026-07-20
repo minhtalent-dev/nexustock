@@ -1,10 +1,24 @@
-﻿# PHASE 27: Cross-docking
+# PHASE 27: Cross-docking
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 88%
-- **Đánh giá:** Đủ direction cho cross-docking và so khớp hàng vừa nhận với đơn xuất.
-- **Khi cần upgrade:** Upgrade nếu cần tối ưu thời gian cửa nhập/xuất hoặc priority theo khách hàng.
+- **Mức hiện tại:** 100% hoàn thành.
+- **Đánh giá:** Đủ contract rõ để executor triển khai không suy đoán. Đã khóa 9 blind spots phát hiện qua reindex codebase thực tế.
+- **rp1 verdict:** Nâng từ 88% → 100% sau khi bổ sung: module naming, Outbound stub blocker, DB table casing, QC Unspec rule, allocation collision policy, staging zone definition, feature flag name và ShipmentItem source.
+
+## rp1 — Blind-spot closure matrix
+
+| Blind spot | Closure |
+|---|---|
+| Module naming `cross_docking` vs. PascalCase | Dùng `Nexustock.Modules.CrossDocking` — khớp convention toàn dự án |
+| `Nexustock.Modules.Outbound` chỉ có `Class1.cs` | **Blocker**: Phase 27 phải tự define `ShipmentOrder`/`ShipmentItem` trong CrossDocking module (read-only snapshot) hoặc scope expand Outbound. Default: snapshot inline, không phụ thuộc Outbound impl |
+| `ShipmentId` trong WaveItem nhưng Outbound rỗng | CrossDocking tự query Wave's `WaveItem.ShipmentId` để lấy open demand; không đọc Outbound module |
+| Lot → InboundOrder link không có FK trực tiếp | Join qua `InboundOrderItem.ItemId` + `InboundOrderItem.InboundOrderId`; thêm field `InboundOrderItemId` vào `CrossDockCandidates` nếu cần trace back |
+| `LotQcStatus.Unspec` có được cross-dock không | **Quyết định**: `Unspec` = block (chưa QC → không cho cross-dock). Chỉ `Release` mới được evaluate |
+| DB table casing | Dùng `"CrossDockCandidates"` và `"CrossDockEvents"` — quoted PascalCase theo convention PostgreSQL project |
+| Bước 6 "Move staging" không rõ | Staging = cập nhật status candidate thành `Executing` + ghi `CrossDockEvents` timeline; không move inventory transaction trong Phase 27. Inventory adjustment là Phase 30 scope |
+| Feature flag name chưa định nghĩa | Flag: `FF_CROSS_DOCKING_ENABLED` — env override và DB row |
+| Allocation collision khi wave đã allocate | **Policy**: Evaluate chỉ tìm open WaveItem có `QtyAllocated < QtyExpected`. Không override existing allocation. Accept tạo record nhưng không gọi AllocationService trong Phase 27 |
 
 ## 1. Mục tiêu
 
@@ -51,10 +65,31 @@ Stage trước đã ổn định và có dữ liệu vận hành thực tế.
 ### Cấu trúc module đề xuất
 
 ```text
-backend/modules/cross_docking/
-frontend/features/cross_docking/
+backend/modules/Nexustock.Modules.CrossDocking/
+  Nexustock.Modules.CrossDocking.csproj
+  DependencyInjection.cs
+  Contexts/CrossDockingDbContext.cs
+  Contexts/CrossDockingDbContextFactory.cs
+  Entities/CrossDockCandidate.cs
+  Entities/CrossDockEvent.cs
+  Services/ICrossDockingService.cs
+  Services/CrossDockingService.cs
+  Controllers/CrossDockingController.cs
+  DTOs/CrossDockingDtos.cs
+  Migrations/
+frontend/src/app/admin/cross-docking/
+  page.tsx                  (candidate list)
+  [id]/page.tsx             (candidate detail + accept/reject)
 planning/phases/phase_27_cross_docking.md
+tests/verify_cross_docking.ps1
 ```
+
+**Dependencies `.csproj`:**
+- `Nexustock.Modules.Inbound` (Lot, InboundOrder, InboundOrderItem entities)
+- `Nexustock.Modules.Wave` (WaveItem — query open demand via ShipmentId)
+- `Nexustock.Modules.Identity` (tenant, user context)
+- `Nexustock.Modules.Observability` (IFeatureFlagService, ITraceContext, IActivityTimelineService)
+- `Npgsql.EntityFrameworkCore.PostgreSQL 8.0.11`
 
 ### Permission seed đề xuất
 
@@ -68,10 +103,48 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 5. Database
 
-| Thành phần dữ liệu | Mục đích | Ràng buộc chính |
-|---|---|---|
-| `CrossDockCandidates` | Ứng viên cross-dock | InboundLot,shipment,score,status |
-| `CrossDockEvents` | Timeline cross-dock | Evaluate,accept,reject,execute |
+### Schema chi tiết
+
+**`"CrossDockCandidates"`**
+
+| Column | Type | Constraint | Ghi chú |
+|---|---|---|---|
+| `id` | `uuid` | PK | `gen_random_uuid()` |
+| `tenantId` | `uuid` | NOT NULL | Multi-tenant scope |
+| `lotId` | `uuid` | NOT NULL, FK → Lot.Id | Lô hàng vừa nhận |
+| `inboundOrderItemId` | `uuid` | NOT NULL | Trace back Inbound demand |
+| `waveItemId` | `uuid` | NOT NULL | Shipment demand từ WaveItem |
+| `itemId` | `uuid` | NOT NULL | SKU cần khớp |
+| `qtyAvailable` | `numeric(18,4)` | NOT NULL | Từ Lot, QC Released |
+| `qtyRequested` | `numeric(18,4)` | NOT NULL | Từ WaveItem open qty |
+| `qtyMatched` | `numeric(18,4)` | NOT NULL | `min(qtyAvailable, qtyRequested)` |
+| `matchScore` | `integer` | NOT NULL DEFAULT 0 | 0–100, priority sort |
+| `status` | `varchar(30)` | NOT NULL | `Pending`, `Accepted`, `Rejected`, `Expired`, `Executing` |
+| `expiresAt` | `timestamptz` | nullable | Candidate hết hạn nếu shipment cancel |
+| `rejectedReason` | `text` | nullable | Bắt buộc khi Reject |
+| `createdAt` | `timestamptz` | NOT NULL DEFAULT now() | |
+| `createdBy` | `varchar(200)` | NOT NULL | |
+| `updatedAt` | `timestamptz` | nullable | |
+| `updatedBy` | `varchar(200)` | nullable | |
+
+Index: `(tenantId)`, `(lotId)`, `(waveItemId)`, `(status)`, `(createdAt)`.
+
+**`"CrossDockEvents"`** (immutable audit — không UPDATE)
+
+| Column | Type | Constraint | Ghi chú |
+|---|---|---|---|
+| `id` | `uuid` | PK | |
+| `tenantId` | `uuid` | NOT NULL | |
+| `candidateId` | `uuid` | NOT NULL, FK → CrossDockCandidates.Id | |
+| `eventType` | `varchar(50)` | NOT NULL | `Evaluated`, `Accepted`, `Rejected`, `Expired`, `Executed` |
+| `actor` | `varchar(200)` | NOT NULL | userId hoặc `system` |
+| `payload` | `jsonb` | nullable | Snapshot data tại thời điểm event |
+| `traceId` | `varchar(100)` | nullable | Trace ID từ request |
+| `occurredAt` | `timestamptz` | NOT NULL DEFAULT now() | |
+
+Index: `(tenantId, candidateId)`, `(occurredAt)`.
+
+**Migration strategy**: Tạo migration mới `AddCrossDockingModule` trong CrossDockingDbContext riêng. Không đụng schema module khác. Rollback safe — drop table nếu chưa có data production.
 
 ### Chuẩn database áp dụng
 
@@ -91,11 +164,37 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 6. Backend/API
 
-| API | Mục đích | Ghi chú triển khai |
-|---|---|---|
-| `POST /api/cross-dock/evaluate` | Tìm ứng viên | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/cross-dock/{id}/accept` | Chấp nhận | Có auth, validation, trace ID và response lỗi chuẩn. |
-| `POST /api/cross-dock/{id}/reject` | Từ chối | Có auth, validation, trace ID và response lỗi chuẩn. |
+| API | Method | Permission | Ghi chú |
+|---|---|---|---|
+| `GET /api/cross-docking/candidates` | Query candidates | `cross_docking.read` | Filter: `lotId`, `status`, `itemId`. Paginated. |
+| `POST /api/cross-docking/evaluate` | Tìm ứng viên từ lotId | `cross_docking.create` | Body: `{ lotId }`. Trả danh sách candidates mới tạo. |
+| `POST /api/cross-docking/{id}/accept` | Chấp nhận candidate | `cross_docking.approve` | Transition: `Pending → Accepted`. Ghi event. |
+| `POST /api/cross-docking/{id}/reject` | Từ chối candidate | `cross_docking.approve` | Body: `{ reason }` — bắt buộc. Transition: `Pending → Rejected`. |
+| `GET /api/cross-docking/{id}` | Chi tiết candidate | `cross_docking.read` | Kèm events timeline. |
+
+**Request/Response contract tiêu biểu:**
+
+`POST /api/cross-docking/evaluate`
+```json
+// Request
+{ "lotId": "uuid" }
+// Response 200
+{ "candidates": [ { "id": "uuid", "itemId": "uuid", "qtyMatched": 10.0, "matchScore": 85, "status": "Pending" } ] }
+// Response 400 — lot QcStatus != Release
+{ "errorCode": "LOT_NOT_QC_RELEASED", "message": "Lot must have QC status Release.", "traceId": "..." }
+// Response 404 — lot không tồn tại
+{ "errorCode": "LOT_NOT_FOUND", "message": "Lot not found.", "traceId": "..." }
+```
+
+`POST /api/cross-docking/{id}/reject`
+```json
+// Request
+{ "reason": "Shipment priority changed" }
+// Response 409 — đã accept/reject rồi
+{ "errorCode": "CANDIDATE_INVALID_STATUS", "message": "Candidate is not in Pending status.", "traceId": "..." }
+```
+
+**Feature flag gate**: Mọi API phải check `FF_CROSS_DOCKING_ENABLED`; nếu disabled trả `403 FEATURE_DISABLED`.
 
 ### Quy chuẩn API
 
@@ -241,7 +340,15 @@ Chỉ seed permission thực sự dùng trong phase. Không tạo quyền dư n�
 
 ## 13. Acceptance criteria
 
-* Hàng phù hợp đi thẳng staging
+- `/api/cross-docking/evaluate` với Lot QcStatus=`Release` trả candidates list 200.
+- `/api/cross-docking/evaluate` với Lot QcStatus=`Hold`/`Unspec`/`Reject` trả 400 `LOT_NOT_QC_RELEASED`.
+- `/api/cross-docking/{id}/accept` transition `Pending → Accepted`, ghi `CrossDockEvents`.
+- `/api/cross-docking/{id}/reject` bắt buộc `reason`, transition `Pending → Rejected`.
+- `/api/cross-docking/{id}/accept` trên candidate không phải `Pending` trả 409.
+- `FF_CROSS_DOCKING_ENABLED=false` trả 403 cho mọi endpoint.
+- Migration `AddCrossDockingModule` chạy sạch trên DB trống.
+- Frontend list hiển thị candidates với filter status, loading, empty state.
+- `verify_cross_docking.ps1` pass.
 
 ### Definition of done
 
@@ -261,7 +368,13 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 
 ## 15. Dependencies
 
-* Stage 1-3 + phase trước trong Stage 4
+**Phase dependencies cụ thể:**
+- Phase 01/03 MasterData: `ItemId`, `TenantId` đã sẵn sàng.
+- Phase 05 Inbound: `Lot`, `InboundOrder`, `InboundOrderItem` entities có thể query.
+- Phase 06 QC: `LotQcStatus` enum đã có — chỉ cho cross-dock khi `Release`.
+- Phase 11 Wave: `WaveItem.ShipmentId`, `WaveItem.QtyAllocated`, `WaveItem.QtyExpected` có thể query open demand.
+- Phase 26 Feature Flags: `IFeatureFlagService.IsEnabledAsync("FF_CROSS_DOCKING_ENABLED")` đã có.
+- Phase 25 Observability: `ITraceContext`, `IActivityTimelineService` đã có.
 
 ### Downstream impact
 
@@ -297,9 +410,9 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 
 ## 18. Rollback notes
 
-* Tắt feature flag
-* Clear recommendation queue
-* Giữ transaction đã commit bằng corrective flow
+* Tắt `FF_CROSS_DOCKING_ENABLED` qua env — không cần redeploy.
+* Candidates đã `Accepted` không xóa — mark `Expired` bằng corrective event.
+* Không có inventory transaction trong Phase 27 nên rollback DB không cần corrective.
 
 ### Rollback safety
 
@@ -308,7 +421,25 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
 
+## 19. Verification commands
 
+```powershell
+dotnet build backend/Nexustock.Api/Nexustock.Api.csproj --no-restore
+dotnet build backend/modules/Nexustock.Modules.CrossDocking/Nexustock.Modules.CrossDocking.csproj --no-restore
+npm run lint --prefix frontend -- --max-warnings 0
+powershell -ExecutionPolicy Bypass -File tests/verify_cross_docking.ps1 -BaseUrl http://localhost:5024
+git diff --check
+```
 
+**`verify_cross_docking.ps1` checks:**
+- `POST /api/cross-docking/evaluate` với lot QcStatus=Release → 200 candidates.
+- `POST /api/cross-docking/evaluate` với lot QcStatus=Hold → 400 `LOT_NOT_QC_RELEASED`.
+- `POST /api/cross-docking/{id}/accept` → 200, ghi event.
+- `POST /api/cross-docking/{id}/reject` thiếu reason → 400.
+- `GET /api/cross-docking/{id}` → 200 kèm events.
+- Mọi endpoint khi `FF_CROSS_DOCKING_ENABLED=false` → 403.
+## 20. Execution evidence
 
-
+* **API Verification:** Đã nâng cấp và chạy [verify_cross_docking.ps1](file:///d:/1_Project/48_Nexustock/tests/verify_cross_docking.ps1) vượt qua 6/6 kịch bản kiểm thử tích hợp nghiêm ngặt (tự động đăng nhập, sinh vị trí kệ tạm LOC-CD-TEST dung lượng lớn, tạo Inbound Order/Lot QC Release/Lot QC Blocked/Shipment/Wave, thực thi evaluate, validate status code, verify detail/timeline events, kiểm thử feature flag).
+* **UI Verification:** Kiểm thử E2E giao diện trên browser: Đăng nhập admin -> Đánh giá Lot -> Xem chi tiết timeline -> Duyệt thành công (Accept). Trạng thái cập nhật đồng bộ về cơ sở dữ liệu.
+* **Tài liệu bàn giao:** Xem chi tiết [walkthrough.md](file:///C:/Users/mes/.gemini/antigravity-ide/brain/129ed964-eb82-4a5b-98ca-b26ec26ceec2/walkthrough.md) kèm video Web Recording chứng minh thực tế.
