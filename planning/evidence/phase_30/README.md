@@ -15,13 +15,14 @@ Thư mục chứa bằng chứng nghiệm thu Readiness Gate (UAT, rollback, loa
 | AC-02 | rollback-rehearsal.* | Pending |
 | AC-03 | backup-restore-rpo.* | Pending |
 | AC-04 | uat-signoff.* | Pending |
-| AC-05 | load-50-rf.* | Pending |
+| AC-05 | load-50-rf.* | **SKIP** — AC05_SKIP.md |
 | AC-06 | allocation-5k.* | Pending |
 | AC-07 | security-audit.* | Pending |
 | AC-08 | **WAIVED** — xem WAIVER_AC08.md | Waived |
 | AC-09 | observability-trace.* | Pending |
 | AC-10 | feature-flag-toggle.* | Pending |
 | AC-11 | db-constraints.* | Pending |
-| AC-12 | msix-signtool.* (SKIP rehearsal nếu chưa cert) | Pending |
+| AC-12 | **SKIP** rehearsal — AC12_SKIP.md | Skipped |
+
 | AC-13 | cutover-runbook-signed.* | Pending |
 | AC-14 | gitleaks.* | Pending |

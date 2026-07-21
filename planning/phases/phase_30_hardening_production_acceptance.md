@@ -2,10 +2,10 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 100% Ready (sau `up` 2026-07-21)
-- **Đánh giá:** Contract §19 + Open decisions §19.10 đã khóa. FOUNDER: AC-01=A; AC-08 waiver (SAP sandbox chưa sẵn) — [WAIVER_AC08.md](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_30/WAIVER_AC08.md). Evidence folder đã tạo. **Được phép lập plan execute / do-plan.**
-- **Khi cần upgrade sau Ready:** Không cần — chỉ cập nhật evidence khi chạy AC; khi sandbox sẵn thì hủy waiver AC-08 và PASS lại.
-- **Trạng thái triển khai:** ⬜ Chưa bắt đầu code (chờ `fp` / `tt` / `/04-do-plan`).
+- **Mức hiện tại:** ✅ **100% hoàn thành Module DoD** (`rp5` đối chiếu lại 2026-07-21)
+- **Đánh giá:** Reindex + đối chiếu code/UI/verify/evidence khớp 100%. `verify_readiness.ps1` **PASS 9/0/0**. AC-01 sạch Critical/High theo xác nhận FOUNDER. AC-08 WAIVED; AC-05/AC-12 SKIP rehearsal theo quyết định FOUNDER. Go-live AC pack (02/03/06/09–11/13/14) = evidence vận hành ký production — **không** là gap code module.
+- **Khi cần sau hoàn thành:** Chạy AC pack còn lại trước ký production; hủy waiver AC-08 khi SAP sandbox sẵn.
+- **Trạng thái triển khai:** ✅ **Hoàn thành** 2026-07-21 (`rp5` xác nhận).
 
 ## 1. Mục tiêu
 
@@ -451,7 +451,7 @@ Permission: xem section 19.6. Response camelCase.
 | `POST` | `/api/admin/cutover/unfreeze` | `readiness.cutover.freeze` | Tắt freeze |
 | `POST` | `/api/admin/readiness/incident-drills` | `readiness.drill.write` | Ghi kết quả diễn tập |
 
-Error codes tối thiểu: `READINESS_UNAUTHORIZED`, `CUTOVER_FREEZE_DENIED`, `UAT_SIGN OFF_REQUIRED`, `READINESS_PROBE_FAILED`.
+Error codes tối thiểu: `READINESS_UNAUTHORIZED`, `READINESS_DISABLED`, `CUTOVER_FREEZE_DENIED`, `CUTOVER_FROZEN`, `UAT_SIGNOFF_REQUIRED`, `READINESS_PROBE_FAILED`.
 
 ### 19.6 Feature flag & permissions (bổ sung)
 
@@ -558,6 +558,75 @@ Giữ nguyên bảng AC §13. Khi execute / validate:
 Thứ tự ưu tiên execute không đổi (§19.8). Out of scope RF handheld mới vẫn giữ.
 
 **Trạng thái sau `up`:** Maturity **100% Ready**. Triển khai code vẫn ⬜ cho đến khi FOUNDER gọi execute.
+
+### 19.15 rp2 execute plan — ĐỦ CHUẨN 100% (2026-07-21)
+
+> `rp2` = reindex function + `/17-auto-plan` (plan → critic → refine). **Không execute code** trong bước này.
+
+| Artifact | Path |
+|---|---|
+| Function index | [function_index_phase30_readiness.md](file:///C:/Users/mes/.gemini/antigravity/brain/17cf2960-4583-44a5-918a-5eb1c709dc96/function_index_phase30_readiness.md) |
+| Implementation plan (refined) | [implementation_plan.md](file:///C:/Users/mes/.gemini/antigravity/brain/17cf2960-4583-44a5-918a-5eb1c709dc96/implementation_plan.md) |
+| Critic | [critic_report.md](file:///C:/Users/mes/.gemini/antigravity/brain/17cf2960-4583-44a5-918a-5eb1c709dc96/critic_report.md) |
+
+| Gate | Kết quả |
+|---|---|
+| Safe Execution Score (sau refine) | **8.7/10** |
+| Verdict critic | APPROVED WITH CHANGES → đã reconcile |
+| Module DoD vs Go-live AC | Tách 2 tầng trong plan |
+| Freeze probe endpoint khóa | `POST /api/labor/sessions/start` → 423 khi freeze |
+| AC-08 / AC-12 | WAIVED / SKIP rehearsal (đã khóa) |
+
+**Execute order (tóm tắt):** A scaffold → B seed/services → C API+middleware+logs → D UI → E verify → F docs.
+
+**Lệnh tiếp theo:** Go-live AC pack (AC-02/03/06/09/10/11/13/14) khi cần ký production; hủy waiver AC-08 khi SAP sandbox sẵn.
+
+### 19.16 Execute evidence (2026-07-21)
+
+| Item | Kết quả |
+|---|---|
+| Module | `Nexustock.Modules.Readiness` + freeze middleware |
+| Verify | `tests/verify_readiness.ps1` → **PASS 9 / SKIP 0 / FAIL 0** |
+| UI | `/admin/readiness`, `/admin/cutover` |
+| Flags | `FF_READINESS_GATE_ENABLED`, `FF_CUTOVER_FREEZE_ENABLED` |
+| Feature flag API | `PUT /api/feature-flags/{name}` (bổ sung để verify toggle) |
+
+### 19.17 rp4 audit — hoàn thành Module DoD 100% (2026-07-21)
+
+> `rp4` = reindex project/function liên quan + đối chiếu triển khai vs phase/plan. **Không sửa code** nếu đã đủ; chỉ cập nhật docs khi PASS.
+
+| Hạng mục contract | Code/Evidence | Kết quả |
+|---|---|---|
+| Module `Nexustock.Modules.Readiness` | Entities ×4, DbContext schema `readiness`, migration `AddReadinessModule`, DI, controllers, services, middleware | ✅ |
+| API §19.5 | `/api/admin/readiness*`, `/api/admin/cutover*` | ✅ |
+| Permissions §19.6 | 5 quyền + Admin seed | ✅ |
+| Feature flags | `FF_READINESS_GATE_ENABLED`, `FF_CUTOVER_FREEZE_ENABLED` | ✅ |
+| Freeze 423 | `CutoverFreezeMiddleware` + allowlist | ✅ |
+| UI §19.7 | `/admin/readiness`, `/admin/cutover`, sidebar EN, 3 test IDs | ✅ |
+| Structured logs | 5 events (probe/frozen/unfrozen/signed_off/probe_failed) | ✅ |
+| Verify §19.9 | `tests/verify_readiness.ps1` **PASS 9 / SKIP 0 / FAIL 0** (rp4 re-run) | ✅ |
+| AC-08 | WAIVER_AC08.md | ✅ Waived |
+| AC-05 / AC-12 | AC05_SKIP.md / AC12_SKIP.md | ✅ Skip rehearsal |
+| Out of scope | Không Grafana mới; không RF handheld mới; không sửa logic kho | ✅ |
+| Go-live AC 02/03/06/09–11/13/14 | Evidence vận hành trước ký production | ⏳ Ngoài Module DoD |
+
+**Verdict rp4:** Module DoD / plan execute = **100%**. Phase đánh dấu **✅ Hoàn thành** (module). Go-live AC pack còn lại theo dõi evidence, không reopen code phase trừ khi phát hiện regression.
+
+### 19.18 rp5 audit — xác nhận sau DBM evidence (2026-07-21)
+
+> `rp5` = reindex project + đối chiếu triển khai thực tế với plan/phase. Phạm vi bước này: cập nhật trạng thái tài liệu, không mở thêm scope code.
+
+| Hạng mục đối chiếu | Bằng chứng hiện tại | Kết quả |
+|---|---|---|
+| Backend Readiness | [CutoverFreezeMiddleware.cs](file:///d:/1_Project/48_Nexustock/backend/modules/Nexustock.Modules.Readiness/Middleware/CutoverFreezeMiddleware.cs), [ReadinessController.cs](file:///d:/1_Project/48_Nexustock/backend/modules/Nexustock.Modules.Readiness/Controllers/ReadinessController.cs), [CutoverController.cs](file:///d:/1_Project/48_Nexustock/backend/modules/Nexustock.Modules.Readiness/Controllers/CutoverController.cs) | ✅ |
+| UI Readiness/Cutover | [readiness/page.tsx](file:///d:/1_Project/48_Nexustock/frontend/src/app/admin/readiness/page.tsx), [cutover/page.tsx](file:///d:/1_Project/48_Nexustock/frontend/src/app/admin/cutover/page.tsx) | ✅ |
+| Freeze contract | `POST /api/labor/sessions/start` bị chặn `423 CUTOVER_FROZEN`; allowlist admin/auth/observability/feature-flags giữ hoạt động | ✅ |
+| Verify script | [verify_readiness.ps1](file:///d:/1_Project/48_Nexustock/tests/verify_readiness.ps1) → **PASS 9 / SKIP 0 / FAIL 0** | ✅ |
+| UI evidence | [walkthrough.md](file:///C:/Users/mes/.gemini/antigravity-ide/brain/254cceca-6729-4a7c-b7bb-1f464dfb9df8/walkthrough.md), screenshots, video walkthrough fixed | ✅ |
+| Waiver/skip | AC-08 waived; AC-05 và AC-12 skipped trong rehearsal | ✅ |
+| Go-live AC pack | AC-02/03/06/09/10/11/13/14 cần evidence vận hành trước ký production | ⏳ |
+
+**Verdict rp5:** Phase 30 đạt **100% Module DoD** và đủ đóng phase code. Trạng thái roadmap giữ **✅ Hoàn thành**. Các AC vận hành còn lại theo dõi ở go-live evidence pack, không tạo gap triển khai module.
 
 ---
 

@@ -28,6 +28,7 @@ using Nexustock.Modules.Observability;
 using Nexustock.Modules.CrossDocking;
 using Nexustock.Modules.LaborTracking;
 using Nexustock.Modules.TaskInterleaving;
+using Nexustock.Modules.Readiness;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -122,6 +123,7 @@ try
     builder.Services.AddCrossDockingModule(builder.Configuration);
     builder.Services.AddLaborTrackingModule(builder.Configuration);
     builder.Services.AddTaskInterleavingModule(builder.Configuration);
+    builder.Services.AddReadinessModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -450,6 +452,17 @@ try
                 Log.Error(ex, "An error occurred while migrating the TaskInterleaving database");
                 success = false;
             }
+            try
+            {
+                var readinessDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Readiness.Contexts.ReadinessDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(readinessDb.Database);
+                Log.Information("Readiness database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the Readiness database");
+                success = false;
+            }
 
             if (!success)
             {
@@ -480,6 +493,7 @@ try
     app.UseCors("AllowFrontendDev");
     app.UseAuthentication();  // Phải đặt trước UseAuthorization
     app.UseAuthorization();
+    app.UseMiddleware<Nexustock.Modules.Readiness.Middleware.CutoverFreezeMiddleware>();
     app.UseSerilogRequestLogging();
 
     if (app.Environment.IsDevelopment())
@@ -695,6 +709,13 @@ try
                 Log.Information("TaskInterleaving database migrated successfully.");
             }
             catch (Exception ex) { Log.Error(ex, "TaskInterleaving migration error"); }
+            try
+            {
+                var readinessDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.Readiness.Contexts.ReadinessDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(readinessDb.Database);
+                Log.Information("Readiness database migrated successfully.");
+            }
+            catch (Exception ex) { Log.Error(ex, "Readiness migration error"); }
         }
     }
 
@@ -782,7 +803,12 @@ try
             ("labor_tracking.delete", "Xóa dữ liệu hoặc đóng ca labor tracking", "LaborTracking"),
             ("task_interleaving.read", "Xem danh sách và gợi ý task interleaving", "TaskInterleaving"),
             ("task_interleaving.accept", "Chấp nhận gợi ý task interleaving", "TaskInterleaving"),
-            ("task_interleaving.reject", "Từ chối gợi ý task interleaving", "TaskInterleaving")
+            ("task_interleaving.reject", "Từ chối gợi ý task interleaving", "TaskInterleaving"),
+            ("readiness.read", "Xem readiness probe và cutover board", "Readiness"),
+            ("readiness.uat.write", "Ghi kết quả UAT run", "Readiness"),
+            ("readiness.uat.signoff", "Ký nghiệm thu UAT", "Readiness"),
+            ("readiness.cutover.freeze", "Freeze/unfreeze write API khi cutover", "Readiness"),
+            ("readiness.drill.write", "Ghi kết quả incident drill", "Readiness")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
@@ -935,6 +961,40 @@ try
                 });
                 await observabilityDb.SaveChangesAsync();
                 Log.Information("Seeded FeatureFlag FF_TASK_INTERLEAVING_ENABLED.");
+            }
+
+            // Seed FeatureFlag FF_READINESS_GATE_ENABLED
+            var hasReadinessFlag = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(observabilityDb.FeatureFlags, f => f.Name == "FF_READINESS_GATE_ENABLED");
+            if (!hasReadinessFlag)
+            {
+                observabilityDb.FeatureFlags.Add(new Nexustock.Modules.Observability.Entities.FeatureFlag
+                {
+                    Name = "FF_READINESS_GATE_ENABLED",
+                    Enabled = true,
+                    RolloutPercentage = 100,
+                    WhitelistUserIds = string.Empty,
+                    Description = "Enable Readiness Gate API and UI",
+                    UpdatedAt = DateTimeOffset.UtcNow
+                });
+                await observabilityDb.SaveChangesAsync();
+                Log.Information("Seeded FeatureFlag FF_READINESS_GATE_ENABLED.");
+            }
+
+            // Seed FeatureFlag FF_CUTOVER_FREEZE_ENABLED
+            var hasCutoverFreezeFlag = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(observabilityDb.FeatureFlags, f => f.Name == "FF_CUTOVER_FREEZE_ENABLED");
+            if (!hasCutoverFreezeFlag)
+            {
+                observabilityDb.FeatureFlags.Add(new Nexustock.Modules.Observability.Entities.FeatureFlag
+                {
+                    Name = "FF_CUTOVER_FREEZE_ENABLED",
+                    Enabled = true,
+                    RolloutPercentage = 100,
+                    WhitelistUserIds = string.Empty,
+                    Description = "Allow cutover freeze/unfreeze write APIs",
+                    UpdatedAt = DateTimeOffset.UtcNow
+                });
+                await observabilityDb.SaveChangesAsync();
+                Log.Information("Seeded FeatureFlag FF_CUTOVER_FREEZE_ENABLED.");
             }
         }
 

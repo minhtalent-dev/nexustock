@@ -36,6 +36,8 @@ import {
   Zap,
   Clock,
   BarChart3,
+  ShieldCheck,
+  GitBranch,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -142,6 +144,8 @@ const navGroups: NavGroup[] = [
       { href: "/admin/observability", label: "Giám sát vận hành", icon: Activity, permission: "observability.read" },
       { href: "/admin/observability/alerts", label: "Trung tâm cảnh báo", icon: AlertCircle, permission: "observability.read" },
       { href: "/admin/observability/timeline", label: "Dòng thời gian hoạt động", icon: ClipboardList, permission: "observability.read" },
+      { href: "/admin/readiness", label: "Readiness", icon: ShieldCheck, permission: "readiness.read" },
+      { href: "/admin/cutover", label: "Cutover", icon: GitBranch, permission: "readiness.read" },
     ],
   },
 ];

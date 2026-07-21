@@ -51,6 +51,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.LaborTrac
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.TaskInterleaving.UnitTests", "tests\Nexustock.TaskInterleaving.UnitTests\Nexustock.TaskInterleaving.UnitTests.csproj", "{1B73F294-7C78-4A20-ADBD-DF5019F12734}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nexustock.Modules.Readiness", "backend\modules\Nexustock.Modules.Readiness\Nexustock.Modules.Readiness.csproj", "{068CFCE3-AD31-4C07-A73A-B37E7F5C05D7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -144,6 +146,10 @@ Global
 		{1B73F294-7C78-4A20-ADBD-DF5019F12734}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B73F294-7C78-4A20-ADBD-DF5019F12734}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B73F294-7C78-4A20-ADBD-DF5019F12734}.Release|Any CPU.Build.0 = Release|Any CPU
+		{068CFCE3-AD31-4C07-A73A-B37E7F5C05D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{068CFCE3-AD31-4C07-A73A-B37E7F5C05D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{068CFCE3-AD31-4C07-A73A-B37E7F5C05D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{068CFCE3-AD31-4C07-A73A-B37E7F5C05D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{4EB60904-0E24-4328-8674-70CA3A8F9D31} = {5090C821-0136-4C60-9261-9E336B58EBBD}
@@ -168,5 +174,6 @@ Global
 		{8E7A68E0-E4F6-4945-9F97-9ABE52644199} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 		{2F8D4468-A2CC-4F02-AD3F-C4F6F82668D0} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 		{1B73F294-7C78-4A20-ADBD-DF5019F12734} = {41655C87-2B37-448F-940C-80618B918A73}
+		{068CFCE3-AD31-4C07-A73A-B37E7F5C05D7} = {8759F8F8-F565-43C2-906A-B45B8244239A}
 	EndGlobalSection
 EndGlobal

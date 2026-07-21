@@ -206,7 +206,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 27 | Cross-docking | ✅ Hoàn thành | Thiết kế và triển khai module `Nexustock.Modules.CrossDocking`. Tích hợp DbContext chéo (`InboundDbContext`, `WaveDbContext`). Tạo API đánh giá, chấp thuận, từ chối candidates. Seed permission và Feature Flag `FF_CROSS_DOCKING_ENABLED`. Giao diện candidates list, detail timeline và tích hợp sidebar nav hoàn thành, lint pass 100%. | 2026-07-18 | E2E pass 100%: 6/6 kịch bản kiểm thử tích hợp nghiêm ngặt pass, UI subagent thực hiện đánh giá và duyệt candidate thành công trên browser. |
 | 28 | Labor tracking | ✅ Hoàn thành | Đã hoàn tất toàn bộ logic backend (LaborTrackingService, DbContext, Controller), timeout background worker, UI Next.js (Dashboard + Recharts, Sessions timer), và verify_labor_tracking.ps1 tích hợp qua 14/15 scenarios pass, 1/15 scenario mutation feature flag skip hợp lệ. | 2026-07-20 | Đã kiểm thử E2E và UI walkthrough với browser subagent có evidence video. |
 | 29 | Task interleaving | ✅ Hoàn thành | Gap-fix rp5: unique Open index, scoring v1, structured logs, unit tests 19/19, Accept shared TX, admin UI states, mobile Next task; verify PASS 13 / SKIP 2 / FAIL 0. | 2026-07-21 | Rollback: tắt `FF_TASK_INTERLEAVING_ENABLED`; migration Down drop `uq_recommendations_tenant_user_open`. |
-| 30 | Readiness Gate | ⬜ Chưa bắt đầu | `up` 2026-07-21: **100% Ready**. AC-01=A; AC-08 waiver (SAP chưa sandbox) — `planning/evidence/phase_30/WAIVER_AC08.md`. Module Readiness riêng, freeze write kho, Observability P25, cert SKIP rehearsal. Chờ `fp`/`tt` execute. | — | [phase_30 §19](file:///d:/1_Project/48_Nexustock/planning/phases/phase_30_hardening_production_acceptance.md) |
+| 30 | Readiness Gate | ✅ Hoàn thành | `rp5` 2026-07-21: Module DoD **100%** sau đối chiếu code/UI/verify/evidence. Verify PASS 9/0/0. Freeze middleware + admin Readiness/Cutover + flags. Video walkthrough đã fix. AC-08 waived; AC-05/12 SKIP. Go-live AC pack (02/03/06/09–11/13/14) = evidence ký production (ngoài code). | 2026-07-21 | [phase_30 §19.18](file:///d:/1_Project/48_Nexustock/planning/phases/phase_30_hardening_production_acceptance.md) |
 
 ### Quy ước trạng thái
 
@@ -229,7 +229,7 @@ Các deep spec dưới đây **không chặn Phase 01**. Đây là danh sách n�
 | Trước Phase 13 | Allocation algorithm spec | ✅ Đã hoàn thành (100% Ready) | Đã tích hợp cấu trúc DB, API DTOs, thuật toán chống Deadlock (Resource Ordering) và test cases vào tài liệu đặc tả Phase 13. |
 | Trước Phase 20 | Local Agent threat model | Nâng Phase 20 từ 90% lên 95% execution-ready | Làm rõ attack vector, Origin allowlist, pairing token, WSS/certificate trust, code signing, spoofing test case. |
 | Trước Phase 23 | SAP contract confirmation | ✅ Đã hoàn thành (100% Ready) | Làm rõ field mapping thật, error code matrix, idempotency, mapping resolver, preview/commit và 3 script verify pass 100%. |
-| Trước Phase 26/30 | Migration rehearsal & incident playbook | ✅ Phase 26 95%; Phase 30 playbook §10. `up` 2026-07-21: Phase 30 = **100% Ready** (AC-01=A, AC-08 waived — SAP sandbox chưa sẵn). | Được phép `/04-do-plan` module Readiness; ERP contract 5-case defer đến khi sandbox sẵn. |
+| Trước Phase 26/30 | Migration rehearsal & incident playbook | ✅ Phase 26 95%; Phase 30 Module DoD ✅ (`rp4` 2026-07-21). AC-08 waived. | Go-live AC pack còn evidence trước ký production. |
 
 ### Nguyên tắc dùng backlog
 

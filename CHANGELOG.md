@@ -1,5 +1,15 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 1.4.0 - Cổng sẵn sàng vận hành và kiểm soát cắt chuyển (Phase 30)
+*Ngày cập nhật: 21/07/2026*
+
+### Tính năng mới
+- **Bảng sẵn sàng hệ thống**: Cho phép quản trị viên xem nhanh tình trạng các thành phần quan trọng trước khi vận hành chính thức.
+- **Bảng theo dõi cắt chuyển**: Ghi nhận từng bước chuyển sang vận hành mới, kèm lịch sử thao tác rõ ràng.
+- **Khóa ghi nghiệp vụ khi cắt chuyển**: Khi cần, có thể tạm khóa thao tác ghi dữ liệu kho để tránh sai lệch trong lúc chuyển hệ thống; mở khóa lại khi hoàn tất.
+- **Nghiệm thu UAT và diễn tập sự cố**: Hỗ trợ ghi nhận kết quả kiểm thử người dùng và kết quả diễn tập khôi phục theo thời gian mục tiêu.
+- **Điều khiển tính năng bằng công tắc**: Bật/tắt nhóm chức năng sẵn sàng vận hành mà không cần cài lại hệ thống.
+
 ## Phiên bản 1.3.0 - Theo dõi hiệu suất lao động, KPI trực quan và Gợi ý việc tối ưu (Phase 28 & Phase 29)
 *Ngày cập nhật: 20/07/2026*
 

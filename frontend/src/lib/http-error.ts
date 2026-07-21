@@ -39,16 +39,19 @@ export function getHttpErrorMessage(error: unknown, fallback = "Request failed")
 /** Phân biệt feature-disabled vs unauthorized từ HTTP 403. */
 export function isFeatureDisabledError(error: unknown): boolean {
   const payload = getHttpErrorPayload(error);
+  if (payload.status !== 403) return false;
+  const code = payload.errorCode ?? "";
   return (
-    payload.status === 403 &&
-    payload.errorCode === "TASK_INTERLEAVING_DISABLED"
+    code === "TASK_INTERLEAVING_DISABLED" ||
+    code === "READINESS_DISABLED" ||
+    code.endsWith("_DISABLED")
   );
 }
 
 export function isUnauthorizedError(error: unknown): boolean {
   const payload = getHttpErrorPayload(error);
   if (payload.status === 401) return true;
-  if (payload.status === 403 && payload.errorCode !== "TASK_INTERLEAVING_DISABLED") {
+  if (payload.status === 403 && !isFeatureDisabledError(error)) {
     return true;
   }
   const axiosErr = error as AxiosError | undefined;

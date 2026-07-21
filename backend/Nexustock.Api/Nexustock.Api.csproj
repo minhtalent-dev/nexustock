@@ -50,6 +50,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.CrossDocking\Nexustock.Modules.CrossDocking.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.LaborTracking\Nexustock.Modules.LaborTracking.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.TaskInterleaving\Nexustock.Modules.TaskInterleaving.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Readiness\Nexustock.Modules.Readiness.csproj" />
   </ItemGroup>
 
 </Project>
