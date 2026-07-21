@@ -3,10 +3,17 @@
 import Link from "next/link";
 import MobileShell from "@/components/mobile/mobile-shell";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowRight, Box, ClipboardCheck, CornerDownLeft, Move, PackageOpen, RefreshCw, Layers, Smartphone } from "lucide-react";
+import { ArrowRight, Box, ClipboardCheck, CornerDownLeft, Move, PackageOpen, RefreshCw, Layers, Smartphone, ListOrdered } from "lucide-react";
 
 export default function MobileMenuPage() {
   const menuItems = [
+    {
+      title: "Next task",
+      description: "Suggested next warehouse task",
+      icon: <ListOrdered className="h-6 w-6 text-cyan-500" />,
+      href: "/mobile/tasks/next",
+      disabled: false,
+    },
     {
       title: "Nhận hàng (Inbound)",
       description: "Nhập kho thực tế từ PO",

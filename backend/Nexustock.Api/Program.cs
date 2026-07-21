@@ -27,6 +27,7 @@ using Nexustock.Modules.Webhook;
 using Nexustock.Modules.Observability;
 using Nexustock.Modules.CrossDocking;
 using Nexustock.Modules.LaborTracking;
+using Nexustock.Modules.TaskInterleaving;
 using Nexustock.Modules.Lpn.Contexts;
 using Nexustock.Modules.Lpn.Services;
 using Hangfire;
@@ -120,6 +121,7 @@ try
     builder.Services.AddObservabilityModule(builder.Configuration);
     builder.Services.AddCrossDockingModule(builder.Configuration);
     builder.Services.AddLaborTrackingModule(builder.Configuration);
+    builder.Services.AddTaskInterleavingModule(builder.Configuration);
 
     // Register Hangfire for Background Jobs
     var defaultConn = builder.Configuration.GetConnectionString("Default");
@@ -426,6 +428,28 @@ try
                 Log.Error(ex, "An error occurred while migrating the CrossDocking database");
                 success = false;
             }
+            try
+            {
+                var laborTrackingDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.LaborTracking.Contexts.LaborTrackingDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(laborTrackingDb.Database);
+                Log.Information("LaborTracking database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the LaborTracking database");
+                success = false;
+            }
+            try
+            {
+                var taskInterleavingDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.TaskInterleaving.Contexts.TaskInterleavingDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(taskInterleavingDb.Database);
+                Log.Information("TaskInterleaving database migrated successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "An error occurred while migrating the TaskInterleaving database");
+                success = false;
+            }
 
             if (!success)
             {
@@ -657,6 +681,20 @@ try
                 Log.Information("CrossDocking database migrated successfully.");
             }
             catch (Exception ex) { Log.Error(ex, "CrossDocking migration error"); }
+            try
+            {
+                var laborTrackingDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.LaborTracking.Contexts.LaborTrackingDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(laborTrackingDb.Database);
+                Log.Information("LaborTracking database migrated successfully.");
+            }
+            catch (Exception ex) { Log.Error(ex, "LaborTracking migration error"); }
+            try
+            {
+                var taskInterleavingDb = scope.ServiceProvider.GetRequiredService<Nexustock.Modules.TaskInterleaving.Contexts.TaskInterleavingDbContext>();
+                await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(taskInterleavingDb.Database);
+                Log.Information("TaskInterleaving database migrated successfully.");
+            }
+            catch (Exception ex) { Log.Error(ex, "TaskInterleaving migration error"); }
         }
     }
 
@@ -741,7 +779,10 @@ try
             ("labor_tracking.read", "Xem danh sách và KPI labor tracking", "LaborTracking"),
             ("labor_tracking.create", "Tạo phiên làm việc labor tracking", "LaborTracking"),
             ("labor_tracking.update", "Cập nhật trạng thái session labor tracking", "LaborTracking"),
-            ("labor_tracking.delete", "Xóa dữ liệu hoặc đóng ca labor tracking", "LaborTracking")
+            ("labor_tracking.delete", "Xóa dữ liệu hoặc đóng ca labor tracking", "LaborTracking"),
+            ("task_interleaving.read", "Xem danh sách và gợi ý task interleaving", "TaskInterleaving"),
+            ("task_interleaving.accept", "Chấp nhận gợi ý task interleaving", "TaskInterleaving"),
+            ("task_interleaving.reject", "Từ chối gợi ý task interleaving", "TaskInterleaving")
         };
 
         var appPermissions = Nexustock.Modules.MasterData.Permissions.AppPermissions.All
@@ -877,6 +918,23 @@ try
                 });
                 await observabilityDb.SaveChangesAsync();
                 Log.Information("Seeded FeatureFlag FF_LABOR_TRACKING_ENABLED.");
+            }
+
+            // Seed FeatureFlag FF_TASK_INTERLEAVING_ENABLED
+            var hasTaskInterleavingFlag = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.AnyAsync(observabilityDb.FeatureFlags, f => f.Name == "FF_TASK_INTERLEAVING_ENABLED");
+            if (!hasTaskInterleavingFlag)
+            {
+                observabilityDb.FeatureFlags.Add(new Nexustock.Modules.Observability.Entities.FeatureFlag
+                {
+                    Name = "FF_TASK_INTERLEAVING_ENABLED",
+                    Enabled = true,
+                    RolloutPercentage = 100,
+                    WhitelistUserIds = string.Empty,
+                    Description = "Enable Task Interleaving feature",
+                    UpdatedAt = DateTimeOffset.UtcNow
+                });
+                await observabilityDb.SaveChangesAsync();
+                Log.Information("Seeded FeatureFlag FF_TASK_INTERLEAVING_ENABLED.");
             }
         }
 

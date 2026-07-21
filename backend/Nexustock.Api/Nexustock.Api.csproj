@@ -49,6 +49,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.Observability\Nexustock.Modules.Observability.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.CrossDocking\Nexustock.Modules.CrossDocking.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.LaborTracking\Nexustock.Modules.LaborTracking.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.TaskInterleaving\Nexustock.Modules.TaskInterleaving.csproj" />
   </ItemGroup>
 
 </Project>

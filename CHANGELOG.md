@@ -1,6 +1,6 @@
 # Lịch sử cập nhật dự án
 
-## Phiên bản 1.3.0 - Theo dõi hiệu suất lao động và KPI trực quan (Phase 28)
+## Phiên bản 1.3.0 - Theo dõi hiệu suất lao động, KPI trực quan và Gợi ý việc tối ưu (Phase 28 & Phase 29)
 *Ngày cập nhật: 20/07/2026*
 
 ### Tính năng mới
@@ -10,6 +10,10 @@
   - Biểu đồ phân tích cơ cấu loại hình công việc (lấy hàng, cất hàng, kiểm tra chất lượng) để tối ưu phân bổ nhân sự.
   - Xếp hạng năng suất nhân viên và năng suất khu vực lưu trữ giúp phát hiện nhanh các điểm nghẽn trong vận hành kho.
 - **Kiểm soát quy trình thông minh**: Cơ chế chống đột biến thời gian (đồng hồ lệch hệ thống), cơ chế bắt buộc nhập lý do khi hủy lượt làm việc, và tự động liên kết dữ liệu với nguồn công việc di động hiện tại.
+- **Gợi ý việc thông minh (Task Interleaving)**: Tự động đề xuất công việc tiếp theo tối ưu cho nhân viên ngay khi hoàn thành tác vụ trước đó, giảm thiểu thời gian di chuyển trống.
+- **Thuật toán chấm điểm heuristic**: Chấm điểm dựa trên khoảng cách (ưu tiên cùng kệ/vùng), độ khẩn cấp của việc, thời gian chờ và tính liên tục của tác vụ.
+- **Chống trùng lặp giao dịch (Idempotency)**: Đảm bảo độ tin cậy tuyệt đối khi nhận việc trên thiết bị di động bằng cơ chế khóa và lưu vết kết quả phản hồi theo Key giao dịch.
+- **Giám sát tỷ lệ chấp nhận & từ chối**: Cung cấp báo cáo phân tích lý do từ chối/bỏ qua công việc để liên tục cải tiến hiệu năng kho.
 
 ## Phiên bản 1.2.0 - Tự động hóa triển khai, Đóng gói vận hành và Tính năng kiểm soát thông minh (Phase 26)
 *Ngày cập nhật: 18/07/2026*

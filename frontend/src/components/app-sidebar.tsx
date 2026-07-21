@@ -118,6 +118,7 @@ const navGroups: NavGroup[] = [
       { href: "/admin/genealogy", label: "Phả hệ vật tư", icon: GitFork, permission: "material_genealogy.read" },
       { href: "/admin/labor", label: "Labor Dashboard", icon: BarChart3, permission: "labor_tracking.read" },
       { href: "/admin/labor/sessions", label: "Lượt làm việc (Timer)", icon: Clock, permission: "labor_tracking.read" },
+      { href: "/admin/task-interleaving", label: "Task interleaving", icon: Layers, permission: "task_interleaving.read" },
     ],
   },
   {

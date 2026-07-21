@@ -1,0 +1,19 @@
+{
+  "Phase29_TaskInterleaving_Gaps": {
+    "name": "Phase29_TaskInterleaving_Gaps",
+    "entityType": "GapFix",
+    "observations": [
+      "rp5 2026-07-21: Phase 29 scaffold ~75-80%, docs over-claim 100%",
+      "Gap1: thieu partial unique index Open recommendation per user",
+      "Gap2: scoring/penalty lech plan section 7",
+      "Gap3: thieu structured logs 6 event task_interleaving.recommendation.*",
+      "Gap4: thieu unit test scoring/tie-breaker/validation",
+      "Gap5: verify script 5 pass / 10 skip - can seed MobileTasks + expire via SQL",
+      "Gap6: admin thieu unauthorized/flag-disabled; mobile menu thieu Next task",
+      "Gap7: can sua status 🔄 roi ✅ sau validate, khong giu fake ✅",
+      "Pattern partial unique: LaborTracking IX_labor_sessions_active_user + Qc uq_qc_requests_pending_lot",
+      "Mobile nav: frontend/src/app/mobile/page.tsx menuItems",
+      "Unit test: chua co TaskInterleaving test project - can tao moi"
+    ]
+  }
+}

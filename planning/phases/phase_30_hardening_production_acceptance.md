@@ -2,9 +2,10 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** 90%
-- **Đánh giá:** Đủ roadmap cho readiness gate, hardening, UAT, cutover và rollback rehearsal.
-- **Khi cần upgrade:** Bắt buộc viết incident playbook để nâng lên 95% trước Phase 30.
+- **Mức hiện tại:** 100% Ready (sau `up` 2026-07-21)
+- **Đánh giá:** Contract §19 + Open decisions §19.10 đã khóa. FOUNDER: AC-01=A; AC-08 waiver (SAP sandbox chưa sẵn) — [WAIVER_AC08.md](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_30/WAIVER_AC08.md). Evidence folder đã tạo. **Được phép lập plan execute / do-plan.**
+- **Khi cần upgrade sau Ready:** Không cần — chỉ cập nhật evidence khi chạy AC; khi sandbox sẵn thì hủy waiver AC-08 và PASS lại.
+- **Trạng thái triển khai:** ⬜ Chưa bắt đầu code (chờ `fp` / `tt` / `/04-do-plan`).
 
 ## 1. Mục tiêu
 
@@ -34,8 +35,8 @@ Thiết lập Cổng kiểm soát sẵn sàng vận hành (Production Readiness 
 ### Readiness checklist
 
 - Tất cả 29 phase trước đó đã hoàn tất và vượt qua tiêu chí nghiệm thu tương ứng.
-- Không còn lỗi Critical hoặc High nào chưa được vá trong issue tracker.
-- Môi trường SAP sandbox hoạt động ổn định và sẵn sàng cho việc test liên thông dữ liệu.
+- Không còn lỗi Critical hoặc High nào chưa được vá trong issue tracker. → **`up` 2026-07-21: FOUNDER xác nhận AC-01 = A (sạch).**
+- Môi trường SAP sandbox hoạt động ổn định và sẵn sàng cho việc test liên thông dữ liệu. → **`up` 2026-07-21: sandbox chưa sẵn → AC-08 waived** ([WAIVER_AC08.md](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_30/WAIVER_AC08.md)); không chặn Ready execute nội bộ kho.
 
 ## 4. Setup & Infrastructure Configuration
 
@@ -99,7 +100,7 @@ Mọi mốc thời gian dưới đây sử dụng placeholder giờ thực tế 
 | **T-01:00** (21:00) | **Integration Smoke Test** | Lead Dev | Ping thử kết nối SAP Gateway, in thử tem barcode qua WebSocket trạm local. | Verify in 5 tem nhãn kiểm thử không phát sinh lỗi. |
 | **T-00:30** (21:30) | **Go/No-Go Evaluation** | FOUNDER & Tech | Rà soát điều kiện sẵn sàng. FOUNDER đưa ra quyết định Go hoặc No-Go. | Dựa trên bảng Go/No-Go Thresholds ở Section 9.1. |
 | **T-00:00** (22:00) | **System Live (GO-LIVE)** | DevOps | Mở cổng tiếp nhận API Inbound từ SAP, tắt chế độ Read-Only trên WMS. | Khởi chạy chính thức hệ thống Nexustock WMS. |
-| **T+01:00** (23:00) | **Hypercare Monitoring I** | Lead Dev | Kiểm tra log, trace ID của 10 đơn nhập xuất đầu tiên từ SAP sang WMS. | Theo dõi trace log tại dashboard grafana / kibana. |
+| **T+01:00** (23:00) | **Hypercare Monitoring I** | Lead Dev | Kiểm tra log, trace ID của 10 đơn nhập xuất đầu tiên từ SAP sang WMS. | Theo dõi trace log tại **Observability dashboard** (`/admin/observability`) — không bắt buộc Grafana/Kibana. |
 | **T+02:00** (00:00) | **Hypercare Monitoring II** | Lead Dev | Đánh giá chỉ số hiệu năng (Latency p95 < 300ms, tỷ lệ lỗi CPU < 10%). | Gửi báo cáo vận hành đầu ca đêm cho FOUNDER. |
 
 ### 8.2 Quy trình hoãn Go-Live khẩn cấp (Rollback Plan)
@@ -264,14 +265,14 @@ Tất cả 14 criteria dưới đây phải đạt PASS trước khi FOUNDER ký
 
 | ID | Criteria | Evidence |
 |---|---|---|
-| AC-01 | Không có lỗi Critical hoặc High nào chưa được vá trong issue tracker | Screenshot issue board tại thời điểm go-live |
+| AC-01 | Không có lỗi Critical hoặc High nào chưa được vá trong issue tracker | Screenshot issue board tại thời điểm go-live — **`up` 2026-07-21: FOUNDER = A** (sạch; vẫn chụp evidence khi go-live) |
 | AC-02 | Rollback rehearsal hoàn tất thành công, RTO thực tế < 2 giờ | Video screen recording toàn bộ quy trình |
 | AC-03 | Backup restore rehearsal hoàn tất, RPO thực tế < 1 giờ (timestamp diff DB) | Output SQL query: `MAX(createdAt)` vs thời điểm incident giả lập |
 | AC-04 | UAT 4 scenario pass 100%: Inbound, QC, Pack+Scale, Print Error | Video walkthrough + biên bản UAT có chữ ký thủ kho |
 | AC-05 | Load test 50 RF scanner đồng thời pass, p95 < 300ms | APM report hoặc k6/Locust output log |
 | AC-06 | Allocation engine test 5,000 dòng hoàn thành < 1,000ms | Log file timestamp từ đầu đến cuối request |
 | AC-07 | Security audit pass: tenant isolation, IDOR, Local Agent origin allowlist | Test report (manual hoặc tự động) theo test_strategy.md |
-| AC-08 | ERP contract test 5 case pass: happy path, missing field, wrong type, duplicate key, oversized payload | xUnit test run log xanh toàn bộ |
+| AC-08 | ERP contract test 5 case pass: happy path, missing field, wrong type, duplicate key, oversized payload | xUnit test run log xanh toàn bộ — **`up` 2026-07-21: WAIVED** (SAP sandbox chưa sẵn); xem §19.13 + [WAIVER_AC08.md](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_30/WAIVER_AC08.md). Go-live ERP thật vẫn bắt buộc PASS sau này. |
 | AC-09 | Observability dashboard hoạt động, hiển thị trace ID đầy đủ cho mọi request | Screenshot dashboard với trace ID sample |
 | AC-10 | Feature flag bật/tắt hoạt động cho 5 phase core (P04, P06, P07, P13, P18) không cần redeploy | Manual test record: toggle flag → verify behavior |
 | AC-11 | DB constraint pass: tồn kho không âm, idempotency key không duplicate | SQL query: `SELECT MIN(qty) FROM InventoryBalances` ≥ 0; duplicate key test |
@@ -335,9 +336,8 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 
 ## 18. Rollback notes
 
-* Tắt feature flag
-* Clear recommendation queue
-* Giữ transaction đã commit bằng corrective flow
+* Tắt feature flag (nếu có flag cutover/readiness).
+* Giữ transaction đã commit bằng corrective flow; không xóa log UAT/cutover/incident.
 
 ### Rollback safety
 
@@ -346,7 +346,218 @@ Không đưa scope ngoài vào phase này nếu chưa có dependency rõ. Nếu 
 * Nếu UI lỗi, có thể ẩn menu/permission tạm thời.
 * Nếu API lỗi, rollback deployment image trước, xử lý dữ liệu sau theo trace ID.
 
+---
 
+## 19. rp1 Readiness audit (2026-07-21) — KHÔNG XÓA MỤC CŨ
 
+> Audit `rp1`: kiểm tra phase đã đủ chuẩn 100% để execute chưa. Kết luận: **chưa Ready 100%**. Giữ nguyên section 1–18; phần này bổ sung gap phải khóa trước `/04-do-plan`.
 
+### 19.1 Verdict
+
+| Chỉ số | Giá trị |
+|---|---|
+| Maturity trước rp1 | 90% |
+| Maturity sau rp1 (có gap list + contract skeleton) | **94%** |
+| Maturity sau rp (khóa §19.10) | **96%** |
+| Maturity sau `up` 2026-07-21 (AC-01=A + AC-08 waiver + evidence) | **100% Ready** |
+| Ready execute 100%? | **✅ Có** (sau `up` 2026-07-21) — code vẫn ⬜ đến khi gọi execute |
+| Blocker chính | DB/API/permission/UI contract chưa khóa chi tiết; thiếu implementation order + verify matrix + module boundary |
+
+### 19.2 Gap chặn Ready 100% (phải khóa trước code)
+
+| ID | Gap | Mức | Hành động bắt buộc |
+|---|---|---|---|
+| G01 | Bảng `UatRuns` / `CutoverLogs` / `IncidentDrills` thiếu cột/type/index | HIGH | Khóa schema đầy đủ (section 19.4) |
+| G02 | API readiness/cutover thiếu request/response camelCase + error codes | HIGH | Khóa API matrix (section 19.5) |
+| G03 | Chưa có permission seed / feature flag | HIGH | Seed tối thiểu (section 19.6) |
+| G04 | UI routes/test IDs chưa chỉ định path file | MED | Khóa frontend checklist (section 19.7) |
+| G05 | Thiếu implementation order + verify script | HIGH | Section 19.8–19.9 |
+| G06 | Section 7 còn boilerplate RF/mobile generic không thuộc P30 | MED | Executor bỏ qua RF scan UX; chỉ làm 2 màn admin readiness/cutover |
+| G07 | Observability mention Grafana/Kibana vs Phase 25 Next.js dashboard | MED | Dùng dashboard Observability hiện có (`/admin/observability*`); không bắt buộc Grafana mới trong P30 |
+| G08 | AC-05 load 50 RF + AC-06 allocation 5k lines cần tool/script cụ thể | MED | Chỉ định k6 hoặc verify script; reuse `verify_allocation.ps1` cho AC-06 nếu đủ |
+| G09 | Code signing MSIX (AC-12) phụ thuộc cert doanh nghiệp thật | HIGH | DoR: FOUNDER cung cấp cert hoặc chấp nhận mock/`signtool` skip có lý do trong rehearsal |
+| G10 | SAP sandbox (điều kiện đầu vào) có thể không sẵn | HIGH | DoR gate: xác nhận sandbox trước execute hoặc đánh dấu AC-08 skip có lý do → **`up` 2026-07-21: WAIVED** ([WAIVER_AC08.md](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_30/WAIVER_AC08.md)) |
+
+### 19.3 Upstream DoR (đã đạt sau Phase 29)
+
+* Phase 01–29 trong [IMPLEMENTATION_PLAN.md](file:///d:/1_Project/48_Nexustock/planning/IMPLEMENTATION_PLAN.md) đã ✅ (tính đến 2026-07-21).
+* Phase 26 đã có backup/restore/rollback scripts + Docker prod.
+* Phase 25 đã có observability dashboard/trace.
+* Incident playbook 3 kịch bản đã có ở section 10 (đáp ứng yêu cầu nâng 95% nêu ở header).
+
+### 19.4 Database contract (bổ sung — khóa để execute)
+
+Schema đề xuất: `readiness` (hoặc public nếu team chọn nhất quán module mới).
+
+#### `uat_runs`
+
+| Column | Type | Required | Ghi chú |
+|---|---|:---:|---|
+| `Id` | uuid | Yes | PK |
+| `TenantId` | uuid | Yes | Tenant scope |
+| `ScenarioCode` | varchar(64) | Yes | `INBOUND` / `QC` / `PACK_SCALE` / `PRINT_ERROR` |
+| `Status` | varchar(32) | Yes | `Draft`, `Running`, `Passed`, `Failed`, `SignedOff` |
+| `ResultNote` | varchar(1024) | No | Ghi chú UAT |
+| `SignedOffBy` | varchar(128) | No | Actor ký |
+| `SignedOffAt` | timestamptz | No | |
+| `EvidenceUrl` | varchar(512) | No | Link video/biên bản |
+| `TraceId` | varchar(128) | No | |
+| `CreatedAt` / `CreatedBy` / `UpdatedAt` / `UpdatedBy` | audit | Yes/No | Chuẩn project |
+
+Index: `(TenantId, ScenarioCode, CreatedAt DESC)`.
+
+#### `cutover_logs`
+
+| Column | Type | Required | Ghi chú |
+|---|---|:---:|---|
+| `Id` | uuid | Yes | PK |
+| `TenantId` | uuid | Yes | |
+| `StepCode` | varchar(64) | Yes | `FREEZE`, `BACKUP`, `DEPLOY`, `AGENT_ROLLOUT`, `SMOKE`, `GO_NO_GO`, `LIVE`, `HYPERCARE` |
+| `Status` | varchar(32) | Yes | `Pending`, `Running`, `Done`, `Failed`, `Skipped` |
+| `StartedAt` / `EndedAt` | timestamptz | No | |
+| `Actor` | varchar(128) | Yes | |
+| `Note` | varchar(1024) | No | |
+| `TraceId` | varchar(128) | No | |
+
+Index: `(TenantId, StepCode, StartedAt DESC)`.
+
+#### `incident_drills`
+
+| Column | Type | Required | Ghi chú |
+|---|---|:---:|---|
+| `Id` | uuid | Yes | PK |
+| `TenantId` | uuid | Yes | |
+| `ScenarioCode` | varchar(64) | Yes | `DB_DOWN`, `AGENT_DOWN`, `SAP_DOWN` |
+| `RtoMinutes` | int | Yes | RTO thực tế |
+| `Passed` | bool | Yes | |
+| `ConductedBy` | varchar(128) | Yes | |
+| `ConductedAt` | timestamptz | Yes | |
+| `EvidenceNote` | varchar(1024) | No | |
+| `TraceId` | varchar(128) | No | |
+
+### 19.5 API contract (bổ sung)
+
+Base: `/api/admin/readiness` và `/api/admin/cutover`  
+Permission: xem section 19.6. Response camelCase.
+
+| Method | Route | Permission | Mục đích |
+|---|---|---|---|
+| `GET` | `/api/admin/readiness` | `readiness.read` | Probe DB/Redis/SAP/LocalAgent summary |
+| `GET` | `/api/admin/readiness/uat-runs` | `readiness.read` | List UAT runs |
+| `POST` | `/api/admin/readiness/uat-runs` | `readiness.uat.write` | Tạo/cập nhật kết quả UAT |
+| `POST` | `/api/admin/readiness/uat-runs/{id}/signoff` | `readiness.uat.signoff` | Ký UAT |
+| `GET` | `/api/admin/cutover/logs` | `readiness.read` | Cutover board |
+| `POST` | `/api/admin/cutover/freeze` | `readiness.cutover.freeze` | Bật read-only / freeze write |
+| `POST` | `/api/admin/cutover/unfreeze` | `readiness.cutover.freeze` | Tắt freeze |
+| `POST` | `/api/admin/readiness/incident-drills` | `readiness.drill.write` | Ghi kết quả diễn tập |
+
+Error codes tối thiểu: `READINESS_UNAUTHORIZED`, `CUTOVER_FREEZE_DENIED`, `UAT_SIGN OFF_REQUIRED`, `READINESS_PROBE_FAILED`.
+
+### 19.6 Feature flag & permissions (bổ sung)
+
+| Flag | Default dev | Default prod | Mục đích |
+|---|:---:|:---:|---|
+| `FF_READINESS_GATE_ENABLED` | `true` | `true` | Bật API/UI readiness & cutover board |
+| `FF_CUTOVER_FREEZE_ENABLED` | `true` | `false` đến giờ cutover | Cho phép freeze write |
+
+| Permission | Scope |
+|---|---|
+| `readiness.read` | Xem dashboard/probe/logs |
+| `readiness.uat.write` | Ghi UAT run |
+| `readiness.uat.signoff` | Ký UAT (FOUNDER/admin) |
+| `readiness.cutover.freeze` | Freeze/unfreeze |
+| `readiness.drill.write` | Ghi incident drill |
+
+### 19.7 Frontend checklist (bổ sung)
+
+| File | Nội dung |
+|---|---|
+| `frontend/src/lib/readiness-api.ts` | Client typed |
+| `frontend/src/app/admin/readiness/page.tsx` | System Readiness Dashboard |
+| `frontend/src/app/admin/cutover/page.tsx` | Cutover Status Board (view + freeze nếu có quyền) |
+| Sidebar | Label English: `Readiness`, `Cutover` |
+
+Test IDs: `readiness-refresh-button`, `cutover-freeze-button`, `uat-signoff-button`.
+
+**Lưu ý rp1:** Bỏ qua boilerplate RF/mobile ở section 7 cho Phase 30 — không tạo màn handheld mới.
+
+### 19.8 Implementation order (bổ sung)
+
+1. Tạo module `Nexustock.Modules.Readiness` (hoặc Observability extension — chọn 1, ưu tiên module riêng để không phình P25).
+2. Entities + migration 3 bảng.
+3. Seed flag + permissions.
+4. Implement probe + freeze API.
+5. UAT/cutover/drill APIs.
+6. Admin UI readiness + cutover board.
+7. Scripts: `tests/verify_readiness.ps1`, reuse backup/restore Phase 26 cho AC-02/03.
+8. Chạy AC matrix 01–14 với evidence folder `planning/evidence/phase_30/`.
+9. Cập nhật phase note + master plan sau signoff FOUNDER.
+
+### 19.9 Verify matrix tối thiểu (bổ sung)
+
+`tests/verify_readiness.ps1`:
+
+1. Flag on + `readiness.read` → GET `/api/admin/readiness` 200.
+2. Thiếu quyền → 403.
+3. Freeze → ghi nghiệp vụ bị chặn (hoặc 423/409 theo contract).
+4. Unfreeze → ghi lại được.
+5. Tạo UAT run + signoff.
+6. Ghi incident drill có `rtoMinutes`.
+7. List cutover logs pagination.
+8. Flag off → API disabled.
+
+### 19.10 Open decisions — ĐÃ KHÓA (rp 2026-07-21)
+
+> Reindex project: module pattern tách riêng (P25 Observability / P28 Labor / P29 TaskInterleaving); UI observability tại `/admin/observability*`; không có Grafana/Kibana trong repo; Local Agent MSIX + code signing thuộc ADR/P20–P22, rehearsal có thể defer như DoD dev các phase device.
+
+| Câu hỏi | Quyết định khóa | Evidence / lý do |
+|---|---|---|
+| Module riêng hay nhét Observability? | **Module riêng `Nexustock.Modules.Readiness`** | Tránh phình P25; đồng bộ pattern module WMS độc lập + DI/migrate riêng. |
+| Freeze toàn hệ thống hay chỉ inbound ERP? | **Freeze write API nghiệp vụ kho** (Inbound, Outbound, Inventory, QC, Wave, Allocation, …). Auth, readiness, cutover, observability **vẫn chạy**. ERP inbound write cũng bị chặn khi freeze. | Khớp cutover T-04:00 “WMS Read-Only”; vẫn probe/unfreeze được. |
+| Grafana bắt buộc? | **Không** | Dùng Observability UI Phase 25 (`/admin/observability`, timeline, alerts). Sửa wording hypercare §8.1: theo dõi trace trên dashboard Observability (không bắt buộc Grafana/Kibana). |
+| Cert signing thật? | **Rehearsal/DoD dev:** AC-12 được `SKIP` có lý do nếu chưa có enterprise cert. **Go-live thật:** AC-12 bắt buộc `signtool verify` pass. | Cùng tinh thần P22 (pilot thiết bị thật không bắt buộc DoD dev). |
+
+**Override FOUNDER:** gửi khác quyết định trên trước khi execute; nếu không phản hồi = giữ khóa này.
+
+### 19.11 Điều kiện nâng Ready 100% — ĐÃ ĐẠT (up 2026-07-21)
+
+Phase 30 đạt **Ready 100% / được phép `/04-do-plan` hoặc `fp`/`tt`** sau khi FOUNDER khóa:
+
+| # | Điều kiện | Kết quả |
+|---|---|---|
+| 1 | Open decisions §19.10 | ✅ Đã khóa `rp` 2026-07-21 |
+| 2 | Schema 19.4 + API 19.5 + permission 19.6 | ✅ Đã khóa `rp1` (không TBD) |
+| 3 | AC-01 Critical/High = 0 | ✅ **FOUNDER = A** (2026-07-21) — upstream issues sạch |
+| 4 | SAP sandbox / AC-08 | ✅ **Waiver** — sandbox chưa sẵn; xem [WAIVER_AC08.md](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_30/WAIVER_AC08.md) |
+| 5 | Thư mục evidence | ✅ `planning/evidence/phase_30/` đã tạo |
+
+### 19.12 FOUNDER decision log (`up` 2026-07-21)
+
+| ID | Quyết định | Chi tiết vận hành |
+|---|---|---|
+| AC-01 | **A** | Không còn Critical/High chưa vá. Evidence go-live vẫn chụp issue board sạch (AC-01 artifact). |
+| AC-08 | **Waiver** (sandbox chưa sẵn) | Execute Phase 30 **không chặn** vì thiếu SAP. Probe SAP = Unavailable/Skipped. Smoke SAP cutover = Skipped. **Cấm** tuyên bố ERP production-ready cho đến khi chạy lại 5 case PASS và hủy waiver. |
+| Evidence root | Đã tạo | [planning/evidence/phase_30](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_30) + README checklist + WAIVER_AC08.md |
+
+### 19.13 AC-08 vận hành dưới waiver (bổ sung — không xóa AC-08 gốc ở §13)
+
+Giữ nguyên bảng AC §13. Khi execute / validate:
+
+1. AC-08 status = `WAIVED` với link waiver.
+2. Verify script không FAIL vì SAP down.
+3. Readiness dashboard hiển thị SAP probe màu vàng/skip, không đỏ chặn cutover nội bộ kho.
+4. Sau khi sandbox sẵn: chạy lại AC-08 → đổi status `PASS` + evidence file; cập nhật phase + master plan.
+
+### 19.14 Execution gate sau Ready 100%
+
+Được phép:
+
+* `/17-auto-plan` / `fp` chi tiết execute module Readiness  
+* `/04-do-plan` / `/18-auto-execute` / `tt` theo §19.4–19.9  
+
+Thứ tự ưu tiên execute không đổi (§19.8). Out of scope RF handheld mới vẫn giữ.
+
+**Trạng thái sau `up`:** Maturity **100% Ready**. Triển khai code vẫn ⬜ cho đến khi FOUNDER gọi execute.
+
+---
 
