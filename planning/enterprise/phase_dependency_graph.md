@@ -58,6 +58,7 @@ graph TD
     P26 --> P30["30 Readiness Gate"]
     P27 --> P30
     P29 --> P30
+    P30 --> P31["31 Localization VI/EN"]
 ```
 
 ## Phase dependency table
@@ -93,7 +94,8 @@ graph TD
 | 27 | 04, 07, 13 | Cross-docking | 30 | Dock-to-ship flow unavailable |
 | 28 | 09, 25 | Labor tracking | 29, 30 | Productivity optimization lacks data |
 | 29 | 11, 18, 28 | Task interleaving | 30 | Work assignment remains manual |
-| 30 | 01-29 | Hardening, UAT, cutover | Go-live | Production readiness unproven |
+| 30 | 01-29 | Hardening, UAT, cutover | 31, Go-live | Production readiness unproven |
+| 31 | 30 | Localization VI/EN (next-intl) | Product UX multi-language | UI remains single-language / mixed hardcode |
 
 ## Execution rule
 

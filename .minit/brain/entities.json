@@ -15,5 +15,39 @@
       "Mobile nav: frontend/src/app/mobile/page.tsx menuItems",
       "Unit test: chua co TaskInterleaving test project - can tao moi"
     ]
+  },
+  "Phase31_Localization_AC_DoD": {
+    "name": "Phase31_Localization_AC_DoD",
+    "entityType": "Decision",
+    "observations": [
+      "up AC/DoD 2026-07-21: siết 59/59 page.tsx + 0 backlog string UI",
+      "AC-09 page inventory + AC-10 zero backlog; AC-06 mobile 100%; AC-05 phủ toàn bộ errorCode FE map + AC-05c",
+      "Wave vẫn 4; phase chỉ đóng khi verify inventory+parity+grep PASS",
+      "Out of scope giữ: WinUI desktop, DB master data, Swagger/Hangfire/log"
+    ]
+  },
+  "Phase31_33_Localization_Split_B": {
+    "name": "Phase31_33_Localization_Split_B",
+    "entityType": "Decision",
+    "observations": [
+      "FOUNDER consult_decide Option B 2026-07-21",
+      "P31 Foundation+Admin 44 pages 4-5d",
+      "P32 Master-data 8 pages 3-4d",
+      "P33 Mobile+Errors+Close 7 mobile + product 59/59 3-4d",
+      "Milestone 5 after P33",
+      "Specs 95% Ready; IMPLEMENTATION_PLAN synced to 33 phases"
+    ]
+  },
+  "Phase31_Localization_ExecutePlan_rp2": {
+    "name": "Phase31_Localization_ExecutePlan_rp2",
+    "entityType": "Plan",
+    "observations": [
+      "rp2 + 17-auto-plan 2026-07-21",
+      "Score 9.2/10 after critic refine",
+      "No app/[locale] — cookie NextIntlClientProvider",
+      "Tasks EP0-EP5; admin B1-B6 with parity micro-gate",
+      "Artifacts: function_index_phase31_i18n, implementation_plan, critic_report",
+      "phase_31 §27 synced"
+    ]
   }
 }

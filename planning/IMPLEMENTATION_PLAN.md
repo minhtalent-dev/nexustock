@@ -2,7 +2,7 @@
 
 Dự án **Nexustock** là giải pháp quản lý - vận hành kho thế hệ mới, thay thế hệ thống desktop cũ bằng nền tảng Web SPA Next.js hiện đại (kết hợp Tailwind CSS, Shadcn UI), PostgreSQL độc lập, hỗ trợ Redis Cache (optional, recommended) cho backend và roadmap triển khai theo chuẩn WMS production.
 
-Roadmap dùng mô hình **4 stage / 30 phase nhỏ**. Mỗi phase là một deliverable độc lập, có đủ setup, database, backend/API, frontend/RF/mobile, execution flow, validation, exception, observability, test, acceptance, maintenance, extension và rollback.
+Roadmap dùng mô hình **4 stage / 33 phase nhỏ**. Mỗi phase là một deliverable độc lập, có đủ setup, database, backend/API, frontend/RF/mobile, execution flow, validation, exception, observability, test, acceptance, maintenance, extension và rollback.
 
 ---
 
@@ -72,6 +72,9 @@ gantt
     Phase 23: ERP/WMS legacy contract    :p23, after p22, 6d
     Phase 24: Webhook & integration reliability  :p24, after p23, 5d
     Phase 30: Readiness Gate             :p30, after p29, 7d
+    Phase 31: i18n Foundation+Admin      :p31, after p30, 5d
+    Phase 32: i18n Master-data           :p32, after p31, 4d
+    Phase 33: i18n Mobile+Errors+Close   :p33, after p32, 4d
 ```
 
 ### Critical Path
@@ -108,6 +111,7 @@ Critical path là chuỗi phase dài nhất quyết định ngày go-live sớm 
 - **Milestone 2: Advanced Rules (Sau Phase 19)** - Putaway, allocation, replenishment, và wave picking tự động hóa hoạt động ổn định.
 - **Milestone 3: Local Integration (Sau Phase 24)** - Hoàn tất tích hợp phần cứng bàn cân, máy in tem nhãn và đồng bộ hóa đơn hàng với SAP.
 - **Milestone 4: Production Ready (Sau Phase 30)** - Vượt qua hardening, UAT, diễn tập rollback, ký biên bản bàn giao go-live.
+- **Milestone 5: Product Localization (Sau Phase 33)** - **59/59** pages Web VI/EN, **0 backlog**, switcher locale, catalogs parity, errorCodeLabel + message localized. (P31 foundation+admin → P32 master-data → P33 mobile+errors+close; `consult_decide` Option B 2026-07-21)
 
 ### Chính sách Buffer rủi ro
 
@@ -166,6 +170,9 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 28 | [Labor tracking](file:///d:/1_Project/48_Nexustock/planning/phases/phase_28_labor_tracking.md) | Đo năng suất theo task, user, ca, zone và loại thao tác. |
 | 29 | [Task interleaving](file:///d:/1_Project/48_Nexustock/planning/phases/phase_29_task_interleaving.md) | Gợi ý task kế tiếp để giảm di chuyển rỗng nhưng không phá rule vận hành. |
 | 30 | [Readiness Gate](file:///d:/1_Project/48_Nexustock/planning/phases/phase_30_hardening_production_acceptance.md) | Kiểm thử tổng thể, hardening, UAT, cutover và rollback rehearsal trước go-live. |
+| 31 | [Localization Foundation + Shell/Admin](file:///d:/1_Project/48_Nexustock/planning/phases/phase_31_localization_vi_en.md) | next-intl, switcher, sidebar, **44** pages (admin+shell); Errors skeleton. |
+| 32 | [Localization Master-data](file:///d:/1_Project/48_Nexustock/planning/phases/phase_32_localization_master_data.md) | **8/8** master-data pages + layout; catalogs `MasterData.*`. |
+| 33 | [Localization Mobile + Errors + Close](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) | **7/7** mobile; Errors full; khóa **59/59 + 0 backlog** (Milestone 5). |
 
 ---
 
@@ -173,7 +180,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 
 > **Hướng dẫn:** Khi hoàn thành một phase, cập nhật trạng thái thành `✅ Hoàn thành`, điền ngày hoàn thành và tóm tắt thông tin đã thực hiện vào cột tương ứng.
 
-### Lộ trình 30 Phase triển khai chi tiết
+### Lộ trình 33 Phase triển khai chi tiết
 
 | Phase | Phân hệ / Tính năng | Trạng thái | Nội dung chính và kết quả kiểm thử | Ngày hoàn thành | Ghi chú vận hành / Rollback plan |
 |:---:|---|:---:|---|---|---|
@@ -207,6 +214,9 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 28 | Labor tracking | ✅ Hoàn thành | Đã hoàn tất toàn bộ logic backend (LaborTrackingService, DbContext, Controller), timeout background worker, UI Next.js (Dashboard + Recharts, Sessions timer), và verify_labor_tracking.ps1 tích hợp qua 14/15 scenarios pass, 1/15 scenario mutation feature flag skip hợp lệ. | 2026-07-20 | Đã kiểm thử E2E và UI walkthrough với browser subagent có evidence video. |
 | 29 | Task interleaving | ✅ Hoàn thành | Gap-fix rp5: unique Open index, scoring v1, structured logs, unit tests 19/19, Accept shared TX, admin UI states, mobile Next task; verify PASS 13 / SKIP 2 / FAIL 0. | 2026-07-21 | Rollback: tắt `FF_TASK_INTERLEAVING_ENABLED`; migration Down drop `uq_recommendations_tenant_user_open`. |
 | 30 | Readiness Gate | ✅ Hoàn thành | `rp5` 2026-07-21: Module DoD **100%** sau đối chiếu code/UI/verify/evidence. Verify PASS 9/0/0. Freeze middleware + admin Readiness/Cutover + flags. Video walkthrough đã fix. AC-08 waived; AC-05/12 SKIP. Go-live AC pack (02/03/06/09–11/13/14) = evidence ký production (ngoài code). | 2026-07-21 | [phase_30 §19.18](file:///d:/1_Project/48_Nexustock/planning/phases/phase_30_hardening_production_acceptance.md) |
+| 31 | Localization Foundation + Admin | ⬜ Chưa bắt đầu | `rp3` 2026-07-21: **PASS** — plan **9.4/10**, 0 blind spot (BS-1…10). Plugin request + không `[locale]`. Chờ `` `tt `` / `/18-auto-execute`. | — | [phase_31 §28](file:///d:/1_Project/48_Nexustock/planning/phases/phase_31_localization_vi_en.md) |
+| 32 | Localization Master-data | ⬜ Chưa bắt đầu | **95% Ready**. Wave C — **8/8** master-data. Phụ thuộc P31. | — | [phase_32](file:///d:/1_Project/48_Nexustock/planning/phases/phase_32_localization_master_data.md) |
+| 33 | Localization Mobile + Errors + Close | ⬜ Chưa bắt đầu | **95% Ready**. Wave D — mobile 7/7, Errors full, khóa **59/59 + 0 backlog** (Milestone 5). Phụ thuộc P32. | — | [phase_33](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) |
 
 ### Quy ước trạng thái
 
