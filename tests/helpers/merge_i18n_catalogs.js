@@ -12,6 +12,7 @@ const modules = [
   'HealthUi',
   'Admin',
   'Features',
+  'MasterData',
 ];
 
 const messagesRoot = process.argv[2];

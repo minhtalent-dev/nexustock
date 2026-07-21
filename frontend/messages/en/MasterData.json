@@ -1,0 +1,242 @@
+{
+  "MasterData": {
+    "common": {
+      "page": {
+        "subtitle": "Create, edit, search, and delete master data records."
+      },
+      "actions": {
+        "add": "Add new",
+        "search": "Search",
+        "edit": "Edit",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "close": "Close",
+        "save": "Save",
+        "saving": "Saving...",
+        "prev": "Previous",
+        "next": "Next"
+      },
+      "columns": {
+        "actions": "Actions"
+      },
+      "states": {
+        "loading": "Loading...",
+        "emptyTitle": "No data yet",
+        "emptyHint": "Add the first record to start using this catalog.",
+        "resultCount": "{count} results"
+      },
+      "dialog": {
+        "createTitle": "Add new record",
+        "editTitle": "Edit record",
+        "selectPlaceholder": "Select a value",
+        "deleteTitle": "Delete record",
+        "deleteDescription": "Are you sure you want to delete this record? This action cannot be undone."
+      },
+      "toast": {
+        "loadFailed": "Unable to load data.",
+        "createSuccess": "Record created successfully.",
+        "updateSuccess": "Record updated successfully.",
+        "saveFailed": "Unable to save data.",
+        "deleteSuccess": "Record deleted successfully.",
+        "deleteFailed": "Unable to delete data.",
+        "deleteCancelled": "Delete cancelled."
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive",
+        "locked": "Locked",
+        "open": "Open"
+      }
+    },
+    "products": {
+      "page": {
+        "title": "Products",
+        "searchPlaceholder": "Search code, name, barcode..."
+      },
+      "fields": {
+        "code": { "label": "Code", "placeholder": "PROD-001" },
+        "name": { "label": "Name", "placeholder": "Product name" },
+        "barcode": { "label": "Barcode", "placeholder": "Bar-001" },
+        "baseUomId": { "label": "Base UoM", "placeholder": "UOM UUID" },
+        "description": { "label": "Description", "placeholder": "Description..." },
+        "isActive": { "label": "Active" }
+      },
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "barcode": "Barcode",
+        "baseUom": "Base UoM",
+        "status": "Status"
+      }
+    },
+    "uoms": {
+      "page": {
+        "title": "Units of measure",
+        "searchPlaceholder": "Search code, name..."
+      },
+      "fields": {
+        "code": { "label": "Code", "placeholder": "PCS" },
+        "name": { "label": "Name", "placeholder": "Piece" },
+        "isActive": { "label": "Active" }
+      },
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "status": "Status"
+      }
+    },
+    "warehouses": {
+      "page": {
+        "title": "Warehouses",
+        "searchPlaceholder": "Search code, name..."
+      },
+      "fields": {
+        "code": { "label": "Code", "placeholder": "WH-MAIN" },
+        "name": { "label": "Name", "placeholder": "Main warehouse" },
+        "description": { "label": "Description" },
+        "isActive": { "label": "Active" }
+      },
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "description": "Description",
+        "status": "Status"
+      }
+    },
+    "zones": {
+      "page": {
+        "title": "Storage zones",
+        "searchPlaceholder": "Search code, name..."
+      },
+      "fields": {
+        "warehouseId": { "label": "Warehouse" },
+        "code": { "label": "Zone code", "placeholder": "ZONE-STORAGE" },
+        "name": { "label": "Zone name", "placeholder": "Primary storage area" },
+        "zoneType": { "label": "Zone type" },
+        "temperatureLimit": { "label": "Temperature limit (°C)" },
+        "isLocked": { "label": "Lock zone" }
+      },
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "warehouse": "Warehouse",
+        "zoneType": "Zone type",
+        "status": "Status"
+      }
+    },
+    "locations": {
+      "page": {
+        "title": "Storage locations",
+        "searchPlaceholder": "Search location code..."
+      },
+      "fields": {
+        "zoneId": { "label": "Zone" },
+        "code": { "label": "Location code", "placeholder": "A-01-01" },
+        "maxCapacity": { "label": "Max capacity" },
+        "maxVolume": { "label": "Max volume" },
+        "xCoord": { "label": "X coordinate" },
+        "yCoord": { "label": "Y coordinate" },
+        "zCoord": { "label": "Z coordinate" },
+        "length": { "label": "Length" },
+        "width": { "label": "Width" },
+        "height": { "label": "Height" },
+        "isLocked": { "label": "Lock location" },
+        "lockReasonCode": { "label": "Lock reason code" },
+        "isActive": { "label": "Active" }
+      },
+      "columns": {
+        "code": "Code",
+        "warehouse": "Warehouse",
+        "zone": "Zone",
+        "coord": "Coordinates",
+        "status": "Status"
+      }
+    },
+    "partners": {
+      "page": {
+        "title": "Partners",
+        "searchPlaceholder": "Search code, name..."
+      },
+      "fields": {
+        "code": { "label": "Code", "placeholder": "VEN-001" },
+        "name": { "label": "Name", "placeholder": "Vendor A" },
+        "partnerType": { "label": "Partner type" },
+        "address": { "label": "Address" },
+        "taxCode": { "label": "Tax code" },
+        "isActive": { "label": "Active" }
+      },
+      "columns": {
+        "code": "Code",
+        "name": "Name",
+        "partnerType": "Type",
+        "taxCode": "Tax code",
+        "status": "Status"
+      }
+    },
+    "reasons": {
+      "page": {
+        "title": "Reason codes",
+        "searchPlaceholder": "Search code, reason type..."
+      },
+      "fields": {
+        "code": { "label": "Code", "placeholder": "RCV-DAMAGED" },
+        "reasonType": { "label": "Reason type", "placeholder": "ADJUSTMENT" },
+        "description": { "label": "Description", "placeholder": "Inventory discrepancy reason" },
+        "isActive": { "label": "Active" }
+      },
+      "columns": {
+        "code": "Code",
+        "reasonType": "Reason type",
+        "description": "Description",
+        "status": "Status"
+      }
+    },
+    "import": {
+      "page": {
+        "title": "Import data",
+        "subtitle": "Upload CSV files to import master data quickly."
+      },
+      "help": {
+        "itemsTitle": "ITEMS file structure (Products):",
+        "locationsTitle": "LOCATIONS file structure (Shelf locations):",
+        "partnersTitle": "PARTNERS file structure (Partners):"
+      },
+      "fields": {
+        "importType": "Master data type",
+        "file": "Select CSV file"
+      },
+      "options": {
+        "items": "Products (ITEMS)",
+        "locations": "Locations (LOCATIONS)",
+        "partners": "Partners (PARTNERS)"
+      },
+      "actions": {
+        "preview": "Upload for check (Preview)",
+        "commit": "Commit import to system",
+        "downloadErrors": "Download error file (CSV)"
+      },
+      "states": {
+        "processing": "Processing data..."
+      },
+      "result": {
+        "title": "Check result (Batch ID: {id})",
+        "total": "Total rows",
+        "valid": "Valid",
+        "errors": "Errors",
+        "errorDetail": "Row error details"
+      },
+      "columns": {
+        "row": "Row",
+        "raw": "Raw data",
+        "message": "Error message"
+      },
+      "toast": {
+        "previewOk": "Data check succeeded. Ready to commit.",
+        "previewHasErrors": "Found {count} invalid data rows.",
+        "uploadFailed": "Unable to upload file.",
+        "commitOk": "Import commit succeeded.",
+        "commitFailed": "Import commit failed."
+      }
+    }
+  }
+}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import MasterDataCrudPage, { type CrudField } from "@/features/master-data/master-data-crud";
 import type { ReasonCode } from "@/types/master-data";
 
@@ -17,19 +18,22 @@ const defaultForm: ReasonForm = {
   isActive: true,
 };
 
-const fields: CrudField<ReasonForm>[] = [
-  { name: "code", label: "Mã", type: "text", required: true, placeholder: "RCV-DAMAGED" },
-  { name: "reasonType", label: "Loại lý do", type: "text", required: true, placeholder: "ADJUSTMENT" },
-  { name: "description", label: "Mô tả", type: "text", required: true, placeholder: "Lý do sai lệch hàng tồn" },
-  { name: "isActive", label: "Hoạt động", type: "checkbox" },
-];
-
 export default function ReasonsPage() {
+  const t = useTranslations("MasterData.reasons");
+  const ts = useTranslations("MasterData.common");
+
+  const fields: CrudField<ReasonForm>[] = [
+    { name: "code", label: t("fields.code.label"), type: "text", required: true, placeholder: t("fields.code.placeholder") },
+    { name: "reasonType", label: t("fields.reasonType.label"), type: "text", required: true, placeholder: t("fields.reasonType.placeholder") },
+    { name: "description", label: t("fields.description.label"), type: "text", required: true, placeholder: t("fields.description.placeholder") },
+    { name: "isActive", label: t("fields.isActive.label"), type: "checkbox" },
+  ];
+
   return (
     <MasterDataCrudPage<ReasonCode, ReasonForm>
-      title="Mã lý do"
+      title={t("page.title")}
       endpoint="/master-data/reason-codes"
-      searchPlaceholder="Tìm kiếm mã, loại lý do..."
+      searchPlaceholder={t("page.searchPlaceholder")}
       defaultForm={defaultForm}
       fields={fields}
       toForm={(item) => ({
@@ -39,10 +43,18 @@ export default function ReasonsPage() {
         isActive: item.isActive,
       })}
       columns={[
-        { key: "code", label: "Mã", render: (item) => <span className="font-mono">{item.code}</span> },
-        { key: "reasonType", label: "Loại lý do", render: (item) => item.reasonType },
-        { key: "description", label: "Mô tả", render: (item) => item.description },
-        { key: "status", label: "Trạng thái", render: (item) => <span className={item.isActive ? "text-green-400" : "text-red-400"}>{item.isActive ? "Hoạt động" : "Vô hiệu"}</span> },
+        { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
+        { key: "reasonType", label: t("columns.reasonType"), render: (item) => item.reasonType },
+        { key: "description", label: t("columns.description"), render: (item) => item.description },
+        {
+          key: "status",
+          label: t("columns.status"),
+          render: (item) => (
+            <span className={item.isActive ? "text-green-400" : "text-red-400"}>
+              {item.isActive ? ts("status.active") : ts("status.inactive")}
+            </span>
+          ),
+        },
       ]}
     />
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import MasterDataCrudPage, { type CrudField } from "@/features/master-data/master-data-crud";
 import type { ProductDto } from "@/types/master-data";
 
@@ -14,21 +15,24 @@ type ProductForm = {
 
 const defaultForm: ProductForm = { code: "", name: "", description: "", barcode: "", baseUomId: "", isActive: true };
 
-const fields: CrudField<ProductForm>[] = [
-  { name: "code", label: "Mã", type: "text", required: true, placeholder: "PROD-001" },
-  { name: "name", label: "Tên", type: "text", required: true, placeholder: "Tên vật tư" },
-  { name: "barcode", label: "Barcode", type: "text", placeholder: "Bar-001" },
-  { name: "baseUomId", label: "Đơn vị cơ bản", type: "text", required: true, placeholder: "UUID của UOM" },
-  { name: "description", label: "Mô tả", type: "text", placeholder: "Mô tả..." },
-  { name: "isActive", label: "Hoạt động", type: "checkbox" },
-];
-
 export default function ProductsPage() {
+  const t = useTranslations("MasterData.products");
+  const ts = useTranslations("MasterData.common");
+
+  const fields: CrudField<ProductForm>[] = [
+    { name: "code", label: t("fields.code.label"), type: "text", required: true, placeholder: t("fields.code.placeholder") },
+    { name: "name", label: t("fields.name.label"), type: "text", required: true, placeholder: t("fields.name.placeholder") },
+    { name: "barcode", label: t("fields.barcode.label"), type: "text", placeholder: t("fields.barcode.placeholder") },
+    { name: "baseUomId", label: t("fields.baseUomId.label"), type: "text", required: true, placeholder: t("fields.baseUomId.placeholder") },
+    { name: "description", label: t("fields.description.label"), type: "text", placeholder: t("fields.description.placeholder") },
+    { name: "isActive", label: t("fields.isActive.label"), type: "checkbox" },
+  ];
+
   return (
     <MasterDataCrudPage<ProductDto, ProductForm>
-      title="Vật tư"
+      title={t("page.title")}
       endpoint="/master-data/products"
-      searchPlaceholder="Tìm kiếm mã, tên, barcode..."
+      searchPlaceholder={t("page.searchPlaceholder")}
       defaultForm={defaultForm}
       fields={fields}
       toForm={(item) => ({
@@ -40,11 +44,19 @@ export default function ProductsPage() {
         isActive: item.isActive,
       })}
       columns={[
-        { key: "code", label: "Mã", render: (item) => <span className="font-mono text-blue-400">{item.code}</span> },
-        { key: "name", label: "Tên", render: (item) => item.name },
-        { key: "barcode", label: "Barcode", render: (item) => <span className="font-mono text-sm text-white/60">{item.barcode ?? "—"}</span> },
-        { key: "baseUom", label: "Đơn vị cơ bản", render: (item) => <span className="text-sm text-white/50">{item.baseUomCode} ({item.baseUomName})</span> },
-        { key: "isActive", label: "Trạng thái", render: (item) => <span className={item.isActive ? "text-green-400" : "text-red-400"}>{item.isActive ? "Hoạt động" : "Vô hiệu"}</span> },
+        { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono text-blue-400">{item.code}</span> },
+        { key: "name", label: t("columns.name"), render: (item) => item.name },
+        { key: "barcode", label: t("columns.barcode"), render: (item) => <span className="font-mono text-sm text-white/60">{item.barcode ?? "—"}</span> },
+        { key: "baseUom", label: t("columns.baseUom"), render: (item) => <span className="text-sm text-white/50">{item.baseUomCode} ({item.baseUomName})</span> },
+        {
+          key: "isActive",
+          label: t("columns.status"),
+          render: (item) => (
+            <span className={item.isActive ? "text-green-400" : "text-red-400"}>
+              {item.isActive ? ts("status.active") : ts("status.inactive")}
+            </span>
+          ),
+        },
       ]}
     />
   );

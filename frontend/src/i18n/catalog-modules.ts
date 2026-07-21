@@ -10,6 +10,7 @@ export const CATALOG_MODULES = [
   'HealthUi',
   'Admin',
   'Features',
+  'MasterData',
 ] as const;
 
 export type CatalogModule = (typeof CATALOG_MODULES)[number];

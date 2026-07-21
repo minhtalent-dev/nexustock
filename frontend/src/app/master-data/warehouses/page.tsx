@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import MasterDataCrudPage, { type CrudField } from "@/features/master-data/master-data-crud";
 import type { Warehouse } from "@/types/master-data";
 
@@ -12,27 +13,38 @@ type WarehouseForm = {
 
 const defaultForm: WarehouseForm = { code: "", name: "", description: "", isActive: true };
 
-const fields: CrudField<WarehouseForm>[] = [
-  { name: "code", label: "Mã", type: "text", required: true, placeholder: "WH-MAIN" },
-  { name: "name", label: "Tên", type: "text", required: true, placeholder: "Main warehouse" },
-  { name: "description", label: "Mô tả", type: "text" },
-  { name: "isActive", label: "Hoạt động", type: "checkbox" },
-];
-
 export default function WarehousesPage() {
+  const t = useTranslations("MasterData.warehouses");
+  const ts = useTranslations("MasterData.common");
+
+  const fields: CrudField<WarehouseForm>[] = [
+    { name: "code", label: t("fields.code.label"), type: "text", required: true, placeholder: t("fields.code.placeholder") },
+    { name: "name", label: t("fields.name.label"), type: "text", required: true, placeholder: t("fields.name.placeholder") },
+    { name: "description", label: t("fields.description.label"), type: "text" },
+    { name: "isActive", label: t("fields.isActive.label"), type: "checkbox" },
+  ];
+
   return (
     <MasterDataCrudPage<Warehouse, WarehouseForm>
-      title="Nhà kho"
+      title={t("page.title")}
       endpoint="/master-data/warehouses"
-      searchPlaceholder="Tìm kiếm mã, tên..."
+      searchPlaceholder={t("page.searchPlaceholder")}
       defaultForm={defaultForm}
       fields={fields}
       toForm={(item) => ({ code: item.code, name: item.name, description: item.description || "", isActive: item.isActive })}
       columns={[
-        { key: "code", label: "Mã", render: (item) => <span className="font-mono">{item.code}</span> },
-        { key: "name", label: "Tên", render: (item) => item.name },
-        { key: "description", label: "Mô tả", render: (item) => <span className="text-white/50">{item.description || "-"}</span> },
-        { key: "status", label: "Trạng thái", render: (item) => <span className={item.isActive ? "text-green-400" : "text-red-400"}>{item.isActive ? "Hoạt động" : "Vô hiệu"}</span> },
+        { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
+        { key: "name", label: t("columns.name"), render: (item) => item.name },
+        { key: "description", label: t("columns.description"), render: (item) => <span className="text-white/50">{item.description || "-"}</span> },
+        {
+          key: "status",
+          label: t("columns.status"),
+          render: (item) => (
+            <span className={item.isActive ? "text-green-400" : "text-red-400"}>
+              {item.isActive ? ts("status.active") : ts("status.inactive")}
+            </span>
+          ),
+        },
       ]}
     />
   );

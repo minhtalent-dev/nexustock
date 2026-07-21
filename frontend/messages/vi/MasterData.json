@@ -1,0 +1,242 @@
+{
+  "MasterData": {
+    "common": {
+      "page": {
+        "subtitle": "Quản lý tạo mới, chỉnh sửa, tìm kiếm và xóa dữ liệu nền."
+      },
+      "actions": {
+        "add": "Thêm mới",
+        "search": "Tìm kiếm",
+        "edit": "Sửa",
+        "delete": "Xóa",
+        "cancel": "Hủy",
+        "close": "Đóng",
+        "save": "Lưu dữ liệu",
+        "saving": "Đang lưu...",
+        "prev": "Trước",
+        "next": "Sau"
+      },
+      "columns": {
+        "actions": "Thao tác"
+      },
+      "states": {
+        "loading": "Đang tải...",
+        "emptyTitle": "Chưa có dữ liệu",
+        "emptyHint": "Thêm bản ghi đầu tiên để bắt đầu sử dụng danh mục.",
+        "resultCount": "{count} kết quả"
+      },
+      "dialog": {
+        "createTitle": "Thêm mới dữ liệu",
+        "editTitle": "Chỉnh sửa dữ liệu",
+        "selectPlaceholder": "Chọn dữ liệu",
+        "deleteTitle": "Xóa bản ghi",
+        "deleteDescription": "Bạn có chắc chắn muốn xóa bản ghi này? Thao tác không thể hoàn tác."
+      },
+      "toast": {
+        "loadFailed": "Không thể tải dữ liệu.",
+        "createSuccess": "Tạo dữ liệu thành công.",
+        "updateSuccess": "Cập nhật dữ liệu thành công.",
+        "saveFailed": "Không thể lưu dữ liệu.",
+        "deleteSuccess": "Xóa dữ liệu thành công.",
+        "deleteFailed": "Không thể xóa dữ liệu.",
+        "deleteCancelled": "Đã hủy thao tác xóa."
+      },
+      "status": {
+        "active": "Hoạt động",
+        "inactive": "Vô hiệu",
+        "locked": "Đã khóa",
+        "open": "Mở"
+      }
+    },
+    "products": {
+      "page": {
+        "title": "Vật tư",
+        "searchPlaceholder": "Tìm kiếm mã, tên, barcode..."
+      },
+      "fields": {
+        "code": { "label": "Mã", "placeholder": "PROD-001" },
+        "name": { "label": "Tên", "placeholder": "Tên vật tư" },
+        "barcode": { "label": "Barcode", "placeholder": "Bar-001" },
+        "baseUomId": { "label": "Đơn vị cơ bản", "placeholder": "UUID của UOM" },
+        "description": { "label": "Mô tả", "placeholder": "Mô tả..." },
+        "isActive": { "label": "Hoạt động" }
+      },
+      "columns": {
+        "code": "Mã",
+        "name": "Tên",
+        "barcode": "Barcode",
+        "baseUom": "Đơn vị cơ bản",
+        "status": "Trạng thái"
+      }
+    },
+    "uoms": {
+      "page": {
+        "title": "Đơn vị tính",
+        "searchPlaceholder": "Tìm kiếm mã, tên..."
+      },
+      "fields": {
+        "code": { "label": "Mã", "placeholder": "PCS" },
+        "name": { "label": "Tên", "placeholder": "Piece" },
+        "isActive": { "label": "Hoạt động" }
+      },
+      "columns": {
+        "code": "Mã",
+        "name": "Tên",
+        "status": "Trạng thái"
+      }
+    },
+    "warehouses": {
+      "page": {
+        "title": "Nhà kho",
+        "searchPlaceholder": "Tìm kiếm mã, tên..."
+      },
+      "fields": {
+        "code": { "label": "Mã", "placeholder": "WH-MAIN" },
+        "name": { "label": "Tên", "placeholder": "Main warehouse" },
+        "description": { "label": "Mô tả" },
+        "isActive": { "label": "Hoạt động" }
+      },
+      "columns": {
+        "code": "Mã",
+        "name": "Tên",
+        "description": "Mô tả",
+        "status": "Trạng thái"
+      }
+    },
+    "zones": {
+      "page": {
+        "title": "Vùng kho",
+        "searchPlaceholder": "Tìm kiếm mã, tên..."
+      },
+      "fields": {
+        "warehouseId": { "label": "Nhà kho" },
+        "code": { "label": "Mã vùng", "placeholder": "ZONE-STORAGE" },
+        "name": { "label": "Tên vùng", "placeholder": "Khu vực lưu trữ chính" },
+        "zoneType": { "label": "Loại vùng" },
+        "temperatureLimit": { "label": "Giới hạn nhiệt độ (°C)" },
+        "isLocked": { "label": "Khóa vùng kho" }
+      },
+      "columns": {
+        "code": "Mã",
+        "name": "Tên",
+        "warehouse": "Nhà kho",
+        "zoneType": "Loại vùng",
+        "status": "Trạng thái"
+      }
+    },
+    "locations": {
+      "page": {
+        "title": "Vị trí kệ",
+        "searchPlaceholder": "Tìm kiếm mã vị trí..."
+      },
+      "fields": {
+        "zoneId": { "label": "Vùng kho" },
+        "code": { "label": "Mã vị trí", "placeholder": "A-01-01" },
+        "maxCapacity": { "label": "Sức chứa tối đa" },
+        "maxVolume": { "label": "Thể tích tối đa" },
+        "xCoord": { "label": "Tọa độ X" },
+        "yCoord": { "label": "Tọa độ Y" },
+        "zCoord": { "label": "Tọa độ Z" },
+        "length": { "label": "Chiều dài" },
+        "width": { "label": "Chiều rộng" },
+        "height": { "label": "Chiều cao" },
+        "isLocked": { "label": "Khóa vị trí" },
+        "lockReasonCode": { "label": "Mã lý do khóa" },
+        "isActive": { "label": "Hoạt động" }
+      },
+      "columns": {
+        "code": "Mã",
+        "warehouse": "Nhà kho",
+        "zone": "Vùng",
+        "coord": "Tọa độ",
+        "status": "Trạng thái"
+      }
+    },
+    "partners": {
+      "page": {
+        "title": "Đối tác",
+        "searchPlaceholder": "Tìm kiếm mã, tên..."
+      },
+      "fields": {
+        "code": { "label": "Mã", "placeholder": "VEN-001" },
+        "name": { "label": "Tên", "placeholder": "Nhà cung cấp A" },
+        "partnerType": { "label": "Loại đối tác" },
+        "address": { "label": "Địa chỉ" },
+        "taxCode": { "label": "Mã số thuế" },
+        "isActive": { "label": "Hoạt động" }
+      },
+      "columns": {
+        "code": "Mã",
+        "name": "Tên",
+        "partnerType": "Loại",
+        "taxCode": "Mã số thuế",
+        "status": "Trạng thái"
+      }
+    },
+    "reasons": {
+      "page": {
+        "title": "Mã lý do",
+        "searchPlaceholder": "Tìm kiếm mã, loại lý do..."
+      },
+      "fields": {
+        "code": { "label": "Mã", "placeholder": "RCV-DAMAGED" },
+        "reasonType": { "label": "Loại lý do", "placeholder": "ADJUSTMENT" },
+        "description": { "label": "Mô tả", "placeholder": "Lý do sai lệch hàng tồn" },
+        "isActive": { "label": "Hoạt động" }
+      },
+      "columns": {
+        "code": "Mã",
+        "reasonType": "Loại lý do",
+        "description": "Mô tả",
+        "status": "Trạng thái"
+      }
+    },
+    "import": {
+      "page": {
+        "title": "Nhập dữ liệu",
+        "subtitle": "Hỗ trợ tải lên file CSV để import dữ liệu Master Data nhanh chóng."
+      },
+      "help": {
+        "itemsTitle": "Cấu trúc file ITEMS (Vật tư):",
+        "locationsTitle": "Cấu trúc file LOCATIONS (Vị trí kệ):",
+        "partnersTitle": "Cấu trúc file PARTNERS (Đối tác):"
+      },
+      "fields": {
+        "importType": "Loại master data",
+        "file": "Chọn file CSV"
+      },
+      "options": {
+        "items": "Sản phẩm (ITEMS)",
+        "locations": "Vị trí kệ (LOCATIONS)",
+        "partners": "Đối tác (PARTNERS)"
+      },
+      "actions": {
+        "preview": "Tải lên kiểm tra (Preview)",
+        "commit": "Duyệt import vào hệ thống (Commit)",
+        "downloadErrors": "Tải file lỗi (CSV)"
+      },
+      "states": {
+        "processing": "Đang xử lý dữ liệu..."
+      },
+      "result": {
+        "title": "Kết quả kiểm tra (Batch ID: {id})",
+        "total": "Tổng số dòng",
+        "valid": "Hợp lệ",
+        "errors": "Lỗi",
+        "errorDetail": "Chi tiết lỗi dòng"
+      },
+      "columns": {
+        "row": "Dòng",
+        "raw": "Chi tiết dữ liệu",
+        "message": "Thông báo lỗi"
+      },
+      "toast": {
+        "previewOk": "Kiểm tra dữ liệu thành công, sẵn sàng duyệt nhập.",
+        "previewHasErrors": "Phát hiện {count} dòng dữ liệu lỗi.",
+        "uploadFailed": "Không thể tải lên file.",
+        "commitOk": "Duyệt nhập dữ liệu thành công.",
+        "commitFailed": "Duyệt nhập dữ liệu thất bại."
+      }
+    }
+  }
+}

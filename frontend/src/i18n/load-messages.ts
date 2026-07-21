@@ -11,6 +11,7 @@ import viLogin from '../../messages/vi/Login.json';
 import viHealthUi from '../../messages/vi/HealthUi.json';
 import viAdmin from '../../messages/vi/Admin.json';
 import viFeatures from '../../messages/vi/Features.json';
+import viMasterData from '../../messages/vi/MasterData.json';
 
 import enCommon from '../../messages/en/Common.json';
 import enLanguage from '../../messages/en/Language.json';
@@ -22,6 +23,7 @@ import enLogin from '../../messages/en/Login.json';
 import enHealthUi from '../../messages/en/HealthUi.json';
 import enAdmin from '../../messages/en/Admin.json';
 import enFeatures from '../../messages/en/Features.json';
+import enMasterData from '../../messages/en/MasterData.json';
 
 const CATALOGS: Record<AppLocale, Record<string, unknown>[]> = {
   vi: [
@@ -35,6 +37,7 @@ const CATALOGS: Record<AppLocale, Record<string, unknown>[]> = {
     viHealthUi,
     viAdmin,
     viFeatures,
+    viMasterData,
   ] as Record<string, unknown>[],
   en: [
     enCommon,
@@ -47,6 +50,7 @@ const CATALOGS: Record<AppLocale, Record<string, unknown>[]> = {
     enHealthUi,
     enAdmin,
     enFeatures,
+    enMasterData,
   ] as Record<string, unknown>[],
 };
 

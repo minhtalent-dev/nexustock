@@ -1,0 +1,3 @@
+[2026-07-21T10:11:08.912Z] Login admin
+[2026-07-21T10:11:11.541Z] Set locale VI
+[2026-07-21T10:11:26.440Z] Set locale EN

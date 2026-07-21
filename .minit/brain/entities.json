@@ -49,5 +49,32 @@
       "Artifacts: function_index_phase31_i18n, implementation_plan, critic_report",
       "phase_31 §27 synced"
     ]
+  },
+  "Phase32_Localization_MasterData": {
+    "name": "Phase32_Localization_MasterData",
+    "entityType": "Phase",
+    "observations": [
+      "rp2 2026-07-21: function index + EP0-EP5 plan score 9.7/10",
+      "Catalog MasterData.json + static load-messages; 8 pages + master-data-crud + import",
+      "Next: tt /18-auto-execute; C1 EP1 before EP2; C3 verify 32 and 31a",
+      "Out of scope: P33 mobile/errors, DB content",
+      "rp3 PASS 2026-07-21 score 9.8/10 zero blocking blind spots",
+      "BS-32-14 fields/columns inside component for t()",
+      "BS-32-15 sync catalog-modules + load-messages + merge_i18n_catalogs.js + verify CATALOG_MODULES 11x2",
+      "BS-32-16 import.toast.previewHasErrors {count}; BS-32-17 page.title disk SoT",
+      "Next: tt /18-auto-execute",
+      "EXECUTE DONE 2026-07-21 /18-auto-execute",
+      "MasterData.json VI/EN 9 areas; 8/8 pages + CRUD i18n",
+      "verify_i18n Phase 32/31a/31 PASS parity 2018 keys",
+      "Next Phase 33 Mobile+Errors",
+      "DBM PASS 2026-07-21: 16/16 MD pages VI+EN titles",
+      "Evidence planning/evidence/phase_32_dbm/ walkthrough + webm",
+      "Self-heal waitReady AuthGuard CHECKING SECURITY_",
+      "MCP quality record + gate critique pass",
+      "rp4+rp5 PASS 2026-07-21 Module DoD 100%",
+      "AC-32-01..08 all PASS; eslint exit 0; verify 32+31a PASS; dbm 16/16",
+      "phase_32 §27 closed; IMPLEMENTATION_PLAN P32 complete",
+      "Next Phase 33 Mobile+Errors"
+    ]
   }
 }

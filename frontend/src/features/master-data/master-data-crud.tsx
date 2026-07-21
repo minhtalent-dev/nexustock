@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 import { showError, showInfo, showSuccess, showWarning } from "@/lib/toast";
@@ -50,6 +51,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
   toForm,
   filters,
 }: MasterDataCrudPageProps<TItem, TForm>) {
+  const t = useTranslations("MasterData.common");
   const confirm = useConfirmDialog();
   const [data, setData] = useState<PagedResult<TItem> | null>(null);
   const [search, setSearch] = useState("");
@@ -68,11 +70,11 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
       const res = await api.get<PagedResult<TItem>>(endpoint, { params });
       setData(res.data);
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể tải dữ liệu."));
+      showError(getHttpErrorMessage(err, t("toast.loadFailed")));
     } finally {
       setLoading(false);
     }
-  }, [endpoint, params]);
+  }, [endpoint, params, t]);
 
   useEffect(() => {
     queueMicrotask(() => void fetchData());
@@ -109,15 +111,15 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
     try {
       if (editing) {
         await api.put(`${endpoint}/${editing.id}`, payload);
-        showSuccess("Cập nhật dữ liệu thành công.");
+        showSuccess(t("toast.updateSuccess"));
       } else {
         await api.post(endpoint, payload);
-        showSuccess("Tạo dữ liệu thành công.");
+        showSuccess(t("toast.createSuccess"));
       }
       closeDialog();
       await fetchData();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể lưu dữ liệu."));
+      showError(getHttpErrorMessage(err, t("toast.saveFailed")));
     } finally {
       setSaving(false);
     }
@@ -125,23 +127,23 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
 
   const deleteItem = async (item: TItem) => {
     const ok = await confirm({
-      title: "Xóa bản ghi",
-      description: "Bạn có chắc chắn muốn xóa bản ghi này? Thao tác không thể hoàn tác.",
-      confirmText: "Xóa",
-      cancelText: "Hủy",
+      title: t("dialog.deleteTitle"),
+      description: t("dialog.deleteDescription"),
+      confirmText: t("actions.delete"),
+      cancelText: t("actions.cancel"),
       tone: "danger",
     });
     if (!ok) {
-      showInfo("Đã hủy thao tác xóa.");
+      showInfo(t("toast.deleteCancelled"));
       return;
     }
 
     try {
       await api.delete(`${endpoint}/${item.id}`);
-      showSuccess("Xóa dữ liệu thành công.");
+      showSuccess(t("toast.deleteSuccess"));
       await fetchData();
     } catch (err: unknown) {
-      showWarning(getHttpErrorMessage(err, "Không thể xóa dữ liệu."));
+      showWarning(getHttpErrorMessage(err, t("toast.deleteFailed")));
     }
   };
 
@@ -152,10 +154,10 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-white/90">{title}</h1>
-          <p className="text-xs text-white/40 mt-1">Quản lý tạo mới, chỉnh sửa, tìm kiếm và xóa dữ liệu nền.</p>
+          <p className="text-xs text-white/40 mt-1">{t("page.subtitle")}</p>
         </div>
         <Button onClick={openCreate} size="lg">
-          Thêm mới
+          {t("actions.add")}
         </Button>
       </div>
 
@@ -174,16 +176,16 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
           onChange={(e) => setSearch(e.target.value)}
         />
         <Button type="submit" variant="secondary">
-          Tìm kiếm
+          {t("actions.search")}
         </Button>
       </form>
 
-      {loading && <p className="text-white/40 text-sm">Đang tải...</p>}
+      {loading && <p className="text-white/40 text-sm">{t("states.loading")}</p>}
 
       {data && data.items.length === 0 && !loading && (
         <div className="border border-dashed border-[#333] rounded-lg p-10 text-center text-white/50">
-          <p className="font-medium text-white/80">Chưa có dữ liệu</p>
-          <p className="text-sm mt-1">Thêm bản ghi đầu tiên để bắt đầu sử dụng danh mục.</p>
+          <p className="font-medium text-white/80">{t("states.emptyTitle")}</p>
+          <p className="text-sm mt-1">{t("states.emptyHint")}</p>
         </div>
       )}
 
@@ -196,7 +198,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
                   {columns.map((column) => (
                     <th key={column.key} className="text-left p-3 font-medium">{column.label}</th>
                   ))}
-                  <th className="text-right p-3 font-medium">Thao tác</th>
+                  <th className="text-right p-3 font-medium">{t("columns.actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#222]">
@@ -208,10 +210,10 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
                     <td className="p-3 text-right">
                       <div className="flex justify-end gap-2">
                         <Button onClick={() => openEdit(item)} variant="outline" size="xs">
-                          Sửa
+                          {t("actions.edit")}
                         </Button>
                         <Button onClick={() => deleteItem(item)} variant="destructive" size="xs">
-                          Xóa
+                          {t("actions.delete")}
                         </Button>
                       </div>
                     </td>
@@ -222,14 +224,14 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
           </div>
 
           <div className="flex items-center justify-between mt-4 text-xs text-white/40">
-            <span>{data.totalCount} kết quả</span>
+            <span>{t("states.resultCount", { count: data.totalCount })}</span>
             <div className="flex gap-2">
               <Button variant="outline" size="xs" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                Trước
+                {t("actions.prev")}
               </Button>
               <span className="px-3 py-1">{page}</span>
               <Button variant="outline" size="xs" disabled={page * 10 >= data.totalCount} onClick={() => setPage(page + 1)}>
-                Sau
+                {t("actions.next")}
               </Button>
             </div>
           </div>
@@ -240,8 +242,10 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-[#111] border border-[#333] rounded-xl w-full max-w-2xl max-h-[90vh] overflow-auto shadow-2xl">
             <div className="flex items-center justify-between p-5 border-b border-[#222]">
-              <h2 className="font-semibold text-white/90">{editing ? "Chỉnh sửa dữ liệu" : "Thêm mới dữ liệu"}</h2>
-              <Button onClick={closeDialog} variant="ghost" size="sm">Đóng</Button>
+              <h2 className="font-semibold text-white/90">
+                {editing ? t("dialog.editTitle") : t("dialog.createTitle")}
+              </h2>
+              <Button onClick={closeDialog} variant="ghost" size="sm">{t("actions.close")}</Button>
             </div>
             <form onSubmit={submitForm} className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
               {fields.map((field) => (
@@ -254,7 +258,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
                       value={String(form[field.name] ?? "")}
                       onChange={(e) => setFieldValue(field.name, e.target.value)}
                     >
-                      <option value="">Chọn dữ liệu</option>
+                      <option value="">{t("dialog.selectPlaceholder")}</option>
                       {(field.options ?? []).map((option) => (
                         <option key={option.value} value={option.value}>{option.label}</option>
                       ))}
@@ -281,10 +285,10 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
               ))}
               <div className="md:col-span-2 flex justify-end gap-3 pt-3 border-t border-[#222]">
                 <Button type="button" onClick={closeDialog} variant="outline">
-                  Hủy
+                  {t("actions.cancel")}
                 </Button>
                 <Button disabled={saving}>
-                  {saving ? "Đang lưu..." : "Lưu dữ liệu"}
+                  {saving ? t("actions.saving") : t("actions.save")}
                 </Button>
               </div>
             </form>

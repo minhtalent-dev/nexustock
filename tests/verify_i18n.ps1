@@ -1,6 +1,6 @@
-# Phase 31 / 31a — verify i18n catalogs & inventory
+# Phase 31 / 31a / 32 — verify i18n catalogs & inventory
 param(
-  [ValidateSet("31", "31a")]
+  [ValidateSet("31", "31a", "32")]
   [string]$Phase = "31a"
 )
 
@@ -13,7 +13,7 @@ $evidence = Join-Path $root "planning\evidence\phase_31a"
 
 $CATALOG_MODULES = @(
   "Common", "Language", "Sidebar", "Breadcrumb", "Errors",
-  "Home", "Login", "HealthUi", "Admin", "Features"
+  "Home", "Login", "HealthUi", "Admin", "Features", "MasterData"
 )
 
 Write-Host "=== verify_i18n.ps1 Phase $Phase ==="
@@ -35,7 +35,7 @@ foreach ($loc in @("vi", "en")) {
     if ($m -notmatch '^[A-Z][A-Za-z0-9]*$') { throw "Non-PascalCase module: $m" }
   }
 }
-Write-Host "PASS: module files PascalCase 10x2"
+Write-Host "PASS: module files PascalCase $($CATALOG_MODULES.Count)x2"
 
 if (Test-Path (Join-Path $messages "vi.json")) { throw "Monolith messages/vi.json still exists" }
 if (Test-Path (Join-Path $messages "en.json")) { throw "Monolith messages/en.json still exists" }
@@ -80,7 +80,7 @@ if ($request -match 'messages/\$\{locale\}\.json' -or $request -match 'messages/
 }
 Write-Host "PASS: request.ts loadMessages"
 
-if ($Phase -eq "31a") {
+if ($Phase -eq "31a" -or $Phase -eq "32") {
   foreach ($f in @("load-messages.ts", "merge-messages.ts", "catalog-modules.ts")) {
     if (-not (Test-Path (Join-Path $frontend "src\i18n\$f"))) { throw "Missing i18n/$f" }
   }
@@ -92,14 +92,45 @@ if ($Phase -eq "31a") {
   }
   Write-Host "PASS: breadcrumb segmentToKey"
 
-  foreach ($e in @("keys_before.txt", "keys_after.txt", "hygiene_rename.json")) {
-    if (-not (Test-Path (Join-Path $evidence $e))) { throw "Missing evidence $e" }
+  if ($Phase -eq "31a") {
+    foreach ($e in @("keys_before.txt", "keys_after.txt", "hygiene_rename.json")) {
+      if (-not (Test-Path (Join-Path $evidence $e))) { throw "Missing evidence $e" }
+    }
+    Write-Host "PASS: evidence phase_31a"
   }
-  Write-Host "PASS: evidence phase_31a"
 
   $load = Get-Content (Join-Path $frontend "src\i18n\load-messages.ts") -Raw
   if ($load -match 'import\(`\$\{') { throw "load-messages must not use dynamic import template" }
-  Write-Host "PASS: static import map"
+  if ($load -notmatch 'MasterData') { throw "load-messages.ts missing MasterData static import" }
+  Write-Host "PASS: static import map (+MasterData)"
+}
+
+if ($Phase -eq "32") {
+  $mdAreas = @("common", "products", "uoms", "warehouses", "zones", "locations", "partners", "reasons", "import")
+  foreach ($loc in @("vi", "en")) {
+    $mdPath = Join-Path $messages "$loc\MasterData.json"
+    $md = Get-Content $mdPath -Raw | ConvertFrom-Json
+    $roots = @($md.PSObject.Properties.Name)
+    if ($roots.Count -ne 1 -or $roots[0] -ne "MasterData") { throw "Bad root in $loc/MasterData.json" }
+    foreach ($area in $mdAreas) {
+      if (-not $md.MasterData.PSObject.Properties.Name -contains $area) {
+        throw "Missing MasterData.$area in $loc"
+      }
+    }
+  }
+  Write-Host "PASS: MasterData areas ($($mdAreas.Count))"
+
+  $mdPages = @(Get-ChildItem (Join-Path $appRoot "master-data") -Recurse -Filter page.tsx)
+  if ($mdPages.Count -ne 8) { throw "Expected 8 master-data pages, found $($mdPages.Count)" }
+  Write-Host "PASS: inventory master-data 8/8"
+
+  $mdKebab = @($vi.keys | Where-Object { $_ -like "MasterData.*" -and ($_ -split '\.' | Where-Object { $_ -match '-' }).Count -gt 0 })
+  if ($mdKebab.Count -gt 0) { throw "Kebab under MasterData.*: $($mdKebab -join ', ')" }
+  Write-Host "PASS: no kebab under MasterData.*"
+
+  $catalogModulesSrc = Get-Content (Join-Path $frontend "src\i18n\catalog-modules.ts") -Raw
+  if ($catalogModulesSrc -notmatch "'MasterData'") { throw "catalog-modules.ts missing MasterData" }
+  Write-Host "PASS: catalog-modules MasterData"
 }
 
 # deepMerge snippet

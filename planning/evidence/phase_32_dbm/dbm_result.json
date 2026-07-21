@@ -1,0 +1,217 @@
+{
+  "ok": true,
+  "base": "http://localhost:3003",
+  "spotDoD": {
+    "required": [
+      "products",
+      "import"
+    ],
+    "fail": []
+  },
+  "full8": {
+    "total": 16,
+    "pass": 16,
+    "fail": []
+  },
+  "cookie": "en",
+  "checks": {
+    "productsViEn": true,
+    "importViEn": true,
+    "all8BothLocales": true,
+    "cookieEnAfterSwitch": true
+  },
+  "results": [
+    {
+      "id": "products",
+      "path": "/master-data/products",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Vật tư",
+      "foundTitle": "Vật tư",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "uoms",
+      "path": "/master-data/uoms",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Đơn vị tính",
+      "foundTitle": "Đơn vị tính",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "warehouses",
+      "path": "/master-data/warehouses",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Nhà kho",
+      "foundTitle": "Nhà kho",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "zones",
+      "path": "/master-data/zones",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Vùng kho",
+      "foundTitle": "Vùng kho",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "locations",
+      "path": "/master-data/locations",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Vị trí kệ",
+      "foundTitle": "Vị trí kệ",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "partners",
+      "path": "/master-data/partners",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Đối tác",
+      "foundTitle": "Đối tác",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "reasons",
+      "path": "/master-data/reasons",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Mã lý do",
+      "foundTitle": "Mã lý do",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "import",
+      "path": "/master-data/import",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Nhập dữ liệu",
+      "foundTitle": "Nhập dữ liệu",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "products",
+      "path": "/master-data/products",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Products",
+      "foundTitle": "Products",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "uoms",
+      "path": "/master-data/uoms",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Units of measure",
+      "foundTitle": "Units of measure",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "warehouses",
+      "path": "/master-data/warehouses",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Warehouses",
+      "foundTitle": "Warehouses",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "zones",
+      "path": "/master-data/zones",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Storage zones",
+      "foundTitle": "Storage zones",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "locations",
+      "path": "/master-data/locations",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Storage locations",
+      "foundTitle": "Storage locations",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "partners",
+      "path": "/master-data/partners",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Partners",
+      "foundTitle": "Partners",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "reasons",
+      "path": "/master-data/reasons",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Reason codes",
+      "foundTitle": "Reason codes",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "import",
+      "path": "/master-data/import",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "expectedTitle": "Import data",
+      "foundTitle": "Import data",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    }
+  ]
+}
