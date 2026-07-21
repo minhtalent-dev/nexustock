@@ -48,6 +48,15 @@ npm run dev
 `
 Giao diện sẽ chạy tại cổng `http://localhost:3003`.
 
+## 🌐 Ngôn ngữ giao diện (Language)
+* Mặc định: **Tiếng Việt**.
+* Hỗ trợ: **Tiếng Việt / English**.
+* Đổi ngôn ngữ bằng nút **VI | EN** trên sidebar, trang đăng nhập và trang sức khỏe hệ thống.
+* Lựa chọn được ghi nhớ qua cookie (không đổi đường dẫn URL).
+* Kho chuỗi giao diện tách theo nhóm chức năng: `frontend/messages/vi|en/{TênNhóm}.json` (ví dụ `Common.json`, `Admin.json`). Khi tải trang, hệ thống gộp các nhóm lại.
+* Quy tắc tên file: trùng tên nhóm (PascalCase). Quy tắc khóa mới: nhóm theo mục đích (`page`, `actions`, `fields`, `columns`, `status`, `toast`, `errors`, `dialog`) + camelCase.
+* Thêm nhóm mới (master-data / mobile): tạo cặp file VI/EN và đăng ký trong bộ nạp ngôn ngữ.
+
 ## 🩺 Endpoints kiểm tra sức khỏe
 * **Liveness Probe**: GET http://localhost:5024/health/live (Trả về 200 OK nếu API Host sống)
 * **Readiness Probe**: GET http://localhost:5024/health/ready (Kiểm tra kết nối DB và Redis)

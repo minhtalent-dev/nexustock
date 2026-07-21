@@ -1,13 +1,8 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import type { PrintJobStatus } from "../types";
-
-const statusLabels: Record<PrintJobStatus, string> = {
-  queued: "Queued",
-  sending: "Sending",
-  printed: "Printed",
-  failed: "Failed",
-  cancelled: "Cancelled",
-};
 
 const statusVariants: Record<PrintJobStatus, "default" | "secondary" | "destructive" | "outline"> = {
   queued: "secondary",
@@ -18,5 +13,9 @@ const statusVariants: Record<PrintJobStatus, "default" | "secondary" | "destruct
 };
 
 export function PrintJobStatusBadge({ status }: { status: PrintJobStatus }) {
-  return <Badge variant={statusVariants[status] ?? "secondary"}>{statusLabels[status] ?? status}</Badge>;
+  const t = useTranslations("Features.printing");
+
+  const label = t(`jobStatus.${status}`);
+
+  return <Badge variant={statusVariants[status] ?? "secondary"}>{label}</Badge>;
 }

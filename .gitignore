@@ -50,6 +50,7 @@ pnpm-debug.log*
 .vercel/
 .turbo/
 .cache/
+frontend/messages/_backup/
 
 # --- Docker / Local data ----------------------------------------
 .docker/

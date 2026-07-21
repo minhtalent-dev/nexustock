@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState, use } from "react";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,10 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { AlertCircle, ArrowLeft, Check, Lock, Play, Send } from "lucide-react";
-import Link from "next/link";
 
 interface StocktakeItem {
   id: string;
@@ -50,16 +51,18 @@ interface DetailsResponse {
 
 export default function StocktakeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const t = useTranslations("Admin.stocktakes");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [stocktake, setStocktake] = useState<Stocktake | null>(null);
   const [items, setItems] = useState<StocktakeItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Dialog nhập số lượng đếm
   const [selectedItem, setSelectedItem] = useState<StocktakeItem | null>(null);
   const [countedQty, setCountedQty] = useState("");
   const [countingModalOpen, setCountingModalOpen] = useState(false);
 
-  // Dialog phê duyệt
   const [reasonCode, setReasonCode] = useState("ADJ-COUNT");
   const [remarks, setRemarks] = useState("");
   const [approveModalOpen, setApproveModalOpen] = useState(false);
@@ -73,11 +76,11 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
         setItems(res.data.items || []);
       }
     } catch {
-      showError("Không thể tải thông tin chi tiết đợt kiểm kê");
+      showApiErrorToast("", t("errors.loadDetailFailed"));
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     queueMicrotask(() => void fetchDetails());
@@ -87,10 +90,11 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
     setActionLoading(true);
     try {
       await api.post(`/stocktakes/${id}/start`);
-      showSuccess("Đã bắt đầu kiểm kê. Các kệ đã bị phong tỏa!");
+      showSuccess(t("toastStartSuccess"));
       fetchDetails();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể bắt đầu kiểm kê"));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.startFailed"));
     } finally {
       setActionLoading(false);
     }
@@ -106,7 +110,7 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
     if (!selectedItem) return;
     const qty = parseFloat(countedQty);
     if (isNaN(qty) || qty < 0) {
-      showError("Số lượng đếm phải là số lớn hơn hoặc bằng 0");
+      showApiErrorToast("", t("errors.countQtyInvalid"));
       return;
     }
 
@@ -116,13 +120,14 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
         locationId: selectedItem.locationId,
         itemId: selectedItem.itemId,
         lotNo: selectedItem.lotNo,
-        countedQty: qty
+        countedQty: qty,
       });
-      showSuccess("Ghi nhận số lượng đếm thành công!");
+      showSuccess(t("toastCountSuccess"));
       setCountingModalOpen(false);
       fetchDetails();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi ghi nhận kết quả đếm"));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.countFailed"));
     } finally {
       setActionLoading(false);
     }
@@ -133,13 +138,14 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
     try {
       const res = await api.post(`/stocktakes/${id}/approve`, {
         reasonCode,
-        remarks
+        remarks,
       });
-      showSuccess(res.data.message || "Thao tác thành công!");
+      showSuccess(res.data.message || t("toastActionSuccess"));
       setApproveModalOpen(false);
       fetchDetails();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi phê duyệt điều chỉnh"));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.approveFailed"));
     } finally {
       setActionLoading(false);
     }
@@ -147,19 +153,27 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case "Draft": return "Nháp";
-      case "Counting": return "Đang kiểm đếm";
-      case "Pending_L1_Approve": return "Chờ duyệt Cấp 1 (<10 triệu)";
-      case "Pending_L2_Approve": return "Chờ duyệt Cấp 2 (10 - 100 triệu)";
-      case "Pending_L3_Approve": return "Chờ duyệt Cấp 3 (>100 triệu)";
-      case "Approved": return "Đã duyệt và áp dụng điều chỉnh";
-      case "Cancelled": return "Đã hủy bỏ";
-      default: return status;
+      case "Draft":
+        return t("statusDetailDraft");
+      case "Counting":
+        return t("statusDetailCounting");
+      case "Pending_L1_Approve":
+        return t("statusDetailPendingL1");
+      case "Pending_L2_Approve":
+        return t("statusDetailPendingL2");
+      case "Pending_L3_Approve":
+        return t("statusDetailPendingL3");
+      case "Approved":
+        return t("statusDetailApproved");
+      case "Cancelled":
+        return t("statusDetailCancelled");
+      default:
+        return status;
     }
   };
 
-  if (loading) return <div className="p-6 text-center text-muted-foreground">Đang tải chi tiết...</div>;
-  if (!stocktake) return <div className="p-6 text-center text-red-500">Không tìm thấy đợt kiểm kê</div>;
+  if (loading) return <div className="p-6 text-center text-muted-foreground">{t("loadingDetail")}</div>;
+  if (!stocktake) return <div className="p-6 text-center text-red-500">{t("notFound")}</div>;
 
   return (
     <div className="space-y-6 p-6">
@@ -170,27 +184,27 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
               <ArrowLeft className="h-4 w-4" />
             </Link>
           </Button>
-          <h1 className="text-2xl font-bold">Đợt kiểm kê: {stocktake.stocktakeNo}</h1>
+          <h1 className="text-2xl font-bold">{t("detailTitle", { stocktakeNo: stocktake.stocktakeNo })}</h1>
         </div>
         <div className="flex gap-2">
           {stocktake.status === "Draft" && (
             <Button onClick={handleStart} disabled={actionLoading} className="gap-2">
               <Play className="h-4 w-4" />
-              Bắt đầu kiểm kê
+              {t("startCount")}
             </Button>
           )}
 
           {stocktake.status === "Counting" && (
             <Button onClick={() => setApproveModalOpen(true)} disabled={actionLoading} className="gap-2">
               <Send className="h-4 w-4" />
-              Gửi duyệt chênh lệch
+              {t("submitVariance")}
             </Button>
           )}
 
           {stocktake.status.startsWith("Pending_") && (
             <Button onClick={() => setApproveModalOpen(true)} disabled={actionLoading} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
               <Check className="h-4 w-4" />
-              Phê duyệt điều chỉnh
+              {t("approveAdjustment")}
             </Button>
           )}
         </div>
@@ -199,33 +213,35 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-1">
           <CardHeader>
-            <CardTitle>Thông tin chung</CardTitle>
+            <CardTitle>{t("generalInfoTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-muted-foreground">Trạng thái</Label>
+              <Label className="text-muted-foreground">{t("statusLabel")}</Label>
               <div className="text-lg font-semibold">{getStatusText(stocktake.status)}</div>
             </div>
             <div>
-              <Label className="text-muted-foreground">Giá trị lệch ước tính</Label>
+              <Label className="text-muted-foreground">{t("estimatedVarianceLabel")}</Label>
               <div className="text-lg font-mono font-bold text-red-600">
-                {stocktake.totalVarianceAmount.toLocaleString()} đ
+                {stocktake.totalVarianceAmount.toLocaleString()} {t("currencySuffix")}
               </div>
             </div>
             <div>
-              <Label className="text-muted-foreground">Cấp duyệt hiện tại</Label>
+              <Label className="text-muted-foreground">{t("approvalLevelLabel")}</Label>
               <div className="text-lg font-semibold">
-                {stocktake.currentApprovalLevel > 0 ? `Cấp L${stocktake.currentApprovalLevel}` : "Chưa xác định"}
+                {stocktake.currentApprovalLevel > 0
+                  ? t("approvalLevel", { level: stocktake.currentApprovalLevel })
+                  : t("approvalLevelUnknown")}
               </div>
             </div>
             <div>
-              <Label className="text-muted-foreground">Người tạo</Label>
+              <Label className="text-muted-foreground">{t("createdByLabel")}</Label>
               <div className="font-medium">{stocktake.createdBy}</div>
             </div>
             <div>
-              <Label className="text-muted-foreground">Thời gian bắt đầu</Label>
+              <Label className="text-muted-foreground">{t("startedAtLabel")}</Label>
               <div className="font-medium">
-                {stocktake.startedAt ? new Date(stocktake.startedAt).toLocaleString() : "Chưa bắt đầu"}
+                {stocktake.startedAt ? new Date(stocktake.startedAt).toLocaleString() : t("notStarted")}
               </div>
             </div>
           </CardContent>
@@ -233,27 +249,27 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
 
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Danh sách vị trí và vật tư kiểm kê</CardTitle>
+            <CardTitle>{t("itemsTitle")}</CardTitle>
           </CardHeader>
           <CardContent>
             {stocktake.status === "Draft" ? (
               <div className="py-8 text-center text-muted-foreground flex flex-col items-center gap-2">
                 <Lock className="h-8 w-8 text-muted-foreground" />
-                <span>Bấm &quot;Bắt đầu kiểm kê&quot; để quét danh sách tồn hiện tại và phong tỏa các vị trí kệ.</span>
+                <span>{t("draftHint")}</span>
               </div>
             ) : items.length === 0 ? (
-              <div className="py-8 text-center text-muted-foreground">Không có vật tư nào trong khu vực kiểm kê.</div>
+              <div className="py-8 text-center text-muted-foreground">{t("itemsEmpty")}</div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Vị trí</TableHead>
-                    <TableHead>Vật tư</TableHead>
-                    <TableHead>Lô hàng</TableHead>
-                    <TableHead className="text-right">Tồn hệ thống</TableHead>
-                    <TableHead className="text-right">Thực tế</TableHead>
-                    <TableHead className="text-right">Chênh lệch</TableHead>
-                    <TableHead className="text-right">Thao tác</TableHead>
+                    <TableHead>{t("colLocation")}</TableHead>
+                    <TableHead>{t("colItem")}</TableHead>
+                    <TableHead>{t("colLot")}</TableHead>
+                    <TableHead className="text-right">{t("colSystemQty")}</TableHead>
+                    <TableHead className="text-right">{t("colCountedQty")}</TableHead>
+                    <TableHead className="text-right">{t("colVariance")}</TableHead>
+                    <TableHead className="text-right">{t("colActions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -283,7 +299,7 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
                         <TableCell className="text-right">
                           {stocktake.status === "Counting" && (
                             <Button size="sm" variant="outline" onClick={() => handleOpenCountModal(item)}>
-                              Đếm
+                              {t("countBtn")}
                             </Button>
                           )}
                         </TableCell>
@@ -297,85 +313,103 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
         </Card>
       </div>
 
-      {/* Dialog nhập kết quả đếm */}
       <Dialog open={countingModalOpen} onOpenChange={setCountingModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nhập kết quả đếm thực tế</DialogTitle>
+            <DialogTitle>{t("countDialogTitle")}</DialogTitle>
           </DialogHeader>
           {selectedItem && (
             <div className="space-y-4 py-4">
               <div className="grid grid-cols-2 gap-2 text-sm">
-                <div><span className="text-muted-foreground">Vị trí:</span> <span className="font-semibold">{selectedItem.locationCode}</span></div>
-                <div><span className="text-muted-foreground">Lô hàng:</span> <span className="font-semibold">{selectedItem.lotNo}</span></div>
-                <div className="col-span-2"><span className="text-muted-foreground">Vật tư:</span> <span className="font-semibold">{selectedItem.itemName} ({selectedItem.itemCode})</span></div>
+                <div>
+                  <span className="text-muted-foreground">{t("locationField")}</span>{" "}
+                  <span className="font-semibold">{selectedItem.locationCode}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">{t("lotField")}</span>{" "}
+                  <span className="font-semibold">{selectedItem.lotNo}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-muted-foreground">{t("itemField")}</span>{" "}
+                  <span className="font-semibold">
+                    {selectedItem.itemName} ({selectedItem.itemCode})
+                  </span>
+                </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="countedQty">Số lượng đếm thực tế</Label>
+                <Label htmlFor="countedQty">{t("countedQtyLabel")}</Label>
                 <Input
                   id="countedQty"
                   type="number"
                   step="any"
                   value={countedQty}
                   onChange={(e) => setCountedQty(e.target.value)}
-                  placeholder="Nhập số lượng đếm được"
+                  placeholder={t("countedQtyPlaceholder")}
                 />
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCountingModalOpen(false)}>Hủy</Button>
-            <Button onClick={handleSaveCount} disabled={actionLoading}>Lưu kết quả</Button>
+            <Button variant="outline" onClick={() => setCountingModalOpen(false)}>
+              {tc("cancel")}
+            </Button>
+            <Button onClick={handleSaveCount} disabled={actionLoading}>
+              {t("saveCount")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog Phê duyệt hoặc Gửi duyệt */}
       <Dialog open={approveModalOpen} onOpenChange={setApproveModalOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {stocktake.status === "Counting" ? "Xác nhận gửi duyệt chênh lệch" : "Phê duyệt điều chỉnh tồn kho"}
+              {stocktake.status === "Counting" ? t("approveDialogSubmitTitle") : t("approveDialogApproveTitle")}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             {stocktake.status === "Counting" ? (
               <div className="flex gap-2 text-sm text-amber-600 bg-amber-50 p-3 rounded">
                 <AlertCircle className="h-5 w-5 shrink-0" />
-                <span>Hệ thống sẽ tính tổng giá trị tài chính chênh lệch và chuyển đợt kiểm kê này sang quy trình phê duyệt đa cấp tương ứng.</span>
+                <span>{t("submitVarianceHint")}</span>
               </div>
             ) : (
               <div className="space-y-3">
                 <div className="text-sm font-semibold">
-                  Giá trị chênh lệch cần duyệt: <span className="text-red-600">{stocktake.totalVarianceAmount.toLocaleString()} đ</span> (Cấp L{stocktake.currentApprovalLevel})
+                  {t("varianceToApprove", {
+                    amount: `${stocktake.totalVarianceAmount.toLocaleString()} ${t("currencySuffix")}`,
+                    level: stocktake.currentApprovalLevel,
+                  })}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="reason">Mã lý do điều chỉnh</Label>
+                  <Label htmlFor="reason">{t("reasonCodeLabel")}</Label>
                   <Select onValueChange={(val) => setReasonCode(val)} defaultValue="ADJ-COUNT">
                     <SelectTrigger>
-                      <SelectValue placeholder="Chọn mã lý do" />
+                      <SelectValue placeholder={t("reasonCodePlaceholder")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="ADJ-COUNT">Điều chỉnh số lượng kiểm kê (ADJ-COUNT)</SelectItem>
+                      <SelectItem value="ADJ-COUNT">{t("reasonAdjCount")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="remarks">Ghi chú / Ý kiến phê duyệt</Label>
+              <Label htmlFor="remarks">{t("remarksLabel")}</Label>
               <Input
                 id="remarks"
                 value={remarks}
                 onChange={(e) => setRemarks(e.target.value)}
-                placeholder="Nhập ghi chú..."
+                placeholder={t("remarksPlaceholder")}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setApproveModalOpen(false)}>Hủy</Button>
+            <Button variant="outline" onClick={() => setApproveModalOpen(false)}>
+              {tc("cancel")}
+            </Button>
             <Button onClick={handleSubmitApprove} disabled={actionLoading} className="bg-green-600 hover:bg-green-700 text-white">
-              {stocktake.status === "Counting" ? "Gửi duyệt" : "Phê duyệt & Áp dụng"}
+              {stocktake.status === "Counting" ? t("submitForApproval") : t("approveAndApply")}
             </Button>
           </DialogFooter>
         </DialogContent>

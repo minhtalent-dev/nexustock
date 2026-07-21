@@ -22,6 +22,11 @@ export function showError(msg: string, config?: ToastConfig) {
   toast.error(msg, mergeOptions(config));
 }
 
+/** Hiển thị lỗi API đã resolve (codeLabel + message). */
+export function showApiErrorToast(codeLabel: string, message: string, config?: ToastConfig) {
+  toast.error(message, mergeOptions({ ...config, description: codeLabel }));
+}
+
 export function showWarning(msg: string, config?: ToastConfig) {
   toast.warning(msg, mergeOptions(config));
 }

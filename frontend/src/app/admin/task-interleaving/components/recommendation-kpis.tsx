@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TaskInterleavingKpiResponse } from "@/lib/task-interleaving-api";
 import { CheckCircle2, XCircle, Ban, TrendingUp, Hourglass, ShieldAlert, Layers } from "lucide-react";
@@ -8,13 +11,14 @@ type KpisProps = {
 };
 
 export function RecommendationKpis({ kpis }: KpisProps) {
+  const t = useTranslations("Admin.taskInterleaving");
   const formatPercent = (val: number) => `${(val * 100).toFixed(1)}%`;
 
   return (
     <div className="grid gap-4 md:grid-cols-4 lg:grid-cols-7">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Accept Rate</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("kpiAcceptRate")}</CardTitle>
           <CheckCircle2 className="size-4 text-emerald-500" />
         </CardHeader>
         <CardContent>
@@ -24,7 +28,7 @@ export function RecommendationKpis({ kpis }: KpisProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Reject Rate</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("kpiRejectRate")}</CardTitle>
           <XCircle className="size-4 text-rose-500" />
         </CardHeader>
         <CardContent>
@@ -34,7 +38,7 @@ export function RecommendationKpis({ kpis }: KpisProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">No Task Rate</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("kpiNoTaskRate")}</CardTitle>
           <Ban className="size-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
@@ -44,7 +48,7 @@ export function RecommendationKpis({ kpis }: KpisProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Avg Score</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("kpiAvgScore")}</CardTitle>
           <TrendingUp className="size-4 text-indigo-500" />
         </CardHeader>
         <CardContent>
@@ -54,7 +58,7 @@ export function RecommendationKpis({ kpis }: KpisProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Avg Decision</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("kpiAvgDecision")}</CardTitle>
           <Hourglass className="size-4 text-amber-500" />
         </CardHeader>
         <CardContent>
@@ -64,7 +68,7 @@ export function RecommendationKpis({ kpis }: KpisProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Conflict Rate</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("kpiConflictRate")}</CardTitle>
           <ShieldAlert className="size-4 text-amber-600" />
         </CardHeader>
         <CardContent>
@@ -74,7 +78,7 @@ export function RecommendationKpis({ kpis }: KpisProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Same Zone</CardTitle>
+          <CardTitle className="text-sm font-medium">{t("kpiSameZone")}</CardTitle>
           <Layers className="size-4 text-blue-500" />
         </CardHeader>
         <CardContent>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getDeliveries, replayDelivery, replayBulk } from "@/features/webhook/api";
 import { WebhookDelivery } from "@/features/webhook/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { showError } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast } from "@/lib/toast";
 import { toast } from "sonner";
 
 const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
@@ -21,6 +23,10 @@ const STATUS_VARIANTS: Record<string, "default" | "secondary" | "destructive" | 
 };
 
 export default function WebhookDeliveriesPage() {
+  const t = useTranslations("Admin.webhooks.deliveries");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [deliveries, setDeliveries] = useState<WebhookDelivery[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -46,8 +52,9 @@ export default function WebhookDeliveriesPage() {
           setDeliveries(data.items);
           setTotal(data.total);
         }
-      } catch {
-        showError("Không thể tải danh sách delivery.");
+      } catch (err) {
+        const { codeLabel, message } = resolveApiError(err, tErrors);
+        showApiErrorToast(codeLabel, message || t("errors.loadFailed"));
       } finally {
         if (active) setLoading(false);
       }
@@ -56,20 +63,20 @@ export default function WebhookDeliveriesPage() {
     return () => {
       active = false;
     };
-  }, [status, traceId, page, pageSize]);
+  }, [status, traceId, page, pageSize, t, tErrors]);
 
   const fetchDeliveries = () => {
-    // Chỉ trigger reload bằng cách giữ nguyên dependencies
     setPage(p => p);
   };
 
   const handleReplay = async (delivery: WebhookDelivery) => {
     try {
       await replayDelivery(delivery.id);
-      toast.success(`Đã replay delivery ${delivery.id.slice(0, 8)}...`);
+      toast.success(t("toastReplay", { id: `${delivery.id.slice(0, 8)}...` }));
       fetchDeliveries();
-    } catch {
-      showError("Replay thất bại.");
+    } catch (err) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.replayFailed"));
     }
   };
 
@@ -77,10 +84,11 @@ export default function WebhookDeliveriesPage() {
     setReplayingAll(true);
     try {
       const res = await replayBulk({ filterStatus: "deadLetter" });
-      toast.success(`Đã replay ${res.replayed} DLQ deliveries.`);
+      toast.success(t("toastReplayBulk", { count: res.replayed }));
       fetchDeliveries();
-    } catch {
-      showError("Replay All DLQ thất bại.");
+    } catch (err) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.replayBulkFailed"));
     } finally {
       setReplayingAll(false);
     }
@@ -92,66 +100,65 @@ export default function WebhookDeliveriesPage() {
     <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Webhook Deliveries</h1>
-          <p className="text-muted-foreground text-sm mt-1">Lịch sử gửi và trạng thái webhook.</p>
+          <h1 className="text-2xl font-semibold">{t("title")}</h1>
+          <p className="text-muted-foreground text-sm mt-1">{t("subtitle")}</p>
         </div>
         {status === "deadLetter" && (
           <Button variant="destructive" onClick={handleReplayAllDLQ} disabled={replayingAll}>
-            {replayingAll ? "Replaying..." : "Replay All DLQ"}
+            {replayingAll ? t("replaying") : t("replayAllDlq")}
           </Button>
         )}
       </div>
 
-      {/* Filters */}
       <div className="flex gap-3 items-center flex-wrap">
         <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
           <SelectTrigger className="w-44" id="delivery-status-filter">
-            <SelectValue placeholder="Status" />
+            <SelectValue placeholder={t("statusPlaceholder")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="sending">Sending</SelectItem>
-            <SelectItem value="delivered">Delivered</SelectItem>
-            <SelectItem value="deadLetter">Dead Letter</SelectItem>
+            <SelectItem value="all">{t("statusAll")}</SelectItem>
+            <SelectItem value="pending">{t("statusPending")}</SelectItem>
+            <SelectItem value="sending">{t("statusSending")}</SelectItem>
+            <SelectItem value="delivered">{t("statusDelivered")}</SelectItem>
+            <SelectItem value="deadLetter">{t("statusDeadLetter")}</SelectItem>
           </SelectContent>
         </Select>
         <Input
           id="delivery-traceid-filter"
-          placeholder="Filter by Trace ID..."
+          placeholder={t("traceFilterPlaceholder")}
           value={traceId}
           onChange={(e) => { setTraceId(e.target.value); setPage(1); }}
           className="w-64"
         />
-        <Button variant="outline" onClick={fetchDeliveries}>Refresh</Button>
+        <Button variant="outline" onClick={fetchDeliveries}>{tc("refresh")}</Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Deliveries ({total})</CardTitle>
+          <CardTitle>{t("listTitle", { total })}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-muted-foreground">Đang tải...</p>
+            <p className="text-sm text-muted-foreground">{tc("loading")}</p>
           ) : (
             <>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Event Type</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Retries</TableHead>
-                    <TableHead>HTTP Code</TableHead>
-                    <TableHead>Trace ID</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t("colEventType")}</TableHead>
+                    <TableHead>{t("colStatus")}</TableHead>
+                    <TableHead>{t("colRetries")}</TableHead>
+                    <TableHead>{t("colHttpCode")}</TableHead>
+                    <TableHead>{t("colTraceId")}</TableHead>
+                    <TableHead>{t("colCreated")}</TableHead>
+                    <TableHead className="text-right">{t("colActions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {deliveries.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center text-muted-foreground">
-                        Không có delivery nào.
+                        {t("empty")}
                       </TableCell>
                     </TableRow>
                   )}
@@ -170,7 +177,7 @@ export default function WebhookDeliveriesPage() {
                       <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                         {d.status === "deadLetter" && (
                           <Button size="sm" variant="outline" onClick={() => handleReplay(d)}>
-                            Replay
+                            {t("replay")}
                           </Button>
                         )}
                       </TableCell>
@@ -179,17 +186,16 @@ export default function WebhookDeliveriesPage() {
                 </TableBody>
               </Table>
 
-              {/* Pagination */}
               <div className="flex justify-between items-center mt-4 text-sm">
                 <span className="text-muted-foreground">
-                  Trang {page}/{totalPages || 1} — {total} bản ghi
+                  {tc("pageOf", { page, totalPages: totalPages || 1, total })}
                 </span>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                    Previous
+                    {tc("previous")}
                   </Button>
                   <Button size="sm" variant="outline" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
-                    Next
+                    {tc("next")}
                   </Button>
                 </div>
               </div>
@@ -198,30 +204,29 @@ export default function WebhookDeliveriesPage() {
         </CardContent>
       </Card>
 
-      {/* Detail Dialog */}
       <Dialog open={!!selectedDelivery} onOpenChange={(open) => !open && setSelectedDelivery(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Delivery Detail</DialogTitle>
+            <DialogTitle>{t("detailTitle")}</DialogTitle>
           </DialogHeader>
           {selectedDelivery && (
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-2">
-                <div><span className="text-muted-foreground">ID:</span> <span className="font-mono text-xs">{selectedDelivery.id}</span></div>
-                <div><span className="text-muted-foreground">Event:</span> {selectedDelivery.eventType}</div>
-                <div><span className="text-muted-foreground">Status:</span> <Badge variant={STATUS_VARIANTS[selectedDelivery.status]}>{selectedDelivery.status}</Badge></div>
-                <div><span className="text-muted-foreground">Retries:</span> {selectedDelivery.retryCount}</div>
-                <div><span className="text-muted-foreground">HTTP Code:</span> {selectedDelivery.lastResponseCode ?? "—"}</div>
-                <div><span className="text-muted-foreground">Trace ID:</span> <span className="font-mono text-xs">{selectedDelivery.traceId}</span></div>
+                <div><span className="text-muted-foreground">{t("labelId")}:</span> <span className="font-mono text-xs">{selectedDelivery.id}</span></div>
+                <div><span className="text-muted-foreground">{t("labelEvent")}:</span> {selectedDelivery.eventType}</div>
+                <div><span className="text-muted-foreground">{t("colStatus")}:</span> <Badge variant={STATUS_VARIANTS[selectedDelivery.status]}>{selectedDelivery.status}</Badge></div>
+                <div><span className="text-muted-foreground">{t("labelRetries")}:</span> {selectedDelivery.retryCount}</div>
+                <div><span className="text-muted-foreground">{t("colHttpCode")}:</span> {selectedDelivery.lastResponseCode ?? "—"}</div>
+                <div><span className="text-muted-foreground">{t("colTraceId")}:</span> <span className="font-mono text-xs">{selectedDelivery.traceId}</span></div>
               </div>
               {selectedDelivery.lastError && (
                 <div>
-                  <p className="text-muted-foreground mb-1">Last Error:</p>
+                  <p className="text-muted-foreground mb-1">{t("lastError")}:</p>
                   <pre className="bg-muted rounded p-2 text-xs overflow-auto">{selectedDelivery.lastError}</pre>
                 </div>
               )}
               <div>
-                <p className="text-muted-foreground mb-1">Payload:</p>
+                <p className="text-muted-foreground mb-1">{t("payload")}:</p>
                 <pre className="bg-muted rounded p-2 text-xs overflow-auto max-h-48">
                   {(() => {
                     try {

@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
 
 interface ReasonDto {
   id: string;
@@ -29,6 +30,10 @@ export function LockLocationDialog({
   locationId,
   locationCode,
 }: LockLocationDialogProps) {
+  const t = useTranslations("Features.inventory");
+  const tc = useTranslations("Common.actions");
+  const tErrors = useTranslations("Errors");
+
   const [reasons, setReasons] = useState<ReasonDto[]>([]);
   const [lockType, setLockType] = useState("ALL");
   const [reasonCode, setReasonCode] = useState("");
@@ -40,9 +45,9 @@ export function LockLocationDialog({
       setReasons(res.data.items || []);
     } catch {
       setReasons([
-        { id: "1", code: "MAINTENANCE", name: "Bảo trì ô kệ" },
-        { id: "2", code: "CLEANING", name: "Dọn dẹp vệ sinh" },
-        { id: "3", code: "SUSPENDED", name: "Tạm dừng sử dụng" }
+        { id: "1", code: "MAINTENANCE", name: "MAINTENANCE" },
+        { id: "2", code: "CLEANING", name: "CLEANING" },
+        { id: "3", code: "SUSPENDED", name: "SUSPENDED" }
       ]);
     }
   };
@@ -60,7 +65,7 @@ export function LockLocationDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reasonCode) {
-      showError("Vui lòng chọn lý do khóa.");
+      showApiErrorToast(t("errors.lockReasonRequired"), t("errors.lockReasonRequired"));
       return;
     }
 
@@ -70,11 +75,12 @@ export function LockLocationDialog({
         lockType,
         reasonCode,
       });
-      showSuccess(`Đã khóa vị trí ${locationCode} thành công.`);
+      showSuccess(t("toastLockSuccess", { code: locationCode }));
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể khóa vị trí."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.lockFailed"));
     } finally {
       setSaving(false);
     }
@@ -84,43 +90,43 @@ export function LockLocationDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Khóa vị trí kệ</DialogTitle>
+          <DialogTitle>{t("lockTitle")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-right">Vị trí kệ</Label>
+            <Label className="text-right">{t("location")}</Label>
             <div className="col-span-3 text-sm font-semibold text-red-600">{locationCode}</div>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="lockType" className="text-right">Kiểu khóa</Label>
+            <Label htmlFor="lockType" className="text-right">{t("lockType")}</Label>
             <select
               id="lockType"
               value={lockType}
               onChange={(e) => setLockType(e.target.value)}
               className="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <option value="ALL">Khóa toàn bộ (ALL)</option>
-              <option value="INBOUND">Khóa chiều nhập (INBOUND)</option>
-              <option value="OUTBOUND">Khóa chiều xuất (OUTBOUND)</option>
+              <option value="ALL">{t("lockTypeAll")}</option>
+              <option value="INBOUND">{t("lockTypeInbound")}</option>
+              <option value="OUTBOUND">{t("lockTypeOutbound")}</option>
             </select>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="reasonCode" className="text-right">Lý do</Label>
+            <Label htmlFor="reasonCode" className="text-right">{t("reason")}</Label>
             <select
               id="reasonCode"
               value={reasonCode}
               onChange={(e) => setReasonCode(e.target.value)}
               className="col-span-3 flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
             >
-              <option value="">Chọn lý do...</option>
+              <option value="">{t("selectReason")}</option>
               {reasons.map((r) => (
                 <option key={r.id} value={r.code}>{r.name} ({r.code})</option>
               ))}
             </select>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>Hủy</Button>
-            <Button type="submit" disabled={saving}>Xác nhận khóa</Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>{tc("cancel")}</Button>
+            <Button type="submit" disabled={saving}>{t("confirmLock")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

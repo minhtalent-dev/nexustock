@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import {
   Area,
   AreaChart,
@@ -36,24 +37,25 @@ type ChartProps = {
   loading?: boolean;
 };
 
-const throughputConfig = {
-  value: {
-    label: "Completed Tasks",
-    color: "hsl(var(--primary))",
-  },
-} satisfies ChartConfig;
-
 export function LaborThroughputTrendChart({ data, loading }: ChartProps) {
+  const t = useTranslations("Admin.labor");
+
+  const throughputConfig = {
+    value: {
+      label: t("chartCompletedTasks"),
+      color: "hsl(var(--primary))",
+    },
+  } satisfies ChartConfig;
+
   if (loading) return <div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />;
   if (!data || data.length === 0) {
     return (
       <div className="flex h-[300px] items-center justify-center border border-dashed rounded-lg text-muted-foreground">
-        No throughput data available.
+        {t("noThroughputData")}
       </div>
     );
   }
 
-  // format label for short view
   const formattedData = data.map((d) => ({
     ...d,
     shortLabel: d.label.length > 10 ? d.label.substring(5) : d.label,
@@ -62,8 +64,8 @@ export function LaborThroughputTrendChart({ data, loading }: ChartProps) {
   return (
     <Card className="col-span-3">
       <CardHeader>
-        <CardTitle>Throughput Trend</CardTitle>
-        <CardDescription>Number of completed tasks over time.</CardDescription>
+        <CardTitle>{t("throughputTitle")}</CardTitle>
+        <CardDescription>{t("throughputDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={throughputConfig} className="h-[300px] w-full">
@@ -88,19 +90,21 @@ export function LaborThroughputTrendChart({ data, loading }: ChartProps) {
   );
 }
 
-const tphConfig = {
-  value: {
-    label: "Tasks/Hour (TPH)",
-    color: "hsl(var(--chart-2, 142 70% 45%))",
-  },
-} satisfies ChartConfig;
-
 export function LaborTasksPerHourTrendChart({ data, loading }: ChartProps) {
+  const t = useTranslations("Admin.labor");
+
+  const tphConfig = {
+    value: {
+      label: t("chartTasksPerHour"),
+      color: "hsl(var(--chart-2, 142 70% 45%))",
+    },
+  } satisfies ChartConfig;
+
   if (loading) return <div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />;
   if (!data || data.length === 0) {
     return (
       <div className="flex h-[300px] items-center justify-center border border-dashed rounded-lg text-muted-foreground">
-        No productivity trend data available.
+        {t("noTphData")}
       </div>
     );
   }
@@ -113,8 +117,8 @@ export function LaborTasksPerHourTrendChart({ data, loading }: ChartProps) {
   return (
     <Card className="col-span-3">
       <CardHeader>
-        <CardTitle>Productivity Trend (TPH)</CardTitle>
-        <CardDescription>Tasks processed per hour rate.</CardDescription>
+        <CardTitle>{t("tphTitle")}</CardTitle>
+        <CardDescription>{t("tphDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={tphConfig} className="h-[300px] w-full">
@@ -155,11 +159,13 @@ const operationMixColors = [
 const mixConfig = {} satisfies ChartConfig;
 
 export function LaborOperationMixChart({ data, loading }: ChartProps) {
+  const t = useTranslations("Admin.labor");
+
   if (loading) return <div className="h-[300px] w-full animate-pulse bg-muted rounded-lg" />;
   if (!data || data.length === 0) {
     return (
       <div className="flex h-[300px] items-center justify-center border border-dashed rounded-lg text-muted-foreground">
-        No operation mix data available.
+        {t("noOperationMixData")}
       </div>
     );
   }
@@ -167,8 +173,8 @@ export function LaborOperationMixChart({ data, loading }: ChartProps) {
   return (
     <Card className="col-span-2">
       <CardHeader>
-        <CardTitle>Operation Mix</CardTitle>
-        <CardDescription>Work distribution by operation types.</CardDescription>
+        <CardTitle>{t("operationMixTitle")}</CardTitle>
+        <CardDescription>{t("operationMixDesc")}</CardDescription>
       </CardHeader>
       <CardContent className="flex items-center justify-center">
         <ChartContainer config={mixConfig} className="h-[250px] w-full">
@@ -215,19 +221,21 @@ export function LaborOperationMixChart({ data, loading }: ChartProps) {
   );
 }
 
-const rankingConfig = {
-  value: {
-    label: "TPH",
-    color: "hsl(var(--primary))",
-  },
-} satisfies ChartConfig;
-
 export function LaborUserProductivityChart({ data, loading }: ChartProps) {
+  const t = useTranslations("Admin.labor");
+
+  const rankingConfig = {
+    value: {
+      label: t("chartTph"),
+      color: "hsl(var(--primary))",
+    },
+  } satisfies ChartConfig;
+
   if (loading) return <div className="h-[350px] w-full animate-pulse bg-muted rounded-lg" />;
   if (!data || data.length === 0) {
     return (
       <div className="flex h-[350px] items-center justify-center border border-dashed rounded-lg text-muted-foreground">
-        No user productivity ranking available.
+        {t("noUserProductivityData")}
       </div>
     );
   }
@@ -235,8 +243,8 @@ export function LaborUserProductivityChart({ data, loading }: ChartProps) {
   return (
     <Card className="col-span-3">
       <CardHeader>
-        <CardTitle>User Productivity Ranking</CardTitle>
-        <CardDescription>Top users by Tasks/Hour rate.</CardDescription>
+        <CardTitle>{t("userProductivityTitle")}</CardTitle>
+        <CardDescription>{t("userProductivityDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={rankingConfig} className="h-[280px] w-full">
@@ -267,21 +275,22 @@ export function LaborUserProductivityChart({ data, loading }: ChartProps) {
 }
 
 export function LaborZoneProductivityGrid({ data, loading }: ChartProps) {
+  const t = useTranslations("Admin.labor");
+
   if (loading) return <div className="h-[350px] w-full animate-pulse bg-muted rounded-lg" />;
   if (!data || data.length === 0) {
     return (
       <div className="flex h-[350px] items-center justify-center border border-dashed rounded-lg text-muted-foreground">
-        No zone productivity metrics available.
+        {t("noZoneProductivityData")}
       </div>
     );
   }
 
-  // ponytail: Heatmap thật chưa cần; nâng cấp khi có tọa độ zone/location ổn định.
   return (
     <Card className="col-span-3">
       <CardHeader>
-        <CardTitle>Zone Productivity</CardTitle>
-        <CardDescription>Average active seconds per task by warehouse zone.</CardDescription>
+        <CardTitle>{t("zoneProductivityTitle")}</CardTitle>
+        <CardDescription>{t("zoneProductivityDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
@@ -291,13 +300,13 @@ export function LaborZoneProductivityGrid({ data, loading }: ChartProps) {
               className="flex flex-col justify-between p-4 border rounded-xl bg-card hover:bg-accent/30 transition-colors"
             >
               <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                {item.label === "null" || !item.label ? "Unassigned" : item.label}
+                {item.label === "null" || !item.label ? t("unassigned") : item.label}
               </span>
               <div className="flex items-baseline gap-1 mt-2">
                 <span className="text-2xl font-bold text-foreground">
                   {item.value}
                 </span>
-                <span className="text-xs text-muted-foreground">sec/task</span>
+                <span className="text-xs text-muted-foreground">{t("secPerTask")}</span>
               </div>
             </div>
           ))}

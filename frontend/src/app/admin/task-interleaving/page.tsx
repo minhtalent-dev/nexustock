@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { taskInterleavingApi, TaskRecommendationListItemDto, TaskRecommendationDetailResponse, TaskInterleavingKpiResponse } from "@/lib/task-interleaving-api";
 import { RecommendationKpis } from "./components/recommendation-kpis";
 import { RecommendationTable } from "./components/recommendation-table";
@@ -9,12 +10,20 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RefreshCw, Search, ShieldAlert, Ban } from "lucide-react";
-import { showError } from "@/lib/toast";
-import { getHttpErrorMessage, isFeatureDisabledError, isUnauthorizedError } from "@/lib/http-error";
+import { showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { isFeatureDisabledError, isUnauthorizedError } from "@/lib/http-error";
 
 type PageState = "loading" | "ready" | "empty" | "error" | "unauthorized" | "featureDisabled";
 
+const STATUS_KEYS = ["ALL", "Open", "Accepted", "Rejected", "Expired", "Superseded", "NoCandidate"] as const;
+const OPERATION_KEYS = ["ALL", "Picking", "Putaway", "Replenishment", "CycleCount", "Packing", "Receiving"] as const;
+
 export default function TaskInterleavingPage() {
+  const t = useTranslations("Admin.taskInterleaving");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [items, setItems] = React.useState<TaskRecommendationListItemDto[]>([]);
   const [kpis, setKpis] = React.useState<TaskInterleavingKpiResponse | null>(null);
   const [pageState, setPageState] = React.useState<PageState>("loading");
@@ -63,12 +72,13 @@ export default function TaskInterleavingPage() {
         setPageState("unauthorized");
         return;
       }
-      const msg = getHttpErrorMessage(err, "Failed to load task interleaving data.");
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      const msg = message || t("errors.loadFailed");
       setErrorMessage(msg);
       setPageState("error");
-      showError(msg);
+      showApiErrorToast(codeLabel, msg);
     }
-  }, [status, operationType, userId, page]);
+  }, [status, operationType, userId, page, t, tErrors]);
 
   React.useEffect(() => {
     queueMicrotask(() => void loadData());
@@ -81,7 +91,8 @@ export default function TaskInterleavingPage() {
       const res = await taskInterleavingApi.getRecommendation(id);
       setDetail(res);
     } catch (err) {
-      showError(getHttpErrorMessage(err, "Failed to load recommendation detail."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.detailFailed"));
       setDetailId(null);
     } finally {
       setDetailLoading(false);
@@ -92,12 +103,12 @@ export default function TaskInterleavingPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-4 p-12 min-h-[50vh]">
         <Ban className="size-12 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">Feature disabled</h2>
+        <h2 className="text-xl font-semibold">{t("featureDisabledTitle")}</h2>
         <p className="text-sm text-muted-foreground text-center max-w-md">
-          Task interleaving is currently turned off. Enable the feature flag to view recommendations and KPIs.
+          {t("featureDisabledDesc")}
         </p>
         <Button id="task-interleaving-refresh-button" variant="outline" onClick={loadData}>
-          Retry
+          {tc("retry")}
         </Button>
       </div>
     );
@@ -107,23 +118,24 @@ export default function TaskInterleavingPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-4 p-12 min-h-[50vh]">
         <ShieldAlert className="size-12 text-muted-foreground" />
-        <h2 className="text-xl font-semibold">Unauthorized</h2>
+        <h2 className="text-xl font-semibold">{t("unauthorizedTitle")}</h2>
         <p className="text-sm text-muted-foreground text-center max-w-md">
-          You do not have permission to view task interleaving logs.
+          {t("unauthorizedDesc")}
         </p>
       </div>
     );
   }
 
   const loading = pageState === "loading";
+  const totalPages = Math.ceil(total / 10);
 
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Task Interleaving Logs</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground">
-            Monitor spatial optimization suggestions and labor task assignments.
+            {t("subtitle")}
           </p>
         </div>
         <Button
@@ -133,13 +145,13 @@ export default function TaskInterleavingPage() {
           data-icon="inline-start"
         >
           <RefreshCw className="size-4" />
-          Refresh
+          {tc("refresh")}
         </Button>
       </div>
 
       {pageState === "error" && (
         <div className="rounded-md border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
-          {errorMessage || "Unexpected error while loading data."}
+          {errorMessage || t("unexpectedError")}
         </div>
       )}
 
@@ -147,48 +159,44 @@ export default function TaskInterleavingPage() {
 
       <div className="flex flex-wrap items-center gap-4 bg-card p-4 rounded-md border">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Status</span>
+          <span className="text-sm font-medium">{t("status")}</span>
           <Select value={status} onValueChange={(val) => { setStatus(val); setPage(1); }}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All status" />
+              <SelectValue placeholder={t("allStatus")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Status</SelectItem>
-              <SelectItem value="Open">Open</SelectItem>
-              <SelectItem value="Accepted">Accepted</SelectItem>
-              <SelectItem value="Rejected">Rejected</SelectItem>
-              <SelectItem value="Expired">Expired</SelectItem>
-              <SelectItem value="Superseded">Superseded</SelectItem>
-              <SelectItem value="NoCandidate">No Candidate</SelectItem>
+              {STATUS_KEYS.map((key) => (
+                <SelectItem key={key} value={key}>
+                  {key === "ALL" ? t("allStatus") : t(`recommendationStatus.${key}`)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">Operation</span>
+          <span className="text-sm font-medium">{t("operation")}</span>
           <Select value={operationType} onValueChange={(val) => { setOperationType(val); setPage(1); }}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="All operations" />
+              <SelectValue placeholder={t("allOperations")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">All Operations</SelectItem>
-              <SelectItem value="Picking">Picking</SelectItem>
-              <SelectItem value="Putaway">Putaway</SelectItem>
-              <SelectItem value="Replenishment">Replenishment</SelectItem>
-              <SelectItem value="CycleCount">CycleCount</SelectItem>
-              <SelectItem value="Packing">Packing</SelectItem>
-              <SelectItem value="Receiving">Receiving</SelectItem>
+              {OPERATION_KEYS.map((key) => (
+                <SelectItem key={key} value={key}>
+                  {t(`operations.${key}`)}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">User ID</span>
+          <span className="text-sm font-medium">{t("userId")}</span>
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
             <Input
               type="text"
-              placeholder="Search User ID"
+              placeholder={t("searchUserPlaceholder")}
               value={userId}
               onChange={(e) => { setUserId(e.target.value); setPage(1); }}
               className="pl-8 w-[250px]"
@@ -199,8 +207,8 @@ export default function TaskInterleavingPage() {
 
       {pageState === "empty" ? (
         <div className="flex flex-col items-center justify-center gap-2 border border-dashed rounded-md py-16 text-muted-foreground">
-          <p className="font-medium text-sm">No recommendations found</p>
-          <p className="text-xs">Try adjusting filters or refresh later.</p>
+          <p className="font-medium text-sm">{t("emptyTitle")}</p>
+          <p className="text-xs">{t("emptyHint")}</p>
         </div>
       ) : (
         <RecommendationTable items={items} onViewDetail={handleViewDetail} />
@@ -214,18 +222,18 @@ export default function TaskInterleavingPage() {
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
           >
-            Previous
+            {tc("previous")}
           </Button>
           <span className="text-sm font-mono">
-            Page {page} of {Math.ceil(total / 10)}
+            {tc("pageOf", { page, totalPages, total })}
           </span>
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setPage((p) => Math.min(Math.ceil(total / 10), p + 1))}
-            disabled={page === Math.ceil(total / 10)}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
           >
-            Next
+            {tc("next")}
           </Button>
         </div>
       )}
@@ -233,9 +241,9 @@ export default function TaskInterleavingPage() {
       <Dialog open={detailId !== null} onOpenChange={(open) => { if (!open) setDetailId(null); }}>
         <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Recommendation Detail</DialogTitle>
+            <DialogTitle>{t("detailTitle")}</DialogTitle>
             <DialogDescription>
-              Details of candidate tasks evaluated and the final decision breakdown.
+              {t("detailDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -249,38 +257,38 @@ export default function TaskInterleavingPage() {
             <div className="flex flex-col gap-6 py-4">
               <div className="grid grid-cols-2 gap-4 md:grid-cols-4 text-sm bg-muted p-4 rounded-md">
                 <div>
-                  <span className="text-muted-foreground block text-xs">Recommendation ID</span>
+                  <span className="text-muted-foreground block text-xs">{t("detailRecommendationId")}</span>
                   <span className="font-mono text-xs">{detail.id}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-xs">User ID</span>
+                  <span className="text-muted-foreground block text-xs">{t("detailUserId")}</span>
                   <span className="font-mono text-xs">{detail.userId}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-xs">Status</span>
+                  <span className="text-muted-foreground block text-xs">{t("detailStatus")}</span>
                   <span className="font-medium">{detail.status}</span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground block text-xs">Trace ID</span>
+                  <span className="text-muted-foreground block text-xs">{t("detailTraceId")}</span>
                   <span className="font-mono text-xs">{detail.traceId ?? "--"}</span>
                 </div>
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold mb-3">Evaluated Candidates</h3>
+                <h3 className="text-sm font-semibold mb-3">{t("evaluatedCandidates")}</h3>
                 <div className="border rounded-md overflow-hidden">
                   <table className="w-full text-sm">
                     <thead className="bg-muted text-muted-foreground text-xs uppercase">
                       <tr>
-                        <th className="p-3 text-left">Task Type</th>
-                        <th className="p-3 text-left">Task ID</th>
-                        <th className="p-3 text-left">Operation</th>
-                        <th className="p-3 text-right">Distance Score (45)</th>
-                        <th className="p-3 text-right">Age Score (20)</th>
-                        <th className="p-3 text-right">Priority (20)</th>
-                        <th className="p-3 text-right">Continuity (15)</th>
-                        <th className="p-3 text-right">Penalty</th>
-                        <th className="p-3 text-right font-bold">Total Score</th>
+                        <th className="p-3 text-left">{t("colTaskType")}</th>
+                        <th className="p-3 text-left">{t("colTaskId")}</th>
+                        <th className="p-3 text-left">{t("colOperation")}</th>
+                        <th className="p-3 text-right">{t("colDistanceScore")}</th>
+                        <th className="p-3 text-right">{t("colAgeScore")}</th>
+                        <th className="p-3 text-right">{t("colPriority")}</th>
+                        <th className="p-3 text-right">{t("colContinuity")}</th>
+                        <th className="p-3 text-right">{t("colPenalty")}</th>
+                        <th className="p-3 text-right font-bold">{t("colTotalScore")}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y">

@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { RefreshCw, Play, Layers, ClipboardList, CheckCircle, Settings, Plus, X } from "lucide-react";
 
 interface ReplenishmentRule {
@@ -46,6 +47,10 @@ interface StorageLocation {
 }
 
 export default function ReplenishmentPage() {
+  const t = useTranslations("Admin.replenishment");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [activeTab, setActiveTab] = useState<"rules" | "tasks">("tasks");
   const [rules, setRules] = useState<ReplenishmentRule[]>([]);
   const [tasks, setTasks] = useState<ReplenishmentTask[]>([]);
@@ -57,15 +62,13 @@ export default function ReplenishmentPage() {
   const [submittingRule, setSubmittingRule] = useState(false);
   const [runningEngine, setRunningEngine] = useState(false);
 
-  // Form State
   const [newRule, setNewRule] = useState({
     itemId: "",
     locationId: "",
     minQty: 10,
-    maxQty: 50
+    maxQty: 50,
   });
 
-  // Complete Dialog/Form State
   const [completingTask, setCompletingTask] = useState<ReplenishmentTask | null>(null);
   const [actualQty, setActualQty] = useState<number>(0);
   const [operatorName, setOperatorName] = useState("");
@@ -77,11 +80,12 @@ export default function ReplenishmentPage() {
       const res = await api.get<ReplenishmentRule[]>("/replenishment/rules");
       setRules(res.data || []);
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể tải danh sách quy tắc bổ sung."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadRulesFailed"));
     } finally {
       setLoadingRules(false);
     }
-  }, []);
+  }, [t, tErrors]);
 
   const fetchTasks = useCallback(async () => {
     setLoadingTasks(true);
@@ -89,25 +93,26 @@ export default function ReplenishmentPage() {
       const res = await api.get<ReplenishmentTask[]>("/replenishment/tasks");
       setTasks(res.data || []);
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể tải danh sách nhiệm vụ bổ sung."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadTasksFailed"));
     } finally {
       setLoadingTasks(false);
     }
-  }, []);
+  }, [t, tErrors]);
 
   const fetchMetadata = useCallback(async () => {
     try {
       const prodRes = await api.get<Product[]>("/masterdata/products");
       setProducts(prodRes.data || []);
     } catch {
-      // Bỏ qua lỗi nếu API chưa sẵn sàng
+      // ignore if API not ready
     }
 
     try {
       const locRes = await api.get<StorageLocation[]>("/masterdata/locations");
       setLocations(locRes.data || []);
     } catch {
-      // Bỏ qua lỗi
+      // ignore
     }
   }, []);
 
@@ -122,18 +127,19 @@ export default function ReplenishmentPage() {
   const handleCreateRule = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRule.itemId || !newRule.locationId) {
-      showError("Vui lòng chọn đầy đủ sản phẩm và vị trí kệ.");
+      showApiErrorToast("", t("errors.fieldsRequired"));
       return;
     }
 
     setSubmittingRule(true);
     try {
       await api.post("/replenishment/rules", newRule);
-      showSuccess("Tạo quy tắc bổ sung thành công.");
+      showSuccess(t("toastCreateRuleSuccess"));
       setNewRule({ itemId: "", locationId: "", minQty: 10, maxQty: 50 });
       fetchRules();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi tạo quy tắc bổ sung."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.createRuleFailed"));
     } finally {
       setSubmittingRule(false);
     }
@@ -144,26 +150,28 @@ export default function ReplenishmentPage() {
     try {
       const res = await api.post("/replenishment/generate?strategy=FEFO");
       const generatedCount = res.data?.length || 0;
-      showSuccess(`Đã quét bổ sung hoàn tất. Đã sinh ${generatedCount} nhiệm vụ mới.`);
+      showSuccess(t("toastRunEngineSuccess", { count: generatedCount }));
       fetchTasks();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi chạy tiến trình bổ sung hàng."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.runEngineFailed"));
     } finally {
       setRunningEngine(false);
     }
   };
 
   const handleCancelTask = async (taskId: string) => {
-    if (!confirm("Bạn có chắc chắn muốn hủy bỏ nhiệm vụ bổ sung hàng này? Lượng tồn kho dự trữ sẽ được giải phóng.")) {
+    if (!confirm(t("confirmCancel"))) {
       return;
     }
 
     try {
       await api.post(`/replenishment/tasks/${taskId}/cancel`);
-      showSuccess("Đã hủy bỏ nhiệm vụ thành công.");
+      showSuccess(t("toastCancelSuccess"));
       fetchTasks();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi hủy nhiệm vụ bổ sung."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.cancelFailed"));
     }
   };
 
@@ -176,7 +184,7 @@ export default function ReplenishmentPage() {
   const handleCompleteTask = async () => {
     if (!completingTask) return;
     if (actualQty < 0) {
-      showError("Số lượng thực tế phải lớn hơn hoặc bằng 0.");
+      showApiErrorToast("", t("errors.actualQtyInvalid"));
       return;
     }
 
@@ -184,14 +192,15 @@ export default function ReplenishmentPage() {
     try {
       const payload = {
         actualQty,
-        operatorName: operatorName || "System"
+        operatorName: operatorName || tc("system"),
       };
       await api.post(`/replenishment/tasks/${completingTask.id}/complete`, payload);
-      showSuccess("Xác nhận hoàn tất nhiệm vụ bổ sung thành công.");
+      showSuccess(t("toastCompleteSuccess"));
       setCompletingTask(null);
       fetchTasks();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi xác nhận hoàn tất nhiệm vụ."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.completeFailed"));
     } finally {
       setSubmittingComplete(false);
     }
@@ -200,14 +209,14 @@ export default function ReplenishmentPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "COMPLETED":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">Completed</Badge>;
+        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">{t("statusCompleted")}</Badge>;
       case "CANCELLED":
-        return <Badge className="bg-rose-600 hover:bg-rose-500 text-white">Cancelled</Badge>;
+        return <Badge className="bg-rose-600 hover:bg-rose-500 text-white">{t("statusCancelled")}</Badge>;
       case "ASSIGNED":
-        return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">Assigned</Badge>;
+        return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">{t("statusAssigned")}</Badge>;
       case "PENDING":
       default:
-        return <Badge className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300">Pending</Badge>;
+        return <Badge className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300">{t("statusPending")}</Badge>;
     }
   };
 
@@ -227,11 +236,9 @@ export default function ReplenishmentPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <Layers className="h-6 w-6 text-emerald-500" />
-            Bổ sung hàng Pick Face
+            {t("title")}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            Giám sát mức tồn kho tại các vị trí lấy hàng (Pick Face) và bổ sung tự động từ kho lưu trữ Bulk.
-          </p>
+          <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -240,7 +247,7 @@ export default function ReplenishmentPage() {
             className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9 px-4 flex items-center gap-2"
           >
             <Play className={`h-4 w-4 ${runningEngine ? "animate-spin" : ""}`} />
-            {runningEngine ? "Đang quét..." : "Chạy bổ sung tự động"}
+            {runningEngine ? t("runningEngine") : t("runEngine")}
           </Button>
           <Button
             onClick={() => {
@@ -255,7 +262,6 @@ export default function ReplenishmentPage() {
         </div>
       </div>
 
-      {/* Tabs Menu */}
       <div className="flex border-b border-zinc-800">
         <button
           onClick={() => setActiveTab("tasks")}
@@ -263,7 +269,7 @@ export default function ReplenishmentPage() {
             activeTab === "tasks" ? "border-emerald-500 text-emerald-500" : "border-transparent text-zinc-400 hover:text-white"
           }`}
         >
-          Nhiệm vụ bổ sung
+          {t("tabTasks")}
         </button>
         <button
           onClick={() => setActiveTab("rules")}
@@ -271,7 +277,7 @@ export default function ReplenishmentPage() {
             activeTab === "rules" ? "border-emerald-500 text-emerald-500" : "border-transparent text-zinc-400 hover:text-white"
           }`}
         >
-          Cấu hình quy tắc (Min/Max)
+          {t("tabRules")}
         </button>
       </div>
 
@@ -280,30 +286,28 @@ export default function ReplenishmentPage() {
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-emerald-500" />
-              Nhiệm vụ đang xử lý
+              {t("tasksTitle")}
             </CardTitle>
-            <CardDescription className="text-xs text-zinc-500">
-              Danh sách các dịch chuyển hàng từ Bulk về Pick Face đang chờ nhân viên xử lý hoặc hoàn thành.
-            </CardDescription>
+            <CardDescription className="text-xs text-zinc-500">{t("tasksDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {loadingTasks && tasks.length === 0 ? (
-              <div className="text-center py-12 text-zinc-500 text-xs">Đang tải danh sách nhiệm vụ...</div>
+              <div className="text-center py-12 text-zinc-500 text-xs">{t("loadingTasks")}</div>
             ) : tasks.length === 0 ? (
-              <div className="text-center py-12 text-zinc-500 text-xs">Không có nhiệm vụ bổ sung nào.</div>
+              <div className="text-center py-12 text-zinc-500 text-xs">{t("emptyTasks")}</div>
             ) : (
               <div className="overflow-x-auto">
                 <Table className="text-xs">
                   <TableHeader className="border-b border-zinc-800">
                     <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                      <TableHead className="text-zinc-400">Sản phẩm</TableHead>
-                      <TableHead className="text-zinc-400">Kệ nguồn (Bulk)</TableHead>
-                      <TableHead className="text-zinc-400">Kệ đích (Pick Face)</TableHead>
-                      <TableHead className="text-zinc-400">Số lô (Lot No)</TableHead>
-                      <TableHead className="text-zinc-400 text-right">SL yêu cầu</TableHead>
-                      <TableHead className="text-zinc-400 text-right">SL thực tế</TableHead>
-                      <TableHead className="text-zinc-400 text-center">Trạng thái</TableHead>
-                      <TableHead className="text-zinc-400 text-center">Hành động</TableHead>
+                      <TableHead className="text-zinc-400">{t("colProduct")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colSourceBulk")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colTargetPickFace")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colLotNo")}</TableHead>
+                      <TableHead className="text-zinc-400 text-right">{t("colRequestedQty")}</TableHead>
+                      <TableHead className="text-zinc-400 text-right">{t("colActualQty")}</TableHead>
+                      <TableHead className="text-zinc-400 text-center">{t("colStatus")}</TableHead>
+                      <TableHead className="text-zinc-400 text-center">{t("colActions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -323,14 +327,14 @@ export default function ReplenishmentPage() {
                                 onClick={() => handleOpenComplete(task)}
                                 className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 px-3 text-[10px] rounded"
                               >
-                                Hoàn tất
+                                {t("completeBtn")}
                               </Button>
                               <Button
                                 onClick={() => handleCancelTask(task.id)}
                                 variant="outline"
                                 className="border-zinc-800 hover:bg-zinc-800 text-rose-500 h-7 px-3 text-[10px] rounded"
                               >
-                                Hủy bỏ
+                                {t("cancelBtn")}
                               </Button>
                             </>
                           )}
@@ -345,30 +349,29 @@ export default function ReplenishmentPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Rules List */}
           <div className="lg:col-span-2">
             <Card className="bg-zinc-900 border-zinc-800 text-white">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <Settings className="h-4 w-4 text-emerald-500" />
-                  Quy tắc bổ sung hiện tại
+                  {t("rulesTitle")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {loadingRules && rules.length === 0 ? (
-                  <div className="text-center py-12 text-zinc-500 text-xs">Đang tải danh sách quy tắc...</div>
+                  <div className="text-center py-12 text-zinc-500 text-xs">{t("loadingRules")}</div>
                 ) : rules.length === 0 ? (
-                  <div className="text-center py-12 text-zinc-500 text-xs">Chưa có quy tắc nào được định nghĩa.</div>
+                  <div className="text-center py-12 text-zinc-500 text-xs">{t("emptyRules")}</div>
                 ) : (
                   <div className="overflow-x-auto">
                     <Table className="text-xs">
                       <TableHeader className="border-b border-zinc-800">
                         <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                          <TableHead className="text-zinc-400">Sản phẩm</TableHead>
-                          <TableHead className="text-zinc-400">Vị trí lấy hàng (Pick Face)</TableHead>
-                          <TableHead className="text-zinc-400 text-right">SL tối thiểu (Min)</TableHead>
-                          <TableHead className="text-zinc-400 text-right">SL tối đa (Max)</TableHead>
-                          <TableHead className="text-zinc-400">Người tạo</TableHead>
+                          <TableHead className="text-zinc-400">{t("colProduct")}</TableHead>
+                          <TableHead className="text-zinc-400">{t("colPickFace")}</TableHead>
+                          <TableHead className="text-zinc-400 text-right">{t("colMinQty")}</TableHead>
+                          <TableHead className="text-zinc-400 text-right">{t("colMaxQty")}</TableHead>
+                          <TableHead className="text-zinc-400">{t("colCreatedBy")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -389,26 +392,25 @@ export default function ReplenishmentPage() {
             </Card>
           </div>
 
-          {/* Add Rule Form */}
           <div className="lg:col-span-1">
             <Card className="bg-zinc-900 border-zinc-800 text-white">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <Plus className="h-4 w-4 text-emerald-500" />
-                  Thêm quy tắc mới
+                  {t("addRuleTitle")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleCreateRule} className="flex flex-col gap-4 text-xs">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-zinc-500">Mã sản phẩm (Item ID / Code)</label>
+                    <label className="text-[10px] text-zinc-500">{t("itemLabel")}</label>
                     {products.length > 0 ? (
                       <select
                         value={newRule.itemId}
                         onChange={(e) => setNewRule({ ...newRule, itemId: e.target.value })}
                         className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                       >
-                        <option value="">-- Chọn sản phẩm --</option>
+                        <option value="">{t("selectProduct")}</option>
                         {products.map((p) => (
                           <option key={p.id} value={p.id}>
                             {p.code} - {p.name}
@@ -418,7 +420,7 @@ export default function ReplenishmentPage() {
                     ) : (
                       <input
                         type="text"
-                        placeholder="Nhập GUID ItemId..."
+                        placeholder={t("itemIdPlaceholder")}
                         value={newRule.itemId}
                         onChange={(e) => setNewRule({ ...newRule, itemId: e.target.value })}
                         className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
@@ -427,14 +429,14 @@ export default function ReplenishmentPage() {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-zinc-500">Vị trí Pick Face (Location ID / Code)</label>
+                    <label className="text-[10px] text-zinc-500">{t("locationLabel")}</label>
                     {locations.length > 0 ? (
                       <select
                         value={newRule.locationId}
                         onChange={(e) => setNewRule({ ...newRule, locationId: e.target.value })}
                         className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                       >
-                        <option value="">-- Chọn kệ lấy hàng --</option>
+                        <option value="">{t("selectLocation")}</option>
                         {locations.map((l) => (
                           <option key={l.id} value={l.id}>
                             {l.code}
@@ -444,7 +446,7 @@ export default function ReplenishmentPage() {
                     ) : (
                       <input
                         type="text"
-                        placeholder="Nhập GUID LocationId..."
+                        placeholder={t("locationIdPlaceholder")}
                         value={newRule.locationId}
                         onChange={(e) => setNewRule({ ...newRule, locationId: e.target.value })}
                         className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
@@ -454,7 +456,7 @@ export default function ReplenishmentPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] text-zinc-500">Tồn tối thiểu (Min)</label>
+                      <label className="text-[10px] text-zinc-500">{t("minQtyLabel")}</label>
                       <input
                         type="number"
                         value={newRule.minQty}
@@ -463,7 +465,7 @@ export default function ReplenishmentPage() {
                       />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] text-zinc-500">Tồn tối đa (Max)</label>
+                      <label className="text-[10px] text-zinc-500">{t("maxQtyLabel")}</label>
                       <input
                         type="number"
                         value={newRule.maxQty}
@@ -478,7 +480,7 @@ export default function ReplenishmentPage() {
                     disabled={submittingRule}
                     className="bg-emerald-600 hover:bg-emerald-500 text-white w-full h-9 text-xs rounded mt-2"
                   >
-                    {submittingRule ? "Đang tạo..." : "Tạo quy tắc mới"}
+                    {submittingRule ? t("creatingRule") : t("createRule")}
                   </Button>
                 </form>
               </CardContent>
@@ -487,33 +489,31 @@ export default function ReplenishmentPage() {
         </div>
       )}
 
-      {/* Force Complete Modal Dialog */}
       {completingTask && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-zinc-800">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500" />
-                Xác nhận hoàn tất nhiệm vụ
+                {t("completeDialogTitle")}
               </h3>
-              <button
-                onClick={() => setCompletingTask(null)}
-                className="text-zinc-500 hover:text-white transition-all"
-              >
+              <button onClick={() => setCompletingTask(null)} className="text-zinc-500 hover:text-white transition-all">
                 <X className="h-4 w-4" />
               </button>
             </div>
             <div className="p-4 flex flex-col gap-4 text-xs">
               <div className="bg-zinc-950/40 p-3 rounded border border-zinc-800/80 font-mono text-[11px] text-zinc-400 flex flex-col gap-1">
-                <div>Sản phẩm: {getProductCode(completingTask.itemId)}</div>
-                <div>Lô hàng: {completingTask.lotNo}</div>
-                <div>Từ kệ Bulk: {getLocationCode(completingTask.sourceLocationId)}</div>
-                <div>Về Pick Face: {getLocationCode(completingTask.targetLocationId)}</div>
-                <div className="text-zinc-200 mt-1">Yêu cầu: <span className="font-bold text-white text-xs">{completingTask.requestedQty}</span></div>
+                <div>{t("completeProduct", { product: getProductCode(completingTask.itemId) })}</div>
+                <div>{t("completeLot", { lot: completingTask.lotNo })}</div>
+                <div>{t("completeFromBulk", { location: getLocationCode(completingTask.sourceLocationId) })}</div>
+                <div>{t("completeToPickFace", { location: getLocationCode(completingTask.targetLocationId) })}</div>
+                <div className="text-zinc-200 mt-1">
+                  {t("completeRequested", { qty: completingTask.requestedQty })}
+                </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-zinc-500">Số lượng dịch chuyển thực tế</label>
+                <label className="text-[10px] text-zinc-500">{t("actualQtyLabel")}</label>
                 <input
                   type="number"
                   value={actualQty}
@@ -523,10 +523,10 @@ export default function ReplenishmentPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-zinc-500">Người thực hiện</label>
+                <label className="text-[10px] text-zinc-500">{t("operatorLabel")}</label>
                 <input
                   type="text"
-                  placeholder="Nhập tên người thực hiện..."
+                  placeholder={t("operatorPlaceholder")}
                   value={operatorName}
                   onChange={(e) => setOperatorName(e.target.value)}
                   className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
@@ -534,19 +534,11 @@ export default function ReplenishmentPage() {
               </div>
             </div>
             <div className="flex justify-end gap-3 p-4 border-t border-zinc-800 bg-zinc-950/20">
-              <Button
-                onClick={() => setCompletingTask(null)}
-                variant="outline"
-                className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs h-8 px-4"
-              >
-                Hủy bỏ
+              <Button onClick={() => setCompletingTask(null)} variant="outline" className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs h-8 px-4">
+                {t("cancelBtn")}
               </Button>
-              <Button
-                onClick={handleCompleteTask}
-                disabled={submittingComplete}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4"
-              >
-                {submittingComplete ? "Đang xử lý..." : "Xác nhận"}
+              <Button onClick={handleCompleteTask} disabled={submittingComplete} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4">
+                {submittingComplete ? t("processing") : t("confirmComplete")}
               </Button>
             </div>
           </div>

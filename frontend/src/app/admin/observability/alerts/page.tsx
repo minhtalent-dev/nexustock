@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getAlerts, ackAlert, resolveAlert } from "@/features/observability/api";
 import { OperationalAlert } from "@/features/observability/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,11 +12,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { showError } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast } from "@/lib/toast";
 import { toast } from "sonner";
 import { AlertCircle, CheckCircle2, ShieldAlert, User } from "lucide-react";
 
 export default function AlertCenterPage() {
+  const t = useTranslations("Admin.alerts");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [alerts, setAlerts] = useState<OperationalAlert[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -24,7 +30,6 @@ export default function AlertCenterPage() {
   const [severity, setSeverity] = useState<string>("all");
   const [loading, setLoading] = useState(false);
 
-  // Dialog states
   const [selectedAlert, setSelectedAlert] = useState<OperationalAlert | null>(null);
   const [actionType, setActionType] = useState<"ack" | "resolve" | null>(null);
   const [actionNote, setActionNote] = useState("");
@@ -46,8 +51,9 @@ export default function AlertCenterPage() {
           setAlerts(data.items);
           setTotal(data.total);
         }
-      } catch {
-        showError("Không thể tải danh sách cảnh báo.");
+      } catch (err) {
+        const { codeLabel, message } = resolveApiError(err, tErrors);
+        showApiErrorToast(codeLabel, message || t("errors.loadFailed"));
       } finally {
         if (active) setLoading(false);
       }
@@ -56,7 +62,7 @@ export default function AlertCenterPage() {
     return () => {
       active = false;
     };
-  }, [status, severity, page, pageSize, refreshTrigger]);
+  }, [status, severity, page, pageSize, refreshTrigger, t, tErrors]);
 
   const handleActionSubmit = async () => {
     if (!selectedAlert || !actionType) return;
@@ -64,17 +70,21 @@ export default function AlertCenterPage() {
     try {
       if (actionType === "ack") {
         await ackAlert(selectedAlert.id, actionNote);
-        toast.success("Xác nhận cảnh báo thành công");
+        toast.success(t("toastAckSuccess"));
       } else {
         await resolveAlert(selectedAlert.id, actionNote);
-        toast.success("Giải quyết cảnh báo thành công");
+        toast.success(t("toastResolveSuccess"));
       }
       setSelectedAlert(null);
       setActionType(null);
       setActionNote("");
       setRefreshTrigger(prev => prev + 1);
-    } catch {
-      showError(actionType === "ack" ? "Xác nhận thất bại." : "Giải quyết thất bại.");
+    } catch (err) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(
+        codeLabel,
+        message || (actionType === "ack" ? t("errors.ackFailed") : t("errors.resolveFailed"))
+      );
     } finally {
       setActionLoading(false);
     }
@@ -83,11 +93,11 @@ export default function AlertCenterPage() {
   const getStatusBadge = (statusStr: string) => {
     switch (statusStr) {
       case "open":
-        return <Badge variant="destructive" className="bg-red-500/10 text-red-400 border border-red-500/20">Mở</Badge>;
+        return <Badge variant="destructive" className="bg-red-500/10 text-red-400 border border-red-500/20">{t("statusOpenBadge")}</Badge>;
       case "acknowledged":
-        return <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20">Xác nhận</Badge>;
+        return <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20">{t("statusAckBadge")}</Badge>;
       case "resolved":
-        return <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Đã sửa</Badge>;
+        return <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{t("statusResolvedBadge")}</Badge>;
       default:
         return <Badge variant="outline">{statusStr}</Badge>;
     }
@@ -106,24 +116,22 @@ export default function AlertCenterPage() {
 
   return (
     <div className="p-6 space-y-4">
-      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">Trung tâm cảnh báo</h1>
-        <p className="text-zinc-400 text-sm mt-1">Quản lý và giải quyết các cảnh báo vận hành phát sinh trong hệ thống.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-white">{t("title")}</h1>
+        <p className="text-zinc-400 text-sm mt-1">{t("subtitle")}</p>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="w-44">
           <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
             <SelectTrigger id="alert-status-filter" className="bg-[#0f0f11]/60 border-zinc-800">
-              <SelectValue placeholder="Trạng thái" />
+              <SelectValue placeholder={t("statusPlaceholder")} />
             </SelectTrigger>
             <SelectContent className="bg-[#151518] border-zinc-800 text-white">
-              <SelectItem value="all">Tất cả trạng thái</SelectItem>
-              <SelectItem value="open">Đang mở (open)</SelectItem>
-              <SelectItem value="acknowledged">Đã xác nhận</SelectItem>
-              <SelectItem value="resolved">Đã giải quyết</SelectItem>
+              <SelectItem value="all">{t("allStatuses")}</SelectItem>
+              <SelectItem value="open">{t("statusOpen")}</SelectItem>
+              <SelectItem value="acknowledged">{t("statusAcknowledged")}</SelectItem>
+              <SelectItem value="resolved">{t("statusResolved")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -131,49 +139,48 @@ export default function AlertCenterPage() {
         <div className="w-44">
           <Select value={severity} onValueChange={(v) => { setSeverity(v); setPage(1); }}>
             <SelectTrigger id="alert-severity-filter" className="bg-[#0f0f11]/60 border-zinc-800">
-              <SelectValue placeholder="Mức độ nghiêm trọng" />
+              <SelectValue placeholder={t("severityPlaceholder")} />
             </SelectTrigger>
             <SelectContent className="bg-[#151518] border-zinc-800 text-white">
-              <SelectItem value="all">Tất cả mức độ</SelectItem>
-              <SelectItem value="warning">Cảnh báo (warning)</SelectItem>
-              <SelectItem value="critical">Nghiêm trọng (critical)</SelectItem>
+              <SelectItem value="all">{t("allSeverities")}</SelectItem>
+              <SelectItem value="warning">{t("severityWarning")}</SelectItem>
+              <SelectItem value="critical">{t("severityCritical")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <Button variant="outline" size="sm" onClick={() => setRefreshTrigger(prev => prev + 1)} className="rounded-lg border-zinc-800">
-          Refresh
+          {tc("refresh")}
         </Button>
       </div>
 
-      {/* Main Table Card */}
       <Card className="border-zinc-800/80 bg-[#0f0f11]/40 rounded-xl">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-white">Danh sách cảnh báo ({total})</CardTitle>
+          <CardTitle className="text-lg font-semibold text-white">{t("listTitle", { total })}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-zinc-500 py-8 text-center animate-pulse">Đang tải dữ liệu cảnh báo...</p>
+            <p className="text-sm text-zinc-500 py-8 text-center animate-pulse">{t("loadingAlerts")}</p>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader className="border-zinc-800">
                     <TableRow className="border-zinc-800 hover:bg-transparent">
-                      <TableHead className="text-zinc-400">Tiêu đề</TableHead>
-                      <TableHead className="text-zinc-400">Mức độ</TableHead>
-                      <TableHead className="text-zinc-400">Trạng thái</TableHead>
-                      <TableHead className="text-zinc-400">Giá trị/Ngưỡng</TableHead>
-                      <TableHead className="text-zinc-400">Module nguồn</TableHead>
-                      <TableHead className="text-zinc-400">Thời gian tạo</TableHead>
-                      <TableHead className="text-right text-zinc-400">Thao tác</TableHead>
+                      <TableHead className="text-zinc-400">{t("colTitle")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colSeverity")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colStatus")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colValueThreshold")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colSourceModule")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colCreatedAt")}</TableHead>
+                      <TableHead className="text-right text-zinc-400">{t("colActions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {alerts.length === 0 && (
                       <TableRow className="hover:bg-transparent">
                         <TableCell colSpan={7} className="text-center py-8 text-zinc-500 italic">
-                          Không tìm thấy cảnh báo nào phù hợp.
+                          {t("empty")}
                         </TableCell>
                       </TableRow>
                     )}
@@ -202,7 +209,7 @@ export default function AlertCenterPage() {
                                 className="rounded-lg border-zinc-800 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/5"
                                 onClick={() => { setSelectedAlert(a); setActionType("ack"); }}
                               >
-                                Ack
+                                {t("ack")}
                               </Button>
                             )}
                             {(a.status === "open" || a.status === "acknowledged") && (
@@ -212,7 +219,7 @@ export default function AlertCenterPage() {
                                 className="rounded-lg border-zinc-800 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5"
                                 onClick={() => { setSelectedAlert(a); setActionType("resolve"); }}
                               >
-                                Resolve
+                                {t("resolve")}
                               </Button>
                             )}
                           </div>
@@ -223,10 +230,9 @@ export default function AlertCenterPage() {
                 </Table>
               </div>
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex justify-between items-center mt-6 text-sm text-zinc-400">
-                  <span>Trang {page}/{totalPages} — Tổng {total} bản ghi</span>
+                  <span>{tc("pageOf", { page, totalPages, total })}</span>
                   <div className="flex gap-2">
                     <Button
                       size="sm"
@@ -235,7 +241,7 @@ export default function AlertCenterPage() {
                       onClick={() => setPage(p => p - 1)}
                       className="rounded-lg border-zinc-800"
                     >
-                      Trước
+                      {tc("previous")}
                     </Button>
                     <Button
                       size="sm"
@@ -244,7 +250,7 @@ export default function AlertCenterPage() {
                       onClick={() => setPage(p => p + 1)}
                       className="rounded-lg border-zinc-800"
                     >
-                      Tiếp
+                      {tc("next")}
                     </Button>
                   </div>
                 </div>
@@ -254,58 +260,66 @@ export default function AlertCenterPage() {
         </CardContent>
       </Card>
 
-      {/* Detail & Action Dialog */}
       <Dialog open={!!selectedAlert && actionType === null} onOpenChange={(open) => !open && setSelectedAlert(null)}>
         <DialogContent className="max-w-2xl bg-[#0f0f11] border-zinc-800 text-white rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-500" /> Chi tiết cảnh báo
+              <AlertCircle className="h-5 w-5 text-red-500" /> {t("detailTitle")}
             </DialogTitle>
           </DialogHeader>
           {selectedAlert && (
             <div className="space-y-4 py-2">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-zinc-950/40 rounded-lg border border-zinc-800/80">
                 <div>
-                  <span className="text-zinc-500 text-xs block">Mã loại cảnh báo</span>
+                  <span className="text-zinc-500 text-xs block">{t("alertType")}</span>
                   <span className="font-mono text-sm">{selectedAlert.alertType}</span>
                 </div>
                 <div>
-                  <span className="text-zinc-500 text-xs block">Trạng thái / Mức độ</span>
+                  <span className="text-zinc-500 text-xs block">{t("statusSeverity")}</span>
                   <div className="flex gap-2 mt-1">
                     {getStatusBadge(selectedAlert.status)}
                     {getSeverityBadge(selectedAlert.severity)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-zinc-500 text-xs block">Phân hệ nguồn</span>
+                  <span className="text-zinc-500 text-xs block">{t("sourceModule")}</span>
                   <span className="text-zinc-200 text-sm font-semibold">{selectedAlert.sourceModule}</span>
                 </div>
                 {selectedAlert.traceId && (
                   <div>
-                    <span className="text-zinc-500 text-xs block">Trace ID</span>
+                    <span className="text-zinc-500 text-xs block">{tc("traceId")}</span>
                     <span className="font-mono text-xs text-emerald-400 block break-all">{selectedAlert.traceId}</span>
                   </div>
                 )}
               </div>
 
               <div>
-                <Label className="text-zinc-400 text-xs">Thông tin thông báo</Label>
+                <Label className="text-zinc-400 text-xs">{t("messageInfo")}</Label>
                 <p className="text-zinc-200 text-sm mt-1 bg-zinc-950/20 p-3 rounded-lg border border-zinc-850">{selectedAlert.message}</p>
               </div>
 
-              {/* Audit fields */}
               {(selectedAlert.acknowledgedAt || selectedAlert.resolvedAt) && (
                 <div className="space-y-2 p-3 bg-zinc-950/10 border border-zinc-800/60 rounded-lg text-xs text-zinc-400">
                   {selectedAlert.acknowledgedAt && (
                     <div className="flex items-center gap-2">
                       <User className="h-3.5 w-3.5 text-zinc-500" />
-                      <span>Xác nhận lúc {new Date(selectedAlert.acknowledgedAt).toLocaleString("vi-VN")} bởi {selectedAlert.acknowledgedBy ?? "Hệ thống"}</span>
+                      <span>
+                        {t("acknowledgedAt", {
+                          at: new Date(selectedAlert.acknowledgedAt).toLocaleString("vi-VN"),
+                          by: selectedAlert.acknowledgedBy ?? tc("system"),
+                        })}
+                      </span>
                     </div>
                   )}
                   {selectedAlert.resolvedAt && (
                     <div className="flex items-center gap-2">
                       <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                      <span>Giải quyết lúc {new Date(selectedAlert.resolvedAt).toLocaleString("vi-VN")} bởi {selectedAlert.resolvedBy ?? "Hệ thống"}</span>
+                      <span>
+                        {t("resolvedAt", {
+                          at: new Date(selectedAlert.resolvedAt).toLocaleString("vi-VN"),
+                          by: selectedAlert.resolvedBy ?? tc("system"),
+                        })}
+                      </span>
                     </div>
                   )}
                 </div>
@@ -318,7 +332,7 @@ export default function AlertCenterPage() {
                     className="border-zinc-800 text-amber-400 hover:bg-amber-500/5 rounded-lg"
                     onClick={() => setActionType("ack")}
                   >
-                    Xác nhận cảnh báo (Ack)
+                    {t("ackAlert")}
                   </Button>
                 )}
                 {(selectedAlert.status === "open" || selectedAlert.status === "acknowledged") && (
@@ -326,11 +340,11 @@ export default function AlertCenterPage() {
                     className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
                     onClick={() => setActionType("resolve")}
                   >
-                    Giải quyết (Resolve)
+                    {t("resolveAlert")}
                   </Button>
                 )}
                 <Button variant="outline" className="border-zinc-800 text-zinc-300 rounded-lg" onClick={() => setSelectedAlert(null)}>
-                  Đóng
+                  {tc("close")}
                 </Button>
               </DialogFooter>
             </div>
@@ -338,33 +352,30 @@ export default function AlertCenterPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Action Dialog (Ack/Resolve Confirmation) */}
       <Dialog open={actionType !== null} onOpenChange={(open) => !open && setActionType(null)}>
         <DialogContent className="max-w-md bg-[#0f0f11] border-zinc-800 text-white rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
               {actionType === "ack" ? (
                 <>
-                  <ShieldAlert className="h-5 w-5 text-amber-500" /> Xác nhận cảnh báo
+                  <ShieldAlert className="h-5 w-5 text-amber-500" /> {t("ackDialogTitle")}
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="h-5 w-5 text-emerald-500" /> Giải quyết cảnh báo
+                  <CheckCircle2 className="h-5 w-5 text-emerald-500" /> {t("resolveDialogTitle")}
                 </>
               )}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <p className="text-sm text-zinc-300">
-              {actionType === "ack"
-                ? "Ghi chú lại lý do/tiến trình kiểm tra cảnh báo này để các quản trị viên khác nắm thông tin."
-                : "Bạn có chắc chắn cảnh báo này đã được khắc phục hoàn toàn?"}
+              {actionType === "ack" ? t("ackDialogHint") : t("resolveDialogHint")}
             </p>
             <div className="space-y-1.5">
-              <Label htmlFor="action-note" className="text-zinc-400 text-xs">Ghi chú (Note)</Label>
+              <Label htmlFor="action-note" className="text-zinc-400 text-xs">{t("noteLabel")}</Label>
               <Input
                 id="action-note"
-                placeholder="Nhập ghi chú vận hành..."
+                placeholder={t("notePlaceholder")}
                 value={actionNote}
                 onChange={(e) => setActionNote(e.target.value)}
                 className="bg-[#151518] border-zinc-800 text-white rounded-lg placeholder-zinc-600"
@@ -377,14 +388,14 @@ export default function AlertCenterPage() {
                 onClick={() => { setActionType(null); setActionNote(""); }}
                 disabled={actionLoading}
               >
-                Hủy bỏ
+                {tc("cancel")}
               </Button>
               <Button
                 onClick={handleActionSubmit}
                 disabled={actionLoading}
                 className={actionType === "ack" ? "bg-amber-600 hover:bg-amber-700 text-white rounded-lg" : "bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"}
               >
-                {actionLoading ? "Đang xử lý..." : "Xác nhận"}
+                {actionLoading ? tc("processing") : tc("confirm")}
               </Button>
             </DialogFooter>
           </div>

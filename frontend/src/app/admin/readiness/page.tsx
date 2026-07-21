@@ -1,13 +1,15 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { readinessApi, ReadinessProbeResponse, UatRunDto } from "@/lib/readiness-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RefreshCw, ShieldAlert, Ban } from "lucide-react";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage, isFeatureDisabledError, isUnauthorizedError } from "@/lib/http-error";
+import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { isFeatureDisabledError, isUnauthorizedError } from "@/lib/http-error";
 
 type PageState = "loading" | "ready" | "error" | "unauthorized" | "featureDisabled";
 
@@ -20,6 +22,9 @@ function statusColor(status: string) {
 }
 
 export default function ReadinessPage() {
+  const t = useTranslations("Admin.readiness");
+  const tErrors = useTranslations("Errors");
+
   const [pageState, setPageState] = React.useState<PageState>("loading");
   const [errorMessage, setErrorMessage] = React.useState("");
   const [probe, setProbe] = React.useState<ReadinessProbeResponse | null>(null);
@@ -49,12 +54,13 @@ export default function ReadinessPage() {
         setPageState("unauthorized");
         return;
       }
-      const msg = getHttpErrorMessage(err, "Failed to load readiness data.");
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      const msg = message || t("errors.loadFailed");
       setErrorMessage(msg);
       setPageState("error");
-      showError(msg);
+      showApiErrorToast(codeLabel, msg);
     }
-  }, []);
+  }, [t, tErrors]);
 
   React.useEffect(() => {
     queueMicrotask(() => void loadData());
@@ -63,20 +69,22 @@ export default function ReadinessPage() {
   const handleCreateUat = async () => {
     try {
       await readinessApi.createUatRun({ scenarioCode: scenario, status: uatStatus });
-      showSuccess("UAT run created.");
+      showSuccess(t("toastUatCreated"));
       await loadData();
     } catch (err) {
-      showError(getHttpErrorMessage(err, "Failed to create UAT run."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.createUatFailed"));
     }
   };
 
   const handleSignoff = async (id: string) => {
     try {
       await readinessApi.signoffUatRun(id);
-      showSuccess("UAT signed off.");
+      showSuccess(t("toastUatSignedOff"));
       await loadData();
     } catch (err) {
-      showError(getHttpErrorMessage(err, "Failed to sign off UAT."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.signoffFailed"));
     }
   };
 
@@ -87,9 +95,10 @@ export default function ReadinessPage() {
         rtoMinutes: Number(rtoMinutes) || 1,
         passed: true,
       });
-      showSuccess("Incident drill recorded.");
+      showSuccess(t("toastDrillRecorded"));
     } catch (err) {
-      showError(getHttpErrorMessage(err, "Failed to record drill."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.drillFailed"));
     }
   };
 
@@ -97,7 +106,7 @@ export default function ReadinessPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 p-10 text-muted-foreground">
         <ShieldAlert className="h-10 w-10" />
-        <p>Unauthorized — missing readiness.read</p>
+        <p>{t("unauthorized")}</p>
       </div>
     );
   }
@@ -106,7 +115,7 @@ export default function ReadinessPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 p-10 text-muted-foreground">
         <Ban className="h-10 w-10" />
-        <p>Readiness gate is disabled by feature flag.</p>
+        <p>{t("featureDisabled")}</p>
       </div>
     );
   }
@@ -115,12 +124,12 @@ export default function ReadinessPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Readiness</h1>
-          <p className="text-sm text-muted-foreground">System probe, UAT runs, and incident drills.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Button data-testid="readiness-refresh-button" variant="outline" onClick={() => void loadData()}>
           <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
+          {t("refresh")}
         </Button>
       </div>
 
@@ -129,7 +138,7 @@ export default function ReadinessPage() {
       {probe && (
         <section className="space-y-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-medium">Overall</h2>
+            <h2 className="text-lg font-medium">{t("overall")}</h2>
             <span className={`text-sm font-semibold ${statusColor(probe.overallStatus)}`}>{probe.overallStatus}</span>
           </div>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -147,10 +156,10 @@ export default function ReadinessPage() {
       )}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">UAT runs</h2>
+        <h2 className="text-lg font-medium">{t("uatRuns")}</h2>
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Scenario</label>
+            <label className="text-xs text-muted-foreground">{t("scenario")}</label>
             <Select value={scenario} onValueChange={setScenario}>
               <SelectTrigger className="w-44">
                 <SelectValue />
@@ -164,7 +173,7 @@ export default function ReadinessPage() {
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Status</label>
+            <label className="text-xs text-muted-foreground">{t("status")}</label>
             <Select value={uatStatus} onValueChange={setUatStatus}>
               <SelectTrigger className="w-36">
                 <SelectValue />
@@ -177,17 +186,17 @@ export default function ReadinessPage() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={() => void handleCreateUat()}>Create UAT</Button>
+          <Button onClick={() => void handleCreateUat()}>{t("createUat")}</Button>
         </div>
 
         <div className="overflow-x-auto rounded-lg border border-border/60">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left">
               <tr>
-                <th className="p-3">Scenario</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Signed off</th>
-                <th className="p-3">Actions</th>
+                <th className="p-3">{t("colScenario")}</th>
+                <th className="p-3">{t("colStatus")}</th>
+                <th className="p-3">{t("colSignedOff")}</th>
+                <th className="p-3">{t("colActions")}</th>
               </tr>
             </thead>
             <tbody>
@@ -199,7 +208,7 @@ export default function ReadinessPage() {
                   <td className="p-3">
                     {run.status.toLowerCase() === "passed" ? (
                       <Button data-testid="uat-signoff-button" size="sm" variant="outline" onClick={() => void handleSignoff(run.id)}>
-                        Sign off
+                        {t("signOff")}
                       </Button>
                     ) : (
                       "—"
@@ -210,7 +219,7 @@ export default function ReadinessPage() {
               {uatRuns.length === 0 ? (
                 <tr>
                   <td className="p-3 text-muted-foreground" colSpan={4}>
-                    No UAT runs yet.
+                    {t("emptyUat")}
                   </td>
                 </tr>
               ) : null}
@@ -220,10 +229,10 @@ export default function ReadinessPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">Incident drill</h2>
+        <h2 className="text-lg font-medium">{t("incidentDrill")}</h2>
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Scenario</label>
+            <label className="text-xs text-muted-foreground">{t("scenario")}</label>
             <Select value={drillScenario} onValueChange={setDrillScenario}>
               <SelectTrigger className="w-44">
                 <SelectValue />
@@ -236,11 +245,11 @@ export default function ReadinessPage() {
             </Select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">RTO minutes</label>
+            <label className="text-xs text-muted-foreground">{t("rtoMinutes")}</label>
             <Input className="w-28" value={rtoMinutes} onChange={(e) => setRtoMinutes(e.target.value)} />
           </div>
           <Button variant="secondary" onClick={() => void handleDrill()}>
-            Record drill
+            {t("recordDrill")}
           </Button>
         </div>
       </section>

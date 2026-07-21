@@ -2,14 +2,15 @@
 
 import Image from "next/image";
 import { useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import api from "@/lib/api";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
 import { Upload, FileText, X } from "lucide-react";
 
 interface QcResultDialogProps {
@@ -22,6 +23,10 @@ interface QcResultDialogProps {
 }
 
 export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onSuccess }: QcResultDialogProps) {
+  const t = useTranslations("Features.qc");
+  const tc = useTranslations("Common.actions");
+  const tErrors = useTranslations("Errors");
+
   const [isPassed, setIsPassed] = useState(true);
   const [metrics, setMetrics] = useState("");
   const [attachmentRefs, setAttachmentRefs] = useState("");
@@ -43,9 +48,10 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
       });
       const uploadedUrl = res.data.url;
       setAttachmentRefs((prev) => (prev ? `${prev},${uploadedUrl}` : uploadedUrl));
-      showSuccess("Tải tài liệu lên thành công.");
+      showSuccess(t("toastUploadSuccess"));
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi tải tệp lên."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.uploadFailed"));
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -67,11 +73,12 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
         metrics: metrics.trim() || undefined,
         attachmentRefs: attachmentRefs || undefined
       });
-      showSuccess("Ghi nhận kết quả QC thành công.");
+      showSuccess(t("toastResultSuccess"));
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi gửi kết quả QC."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.resultFailed"));
     } finally {
       setLoading(false);
     }
@@ -84,20 +91,20 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
       <DialogContent className="sm:max-w-[500px] bg-zinc-900 border-zinc-800 text-white font-sans">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-white">Kiểm định chất lượng lô {lotNo}</DialogTitle>
+            <DialogTitle className="text-lg font-semibold text-white">{t("resultDialogTitle", { lotNo })}</DialogTitle>
           </DialogHeader>
 
           <div className="grid gap-5 py-4">
             <div className="flex items-center justify-between bg-zinc-800/50 p-3 rounded-lg border border-zinc-850">
               <div>
-                <Label className="text-sm font-medium text-white block">Trạng thái kiểm định</Label>
+                <Label className="text-sm font-medium text-white block">{t("inspectionStatus")}</Label>
                 <span className="text-xs text-zinc-400">
-                  {isPassed ? "Lô hàng đạt tiêu chuẩn chất lượng" : "Lô hàng không đạt tiêu chuẩn"}
+                  {isPassed ? t("passedHint") : t("failedHint")}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`text-xs font-semibold ${isPassed ? "text-emerald-500" : "text-rose-500"}`}>
-                  {isPassed ? "Đạt" : "Không đạt"}
+                  {isPassed ? t("passed") : t("failed")}
                 </span>
                 <Switch
                   checked={isPassed}
@@ -108,10 +115,10 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="metrics" className="text-xs text-zinc-400">Thông số đo lường / Kết quả kiểm tra</Label>
+              <Label htmlFor="metrics" className="text-xs text-zinc-400">{t("metrics")}</Label>
               <Textarea
                 id="metrics"
-                placeholder="Nhập các thông số đo lường như độ ẩm, kích thước, khối lượng, lỗi phát hiện..."
+                placeholder={t("metricsPlaceholder")}
                 value={metrics}
                 onChange={(e) => setMetrics(e.target.value)}
                 rows={3}
@@ -120,7 +127,7 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-xs text-zinc-400">Tài liệu / Ảnh bằng chứng QC</Label>
+              <Label className="text-xs text-zinc-400">{t("attachments")}</Label>
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
@@ -130,7 +137,7 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
                   className="border-dashed border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white h-9 text-xs gap-2 flex-1"
                 >
                   <Upload className="h-4 w-4" />
-                  {uploading ? "Đang tải tệp lên..." : "Tải tệp đính kèm lên"}
+                  {uploading ? t("uploading") : t("uploadAttachment")}
                 </Button>
                 <input
                   type="file"
@@ -180,14 +187,14 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
               disabled={loading}
               className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white h-9 text-xs"
             >
-              Hủy
+              {tc("cancel")}
             </Button>
             <Button
               type="submit"
               disabled={loading}
               className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-xs"
             >
-              {loading ? "Đang ghi nhận..." : "Gửi kết quả"}
+              {loading ? t("submitting") : t("submitResult")}
             </Button>
           </DialogFooter>
         </form>

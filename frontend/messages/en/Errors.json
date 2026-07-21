@@ -1,0 +1,25 @@
+{
+  "Errors": {
+    "codes": {
+      "CUTOVER_FROZEN": "Cutover write freeze",
+      "READINESS_DISABLED": "Readiness disabled",
+      "READINESS_UNAUTHORIZED": "Readiness unauthorized",
+      "CUTOVER_FREEZE_DENIED": "Freeze denied",
+      "TASK_INTERLEAVING_DISABLED": "Task interleaving disabled",
+      "UNAUTHORIZED": "Unauthorized",
+      "FORBIDDEN": "Forbidden",
+      "UNKNOWN": "Unknown error"
+    },
+    "messages": {
+      "CUTOVER_FROZEN": "Warehouse write APIs are frozen during cutover.",
+      "READINESS_DISABLED": "Readiness module is disabled by feature flag.",
+      "READINESS_UNAUTHORIZED": "Account lacks readiness permissions.",
+      "CUTOVER_FREEZE_DENIED": "Cannot change cutover freeze state.",
+      "TASK_INTERLEAVING_DISABLED": "Next-task suggestions are disabled.",
+      "UNAUTHORIZED": "Session is invalid or expired.",
+      "FORBIDDEN": "You are not allowed to perform this action.",
+      "UNKNOWN": "An unknown error occurred.",
+      "generic": "Request failed."
+    }
+  }
+}

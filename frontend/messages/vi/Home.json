@@ -1,0 +1,18 @@
+{
+  "Home": {
+    "dashboardTitle": "Bảng điều khiển quản trị",
+    "welcome": "Chào mừng tới Nexustock",
+    "subtitle": "Hệ thống quản lý kho thông minh (WMS) thiết kế Modular Monolith.",
+    "systemStatus": "Trạng thái hệ thống",
+    "details": "Chi tiết",
+    "quickLinks": "Liên kết nhanh",
+    "productsTotal": "Tổng sản phẩm",
+    "locations": "Vị trí lưu trữ",
+    "active": "Kích hoạt",
+    "manage": "Quản lý",
+    "phaseGuideTitle": "Bạn đang ở Nexustock WMS",
+    "phaseGuideBody": "Hệ thống quản lý kho mô-đun đã sẵn sàng vận hành. Dùng menu bên trái để mở các phân hệ.",
+    "manageCatalog": "Quản lý danh mục",
+    "systemHealth": "Sức khỏe hệ thống"
+  }
+}

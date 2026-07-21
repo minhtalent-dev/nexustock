@@ -2,18 +2,27 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** **95% Execution-Ready** (`consult_decide` Option **B** 2026-07-21)
-- **Đánh giá:** Phụ thuộc P31 foundation. Phạm vi **8/8** `master-data/**/page.tsx` + layout/components MD — **0 backlog** trong P32. Product 59/59 khóa ở P33.
-- **Trạng thái triển khai:** ⬜ Chưa bắt đầu — chờ P31 ✅ rồi `tt` / `/18-auto-execute`.
+- **Mức hiện tại:** **95% Execution-Ready** (`consult_decide` Option **B** 2026-07-21; **catalog modules** khóa theo P31a Option B `/30-auto-project-planner` 2026-07-21)
+- **Đánh giá:** Phụ thuộc **P31 ✅ + P31a ✅** (catalog split+merge). Phạm vi **8/8** `master-data/**/page.tsx` + layout/components MD — **0 backlog** trong P32. Product 59/59 khóa ở P33.
+- **Trạng thái triển khai:** ⬜ Chưa bắt đầu — chờ P31a ✅ rồi `tt` / `/18-auto-execute`.
 
 ### Quyết định khóa
 
 | Câu hỏi | Quyết định |
 |---|---|
 | Stack | Kế thừa **next-intl** + cookie `NEXT_LOCALE` từ P31 — **không** cài lại framework |
-| Catalog | Mở rộng `messages/vi.json` + `en.json` namespace `MasterData.*` |
+| Catalog | **Chỉ** `messages/{vi\|en}/MasterData.json` (PascalCase 1:1 — P31a Option 1). **Cấm** monolith / kebab file |
+| Key mới | **Semantic sections + camelCase** (P31a Option 1): `MasterData.{area}.{page\|actions\|fields\|columns\|status\|toast\|errors\|dialog}.*` |
 | Phạm vi | **Mọi** `frontend/src/app/master-data/**/page.tsx` (8) + layout master-data user-facing |
 | Out | Admin (P31), Mobile/Errors full/AC-09-10 (P33), DB content, WinUI |
+
+### Changelog plan (giữ lịch sử)
+
+| Ngày | Thay đổi |
+|---|---|
+| 2026-07-21 | Khóa Wave C 8/8 MD; catalogs monolith namespace `MasterData.*` |
+| 2026-07-21 | **up:** bắt buộc catalog modules (P31a); path draft `master-data.json` |
+| 2026-07-21 | **up `/30`:** file `MasterData.json`; key semantic sections bắt buộc từ đầu P32 |
 
 ---
 
@@ -27,8 +36,9 @@ Localize 100% giao diện **master-data** (products, UoM, warehouses, zones, loc
 
 - Refactor **8** pages dưới `master-data/**` sang `t()`.
 - Layout / shared components chỉ dùng bởi master-data (nếu còn hardcode).
-- Namespace catalogs: `MasterData.products`, `MasterData.uoms`, `MasterData.warehouses`, `MasterData.zones`, `MasterData.locations`, `MasterData.partners`, `MasterData.reasons`, `MasterData.import`, + form labels/actions dùng chung MD.
-- Verify mode P32: parity keys mới; inventory **8/8** DONE; grep gate `master-data/**`.
+- Catalog: `messages/vi/MasterData.json` + `en/MasterData.json`; đăng ký `'MasterData'` trong `CATALOG_MODULES`.
+- Keys: semantic từ đầu — ví dụ `MasterData.products.page.title`, `…columns.sku`, `…fields.sku.label` (xem P31a R-K*).
+- Verify P32: parity; **8/8** DONE; grep `master-data/**`; không monolith; không kebab key path trong `MasterData.*`.
 
 ### Non-negotiable output
 
@@ -44,7 +54,8 @@ Localize 100% giao diện **master-data** (products, UoM, warehouses, zones, loc
 
 ## 3. Điều kiện đầu vào
 
-- Phase **31** ✅ (next-intl, switcher, catalogs, sidebar).
+- Phase **31** ✅ (next-intl, switcher, sidebar).
+- Phase **31a** ✅ (`loadMessages` + `messages/{locale}/*.json` — **không** monolith runtime).
 - Inventory freeze: 8 file MD (baseline 2026-07-21).
 
 ### Inventory P32 (freeze)
@@ -61,7 +72,10 @@ Localize 100% giao diện **master-data** (products, UoM, warehouses, zones, loc
 ## 4. Setup
 
 - **Không** package mới.
-- Chỉ mở rộng JSON catalogs + refactor pages.
+- Tạo **chỉ** `frontend/messages/vi/MasterData.json` + `en/MasterData.json` (shape `{ "MasterData": { ... } }`).
+- Thêm `'MasterData'` vào `src/i18n/catalog-modules.ts` **và** static imports `viMasterData`/`enMasterData` trong `load-messages.ts` (P31a BS-31a-6).
+- Refactor 8 pages + layout MD: `useTranslations('MasterData.products')` + `t('page.title')` / `t('actions.create')` …
+- **Cấm** flat kiểu P31 (`createOrder` top-level không có section) trong namespace `MasterData`.
 - Comment: tiếng Việt; UI copy trong JSON.
 
 ## 5. Permissions
@@ -179,22 +193,29 @@ export default function ProductsPage() {
 
 ## 17. Maintenance & Rollback
 
-- Thêm string MD: cập nhật cả `vi.json` + `en.json`.
-- Rollback: git revert PR P32; P31 foundation giữ nguyên.
+- Thêm string MD: cập nhật cả `messages/vi/MasterData.json` + `en/MasterData.json` (semantic sections).
+- Rollback: git revert PR P32; P31a catalogs giữ nguyên.
 
-## 18. Catalog mock (tối thiểu)
+## 18. Catalog mock (tối thiểu — semantic)
 
 ```json
 {
   "MasterData": {
-    "products": { "title": "Sản phẩm", "sku": "Mã SKU", "empty": "Chưa có sản phẩm" },
-    "uoms": { "title": "Đơn vị tính" },
-    "warehouses": { "title": "Kho" },
-    "zones": { "title": "Zone" },
-    "locations": { "title": "Vị trí" },
-    "partners": { "title": "Đối tác" },
-    "reasons": { "title": "Lý do" },
-    "import": { "title": "Import", "upload": "Tải tệp lên" }
+    "products": {
+      "page": { "title": "Sản phẩm", "empty": "Chưa có sản phẩm" },
+      "columns": { "sku": "Mã SKU" },
+      "actions": { "create": "Tạo sản phẩm" }
+    },
+    "uoms": { "page": { "title": "Đơn vị tính" } },
+    "warehouses": { "page": { "title": "Kho" } },
+    "zones": { "page": { "title": "Zone" } },
+    "locations": { "page": { "title": "Vị trí" } },
+    "partners": { "page": { "title": "Đối tác" } },
+    "reasons": { "page": { "title": "Lý do" } },
+    "import": {
+      "page": { "title": "Import" },
+      "actions": { "upload": "Tải tệp lên" }
+    }
   }
 }
 ```
@@ -214,12 +235,12 @@ export default function ProductsPage() {
 
 ## 20. Implementation order
 
-1. Xác nhận P31 ✅ + đọc catalogs hiện có.
-2. Thêm namespace `MasterData.*` VI+EN.
-3. Refactor 8 pages + layout MD.
-4. `verify_i18n.ps1 -Phase 32`.
+1. Xác nhận P31 ✅ + **P31a ✅** + đọc `messages/{locale}/*.json` PascalCase.
+2. Thêm `'MasterData'` vào `CATALOG_MODULES` (nếu chưa).
+3. Viết `MasterData.json` VI/EN theo semantic sections; refactor 8 pages + layout MD.
+4. `verify_i18n.ps1 -Phase 32` PASS.
 5. Cập nhật phase/master plan.
 
-**Lệnh:** `` `tt `` / `/18-auto-execute` (sau P31).
+**Lệnh:** `` `tt `` / `/18-auto-execute` (sau P31a).
 
 ---

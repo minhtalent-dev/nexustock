@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { RefreshCw, Layers, PlusCircle, ArrowRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -31,6 +32,10 @@ interface ShipmentResponse {
 }
 
 export default function WavesPage() {
+  const t = useTranslations("Admin.waves");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [waves, setWaves] = useState<WaveListResponse[]>([]);
   const [openShipments, setOpenShipments] = useState<ShipmentResponse[]>([]);
   const [selectedShipmentIds, setSelectedShipmentIds] = useState<string[]>([]);
@@ -44,26 +49,27 @@ export default function WavesPage() {
     try {
       const res = await api.get<WaveListResponse[]>("/waves");
       setWaves(res.data || []);
-    } catch {
-      showError("Không thể tải danh sách Waves.");
+    } catch (err: unknown) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadListFailed"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t, tErrors]);
 
   const fetchOpenShipments = useCallback(async () => {
     setLoadingShipments(true);
     try {
       const res = await api.get<ShipmentResponse[]>("/outbound/shipments");
-      // Lọc các Shipment ở trạng thái Open
       const openOnes = (res.data || []).filter((s) => s.status === "Open" || s.status === "Waving");
       setOpenShipments(openOnes);
-    } catch {
-      showError("Không thể tải danh sách đơn xuất.");
+    } catch (err: unknown) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadShipmentsFailed"));
     } finally {
       setLoadingShipments(false);
     }
-  }, []);
+  }, [t, tErrors]);
 
   useEffect(() => {
     queueMicrotask(() => void fetchWaves());
@@ -81,24 +87,25 @@ export default function WavesPage() {
     if (checked) {
       setSelectedShipmentIds([...selectedShipmentIds, id]);
     } else {
-      setSelectedShipmentIds(selectedShipmentIds.filter(x => x !== id));
+      setSelectedShipmentIds(selectedShipmentIds.filter((x) => x !== id));
     }
   };
 
   const handleCreateWave = async () => {
     if (selectedShipmentIds.length === 0) {
-      showError("Vui lòng chọn ít nhất một đơn xuất kho.");
+      showApiErrorToast("", t("errors.selectShipmentRequired"));
       return;
     }
 
     setCreating(true);
     try {
       await api.post("/waves", { shipmentIds: selectedShipmentIds });
-      showSuccess("Tạo đợt Wave thành công.");
+      showSuccess(t("toastCreateSuccess"));
       setShowCreateForm(false);
       fetchWaves();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi khi tạo Wave."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.createFailed"));
     } finally {
       setCreating(false);
     }
@@ -106,11 +113,16 @@ export default function WavesPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "DRAFT": return <Badge className="bg-zinc-700 hover:bg-zinc-600 text-zinc-200">Bản nháp</Badge>;
-      case "RELEASED": return <Badge className="bg-blue-600 hover:bg-blue-500 text-white">Đang lấy hàng</Badge>;
-      case "SORTING": return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">Phân loại Put-Wall</Badge>;
-      case "COMPLETED": return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">Hoàn thành</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
+      case "DRAFT":
+        return <Badge className="bg-zinc-700 hover:bg-zinc-600 text-zinc-200">{t("statusDraft")}</Badge>;
+      case "RELEASED":
+        return <Badge className="bg-blue-600 hover:bg-blue-500 text-white">{t("statusReleased")}</Badge>;
+      case "SORTING":
+        return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">{t("statusSorting")}</Badge>;
+      case "COMPLETED":
+        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">{t("statusCompleted")}</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
@@ -120,11 +132,9 @@ export default function WavesPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <Layers className="h-6 w-6 text-indigo-400" />
-            Đợt Lấy Hàng Wave Picking (Wave Builder)
+            {t("title")}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">
-            Gom nhiều đơn xuất kho thành đợt lấy hàng tổng hợp và phân loại bằng bàn Put-Wall động.
-          </p>
+          <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -132,7 +142,7 @@ export default function WavesPage() {
             className="bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 h-9 text-xs px-4"
           >
             <PlusCircle className="h-4 w-4" />
-            {showCreateForm ? "Hủy" : "Tạo đợt Wave mới"}
+            {showCreateForm ? tc("cancel") : t("createWave")}
           </Button>
           <Button
             onClick={fetchWaves}
@@ -140,7 +150,7 @@ export default function WavesPage() {
             className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-9 px-4 flex items-center gap-2 text-xs"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            Làm mới
+            {tc("refresh")}
           </Button>
         </div>
       </div>
@@ -148,25 +158,23 @@ export default function WavesPage() {
       {showCreateForm && (
         <Card className="bg-zinc-900 border-indigo-900/40 text-white">
           <CardHeader className="border-b border-zinc-800 pb-3">
-            <CardTitle className="text-sm font-semibold text-indigo-300">
-              Bước 1: Chọn các đơn xuất kho (Shipments) gom đợt
-            </CardTitle>
+            <CardTitle className="text-sm font-semibold text-indigo-300">{t("createStepTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 flex flex-col gap-4">
             {loadingShipments ? (
-              <div className="text-center py-6 text-zinc-500 text-xs font-mono">Đang tải đơn xuất...</div>
+              <div className="text-center py-6 text-zinc-500 text-xs font-mono">{t("loadingShipments")}</div>
             ) : openShipments.length === 0 ? (
-              <div className="text-center py-6 text-zinc-500 text-xs">Không có đơn xuất kho nào khả dụng ở trạng thái Open.</div>
+              <div className="text-center py-6 text-zinc-500 text-xs">{t("noOpenShipments")}</div>
             ) : (
               <div className="max-h-60 overflow-y-auto border border-zinc-800 rounded">
                 <Table className="text-xs">
                   <TableHeader className="bg-zinc-950 border-b border-zinc-800">
                     <TableRow className="hover:bg-transparent">
                       <TableHead className="w-12"></TableHead>
-                      <TableHead className="text-zinc-400">Mã đơn xuất</TableHead>
-                      <TableHead className="text-zinc-400">Khách hàng</TableHead>
-                      <TableHead className="text-zinc-400">Ngày tạo</TableHead>
-                      <TableHead className="text-zinc-400">Trạng thái</TableHead>
+                      <TableHead className="text-zinc-400">{t("colShipmentNo")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colCustomer")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colCreatedAt")}</TableHead>
+                      <TableHead className="text-zinc-400">{tc("status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -181,7 +189,9 @@ export default function WavesPage() {
                         </TableCell>
                         <TableCell className="font-bold text-zinc-200 font-mono">
                           {s.shipmentNo}
-                          {s.status === "Waving" && <span className="ml-2 text-[10px] text-indigo-400 font-normal italic">(Đã nằm ở wave khác)</span>}
+                          {s.status === "Waving" && (
+                            <span className="ml-2 text-[10px] text-indigo-400 font-normal italic">{t("inOtherWave")}</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-zinc-300">{s.partnerName}</TableCell>
                         <TableCell className="text-zinc-400">{new Date(s.createdAt).toLocaleDateString()}</TableCell>
@@ -202,14 +212,16 @@ export default function WavesPage() {
                 variant="outline"
                 className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-8 text-xs px-3"
               >
-                Hủy
+                {tc("cancel")}
               </Button>
               <Button
                 onClick={handleCreateWave}
                 disabled={creating || selectedShipmentIds.length === 0}
                 className="bg-indigo-600 hover:bg-indigo-500 text-white h-8 text-xs px-4"
               >
-                {creating ? "Đang xử lý..." : `Tạo Wave (${selectedShipmentIds.length} đơn)`}
+                {creating
+                  ? tc("processing")
+                  : t("createWaveWithCount", { count: selectedShipmentIds.length })}
               </Button>
             </div>
           </CardContent>
@@ -219,19 +231,19 @@ export default function WavesPage() {
       <Card className="bg-zinc-900 border-zinc-800 text-white">
         <CardContent className="p-0">
           {loading && waves.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 text-xs font-mono">Đang tải...</div>
+            <div className="text-center py-12 text-zinc-500 text-xs font-mono">{t("loading")}</div>
           ) : waves.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 text-xs">Không có đợt Wave Picking nào được tạo.</div>
+            <div className="text-center py-12 text-zinc-500 text-xs">{t("emptyWaves")}</div>
           ) : (
             <Table className="text-xs">
               <TableHeader className="border-b border-zinc-800">
                 <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                  <TableHead className="text-zinc-400">Mã đợt Wave</TableHead>
-                  <TableHead className="text-zinc-400 text-right">Số mặt hàng</TableHead>
-                  <TableHead className="text-zinc-400 text-right">Tổng số lượng</TableHead>
-                  <TableHead className="text-zinc-400">Người tạo</TableHead>
-                  <TableHead className="text-zinc-400">Ngày tạo</TableHead>
-                  <TableHead className="text-zinc-400">Trạng thái</TableHead>
+                  <TableHead className="text-zinc-400">{t("colWaveNo")}</TableHead>
+                  <TableHead className="text-zinc-400 text-right">{t("colItemCount")}</TableHead>
+                  <TableHead className="text-zinc-400 text-right">{t("colTotalQty")}</TableHead>
+                  <TableHead className="text-zinc-400">{t("colCreatedBy")}</TableHead>
+                  <TableHead className="text-zinc-400">{t("colCreatedAt")}</TableHead>
+                  <TableHead className="text-zinc-400">{tc("status")}</TableHead>
                   <TableHead className="w-20"></TableHead>
                 </TableRow>
               </TableHeader>

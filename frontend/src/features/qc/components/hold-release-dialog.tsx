@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import api from "@/lib/api";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
 
 interface HoldReleaseDialogProps {
   isOpen: boolean;
@@ -19,6 +20,10 @@ interface HoldReleaseDialogProps {
 }
 
 export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSuccess }: HoldReleaseDialogProps) {
+  const t = useTranslations("Features.qc");
+  const tc = useTranslations("Common.actions");
+  const tErrors = useTranslations("Errors");
+
   const [reasonCode, setReasonCode] = useState("");
   const [locationId, setLocationId] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,29 +31,29 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
   const getTitle = () => {
     switch (mode) {
       case "hold":
-        return `Khóa lô hàng ${lotNo}`;
+        return t("holdTitle", { lotNo });
       case "release":
-        return `Giải phóng lô hàng ${lotNo}`;
+        return t("releaseTitle", { lotNo });
       case "reject":
-        return `Từ chối lô hàng ${lotNo}`;
+        return t("rejectTitle", { lotNo });
     }
   };
 
   const getButtonText = () => {
     switch (mode) {
       case "hold":
-        return "Khóa hàng";
+        return t("holdAction");
       case "release":
-        return "Giải phóng";
+        return t("releaseAction");
       case "reject":
-        return "Từ chối";
+        return t("rejectAction");
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!reasonCode.trim()) {
-      showError("Vui lòng nhập lý do.");
+      showApiErrorToast(t("errors.reasonRequired"), t("errors.reasonRequired"));
       return;
     }
 
@@ -59,22 +64,23 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
           locationId: locationId || undefined,
           reasonCode: reasonCode.trim()
         });
-        showSuccess("Khóa lô hàng thành công.");
+        showSuccess(t("toastHoldSuccess"));
       } else if (mode === "release") {
         await api.post(`/qc/${lotId}/release`, {
           reasonCode: reasonCode.trim()
         });
-        showSuccess("Giải phóng lô hàng thành công.");
+        showSuccess(t("toastReleaseSuccess"));
       } else if (mode === "reject") {
         await api.post(`/qc/${lotId}/reject`, {
           reasonCode: reasonCode.trim()
         });
-        showSuccess("Từ chối lô hàng thành công.");
+        showSuccess(t("toastRejectSuccess"));
       }
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi xử lý yêu cầu."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.actionFailed"));
     } finally {
       setLoading(false);
     }
@@ -91,10 +97,10 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
           <div className="grid gap-4 py-4">
             {mode === "hold" && (
               <div className="grid gap-2">
-                <Label htmlFor="locationId" className="text-xs text-zinc-400">Vị trí kệ cụ thể (Không bắt buộc)</Label>
+                <Label htmlFor="locationId" className="text-xs text-zinc-400">{t("holdLocationOptional")}</Label>
                 <Input
                   id="locationId"
-                  placeholder="Nhập ID vị trí (nếu muốn khóa cụ thể)"
+                  placeholder={t("holdLocationPlaceholder")}
                   value={locationId}
                   onChange={(e) => setLocationId(e.target.value)}
                   className="bg-zinc-800 border-zinc-700 text-white h-9 text-sm focus:ring-emerald-500"
@@ -103,10 +109,10 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
             )}
 
             <div className="grid gap-2">
-              <Label htmlFor="reasonCode" className="text-xs text-zinc-400">Lý do (Reason code)</Label>
+              <Label htmlFor="reasonCode" className="text-xs text-zinc-400">{t("reasonCode")}</Label>
               <Input
                 id="reasonCode"
-                placeholder={mode === "hold" ? "Ví dụ: QC_FAILED, DAMAGE" : "Nhập lý do thực hiện"}
+                placeholder={mode === "hold" ? t("holdReasonPlaceholder") : t("actionReasonPlaceholder")}
                 value={reasonCode}
                 onChange={(e) => setReasonCode(e.target.value)}
                 required
@@ -123,7 +129,7 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
               disabled={loading}
               className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white h-9 text-xs"
             >
-              Hủy
+              {tc("cancel")}
             </Button>
             <Button
               type="submit"
@@ -136,7 +142,7 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
                   : "bg-amber-600 hover:bg-amber-500"
               } text-white h-9 text-xs`}
             >
-              {loading ? "Đang xử lý..." : getButtonText()}
+              {loading ? t("processing") : getButtonText()}
             </Button>
           </DialogFooter>
         </form>

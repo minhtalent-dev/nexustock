@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { Fragment, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,41 +12,39 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 
-const labelMap: Record<string, string> = {
-  "": "Trang chủ",
-  "master-data": "Master data",
-  "products": "Vật tư",
-  "uoms": "Đơn vị tính",
-  "warehouses": "Nhà kho",
-  "zones": "Vùng kho",
-  "locations": "Vị trí kệ",
-  "partners": "Đối tác",
-  "reasons": "Mã lý do",
-  "import": "Nhập dữ liệu",
-  "health-ui": "Sức khỏe hệ thống",
-};
-
 export default function BreadcrumbNav() {
   const pathname = usePathname();
+  const t = useTranslations("Breadcrumb");
 
   const crumbs = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean);
+    /** URL kebab (master-data) → key camelCase (masterData). */
+    const segmentToKey = (seg: string) =>
+      seg.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
+    const labelFor = (seg: string) => {
+      try {
+        return t(segmentToKey(seg) as never);
+      } catch {
+        return seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      }
+    };
+
     if (segments.length === 0) {
-      return [{ href: "/", label: "Trang chủ", isLast: true }];
+      return [{ href: "/", label: t("home"), isLast: true }];
     }
     return [
-      { href: "/", label: "Trang chủ", isLast: false },
+      { href: "/", label: t("home"), isLast: false },
       ...segments.map((seg, i) => {
         const href = "/" + segments.slice(0, i + 1).join("/");
         const isLast = i === segments.length - 1;
         return {
           href,
-          label: labelMap[seg] ?? seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+          label: labelFor(seg),
           isLast,
         };
       }),
     ];
-  }, [pathname]);
+  }, [pathname, t]);
 
   return (
     <Breadcrumb className="mb-4">

@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { showError, showSuccess } from "@/lib/toast";
+import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
 
 interface CompletePickDialogProps {
   isOpen: boolean;
@@ -29,6 +31,10 @@ export function CompletePickDialog({
   locationCode,
   allocatedQty,
 }: CompletePickDialogProps) {
+  const t = useTranslations("Features.outbound");
+  const tc = useTranslations("Common.actions");
+  const tErrors = useTranslations("Errors");
+
   const [pickedQty, setPickedQty] = useState<number>(allocatedQty);
   const [saving, setSaving] = useState(false);
 
@@ -41,11 +47,14 @@ export function CompletePickDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (pickedQty <= 0) {
-      showError("Số lượng pick phải lớn hơn 0.");
+      showApiErrorToast(t("errors.pickQtyInvalid"), t("errors.pickQtyInvalid"));
       return;
     }
     if (pickedQty > allocatedQty) {
-      showError(`Số lượng pick thực tế không được vượt quá số lượng phân bổ (${allocatedQty}).`);
+      showApiErrorToast(
+        t("errors.pickQtyExceeded", { allocated: allocatedQty }),
+        t("errors.pickQtyExceeded", { allocated: allocatedQty })
+      );
       return;
     }
 
@@ -54,11 +63,12 @@ export function CompletePickDialog({
       await api.post(`/outbound/picks/${pickTaskId}/complete`, {
         pickedQty
       });
-      showSuccess("Hoàn thành nhiệm vụ lấy hàng.");
+      showSuccess(t("toastPickSuccess"));
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể hoàn tất nhiệm vụ lấy hàng."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.pickFailed"));
     } finally {
       setSaving(false);
     }
@@ -68,27 +78,27 @@ export function CompletePickDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[400px]">
         <DialogHeader>
-          <DialogTitle>Xác nhận lấy hàng (Picking)</DialogTitle>
+          <DialogTitle>{t("pickConfirmTitle")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4">
           <div className="grid grid-cols-3 items-center gap-4">
-            <Label className="text-right">Vật tư</Label>
+            <Label className="text-right">{t("item")}</Label>
             <div className="col-span-2 text-sm font-semibold">{itemName}</div>
           </div>
           <div className="grid grid-cols-3 items-center gap-4">
-            <Label className="text-right">Số lô</Label>
+            <Label className="text-right">{t("lotNo")}</Label>
             <div className="col-span-2 text-sm font-mono font-semibold">{lotNo}</div>
           </div>
           <div className="grid grid-cols-3 items-center gap-4">
-            <Label className="text-right">Vị trí kệ</Label>
+            <Label className="text-right">{t("location")}</Label>
             <div className="col-span-2 text-sm font-bold text-amber-600">{locationCode}</div>
           </div>
           <div className="grid grid-cols-3 items-center gap-4">
-            <Label className="text-right">Yêu cầu pick</Label>
+            <Label className="text-right">{t("requestedPick")}</Label>
             <div className="col-span-2 text-sm font-semibold">{allocatedQty}</div>
           </div>
           <div className="grid grid-cols-3 items-center gap-4">
-            <Label htmlFor="pickedQty" className="text-right">Thực tế pick</Label>
+            <Label htmlFor="pickedQty" className="text-right">{t("actualPick")}</Label>
             <Input
               id="pickedQty"
               type="number"
@@ -103,8 +113,8 @@ export function CompletePickDialog({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>Hủy</Button>
-            <Button type="submit" disabled={saving}>Xác nhận pick</Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>{tc("cancel")}</Button>
+            <Button type="submit" disabled={saving}>{t("confirmPick")}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

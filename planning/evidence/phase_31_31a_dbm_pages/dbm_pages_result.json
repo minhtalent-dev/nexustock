@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "totalRows": 87,
+  "pass": 83,
+  "skip": 4,
+  "fail": 0,
+  "inventoryTarget": 44,
+  "admin": "admin@nexustock.com",
+  "base": "http://localhost:3003",
+  "fails": [],
+  "skips": [
+    "07-cross-docking-id-vi",
+    "11-genealogy-lot-vi",
+    "07-cross-docking-id-en",
+    "11-genealogy-lot-en"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "HealthUi": {
+    "title": "System health",
+    "refresh": "Refresh",
+    "api": "API",
+    "database": "Database",
+    "redis": "Redis",
+    "version": "Version",
+    "environment": "Environment",
+    "loadError": "Failed to load health status",
+    "subtitle": "Nexustock modular monolith dashboard",
+    "apiHost": "API Web Host",
+    "apiHostDesc": "Composition root & Middleware",
+    "dbTitle": "PostgreSQL Database",
+    "dbDesc": "Main operational storage",
+    "redisTitle": "Redis cache",
+    "redisDesc": "Distributed caching (Optional)",
+    "metadata": "Metadata details",
+    "apiVersion": "API version",
+    "liveness": "Liveness check (/health/live)",
+    "readiness": "Readiness check (/health/ready)",
+    "alive": "Alive",
+    "active": "Active",
+    "traceId": "Trace identifier",
+    "lastChecked": "Last checked",
+    "connectionError": "API connection error",
+    "healthy": "Healthy",
+    "pending": "Pending",
+    "disabled": "Disabled",
+    "unhealthy": "Unhealthy",
+    "unknown": "Unknown"
+  }
+}

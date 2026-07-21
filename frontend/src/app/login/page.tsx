@@ -2,15 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { KeyRound, Mail, LogIn } from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default function LoginPage() {
   const { login, isAuthenticated } = useAuth();
   const router = useRouter();
+  const t = useTranslations("Login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -37,7 +40,9 @@ export default function LoginPage() {
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-[#0a0a0a] text-zinc-100 font-sans">
       <div className="w-full max-w-md p-8 bg-[#111]/60 border border-zinc-800/80 backdrop-blur-md rounded-2xl shadow-2xl flex flex-col gap-6">
-        {/* Brand/Title */}
+        <div className="flex justify-end">
+          <LanguageSwitcher />
+        </div>
         <div className="flex flex-col gap-1 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
             <span>Nexustock</span>
@@ -45,14 +50,13 @@ export default function LoginPage() {
               WMS
             </span>
           </h1>
-          <p className="text-xs text-zinc-500 uppercase tracking-widest font-mono mt-1">Đăng nhập hệ thống</p>
+          <p className="text-xs text-zinc-500 uppercase tracking-widest font-mono mt-1">{t("title")}</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <Label htmlFor="email" className="text-xs font-medium text-zinc-400">
-              Email
+              {t("username")}
             </Label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-4 w-4 text-zinc-650" />
@@ -71,7 +75,7 @@ export default function LoginPage() {
 
           <div className="flex flex-col gap-2">
             <Label htmlFor="password" className="text-xs font-medium text-zinc-400">
-              Mật khẩu
+              {t("password")}
             </Label>
             <div className="relative">
               <KeyRound className="absolute left-3 top-3 h-4 w-4 text-zinc-650" />
@@ -96,23 +100,16 @@ export default function LoginPage() {
             {loading ? (
               <span className="flex items-center gap-2">
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                Đang xác thực...
+                {t("authenticating")}
               </span>
             ) : (
               <span className="flex items-center gap-2">
                 <LogIn className="h-4 w-4" />
-                Xác nhận đăng nhập
+                {t("submit")}
               </span>
             )}
           </Button>
         </form>
-
-        {/* Hint (Boring over clever) */}
-        <div className="pt-2 border-t border-zinc-800/40 text-center">
-          <p className="text-[10px] text-zinc-600">
-            Tài khoản mặc định: <span className="font-mono text-zinc-550 selection:bg-zinc-800">admin@nexustock.com</span> / <span className="font-mono text-zinc-550 selection:bg-zinc-800">AdminSecret123!</span>
-          </p>
-        </div>
       </div>
     </div>
   );

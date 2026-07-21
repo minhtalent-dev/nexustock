@@ -2,14 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { showError } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast } from "@/lib/toast";
 import { Search, Tag, AlertCircle } from "lucide-react";
 
 interface LotResponseDto {
@@ -24,6 +25,10 @@ interface LotResponseDto {
 }
 
 export default function LotsPage() {
+  const t = useTranslations("Admin.lots");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [searchLotNo, setSearchLotNo] = useState("");
   const [lots, setLots] = useState<LotResponseDto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -32,7 +37,7 @@ export default function LotsPage() {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchLotNo.trim()) {
-      showError("Vui lòng nhập số lô hàng để tìm kiếm.");
+      showApiErrorToast("", t("errors.lotRequired"));
       return;
     }
 
@@ -42,7 +47,8 @@ export default function LotsPage() {
       const res = await api.get<LotResponseDto[]>(`/lots/${searchLotNo.trim()}`);
       setLots(res.data);
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi khi tra cứu lô hàng."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.searchFailed"));
     } finally {
       setLoading(false);
     }
@@ -51,13 +57,13 @@ export default function LotsPage() {
   const getQcBadge = (status: string) => {
     switch (status.toUpperCase()) {
       case "RELEASE":
-        return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Release (Đạt)</Badge>;
+        return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">{t("statusRelease")}</Badge>;
       case "HOLD":
-        return <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">Hold (Chờ kiểm)</Badge>;
+        return <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">{t("statusHold")}</Badge>;
       case "REJECT":
-        return <Badge className="bg-red-500/10 text-red-500 border-red-500/20">Reject (Không đạt)</Badge>;
+        return <Badge className="bg-red-500/10 text-red-500 border-red-500/20">{t("statusReject")}</Badge>;
       case "UNSPEC":
-        return <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20">Chưa xác định</Badge>;
+        return <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20">{t("statusUnspec")}</Badge>;
       default:
         return <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20">{status}</Badge>;
     }
@@ -68,16 +74,16 @@ export default function LotsPage() {
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <Tag className="h-6 w-6 text-emerald-500" />
-          Tra cứu lô hàng
+          {t("title")}
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">Tra cứu thông tin ngày sản xuất, hạn sử dụng và trạng thái QC của lô hàng thực tế.</p>
+        <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
       </div>
 
       <Card className="bg-[#111] border-zinc-800/80">
         <CardContent className="p-6">
           <form onSubmit={handleSearch} className="flex gap-3 max-w-md">
             <Input
-              placeholder="Nhập số lô hàng (ví dụ: LOT-...)"
+              placeholder={t("searchPlaceholder")}
               value={searchLotNo}
               onChange={(e) => setSearchLotNo(e.target.value)}
               className="bg-zinc-900 border-zinc-800 text-white focus-visible:ring-emerald-500 text-sm h-10"
@@ -88,7 +94,7 @@ export default function LotsPage() {
               ) : (
                 <Search className="h-4 w-4" />
               )}
-              Tìm kiếm
+              {tc("search")}
             </Button>
           </form>
         </CardContent>
@@ -97,17 +103,17 @@ export default function LotsPage() {
       {searched && (
         <Card className="bg-[#111] border-zinc-800/80">
           <CardHeader className="py-4 border-b border-zinc-800/60">
-            <CardTitle className="text-sm font-semibold text-white">Kết quả tra cứu</CardTitle>
+            <CardTitle className="text-sm font-semibold text-white">{t("resultsTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader className="bg-zinc-900/30 border-b border-zinc-800/60">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-zinc-400 font-semibold h-11">Số lô hàng</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11">Vật tư</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-center w-40">Ngày sản xuất</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-center w-40">Hạn sử dụng</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-center w-40">Trạng thái QC</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11">{t("colLotNo")}</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11">{t("colItem")}</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11 text-center w-40">{t("colProductionDate")}</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11 text-center w-40">{t("colExpiryDate")}</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11 text-center w-40">{t("colQcStatus")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -116,7 +122,7 @@ export default function LotsPage() {
                     <TableCell colSpan={5} className="text-center text-zinc-500 py-12">
                       <div className="flex flex-col items-center gap-2">
                         <AlertCircle className="h-8 w-8 text-zinc-600" />
-                        <span>Không tìm thấy lô hàng nào trùng khớp với số lô đã nhập.</span>
+                        <span>{t("empty")}</span>
                       </div>
                     </TableCell>
                   </TableRow>

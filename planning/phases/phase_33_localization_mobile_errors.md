@@ -2,18 +2,28 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** **95% Execution-Ready** (`consult_decide` Option **B** 2026-07-21)
-- **Đánh giá:** Phase khóa **Milestone 5**. Phạm vi: **7/7** mobile pages + Errors catalogs **đầy đủ** + verify **59/59 + 0 backlog** toàn product Web. Optional BE `Accept-Language`.
-- **Trạng thái triển khai:** ⬜ Chờ P31+P32 ✅.
+- **Mức hiện tại:** **95% Execution-Ready** (`consult_decide` Option **B** 2026-07-21; **catalog modules** khóa theo P31a Option B `/30-auto-project-planner` 2026-07-21)
+- **Đánh giá:** Phase khóa **Milestone 5**. Phạm vi: **7/7** mobile pages + Errors catalogs **đầy đủ** + verify **59/59 + 0 backlog** toàn product Web. Optional BE `Accept-Language`. Catalogs theo **module files** (P31a).
+- **Trạng thái triển khai:** ⬜ Chờ P31 + **P31a** + P32 ✅.
 
 ### Quyết định khóa
 
 | Câu hỏi | Quyết định |
 |---|---|
-| Stack | Kế thừa next-intl P31 |
+| Stack | Kế thừa next-intl P31 + loader merge P31a |
+| Catalog | **Mobile** → `messages/{vi\|en}/Mobile.json`; **Errors** → mở rộng `Errors.json`. **Cấm** monolith / kebab |
+| Key mới | Semantic sections + camelCase (`Mobile.{area}.page|actions|…`); `Errors.codes` = SCREAMING_SNAKE |
 | Errors | Localize **errorCodeLabel + message**; wire `errorCode` machine EN |
-| Product DoD | **AC-09 + AC-10:** 59/59 pages + 0 backlog (cộng dồn P31+P32+P33) |
+| Product DoD | **AC-09 + AC-10:** 59/59 pages + 0 backlog (cộng dồn P31+P31a+P32+P33) |
 | BE | Optional dictionary `errorCodeLabel` theo `Accept-Language` — không bắt buộc nếu FE map đủ |
+
+### Changelog plan (giữ lịch sử)
+
+| Ngày | Thay đổi |
+|---|---|
+| 2026-07-21 | Khóa Wave D mobile+Errors+Milestone 5 |
+| 2026-07-21 | **up:** bắt buộc draft `mobile.json` + `errors.json` (P31a) |
+| 2026-07-21 | **up `/30`:** `Mobile.json` / `Errors.json` PascalCase; Mobile keys semantic |
 
 ---
 
@@ -47,7 +57,7 @@ Localize toàn bộ **mobile/RF**, hoàn thiện catalogs **Errors**, format ng�
 
 ## 3. Điều kiện đầu vào
 
-- Phase **31** ✅ và **32** ✅.
+- Phase **31** ✅, **31a** ✅ (catalog modules + merge), **32** ✅.
 - Freeze inventory tổng = số `page.tsx` ngày start P33 (baseline **59** @ 2026-07-21; nếu lệch → ghi evidence + cập nhật AC-09).
 
 ### Inventory P33 (mobile)
@@ -63,7 +73,9 @@ Localize toàn bộ **mobile/RF**, hoàn thiện catalogs **Errors**, format ng�
 ## 4. Setup
 
 - Không bắt buộc package mới (trừ locale `date-fns` nếu chưa có).
-- Mở rộng catalogs `Mobile.*`, `Errors.*`.
+- Tạo `messages/vi/Mobile.json` + `en/Mobile.json` (`{ "Mobile": { ... } }` — **semantic sections**); đăng ký `'Mobile'` trong `CATALOG_MODULES` **và** static imports trong `load-messages.ts`.
+- Mở rộng **`messages/{vi|en}/Errors.json`** (`Errors.codes` SCREAMING + `Errors.messages` camelCase) — không monolith.
+- Refactor 7 mobile pages + leftover shared; **cấm** flat key không section trong `Mobile.*`.
 
 ## 5. Permissions
 
@@ -216,15 +228,16 @@ sequenceDiagram
 
 ## 17. Maintenance & Rollback
 
-- Thêm string: cả `vi.json` + `en.json`.
-- Rollback khẩn: ẩn switcher / force `vi`; git revert PR P33 (giữ P31/P32 nếu ổn).
+- Thêm string: `Mobile.json` / `Errors.json` cả VI+EN (semantic cho Mobile).
+- Rollback khẩn: ẩn switcher / force `vi`; git revert PR P33 (giữ P31/P31a/P32 nếu ổn).
 
 ```powershell
 # Xóa cookie NEXT_LOCALE → fallback vi
 ```
 
-## 18. Catalog Errors mock (mở rộng)
+## 18. Catalog mock (module files)
 
+`Errors.json`:
 ```json
 {
   "Errors": {
@@ -238,16 +251,25 @@ sequenceDiagram
       "CUTOVER_FROZEN": "Các API ghi nghiệp vụ kho đang bị đóng băng trong cutover.",
       "generic": "Yêu cầu thất bại."
     }
-  },
-  "Mobile": {
-    "home": { "title": "Thao tác kho" },
-    "picking": { "title": "Picking" },
-    "tasks": { "next": "Việc tiếp theo" }
   }
 }
 ```
 
-`en.json` mirror cùng key.
+`Mobile.json` (semantic):
+```json
+{
+  "Mobile": {
+    "home": { "page": { "title": "Thao tác kho" } },
+    "picking": { "page": { "title": "Picking" } },
+    "tasks": {
+      "page": { "title": "Công việc" },
+      "actions": { "next": "Việc tiếp theo" }
+    }
+  }
+}
+```
+
+`en/` mirror cùng key path.
 
 ---
 
@@ -264,8 +286,8 @@ sequenceDiagram
 
 ## 20. Implementation order
 
-1. Inventory freeze 59 + list Errors codes từ FE.
-2. Namespace `Mobile.*` + Errors full VI/EN.
+1. Xác nhận P31a ✅ (PascalCase modules) + P32 ✅; inventory freeze 59 + list Errors codes từ FE.
+2. Thêm `'Mobile'` vào `CATALOG_MODULES`; tạo `Mobile.json` VI/EN (semantic); mở rộng `Errors.json`.
 3. Refactor 7 mobile pages + layout.
 4. Wire toast toàn app qua `resolveApiError`.
 5. Date/number locale.

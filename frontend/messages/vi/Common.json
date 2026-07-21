@@ -1,0 +1,32 @@
+{
+  "Common": {
+    "actions": {
+      "save": "Lưu",
+      "cancel": "Hủy",
+      "confirm": "Đồng ý",
+      "refresh": "Làm mới",
+      "search": "Tìm kiếm",
+      "create": "Tạo mới",
+      "edit": "Sửa",
+      "delete": "Xóa",
+      "close": "Đóng",
+      "back": "Quay lại",
+      "submit": "Gửi",
+      "logout": "Đăng xuất",
+      "retry": "Thử lại"
+    },
+    "confirm": {
+      "title": "Xác nhận thao tác",
+      "description": "Bạn có chắc chắn muốn tiếp tục?"
+    },
+    "states": {
+      "loading": "Đang tải…",
+      "empty": "Không có dữ liệu",
+      "error": "Đã xảy ra lỗi",
+      "authChecking": "Đang kiểm tra bảo mật...",
+      "success": "Thành công",
+      "online": "ONLINE",
+      "offline": "OFFLINE"
+    }
+  }
+}

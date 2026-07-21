@@ -1,0 +1,97 @@
+[2026-07-21T08:58:55.807Z] Login…
+[2026-07-21T08:59:00.301Z] After login URL=http://localhost:3003/
+[2026-07-21T08:59:22.158Z] Routes to visit: 44
+[2026-07-21T08:59:22.158Z] === Locale vi ===
+[2026-07-21T08:59:23.204Z] PASS vi / status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:24.336Z] PASS vi /login status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:26.237Z] PASS vi /health-ui status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:28.263Z] PASS vi /admin/allocation status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:30.225Z] PASS vi /admin/audit status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:31.089Z] PASS vi /admin/cross-docking status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:33.185Z] PASS vi /admin/cutover status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:36.134Z] PASS vi /admin/exceptions status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:37.167Z] PASS vi /admin/genealogy status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:38.114Z] PASS vi /admin/inbound status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:40.267Z] PASS vi /admin/integrations/import status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:42.914Z] PASS vi /admin/integrations/mappings status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:45.136Z] PASS vi /admin/integrations/messages status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:48.946Z] PASS vi /admin/inventory status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:50.022Z] PASS vi /admin/inventory/stocktakes status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:52.211Z] PASS vi /admin/inventory/stocktakes/new status=200 lang=vi loginRedirect=false
+[2026-07-21T08:59:59.897Z] PASS vi /admin/labor status=200 lang=vi loginRedirect=false
+[2026-07-21T09:00:05.071Z] PASS vi /admin/labor/sessions status=200 lang=vi loginRedirect=false
+[2026-07-21T09:00:09.950Z] FAIL vi /admin/local-agent status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:12.295Z] FAIL vi /admin/lots status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:12.532Z] FAIL vi /admin/lpn status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:14.606Z] FAIL vi /admin/observability status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:14.844Z] FAIL vi /admin/observability/alerts status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:16.912Z] FAIL vi /admin/observability/timeline status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:17.153Z] FAIL vi /admin/outbound status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:19.227Z] FAIL vi /admin/putaway status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:19.468Z] FAIL vi /admin/qc status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:21.534Z] FAIL vi /admin/readiness status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:21.781Z] FAIL vi /admin/replenishment status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:23.842Z] FAIL vi /admin/rma status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:24.097Z] FAIL vi /admin/roles status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:26.152Z] FAIL vi /admin/rules status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:26.410Z] FAIL vi /admin/serial status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:28.473Z] FAIL vi /admin/task-interleaving status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:28.718Z] FAIL vi /admin/users status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:30.783Z] FAIL vi /admin/waves status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:31.029Z] FAIL vi /admin/webhooks/subscriptions status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:33.092Z] FAIL vi /admin/webhooks/deliveries status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:33.335Z] FAIL vi /admin/cross-docking/00000000-0000-0000-0000-000000000001 status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:35.412Z] FAIL vi /admin/genealogy/DEMO-LOT status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:35.648Z] FAIL vi /admin/inbound/1188a44e-cafd-4bff-8b7f-f182cf10248e/receive status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:37.728Z] FAIL vi /admin/inventory/stocktakes/00000000-0000-0000-0000-000000000001 status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:37.958Z] FAIL vi /admin/waves/a75358a2-baf5-4f22-8cf0-deacc71a8681 status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:40.036Z] FAIL vi /admin/waves/a75358a2-baf5-4f22-8cf0-deacc71a8681/put-wall status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:40.036Z] === Locale en ===
+[2026-07-21T09:00:40.270Z] FAIL en / status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:42.357Z] FAIL en /login status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:42.582Z] FAIL en /health-ui status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:44.666Z] FAIL en /admin/allocation status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:44.891Z] FAIL en /admin/audit status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:46.977Z] FAIL en /admin/cross-docking status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:47.202Z] FAIL en /admin/cutover status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:49.293Z] FAIL en /admin/exceptions status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:49.518Z] FAIL en /admin/genealogy status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:51.602Z] FAIL en /admin/inbound status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:51.836Z] FAIL en /admin/integrations/import status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:53.922Z] FAIL en /admin/integrations/mappings status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:54.155Z] FAIL en /admin/integrations/messages status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:56.232Z] FAIL en /admin/inventory status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:56.463Z] FAIL en /admin/inventory/stocktakes status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:58.542Z] FAIL en /admin/inventory/stocktakes/new status=0 lang=null loginRedirect=false
+[2026-07-21T09:00:58.774Z] FAIL en /admin/labor status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:00.851Z] FAIL en /admin/labor/sessions status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:01.084Z] FAIL en /admin/local-agent status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:03.161Z] FAIL en /admin/lots status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:03.395Z] FAIL en /admin/lpn status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:05.468Z] FAIL en /admin/observability status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:05.702Z] FAIL en /admin/observability/alerts status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:07.783Z] FAIL en /admin/observability/timeline status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:08.009Z] FAIL en /admin/outbound status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:10.094Z] FAIL en /admin/putaway status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:10.317Z] FAIL en /admin/qc status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:12.409Z] FAIL en /admin/readiness status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:12.631Z] FAIL en /admin/replenishment status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:14.722Z] FAIL en /admin/rma status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:14.941Z] FAIL en /admin/roles status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:17.033Z] FAIL en /admin/rules status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:17.248Z] FAIL en /admin/serial status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:19.342Z] FAIL en /admin/task-interleaving status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:19.559Z] FAIL en /admin/users status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:21.661Z] FAIL en /admin/waves status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:21.867Z] FAIL en /admin/webhooks/subscriptions status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:23.971Z] FAIL en /admin/webhooks/deliveries status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:24.189Z] FAIL en /admin/cross-docking/00000000-0000-0000-0000-000000000001 status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:26.280Z] FAIL en /admin/genealogy/DEMO-LOT status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:26.500Z] FAIL en /admin/inbound/1188a44e-cafd-4bff-8b7f-f182cf10248e/receive status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:28.595Z] FAIL en /admin/inventory/stocktakes/00000000-0000-0000-0000-000000000001 status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:28.815Z] FAIL en /admin/waves/a75358a2-baf5-4f22-8cf0-deacc71a8681 status=0 lang=null loginRedirect=false
+[2026-07-21T09:01:30.905Z] FAIL en /admin/waves/a75358a2-baf5-4f22-8cf0-deacc71a8681/put-wall status=0 lang=null loginRedirect=false
+ERROR: Error: page.goto: net::ERR_CONNECTION_REFUSED at http://localhost:3003/login
+Call log:
+  - navigating to "http://localhost:3003/login", waiting until "domcontentloaded"
+

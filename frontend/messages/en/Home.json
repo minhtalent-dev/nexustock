@@ -1,0 +1,18 @@
+{
+  "Home": {
+    "dashboardTitle": "Admin dashboard",
+    "welcome": "Welcome to Nexustock",
+    "subtitle": "Smart warehouse management (WMS) built as a modular monolith.",
+    "systemStatus": "System status",
+    "details": "Details",
+    "quickLinks": "Quick links",
+    "productsTotal": "Total products",
+    "locations": "Storage locations",
+    "active": "Active",
+    "manage": "Manage",
+    "phaseGuideTitle": "You are on Nexustock WMS",
+    "phaseGuideBody": "The modular warehouse system is ready. Use the left menu to open modules.",
+    "manageCatalog": "Manage catalog",
+    "systemHealth": "System health"
+  }
+}

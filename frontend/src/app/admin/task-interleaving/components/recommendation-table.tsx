@@ -1,4 +1,7 @@
+"use client";
+
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,20 +14,25 @@ type TableProps = {
 };
 
 export function RecommendationTable({ items, onViewDetail }: TableProps) {
+  const t = useTranslations("Admin.taskInterleaving");
+  const tc = useTranslations("Admin.common");
+
   const getStatusBadge = (status: string) => {
+    const label = t(`recommendationStatus.${status}` as "recommendationStatus.Open");
+
     switch (status) {
       case "Accepted":
-        return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-0">Accepted</Badge>;
+        return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-0">{label}</Badge>;
       case "Rejected":
-        return <Badge variant="destructive">Rejected</Badge>;
+        return <Badge variant="destructive">{label}</Badge>;
       case "Expired":
-        return <Badge variant="secondary">Expired</Badge>;
+        return <Badge variant="secondary">{label}</Badge>;
       case "Superseded":
-        return <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-0">Superseded</Badge>;
+        return <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-0">{label}</Badge>;
       case "NoCandidate":
-        return <Badge variant="outline">No Candidate</Badge>;
+        return <Badge variant="outline">{label}</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{label}</Badge>;
     }
   };
 
@@ -44,21 +52,21 @@ export function RecommendationTable({ items, onViewDetail }: TableProps) {
       <Table id="task-interleaving-recommendation-table">
         <TableHeader>
           <TableRow>
-            <TableHead>Created At</TableHead>
-            <TableHead>User ID</TableHead>
-            <TableHead>Source Task</TableHead>
-            <TableHead>Suggested Task</TableHead>
-            <TableHead>Score</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Reason</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t("colCreatedAt")}</TableHead>
+            <TableHead>{t("colUserId")}</TableHead>
+            <TableHead>{t("colSourceTask")}</TableHead>
+            <TableHead>{t("colSuggestedTask")}</TableHead>
+            <TableHead>{t("colScore")}</TableHead>
+            <TableHead>{t("colStatus")}</TableHead>
+            <TableHead>{t("colReason")}</TableHead>
+            <TableHead className="text-right">{tc("actions")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.length === 0 ? (
             <TableRow>
               <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                No recommendation logs found.
+                {t("emptyTable")}
               </TableCell>
             </TableRow>
           ) : (

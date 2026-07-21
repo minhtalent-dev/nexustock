@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +10,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
 import { useConfirmDialog } from "@/lib/confirm-dialog";
 import { ShieldAlert, ShieldCheck, Plus, Trash2, Save, Sparkles } from "lucide-react";
 
@@ -28,15 +29,18 @@ interface Permission {
 }
 
 export default function RolesPage() {
+  const t = useTranslations("Admin.roles");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
   const confirm = useConfirmDialog();
+
   const [roles, setRoles] = useState<RoleDto[]>([]);
   const [allPermissions, setAllPermissions] = useState<Permission[]>([]);
   const [selectedRole, setSelectedRole] = useState<RoleDto | null>(null);
-  const [rolePermissions, setRolePermissions] = useState<string[]>([]); // Danh sách permission ID đã gán cho role
+  const [rolePermissions, setRolePermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [savingPermissions, setSavingPermissions] = useState(false);
 
-  // Form role state
   const [isRoleOpen, setIsRoleOpen] = useState(false);
   const [roleName, setRoleName] = useState("");
   const [roleDesc, setRoleDesc] = useState("");
@@ -47,11 +51,12 @@ export default function RolesPage() {
     try {
       const res = await api.get<Permission[]>(`/roles/${role.id}/permissions`);
       setRolePermissions(res.data.map((p) => p.id));
-    } catch {
-      showError("Không thể tải quyền của vai trò.");
+    } catch (err: unknown) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadPermissionsFailed"));
       setRolePermissions([]);
     }
-  }, []);
+  }, [t, tErrors]);
 
   const fetchRoles = useCallback(async () => {
     setLoading(true);
@@ -62,20 +67,22 @@ export default function RolesPage() {
         void selectRole(res.data[0]);
       }
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể tải danh sách vai trò."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadRolesFailed"));
     } finally {
       setLoading(false);
     }
-  }, [selectRole, selectedRole]);
+  }, [selectRole, selectedRole, t, tErrors]);
 
   const fetchAllPermissions = useCallback(async () => {
     try {
       const res = await api.get<Permission[]>("/permissions");
       setAllPermissions(res.data);
-    } catch {
-      showError("Không thể tải danh mục quyền hạn.");
+    } catch (err: unknown) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadCatalogFailed"));
     }
-  }, []);
+  }, [t, tErrors]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -97,12 +104,13 @@ export default function RolesPage() {
     setSavingRole(true);
     try {
       const res = await api.post<RoleDto>("/roles", { name: roleName, description: roleDesc });
-      showSuccess("Tạo vai trò thành công.");
+      showSuccess(t("toastCreateSuccess"));
       setIsRoleOpen(false);
       await fetchRoles();
       selectRole(res.data);
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi tạo vai trò."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.createFailed"));
     } finally {
       setSavingRole(false);
     }
@@ -110,10 +118,10 @@ export default function RolesPage() {
 
   const handleDeleteRole = async (role: RoleDto) => {
     const ok = await confirm({
-      title: "Xác nhận xóa",
-      description: `Bạn có chắc chắn muốn xóa vai trò "${role.name}" không? Thao tác này không thể hoàn tác.`,
-      confirmText: "Xóa",
-      cancelText: "Hủy",
+      title: t("confirmDeleteTitle"),
+      description: t("confirmDeleteDesc", { name: role.name }),
+      confirmText: tc("delete"),
+      cancelText: tc("cancel"),
       tone: "danger",
     });
 
@@ -121,11 +129,12 @@ export default function RolesPage() {
 
     try {
       await api.delete(`/roles/${role.id}`);
-      showSuccess("Xóa vai trò thành công.");
+      showSuccess(t("toastDeleteSuccess"));
       setSelectedRole(null);
       fetchRoles();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi xóa vai trò."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.deleteFailed"));
     }
   };
 
@@ -142,17 +151,17 @@ export default function RolesPage() {
       await api.post(`/roles/${selectedRole.id}/permissions`, {
         permissionIds: rolePermissions,
       });
-      showSuccess(`Cập nhật quyền hạn cho vai trò "${selectedRole.name}" thành công.`);
+      showSuccess(t("toastSaveSuccess", { name: selectedRole.name }));
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi lưu quyền hạn."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.saveFailed"));
     } finally {
       setSavingPermissions(false);
     }
   };
 
-  // Gom nhóm permissions theo category (Module)
   const groupedPermissions = allPermissions.reduce((acc, perm) => {
-    const cat = perm.category || "Chung";
+    const cat = perm.category || t("defaultCategory");
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(perm);
     return acc;
@@ -163,21 +172,20 @@ export default function RolesPage() {
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <ShieldCheck className="h-6 w-6 text-emerald-500" />
-          Vai trò & Phân quyền
+          {t("title")}
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">Cấu hình vai trò nghiệp vụ và phân bổ chi tiết ma trận quyền hạn hệ thống.</p>
+        <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Cột 1: Danh sách Role */}
         <Card className="bg-[#111] border-zinc-800/80 lg:col-span-1">
           <CardHeader className="py-4 border-b border-zinc-800/60 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-semibold text-white">Danh sách vai trò</CardTitle>
-              <CardDescription className="text-[10px] text-zinc-500">Chọn vai trò để cấu hình quyền.</CardDescription>
+              <CardTitle className="text-sm font-semibold text-white">{t("listTitle")}</CardTitle>
+              <CardDescription className="text-[10px] text-zinc-500">{t("listHint")}</CardDescription>
             </div>
             <Button onClick={openCreateRole} variant="ghost" size="sm" className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-8 px-2 text-xs gap-1">
-              <Plus className="h-3.5 w-3.5" /> Thêm vai trò
+              <Plus className="h-3.5 w-3.5" /> {t("addRole")}
             </Button>
           </CardHeader>
           <CardContent className="p-0">
@@ -186,7 +194,7 @@ export default function RolesPage() {
                 {roles.length === 0 ? (
                   <TableRow>
                     <TableCell className="text-center py-8 text-zinc-550 text-sm">
-                      {loading ? "Đang tải dữ liệu..." : "Không có vai trò nào."}
+                      {loading ? t("loading") : t("empty")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -206,7 +214,7 @@ export default function RolesPage() {
                           <span className={`text-sm font-medium ${isSelected ? "text-emerald-400" : "text-zinc-200"}`}>
                             {role.name}
                           </span>
-                          <span className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5">{role.description || "Không có mô tả"}</span>
+                          <span className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5">{role.description || t("noDescription")}</span>
                         </TableCell>
                         <TableCell className="py-3 px-4 h-12 text-right w-16 align-middle">
                           {role.name !== "Admin" && (
@@ -232,22 +240,21 @@ export default function RolesPage() {
           </CardContent>
         </Card>
 
-        {/* Cột 2: Ma trận quyền (Permission Matrix) */}
         <Card className="bg-[#111] border-zinc-800/80 lg:col-span-2">
           {selectedRole ? (
             <>
               <CardHeader className="py-4 border-b border-zinc-800/60 flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-sm font-semibold text-white">
-                    Ma trận quyền hạn: <span className="text-emerald-400 font-mono">{selectedRole.name}</span>
+                    {t("matrixTitle")} <span className="text-emerald-400 font-mono">{selectedRole.name}</span>
                   </CardTitle>
                   <CardDescription className="text-[10px] text-zinc-550">
-                    Phân quyền cho các chức năng thuộc module MasterData và Identity.
+                    {t("matrixHint")}
                   </CardDescription>
                 </div>
                 {selectedRole.name === "Admin" ? (
                   <span className="text-[10px] text-yellow-500 bg-yellow-500/10 px-2 py-1 rounded font-semibold border border-yellow-500/20">
-                    Quyền Admin tối cao (Không thể chỉnh sửa)
+                    {t("adminLocked")}
                   </span>
                 ) : (
                   <Button
@@ -256,7 +263,7 @@ export default function RolesPage() {
                     className="bg-emerald-600 hover:bg-emerald-500 text-white h-8 text-xs gap-1.5 px-3"
                   >
                     <Save className="h-3.5 w-3.5" />
-                    {savingPermissions ? "Đang lưu..." : "Lưu quyền hạn"}
+                    {savingPermissions ? tc("saving") : t("savePermissions")}
                   </Button>
                 )}
               </CardHeader>
@@ -299,49 +306,48 @@ export default function RolesPage() {
           ) : (
             <CardContent className="py-16 text-center text-zinc-550 text-sm">
               <ShieldAlert className="h-10 w-10 text-zinc-650 mx-auto mb-2" />
-              Vui lòng tạo hoặc chọn một vai trò để thực hiện phân quyền.
+              {t("selectRoleHint")}
             </CardContent>
           )}
         </Card>
       </div>
 
-      {/* Dialog tạo Role */}
       <Dialog open={isRoleOpen} onOpenChange={setIsRoleOpen}>
         <DialogContent className="bg-[#111] border border-zinc-800 text-zinc-100 max-w-sm font-sans">
           <DialogHeader>
-            <DialogTitle className="text-sm font-semibold text-white">Tạo vai trò mới</DialogTitle>
+            <DialogTitle className="text-sm font-semibold text-white">{t("createDialogTitle")}</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleCreateRole} className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="rname" className="text-xs text-zinc-400">Tên vai trò</Label>
+              <Label htmlFor="rname" className="text-xs text-zinc-400">{t("labelRoleName")}</Label>
               <Input
                 id="rname"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
                 className="bg-zinc-900 border-zinc-800 text-sm"
-                placeholder="Ví dụ: WarehouseStaff"
+                placeholder={t("roleNamePlaceholder")}
                 required
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="rdesc" className="text-xs text-zinc-400">Mô tả vai trò</Label>
+              <Label htmlFor="rdesc" className="text-xs text-zinc-400">{t("labelRoleDesc")}</Label>
               <Input
                 id="rdesc"
                 value={roleDesc}
                 onChange={(e) => setRoleDesc(e.target.value)}
                 className="bg-zinc-900 border-zinc-800 text-sm"
-                placeholder="Mô tả chức năng/nhiệm vụ"
+                placeholder={t("roleDescPlaceholder")}
               />
             </div>
 
             <DialogFooter className="mt-4 gap-2">
               <Button type="button" onClick={() => setIsRoleOpen(false)} variant="ghost" className="text-zinc-400 hover:text-zinc-200 h-9 text-sm">
-                Hủy bỏ
+                {tc("cancel")}
               </Button>
               <Button type="submit" disabled={savingRole} className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-sm">
-                {savingRole ? "Đang lưu..." : "Tạo vai trò"}
+                {savingRole ? tc("saving") : t("createRole")}
               </Button>
             </DialogFooter>
           </form>

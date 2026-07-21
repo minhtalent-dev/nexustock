@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,8 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { AlertCircle, UserCheck, ShieldAlert, CheckCircle2, History, Loader2 } from "lucide-react";
 
 interface ExceptionDto {
@@ -41,28 +42,28 @@ interface ExceptionEventDto {
 }
 
 export default function ExceptionsPage() {
+  const t = useTranslations("Admin.exceptions");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [exceptions, setExceptions] = useState<ExceptionDto[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [page] = useState(1);
   const [pageSize] = useState(20);
 
-  // Filters
   const [severityFilter, setSeverityFilter] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
 
-  // Detail Modal State
   const [selectedException, setSelectedException] = useState<ExceptionDto | null>(null);
   const [events, setEvents] = useState<ExceptionEventDto[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
 
-  // Assign Dialog State
   const [isAssignOpen, setIsAssignOpen] = useState(false);
   const [owner, setOwner] = useState("");
   const [slaHours, setSlaHours] = useState(4);
   const [assigning, setAssigning] = useState(false);
 
-  // Resolve Dialog State
   const [isResolveOpen, setIsResolveOpen] = useState(false);
   const [resolveAction, setResolveAction] = useState("CORRECTIVE_TRANSACTION");
   const [resolveReason, setResolveReason] = useState("");
@@ -83,11 +84,12 @@ export default function ExceptionsPage() {
       setExceptions(res.data.items);
       setTotalCount(res.data.totalCount);
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể tải danh sách ngoại lệ."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, severityFilter, typeFilter]);
+  }, [page, pageSize, severityFilter, typeFilter, t, tErrors]);
 
   useEffect(() => {
     queueMicrotask(() => void fetchExceptions());
@@ -100,7 +102,7 @@ export default function ExceptionsPage() {
       const res = await api.get<ExceptionEventDto[]>(`/exceptions/${exc.id}/events`);
       setEvents(res.data);
     } catch {
-      showError("Không thể tải lịch sử sự kiện ngoại lệ.");
+      showApiErrorToast("", t("errors.loadEventsFailed"));
     } finally {
       setLoadingEvents(false);
     }
@@ -113,13 +115,13 @@ export default function ExceptionsPage() {
 
     try {
       await api.post(`/exceptions/${selectedException.id}/assign`, { owner, slaHours });
-      showSuccess("Gán người xử lý thành công.");
+      showSuccess(t("toastAssignSuccess"));
       setIsAssignOpen(false);
-      // Refresh details
       viewDetails(selectedException);
       fetchExceptions();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi khi gán người xử lý."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.assignFailed"));
     } finally {
       setAssigning(false);
     }
@@ -136,12 +138,13 @@ export default function ExceptionsPage() {
         reasonCode: resolveReason || selectedException.reasonCode,
         note: resolveNote,
       });
-      showSuccess("Giải quyết ngoại lệ thành công.");
+      showSuccess(t("toastResolveSuccess"));
       setIsResolveOpen(false);
-      setSelectedException(null); // Close detail
+      setSelectedException(null);
       fetchExceptions();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi khi giải quyết ngoại lệ."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.resolveFailed"));
     } finally {
       setResolving(false);
     }
@@ -150,26 +153,26 @@ export default function ExceptionsPage() {
   const getSeverityBadge = (sev: string) => {
     switch (sev) {
       case "CRITICAL":
-        return <Badge variant="destructive">Khẩn cấp</Badge>;
+        return <Badge variant="destructive">{t("severityCritical")}</Badge>;
       case "HIGH":
-        return <Badge className="bg-orange-500 hover:bg-orange-600 text-white">Cao</Badge>;
+        return <Badge className="bg-orange-500 hover:bg-orange-600 text-white">{t("severityHigh")}</Badge>;
       case "MEDIUM":
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">Trung bình</Badge>;
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">{t("severityMedium")}</Badge>;
       default:
-        return <Badge variant="secondary">Thấp</Badge>;
+        return <Badge variant="secondary">{t("severityLow")}</Badge>;
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Resolved":
-        return <Badge className="bg-green-600 text-white">Đã xử lý</Badge>;
+        return <Badge className="bg-green-600 text-white">{t("statusResolved")}</Badge>;
       case "In_Progress":
-        return <Badge className="bg-blue-600 text-white">Đang xử lý</Badge>;
+        return <Badge className="bg-blue-600 text-white">{t("statusInProgress")}</Badge>;
       case "Cancelled":
-        return <Badge variant="outline">Đã hủy</Badge>;
+        return <Badge variant="outline">{t("statusCancelled")}</Badge>;
       default:
-        return <Badge variant="secondary">Chờ xử lý</Badge>;
+        return <Badge variant="secondary">{t("statusPending")}</Badge>;
     }
   };
 
@@ -177,15 +180,15 @@ export default function ExceptionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Sự cố vận hành</h1>
-          <p className="text-muted-foreground text-sm">Theo dõi và khắc phục các ngoại lệ phát sinh tại kho hàng</p>
+          <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Phiếu chờ xử lý</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("pendingCardTitle")}</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -194,48 +197,45 @@ export default function ExceptionsPage() {
         </Card>
       </div>
 
-      {/* Filters */}
       <div className="flex items-center gap-4 bg-card p-4 rounded-lg border">
         <div className="space-y-1 w-48">
-          <Label className="text-xs">Mức độ khẩn cấp</Label>
+          <Label className="text-xs">{t("severityFilterLabel")}</Label>
           <select
             className="w-full bg-background border rounded px-2 py-1 text-sm h-9"
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
           >
-            <option value="">Tất cả</option>
-            <option value="CRITICAL">Khẩn cấp</option>
-            <option value="HIGH">Cao</option>
-            <option value="MEDIUM">Trung bình</option>
-            <option value="LOW">Thấp</option>
+            <option value="">{t("filterAll")}</option>
+            <option value="CRITICAL">{t("severityCritical")}</option>
+            <option value="HIGH">{t("severityHigh")}</option>
+            <option value="MEDIUM">{t("severityMedium")}</option>
+            <option value="LOW">{t("severityLow")}</option>
           </select>
         </div>
         <div className="space-y-1 w-48">
-          <Label className="text-xs">Loại sự cố</Label>
+          <Label className="text-xs">{t("typeFilterLabel")}</Label>
           <Input
-            placeholder="Lọc loại (VD: SHORTAGE)"
+            placeholder={t("typeFilterPlaceholder")}
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
             className="h-9"
           />
         </div>
         <Button variant="secondary" onClick={() => { setSeverityFilter(""); setTypeFilter(""); }} className="mt-5 h-9">
-          Làm mới bộ lọc
+          {t("resetFilters")}
         </Button>
       </div>
 
-      {/* Main Grid */}
       <div className="grid gap-6 md:grid-cols-3">
-        {/* Table List */}
         <div className="md:col-span-2 bg-card border rounded-lg overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Mã sự cố</TableHead>
-                <TableHead>Loại sự cố</TableHead>
-                <TableHead>Khẩn cấp</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead>Thời gian tạo</TableHead>
+                <TableHead>{t("colCode")}</TableHead>
+                <TableHead>{t("colType")}</TableHead>
+                <TableHead>{t("colSeverity")}</TableHead>
+                <TableHead>{t("colStatus")}</TableHead>
+                <TableHead>{t("colCreatedAt")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -248,7 +248,7 @@ export default function ExceptionsPage() {
               ) : exceptions.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">
-                    Không tìm thấy sự cố nào.
+                    {t("empty")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -270,7 +270,6 @@ export default function ExceptionsPage() {
           </Table>
         </div>
 
-        {/* Details Side Panel */}
         <div className="bg-card border rounded-lg p-6 space-y-6">
           {selectedException ? (
             <>
@@ -287,49 +286,47 @@ export default function ExceptionsPage() {
 
               <div className="space-y-4 text-sm border-b pb-4">
                 <div className="grid grid-cols-2">
-                  <span className="text-muted-foreground">Loại:</span>
+                  <span className="text-muted-foreground">{t("typeLabel")}</span>
                   <span className="font-medium text-right">{selectedException.type}</span>
                 </div>
                 <div className="grid grid-cols-2">
-                  <span className="text-muted-foreground">Lô hàng:</span>
+                  <span className="text-muted-foreground">{t("lotLabel")}</span>
                   <span className="font-medium text-right">{selectedException.lotNo || "-"}</span>
                 </div>
                 <div className="grid grid-cols-2">
-                  <span className="text-muted-foreground">Số lượng lệch:</span>
+                  <span className="text-muted-foreground">{t("qtyLabel")}</span>
                   <span className="font-medium text-right">{selectedException.qty}</span>
                 </div>
                 <div className="grid grid-cols-2">
-                  <span className="text-muted-foreground">Vị trí kệ:</span>
+                  <span className="text-muted-foreground">{t("locationLabel")}</span>
                   <span className="font-medium text-right">{selectedException.locationId || "-"}</span>
                 </div>
                 <div className="grid grid-cols-2">
-                  <span className="text-muted-foreground">Mã tham chiếu:</span>
+                  <span className="text-muted-foreground">{t("referenceLabel")}</span>
                   <span className="font-medium text-right text-xs truncate max-w-[150px]" title={selectedException.referenceId}>
                     {selectedException.referenceId}
                   </span>
                 </div>
                 <div className="space-y-1">
-                  <span className="text-muted-foreground">Ghi chú sự cố:</span>
-                  <p className="bg-muted p-2 rounded text-xs italic">{selectedException.note || "Không có ghi chú"}</p>
+                  <span className="text-muted-foreground">{t("noteLabel")}</span>
+                  <p className="bg-muted p-2 rounded text-xs italic">{selectedException.note || t("noNote")}</p>
                 </div>
               </div>
 
-              {/* Actions */}
               {selectedException.status !== "Resolved" && selectedException.status !== "Cancelled" && (
                 <div className="flex items-center gap-2 border-b pb-4">
                   <Button variant="outline" size="sm" onClick={() => setIsAssignOpen(true)} className="flex-1 gap-1">
-                    <UserCheck className="h-4 w-4" /> Gán việc
+                    <UserCheck className="h-4 w-4" /> {t("assignBtn")}
                   </Button>
                   <Button size="sm" onClick={() => setIsResolveOpen(true)} className="flex-1 gap-1">
-                    <CheckCircle2 className="h-4 w-4" /> Giải quyết
+                    <CheckCircle2 className="h-4 w-4" /> {t("resolveBtn")}
                   </Button>
                 </div>
               )}
 
-              {/* Timeline Events */}
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold flex items-center gap-1.5">
-                  <History className="h-4 w-4 text-muted-foreground" /> Lịch sử timeline
+                  <History className="h-4 w-4 text-muted-foreground" /> {t("timelineTitle")}
                 </h3>
                 {loadingEvents ? (
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -341,7 +338,10 @@ export default function ExceptionsPage() {
                         <div className="space-y-0.5">
                           <span className="text-xs font-semibold block">{e.transition}</span>
                           <span className="text-[10px] text-muted-foreground block">
-                            Bởi {e.actor} - {new Date(e.createdAt).toLocaleString("vi-VN")}
+                            {t("timelineBy", {
+                              actor: e.actor,
+                              at: new Date(e.createdAt).toLocaleString("vi-VN"),
+                            })}
                           </span>
                           {e.note && <p className="text-[11px] italic text-muted-foreground bg-muted/50 p-1 rounded mt-0.5">{e.note}</p>}
                         </div>
@@ -354,30 +354,29 @@ export default function ExceptionsPage() {
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground py-12">
               <ShieldAlert className="h-8 w-8 mb-2" />
-              <p className="text-sm">Chọn một sự cố trong danh sách để xem chi tiết và xử lý</p>
+              <p className="text-sm">{t("selectHint")}</p>
             </div>
           )}
         </div>
       </div>
 
-      {/* Assign Dialog */}
       <Dialog open={isAssignOpen} onOpenChange={setIsAssignOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Gán xử lý sự cố</DialogTitle>
+            <DialogTitle>{t("assignDialogTitle")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAssign} className="space-y-4">
             <div className="space-y-1">
-              <Label>Người phụ trách</Label>
+              <Label>{t("ownerLabel")}</Label>
               <Input
-                placeholder="Nhập tên tài khoản hoặc mã nhân viên"
+                placeholder={t("ownerPlaceholder")}
                 value={owner}
                 onChange={(e) => setOwner(e.target.value)}
                 required
               />
             </div>
             <div className="space-y-1">
-              <Label>Thời gian SLA (giờ)</Label>
+              <Label>{t("slaHoursLabel")}</Label>
               <Input
                 type="number"
                 value={slaHours}
@@ -388,57 +387,56 @@ export default function ExceptionsPage() {
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsAssignOpen(false)}>
-                Hủy
+                {tc("cancel")}
               </Button>
               <Button type="submit" disabled={assigning}>
-                {assigning && <Loader2 className="h-4 w-4 animate-spin mr-1" />} Xác nhận gán
+                {assigning && <Loader2 className="h-4 w-4 animate-spin mr-1" />} {t("confirmAssign")}
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Resolve Dialog */}
       <Dialog open={isResolveOpen} onOpenChange={setIsResolveOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Giải quyết ngoại lệ</DialogTitle>
+            <DialogTitle>{t("resolveDialogTitle")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleResolve} className="space-y-4">
             <div className="space-y-1">
-              <Label>Phương án xử lý</Label>
+              <Label>{t("resolveActionLabel")}</Label>
               <select
                 className="w-full bg-background border rounded px-2 py-1.5 text-sm h-10"
                 value={resolveAction}
                 onChange={(e) => setResolveAction(e.target.value)}
               >
-                <option value="CORRECTIVE_TRANSACTION">Điều chỉnh số lượng tồn kho (Real-time Sync)</option>
-                <option value="CANCEL">Hủy phiếu (Không điều chỉnh tồn kho)</option>
+                <option value="CORRECTIVE_TRANSACTION">{t("resolveActionCorrective")}</option>
+                <option value="CANCEL">{t("resolveActionCancel")}</option>
               </select>
             </div>
             <div className="space-y-1">
-              <Label>Mã nguyên nhân khắc phục</Label>
+              <Label>{t("resolveReasonLabel")}</Label>
               <Input
-                placeholder="Ví dụ: SHORTAGE, OVERAGE, LOT_MISMATCH"
+                placeholder={t("resolveReasonPlaceholder")}
                 value={resolveReason}
                 onChange={(e) => setResolveReason(e.target.value)}
               />
             </div>
             <div className="space-y-1">
-              <Label>Ghi chú kết quả</Label>
+              <Label>{t("resolveNoteLabel")}</Label>
               <textarea
                 className="w-full bg-background border rounded p-2 text-sm h-20"
-                placeholder="Nhập chi tiết biện pháp khắc phục sự cố"
+                placeholder={t("resolveNotePlaceholder")}
                 value={resolveNote}
                 onChange={(e) => setResolveNote(e.target.value)}
               />
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setIsResolveOpen(false)}>
-                Hủy
+                {tc("cancel")}
               </Button>
               <Button type="submit" disabled={resolving}>
-                {resolving && <Loader2 className="h-4 w-4 animate-spin mr-1" />} Xác nhận hoàn thành
+                {resolving && <Loader2 className="h-4 w-4 animate-spin mr-1" />} {t("confirmResolve")}
               </Button>
             </DialogFooter>
           </form>

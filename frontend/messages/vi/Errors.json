@@ -1,0 +1,25 @@
+{
+  "Errors": {
+    "codes": {
+      "CUTOVER_FROZEN": "Đang khóa ghi cutover",
+      "READINESS_DISABLED": "Readiness đang tắt",
+      "READINESS_UNAUTHORIZED": "Không đủ quyền readiness",
+      "CUTOVER_FREEZE_DENIED": "Từ chối thao tác freeze",
+      "TASK_INTERLEAVING_DISABLED": "Task interleaving đang tắt",
+      "UNAUTHORIZED": "Không có quyền",
+      "FORBIDDEN": "Bị từ chối truy cập",
+      "UNKNOWN": "Lỗi không xác định"
+    },
+    "messages": {
+      "CUTOVER_FROZEN": "Các API ghi nghiệp vụ kho đang bị đóng băng trong cutover.",
+      "READINESS_DISABLED": "Module readiness đang tắt bởi feature flag.",
+      "READINESS_UNAUTHORIZED": "Tài khoản không có quyền thao tác readiness.",
+      "CUTOVER_FREEZE_DENIED": "Không thể thay đổi trạng thái freeze cutover.",
+      "TASK_INTERLEAVING_DISABLED": "Tính năng gợi ý việc tiếp theo đang tắt.",
+      "UNAUTHORIZED": "Phiên đăng nhập không hợp lệ hoặc hết hạn.",
+      "FORBIDDEN": "Bạn không được phép thực hiện thao tác này.",
+      "UNKNOWN": "Đã xảy ra lỗi không xác định.",
+      "generic": "Yêu cầu thất bại."
+    }
+  }
+}

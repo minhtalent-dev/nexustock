@@ -1,0 +1,32 @@
+{
+  "Common": {
+    "actions": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "refresh": "Refresh",
+      "search": "Search",
+      "create": "Create",
+      "edit": "Edit",
+      "delete": "Delete",
+      "close": "Close",
+      "back": "Back",
+      "submit": "Submit",
+      "logout": "Sign out",
+      "retry": "Retry"
+    },
+    "confirm": {
+      "title": "Confirm action",
+      "description": "Are you sure you want to continue?"
+    },
+    "states": {
+      "loading": "Loading…",
+      "empty": "No data",
+      "error": "An error occurred",
+      "authChecking": "Checking security…",
+      "success": "Success",
+      "online": "ONLINE",
+      "offline": "OFFLINE"
+    }
+  }
+}

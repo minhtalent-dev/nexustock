@@ -1,16 +1,21 @@
 "use client";
 
 import * as React from "react";
+import { useTranslations } from "next-intl";
 import { readinessApi, CutoverLogDto, FreezeStatusResponse } from "@/lib/readiness-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RefreshCw, ShieldAlert, Ban, Snowflake, Sun } from "lucide-react";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage, isFeatureDisabledError, isUnauthorizedError } from "@/lib/http-error";
+import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { isFeatureDisabledError, isUnauthorizedError } from "@/lib/http-error";
 
 type PageState = "loading" | "ready" | "error" | "unauthorized" | "featureDisabled";
 
 export default function CutoverPage() {
+  const t = useTranslations("Admin.cutover");
+  const tErrors = useTranslations("Errors");
+
   const [pageState, setPageState] = React.useState<PageState>("loading");
   const [errorMessage, setErrorMessage] = React.useState("");
   const [freeze, setFreeze] = React.useState<FreezeStatusResponse | null>(null);
@@ -37,12 +42,13 @@ export default function CutoverPage() {
         setPageState("unauthorized");
         return;
       }
-      const msg = getHttpErrorMessage(err, "Failed to load cutover board.");
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      const msg = message || t("errors.loadFailed");
       setErrorMessage(msg);
       setPageState("error");
-      showError(msg);
+      showApiErrorToast(codeLabel, msg);
     }
-  }, []);
+  }, [t, tErrors]);
 
   React.useEffect(() => {
     queueMicrotask(() => void loadData());
@@ -52,15 +58,16 @@ export default function CutoverPage() {
     try {
       if (freeze?.isFrozen) {
         await readinessApi.unfreeze(reason || undefined);
-        showSuccess("System unfrozen.");
+        showSuccess(t("toastUnfrozen"));
       } else {
         await readinessApi.freeze(reason || undefined);
-        showSuccess("Write APIs frozen.");
+        showSuccess(t("toastFrozen"));
       }
       setReason("");
       await loadData();
     } catch (err) {
-      showError(getHttpErrorMessage(err, "Freeze toggle failed."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.toggleFailed"));
     }
   };
 
@@ -68,7 +75,7 @@ export default function CutoverPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 p-10 text-muted-foreground">
         <ShieldAlert className="h-10 w-10" />
-        <p>Unauthorized — missing readiness.read</p>
+        <p>{t("unauthorized")}</p>
       </div>
     );
   }
@@ -77,7 +84,7 @@ export default function CutoverPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 p-10 text-muted-foreground">
         <Ban className="h-10 w-10" />
-        <p>Readiness gate is disabled by feature flag.</p>
+        <p>{t("featureDisabled")}</p>
       </div>
     );
   }
@@ -86,12 +93,12 @@ export default function CutoverPage() {
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Cutover</h1>
-          <p className="text-sm text-muted-foreground">Freeze write APIs and track cutover steps.</p>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Button variant="outline" onClick={() => void loadData()}>
           <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
+          {t("refresh")}
         </Button>
       </div>
 
@@ -99,16 +106,16 @@ export default function CutoverPage() {
 
       <section className="rounded-lg border border-border/60 bg-card/40 p-4 space-y-3">
         <div className="flex flex-wrap items-center gap-3">
-          <span className="text-sm text-muted-foreground">Freeze status:</span>
+          <span className="text-sm text-muted-foreground">{t("freezeStatus")}</span>
           <span className={`font-semibold ${freeze?.isFrozen ? "text-amber-400" : "text-emerald-400"}`}>
-            {freeze?.isFrozen ? "FROZEN" : "OPEN"}
+            {freeze?.isFrozen ? t("frozen") : t("open")}
           </span>
-          {freeze?.frozenBy ? <span className="text-xs text-muted-foreground">by {freeze.frozenBy}</span> : null}
+          {freeze?.frozenBy ? <span className="text-xs text-muted-foreground">{t("frozenBy", { user: freeze.frozenBy })}</span> : null}
         </div>
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
-            <label className="text-xs text-muted-foreground">Reason</label>
-            <Input className="w-72" value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Optional note" />
+            <label className="text-xs text-muted-foreground">{t("reason")}</label>
+            <Input className="w-72" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t("reasonPlaceholder")} />
           </div>
           <Button
             data-testid="cutover-freeze-button"
@@ -118,12 +125,12 @@ export default function CutoverPage() {
             {freeze?.isFrozen ? (
               <>
                 <Sun className="mr-2 h-4 w-4" />
-                Unfreeze
+                {t("unfreeze")}
               </>
             ) : (
               <>
                 <Snowflake className="mr-2 h-4 w-4" />
-                Freeze
+                {t("freeze")}
               </>
             )}
           </Button>
@@ -131,16 +138,16 @@ export default function CutoverPage() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-medium">Cutover logs</h2>
+        <h2 className="text-lg font-medium">{t("logsTitle")}</h2>
         <div className="overflow-x-auto rounded-lg border border-border/60">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-left">
               <tr>
-                <th className="p-3">Step</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Actor</th>
-                <th className="p-3">Started</th>
-                <th className="p-3">Note</th>
+                <th className="p-3">{t("colStep")}</th>
+                <th className="p-3">{t("colStatus")}</th>
+                <th className="p-3">{t("colActor")}</th>
+                <th className="p-3">{t("colStarted")}</th>
+                <th className="p-3">{t("colNote")}</th>
               </tr>
             </thead>
             <tbody>
@@ -156,7 +163,7 @@ export default function CutoverPage() {
               {logs.length === 0 ? (
                 <tr>
                   <td className="p-3 text-muted-foreground" colSpan={5}>
-                    No cutover logs yet.
+                    {t("emptyLogs")}
                   </td>
                 </tr>
               ) : null}

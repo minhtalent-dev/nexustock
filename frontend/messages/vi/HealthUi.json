@@ -1,0 +1,33 @@
+{
+  "HealthUi": {
+    "title": "Sức khỏe hệ thống",
+    "refresh": "Làm mới",
+    "api": "API",
+    "database": "Cơ sở dữ liệu",
+    "redis": "Redis",
+    "version": "Phiên bản",
+    "environment": "Môi trường",
+    "loadError": "Không tải được trạng thái sức khỏe",
+    "subtitle": "Bảng giám sát monolith mô-đun Nexustock",
+    "apiHost": "API Web Host",
+    "apiHostDesc": "Composition root & Middleware",
+    "dbTitle": "Cơ sở dữ liệu PostgreSQL",
+    "dbDesc": "Lưu trữ vận hành chính",
+    "redisTitle": "Redis cache",
+    "redisDesc": "Bộ nhớ đệm phân tán (tùy chọn)",
+    "metadata": "Chi tiết metadata",
+    "apiVersion": "Phiên bản API",
+    "liveness": "Liveness check (/health/live)",
+    "readiness": "Readiness check (/health/ready)",
+    "alive": "Alive",
+    "active": "Active",
+    "traceId": "Mã truy vết",
+    "lastChecked": "Kiểm tra lúc",
+    "connectionError": "Lỗi kết nối API",
+    "healthy": "Healthy",
+    "pending": "Pending",
+    "disabled": "Disabled",
+    "unhealthy": "Unhealthy",
+    "unknown": "Unknown"
+  }
+}

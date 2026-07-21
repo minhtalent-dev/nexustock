@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { ArrowLeft, CheckCircle2, AlertTriangle, Plus, ShieldAlert } from "lucide-react";
 
 interface InboundOrderResponseDto {
@@ -44,6 +45,10 @@ interface LocationDto {
 }
 
 export default function ReceivePage() {
+  const t = useTranslations("Admin.inbound");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const params = useParams();
   const orderId = params.id as string;
 
@@ -51,7 +56,6 @@ export default function ReceivePage() {
   const [locations, setLocations] = useState<LocationDto[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Dialog State
   const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InboundOrderItemResponseDto | null>(null);
   const [lotNo, setLotNo] = useState("");
@@ -66,18 +70,19 @@ export default function ReceivePage() {
       const res = await api.get<InboundOrderResponseDto>(`/inbound/orders/${orderId}`);
       setOrder(res.data);
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể tải chi tiết phiếu nhập."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadDetailFailed"));
     }
-  }, [orderId]);
+  }, [orderId, t, tErrors]);
 
   const fetchLocations = useCallback(async () => {
     try {
       const res = await api.get<{ items: LocationDto[] }>("/master-data/storage-locations");
       setLocations(res.data.items || []);
     } catch {
-      showError("Không thể tải danh sách vị trí kho.");
+      showApiErrorToast("", t("errors.loadLocationsFailed"));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -93,7 +98,6 @@ export default function ReceivePage() {
   const openReceiveDialog = (item: InboundOrderItemResponseDto) => {
     setSelectedItem(item);
     setLotNo("");
-    // Mặc định số lượng còn lại cần nhận
     const remain = Math.max(0, item.expectedQty - item.receivedQty);
     setReceivedQty(remain);
     setToLocationId("");
@@ -106,15 +110,15 @@ export default function ReceivePage() {
     e.preventDefault();
     if (!selectedItem) return;
     if (!lotNo.trim()) {
-      showError("Vui lòng nhập số lô hàng.");
+      showApiErrorToast("", t("errors.lotRequired"));
       return;
     }
     if (receivedQty <= 0) {
-      showError("Số lượng nhận thực tế phải lớn hơn 0.");
+      showApiErrorToast("", t("errors.qtyRequired"));
       return;
     }
     if (!toLocationId) {
-      showError("Vui lòng chọn vị trí lưu kho.");
+      showApiErrorToast("", t("errors.locationRequired"));
       return;
     }
 
@@ -129,11 +133,12 @@ export default function ReceivePage() {
         productionDate: productionDate ? new Date(productionDate).toISOString() : null,
       });
 
-      showSuccess(`Đã nhận hàng thành công cho vật tư ${selectedItem.itemName}.`);
+      showSuccess(t("toastReceiveSuccess", { itemName: selectedItem.itemName }));
       setIsOpen(false);
       await fetchOrderDetails();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi khi nhận hàng."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.receiveFailed"));
     } finally {
       setSaving(false);
     }
@@ -143,7 +148,7 @@ export default function ReceivePage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4 text-zinc-400">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
-        <span className="text-sm">Đang tải chi tiết phiếu nhập...</span>
+        <span className="text-sm">{t("loadingDetail")}</span>
       </div>
     );
   }
@@ -152,11 +157,11 @@ export default function ReceivePage() {
     return (
       <div className="flex flex-col items-center justify-center py-24 gap-4 text-zinc-400">
         <AlertTriangle className="h-12 w-12 text-red-500" />
-        <span className="text-sm">Không tìm thấy thông tin phiếu nhập hàng.</span>
+        <span className="text-sm">{t("notFound")}</span>
         <Link href="/admin/inbound">
           <Button className="bg-zinc-800 hover:bg-zinc-700 text-white gap-2">
             <ArrowLeft className="h-4 w-4" />
-            Quay lại danh sách
+            {t("backToList")}
           </Button>
         </Link>
       </div>
@@ -173,10 +178,10 @@ export default function ReceivePage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            Chi tiết nhận hàng: {order.orderNo}
+            {t("receiveTitle", { orderNo: order.orderNo })}
           </h1>
           <p className="text-xs text-zinc-400 mt-1">
-            Nhà cung cấp: <span className="text-emerald-400 font-semibold">{order.partnerName}</span> • Trạng thái: {order.status}
+            {t("receiveSubtitle", { partner: order.partnerName, status: order.status })}
           </p>
         </div>
       </div>
@@ -184,19 +189,19 @@ export default function ReceivePage() {
       <div className="grid grid-cols-3 gap-6">
         <Card className="bg-[#111] border-zinc-800/80 col-span-3">
           <CardHeader className="py-4 border-b border-zinc-800/60">
-            <CardTitle className="text-sm font-semibold text-white">Chi tiết dòng hàng cần nhận</CardTitle>
+            <CardTitle className="text-sm font-semibold text-white">{t("receiveLinesTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader className="bg-zinc-900/30 border-b border-zinc-800/60">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-zinc-400 font-semibold h-11">Vật tư</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11">Đơn vị tính</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">Số lượng yêu cầu</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">Số lượng đã nhận</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">Dung sai (%)</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">Tiến độ</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-right w-32 pr-6">Thao tác</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11">{t("colItem")}</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11">{t("colUom")}</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">{t("colExpectedQty")}</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">{t("colReceivedQty")}</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">{t("colTolerance")}</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">{t("colProgress")}</TableHead>
+                  <TableHead className="text-zinc-400 font-semibold h-11 text-right w-32 pr-6">{t("colActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -229,14 +234,14 @@ export default function ReceivePage() {
                       </TableCell>
                       <TableCell className="text-right pr-6">
                         {order.status === "Completed" || order.status === "Cancelled" ? (
-                          <span className="text-xs text-zinc-500">N/A</span>
+                          <span className="text-xs text-zinc-500">{tc("notAvailable")}</span>
                         ) : (
                           <Button
                             onClick={() => openReceiveDialog(i)}
                             className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-3 py-1 gap-1.5"
                           >
                             <Plus className="h-3.5 w-3.5" />
-                            Nhận hàng
+                            {t("receiveBtn")}
                           </Button>
                         )}
                       </TableCell>
@@ -249,42 +254,41 @@ export default function ReceivePage() {
         </Card>
       </div>
 
-      {/* Dialog nhận hàng */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="bg-zinc-950 border-zinc-800 text-white max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-white flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              Nhận hàng thực tế
+              {t("receiveDialogTitle")}
             </DialogTitle>
           </DialogHeader>
           {selectedItem && (
             <form onSubmit={handleReceive} className="space-y-4">
               <div className="bg-zinc-900/60 p-3 rounded-lg border border-zinc-850">
-                <p className="text-xs text-zinc-500 font-semibold uppercase">Vật tư cần nhận</p>
+                <p className="text-xs text-zinc-500 font-semibold uppercase">{t("itemToReceive")}</p>
                 <p className="text-sm font-bold text-white mt-0.5">{selectedItem.itemName}</p>
-                <p className="text-[10px] text-zinc-400 font-normal">Mã vật tư: {selectedItem.itemCode}</p>
+                <p className="text-[10px] text-zinc-400 font-normal">{t("itemCode")}: {selectedItem.itemCode}</p>
                 <div className="grid grid-cols-3 gap-2 mt-3 text-xs text-zinc-400">
                   <div>
-                    <p className="text-zinc-500">Yêu cầu</p>
+                    <p className="text-zinc-500">{t("expected")}</p>
                     <p className="font-semibold text-zinc-200 mt-0.5 font-mono">{selectedItem.expectedQty} {selectedItem.uomName}</p>
                   </div>
                   <div>
-                    <p className="text-zinc-500">Đã nhận</p>
+                    <p className="text-zinc-500">{t("received")}</p>
                     <p className="font-semibold text-emerald-400 mt-0.5 font-mono">{selectedItem.receivedQty} {selectedItem.uomName}</p>
                   </div>
                   <div>
-                    <p className="text-zinc-500">Dung sai</p>
+                    <p className="text-zinc-500">{t("tolerance")}</p>
                     <p className="font-semibold text-amber-500 mt-0.5 font-mono">{(selectedItem.tolerance * 100).toFixed(0)}%</p>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="lotNo" className="text-zinc-300 text-xs">Số lô hàng (Lot no) *</Label>
+                <Label htmlFor="lotNo" className="text-zinc-300 text-xs">{t("lotNoLabel")}</Label>
                 <Input
                   id="lotNo"
-                  placeholder="Ví dụ: LOT-20260710-01"
+                  placeholder={t("lotNoPlaceholder")}
                   value={lotNo}
                   onChange={(e) => setLotNo(e.target.value)}
                   className="bg-zinc-900 border-zinc-800 text-white focus-visible:ring-emerald-500"
@@ -293,7 +297,7 @@ export default function ReceivePage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="qty" className="text-zinc-300 text-xs">Số lượng nhận *</Label>
+                  <Label htmlFor="qty" className="text-zinc-300 text-xs">{t("receiveQtyLabel")}</Label>
                   <Input
                     id="qty"
                     type="number"
@@ -305,14 +309,14 @@ export default function ReceivePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="location" className="text-zinc-300 text-xs">Vị trí lưu kho *</Label>
+                  <Label htmlFor="location" className="text-zinc-300 text-xs">{t("locationLabel")}</Label>
                   <select
                     id="location"
                     value={toLocationId}
                     onChange={(e) => setToLocationId(e.target.value)}
                     className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-1 text-sm shadow-sm transition-colors text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
                   >
-                    <option value="">Chọn vị trí...</option>
+                    <option value="">{t("locationPlaceholder")}</option>
                     {locations.map((loc) => (
                       <option key={loc.id} value={loc.id}>
                         {loc.name} ({loc.code})
@@ -324,7 +328,7 @@ export default function ReceivePage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="prodDate" className="text-zinc-300 text-xs">Ngày sản xuất</Label>
+                  <Label htmlFor="prodDate" className="text-zinc-300 text-xs">{t("productionDateLabel")}</Label>
                   <Input
                     id="prodDate"
                     type="date"
@@ -334,7 +338,7 @@ export default function ReceivePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="expDate" className="text-zinc-300 text-xs">Hạn sử dụng</Label>
+                  <Label htmlFor="expDate" className="text-zinc-300 text-xs">{t("expiryDateLabel")}</Label>
                   <Input
                     id="expDate"
                     type="date"
@@ -345,20 +349,19 @@ export default function ReceivePage() {
                 </div>
               </div>
 
-              {/* Thông báo nếu vượt quá dung sai cho phép */}
               {receivedQty + selectedItem.receivedQty > selectedItem.expectedQty * (1 + selectedItem.tolerance) && (
                 <div className="flex gap-2 p-3 bg-red-900/10 border border-red-500/20 rounded-lg text-xs text-red-400">
                   <ShieldAlert className="h-4 w-4 shrink-0" />
-                  <p>Số lượng nhận vượt quá dung sai cho phép. Cần quyền &quot;Inbound.Orders.Approve&quot; để phê duyệt giao dịch này.</p>
+                  <p>{t("toleranceWarning")}</p>
                 </div>
               )}
 
               <DialogFooter className="border-t border-zinc-800 pt-4 flex gap-2">
                 <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-zinc-400 hover:text-white">
-                  Hủy bỏ
+                  {tc("cancel")}
                 </Button>
                 <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-white min-w-24">
-                  {saving ? "Đang xử lý..." : "Xác nhận"}
+                  {saving ? tc("processing") : tc("confirm")}
                 </Button>
               </DialogFooter>
             </form>

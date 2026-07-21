@@ -25,17 +25,30 @@
   },
   "quality": {
     "status": "in_progress",
-    "updatedAt": "2026-07-21T03:35:22.711Z",
+    "updatedAt": "2026-07-21T09:22:03.228Z",
     "blockers": [],
     "evidenceMode": "attested",
     "critiqueStatus": "pending",
-    "critiqueUpdatedAt": "2026-07-21T03:35:22.711Z"
+    "critiqueUpdatedAt": "2026-07-21T09:22:03.228Z"
   },
   "security": {
-    "status": "pending",
-    "updatedAt": "2026-07-21T02:15:28.225Z",
-    "blockers": [],
-    "critiqueStatus": "none"
+    "status": "failed",
+    "updatedAt": "2026-07-21T08:51:42.828Z",
+    "blockers": [
+      "password_assign@.env",
+      "password_assign@.env.example",
+      "password_assign@.env.production.example",
+      "password_assign@backend/modules/Nexustock.Modules.CrossDocking/Contexts/CrossDockingDbContextFactory.cs",
+      "password_assign@backend/modules/Nexustock.Modules.LaborTracking/Contexts/LaborTrackingDbContextFactory.cs",
+      "password_assign@backend/modules/Nexustock.Modules.Lpn/Contexts/LpnDbContextFactory.cs",
+      "password_assign@backend/modules/Nexustock.Modules.MasterData/Contexts/MasterDataDbContextFactory.cs",
+      "password_assign@backend/modules/Nexustock.Modules.Observability/Services/SensitiveDataMasker.cs",
+      "password_assign@backend/modules/Nexustock.Modules.Serial/Contexts/SerialDbContextFactory.cs",
+      "password_assign@backend/modules/Nexustock.Modules.Webhook/Contexts/WebhookDbContextFactory.cs"
+    ],
+    "evidenceMode": "verified",
+    "critiqueStatus": "none",
+    "critiqueUpdatedAt": "2026-07-21T08:51:42.828Z"
   },
   "release": {
     "status": "pending",

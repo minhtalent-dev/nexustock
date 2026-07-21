@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
 import { Users, UserPlus, Check, X } from "lucide-react";
 
 interface UserDto {
@@ -30,15 +31,17 @@ interface RoleDto {
 }
 
 export default function UsersPage() {
+  const t = useTranslations("Admin.users");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [users, setUsers] = useState<UserDto[]>([]);
   const [roles, setRoles] = useState<RoleDto[]>([]);
   const [loading, setLoading] = useState(false);
-  
-  // Dialog state
+
   const [isOpen, setIsOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<UserDto | null>(null);
 
-  // Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
@@ -56,11 +59,12 @@ export default function UsersPage() {
       setUsers(usersRes.data);
       setRoles(rolesRes.data);
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể tải dữ liệu."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t, tErrors]);
 
   useEffect(() => {
     queueMicrotask(() => void fetchData());
@@ -98,20 +102,18 @@ export default function UsersPage() {
 
     try {
       if (editingUser) {
-        // Update user profile & status
         await api.put(`/users/${editingUser.id}`, { fullName, isActive });
-        // Update user roles
         await api.post(`/users/${editingUser.id}/roles`, { roles: selectedRoles });
-        showSuccess("Cập nhật người dùng thành công.");
+        showSuccess(t("toastUpdateSuccess"));
       } else {
-        // Create user
         await api.post("/users", { email, password, fullName, roles: selectedRoles });
-        showSuccess("Tạo người dùng thành công.");
+        showSuccess(t("toastCreateSuccess"));
       }
       setIsOpen(false);
       fetchData();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi thao tác."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -123,37 +125,37 @@ export default function UsersPage() {
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             <Users className="h-6 w-6 text-emerald-500" />
-            Quản lý người dùng
+            {t("title")}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">Quản lý tài khoản vận hành, phân quyền vai trò thuộc Tenant.</p>
+          <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
         </div>
         <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 h-9 text-sm">
           <UserPlus className="h-4 w-4" />
-          Thêm người dùng
+          {t("addUser")}
         </Button>
       </div>
 
       <Card className="bg-[#111] border-zinc-800/80">
         <CardHeader className="py-4 border-b border-zinc-800/60 flex flex-row items-center justify-between">
-          <CardTitle className="text-sm font-semibold text-white">Danh sách tài khoản</CardTitle>
+          <CardTitle className="text-sm font-semibold text-white">{t("listTitle")}</CardTitle>
           {loading && <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />}
         </CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader className="bg-zinc-900/30 border-b border-zinc-800/60">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-zinc-400 font-semibold h-11">Họ tên</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11">Email</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11">Vai trò</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11 text-center w-36">Trạng thái</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11 text-right w-24 pr-6">Thao tác</TableHead>
+                <TableHead className="text-zinc-400 font-semibold h-11">{t("colFullName")}</TableHead>
+                <TableHead className="text-zinc-400 font-semibold h-11">{t("colEmail")}</TableHead>
+                <TableHead className="text-zinc-400 font-semibold h-11">{t("colRoles")}</TableHead>
+                <TableHead className="text-zinc-400 font-semibold h-11 text-center w-36">{tc("status")}</TableHead>
+                <TableHead className="text-zinc-400 font-semibold h-11 text-right w-24 pr-6">{tc("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-zinc-550 text-sm">
-                    {loading ? "Đang tải dữ liệu..." : "Không có người dùng nào."}
+                    {loading ? t("loading") : t("empty")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -177,17 +179,17 @@ export default function UsersPage() {
                     <TableCell className="text-center h-12">
                       {user.isActive ? (
                         <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
-                          <Check className="h-3 w-3" /> Hoạt động
+                          <Check className="h-3 w-3" /> {t("statusActive")}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
-                          <X className="h-3 w-3" /> Vô hiệu
+                          <X className="h-3 w-3" /> {t("statusInactive")}
                         </span>
                       )}
                     </TableCell>
                     <TableCell className="text-right h-12 pr-6">
                       <Button onClick={() => openEdit(user)} variant="ghost" size="sm" className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-8 px-2 text-xs">
-                        Chỉnh sửa
+                        {t("edit")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -198,18 +200,17 @@ export default function UsersPage() {
         </CardContent>
       </Card>
 
-      {/* Dialog Form */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="bg-[#111] border border-zinc-800 text-zinc-100 max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-white">
-              {editingUser ? "Chỉnh sửa người dùng" : "Thêm người dùng mới"}
+              {editingUser ? t("dialogEditTitle") : t("dialogCreateTitle")}
             </DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleSave} className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email" className="text-xs text-zinc-400">Email</Label>
+              <Label htmlFor="email" className="text-xs text-zinc-400">{t("colEmail")}</Label>
               <Input
                 id="email"
                 type="email"
@@ -224,33 +225,33 @@ export default function UsersPage() {
 
             {!editingUser && (
               <div className="flex flex-col gap-2">
-                <Label htmlFor="pass" className="text-xs text-zinc-400">Mật khẩu</Label>
+                <Label htmlFor="pass" className="text-xs text-zinc-400">{t("labelPassword")}</Label>
                 <Input
                   id="pass"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="bg-zinc-900 border-zinc-800 text-sm"
-                  placeholder="Mật khẩu ít nhất 8 ký tự"
+                  placeholder={t("passwordPlaceholder")}
                   required
                 />
               </div>
             )}
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="name" className="text-xs text-zinc-400">Họ và tên</Label>
+              <Label htmlFor="name" className="text-xs text-zinc-400">{t("labelFullName")}</Label>
               <Input
                 id="name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 className="bg-zinc-900 border-zinc-800 text-sm"
-                placeholder="Họ và tên người dùng"
+                placeholder={t("fullNamePlaceholder")}
                 required
               />
             </div>
 
             <div className="flex flex-col gap-2 mt-1">
-              <Label className="text-xs text-zinc-400">Vai trò hệ thống</Label>
+              <Label className="text-xs text-zinc-400">{t("labelSystemRoles")}</Label>
               <div className="grid grid-cols-2 gap-2 p-3 bg-zinc-900/50 border border-zinc-800/80 rounded-lg">
                 {roles.map((role) => (
                   <div key={role.id} className="flex items-center gap-2">
@@ -276,16 +277,16 @@ export default function UsersPage() {
                 className="border-zinc-700 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
               />
               <label htmlFor="active" className="text-xs text-zinc-300 font-medium cursor-pointer select-none">
-                Kích hoạt tài khoản hoạt động
+                {t("activateAccount")}
               </label>
             </div>
 
             <DialogFooter className="mt-4 gap-2">
               <Button type="button" onClick={() => setIsOpen(false)} variant="ghost" className="text-zinc-400 hover:text-zinc-200 h-9 text-sm">
-                Hủy bỏ
+                {tc("cancel")}
               </Button>
               <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-sm">
-                {saving ? "Đang lưu..." : "Xác nhận"}
+                {saving ? tc("saving") : tc("confirm")}
               </Button>
             </DialogFooter>
           </form>

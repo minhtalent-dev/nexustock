@@ -1,0 +1,9 @@
+[2026-07-21T08:50:51.654Z] AC-01 login lang=vi
+[2026-07-21T08:50:51.657Z] AC-02 switcher visible on login
+[2026-07-21T08:50:53.272Z] After EN: lang=en cookie=en
+[2026-07-21T08:50:53.273Z] Body text changed after locale switch
+[2026-07-21T08:50:54.103Z] Reload keep lang=en
+[2026-07-21T08:50:55.682Z] Back to VI lang=vi
+[2026-07-21T08:50:58.342Z] health-ui switcher count=1
+[2026-07-21T08:51:00.884Z] home captured
+[2026-07-21T08:51:02.665Z] P31a: no pageerror on locale switch (module catalogs)

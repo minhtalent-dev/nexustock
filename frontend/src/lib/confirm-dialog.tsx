@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,24 +25,28 @@ type PendingConfirm = Required<ConfirmDialogOptions> & {
   resolve: (value: boolean) => void;
 };
 
-const defaultOptions: Required<ConfirmDialogOptions> = {
-  title: "Xác nhận thao tác",
-  description: "Bạn có chắc chắn muốn tiếp tục?",
-  confirmText: "Đồng ý",
-  cancelText: "Hủy",
-  tone: "default",
-};
-
 const ConfirmDialogContext = createContext<((options?: ConfirmDialogOptions) => Promise<boolean>) | null>(null);
 
 export function ConfirmDialogProvider({ children }: { children: React.ReactNode }) {
   const [pending, setPending] = useState<PendingConfirm | null>(null);
+  const tConfirm = useTranslations("Common.confirm");
+  const tActions = useTranslations("Common.actions");
 
-  const confirm = useCallback((options?: ConfirmDialogOptions) => {
-    return new Promise<boolean>((resolve) => {
-      setPending({ ...defaultOptions, ...options, resolve });
-    });
-  }, []);
+  const confirm = useCallback(
+    (options?: ConfirmDialogOptions) => {
+      return new Promise<boolean>((resolve) => {
+        setPending({
+          title: options?.title ?? tConfirm("title"),
+          description: options?.description ?? tConfirm("description"),
+          confirmText: options?.confirmText ?? tActions("confirm"),
+          cancelText: options?.cancelText ?? tActions("cancel"),
+          tone: options?.tone ?? "default",
+          resolve,
+        });
+      });
+    },
+    [tConfirm, tActions]
+  );
 
   const close = useCallback(
     (value: boolean) => {

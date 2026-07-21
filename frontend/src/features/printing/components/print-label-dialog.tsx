@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import { showError, showSuccess } from "@/lib/toast";
+import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
 import { useLocalPrinter } from "../hooks/use-local-printer";
 import { createPrintJob } from "../api";
 import type { PrintJobDto } from "../types";
@@ -27,15 +29,6 @@ interface PrintLabelDialogProps {
   printerCode?: string;
 }
 
-interface ApiError {
-  response?: {
-    data?: {
-      message?: string;
-      errorCode?: string;
-    };
-  };
-}
-
 export function PrintLabelDialog({
   isOpen,
   onClose,
@@ -48,6 +41,9 @@ export function PrintLabelDialog({
   templateId,
   printerCode = "PRINTER-01",
 }: PrintLabelDialogProps) {
+  const t = useTranslations("Features.printing");
+  const tErrors = useTranslations("Errors");
+
   const [saving, setSaving] = useState(false);
   const [job, setJob] = useState<PrintJobDto | null>(null);
   const [reprintOpen, setReprintOpen] = useState(false);
@@ -56,7 +52,7 @@ export function PrintLabelDialog({
 
   const handleSubmit = async () => {
     if (!templateId) {
-      showError("Label template is required before printing.");
+      showApiErrorToast(t("errors.templateRequired"), t("errors.templateRequired"));
       return;
     }
 
@@ -75,10 +71,10 @@ export function PrintLabelDialog({
       });
       setJob(created);
       onPrinted?.(created);
-      showSuccess("Label print job created.");
+      showSuccess(t("toastPrintSuccess"));
     } catch (err) {
-      const apiError = err as ApiError;
-      showError(apiError.response?.data?.message ?? "Cannot create label print job.");
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.printFailed"));
     } finally {
       setSaving(false);
     }
@@ -89,63 +85,68 @@ export function PrintLabelDialog({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[560px]">
           <DialogHeader>
-            <DialogTitle>Print package label</DialogTitle>
+            <DialogTitle>{t("printPackageLabel")}</DialogTitle>
           </DialogHeader>
 
           <div className="flex flex-col gap-5 py-2">
             <Alert>
-              <AlertTitle>Local printer</AlertTitle>
+              <AlertTitle>{t("localPrinter")}</AlertTitle>
               <AlertDescription>
-                {printer.error ?? `Printer ${printerCode}: ${printer.status?.status ?? printer.state}`}
+                {printer.error ?? t("printerStatus", {
+                  code: printerCode,
+                  status: printer.status?.status ?? printer.state,
+                })}
               </AlertDescription>
             </Alert>
 
             {!templateReady ? (
               <Alert variant="destructive">
-                <AlertTitle>Template required</AlertTitle>
-                <AlertDescription>Configure a label template ID before creating a print job.</AlertDescription>
+                <AlertTitle>{t("templateRequired")}</AlertTitle>
+                <AlertDescription>{t("templateRequiredDesc")}</AlertDescription>
               </Alert>
             ) : null}
 
             <FieldGroup>
               <Field orientation="responsive">
-                <FieldLabel>Shipment</FieldLabel>
+                <FieldLabel>{t("shipment")}</FieldLabel>
                 <div className="text-sm font-semibold">{shipmentNo}</div>
               </Field>
               <Field orientation="responsive">
-                <FieldLabel>Package</FieldLabel>
+                <FieldLabel>{t("package")}</FieldLabel>
                 <div className="text-sm font-semibold">{packageNo}</div>
               </Field>
               <Field orientation="responsive">
-                <FieldLabel htmlFor="printerCode">Printer</FieldLabel>
+                <FieldLabel htmlFor="printerCode">{t("printer")}</FieldLabel>
                 <Input id="printerCode" value={printerCode} readOnly />
               </Field>
               <Field orientation="responsive">
-                <FieldLabel htmlFor="labelWeight">Weight (kg)</FieldLabel>
+                <FieldLabel htmlFor="labelWeight">{t("weight")}</FieldLabel>
                 <Input id="labelWeight" value={weightKg.toFixed(3)} readOnly />
-                <FieldDescription>Source: {weightSource}</FieldDescription>
+                <FieldDescription>{t("source")}: {weightSource}</FieldDescription>
               </Field>
             </FieldGroup>
 
             {job ? (
               <Alert>
                 <AlertTitle className="flex items-center justify-between gap-3">
-                  Print job
+                  {t("printJob")}
                   <PrintJobStatusBadge status={job.status} />
                 </AlertTitle>
-                <AlertDescription>Job {job.id} · Template {job.templateCode}</AlertDescription>
+                <AlertDescription>
+                  {t("jobSummary", { id: job.id, template: job.templateCode })}
+                </AlertDescription>
               </Alert>
             ) : null}
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>Skip printing</Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>{t("skipPrinting")}</Button>
             {job ? (
-              <Button type="button" variant="secondary" onClick={() => setReprintOpen(true)} disabled={saving}>Reprint</Button>
+              <Button type="button" variant="secondary" onClick={() => setReprintOpen(true)} disabled={saving}>{t("reprint")}</Button>
             ) : null}
             <Button type="button" onClick={handleSubmit} disabled={saving || !templateReady}>
               {saving ? <Spinner data-icon="inline-start" /> : null}
-              Create print job
+              {t("createPrintJob")}
             </Button>
           </DialogFooter>
         </DialogContent>

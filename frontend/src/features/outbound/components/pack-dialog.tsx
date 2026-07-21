@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -10,19 +11,12 @@ import { Field, FieldDescription, FieldGroup, FieldLabel } from "@/components/ui
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PrintLabelDialog } from "@/features/printing/components/print-label-dialog";
-import { showError, showSuccess } from "@/lib/toast";
+import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
 import { useLocalScale } from "@/features/outbound/hooks/use-local-scale";
 
 const DEFAULT_LABEL_TEMPLATE_ID = "00000000-0000-0000-0000-000000002201";
 const DEFAULT_PRINTER_CODE = "PRINTER-01";
-
-interface ApiError {
-  response?: {
-    data?: {
-      message?: string;
-    };
-  };
-}
 
 interface ManualOverrideResponse {
   manualOverrideId: string;
@@ -50,6 +44,10 @@ export function CompletePackingDialog({
   shipmentId,
   shipmentNo,
 }: CompletePackingDialogProps) {
+  const t = useTranslations("Features.outbound");
+  const tc = useTranslations("Common.actions");
+  const tErrors = useTranslations("Errors");
+
   const [packageNo, setPackageNo] = useState("");
   const [manualMode, setManualMode] = useState(false);
   const [manualWeight, setManualWeight] = useState("");
@@ -66,13 +64,13 @@ export function CompletePackingDialog({
   const canSubmit = !saving && Boolean(packageNo.trim()) && (manualMode ? canSubmitManual : canSubmitScale);
 
   const statusLabel = useMemo(() => {
-    if (status === "connected" && reading?.stable) return "Stable";
-    if (status === "connected") return "Live";
-    if (status === "connecting") return "Connecting";
-    if (status === "unavailable") return "Unavailable";
-    if (status === "error") return "Error";
-    return "Idle";
-  }, [reading?.stable, status]);
+    if (status === "connected" && reading?.stable) return t("scaleStatus.stable");
+    if (status === "connected") return t("scaleStatus.live");
+    if (status === "connecting") return t("scaleStatus.connecting");
+    if (status === "unavailable") return t("scaleStatus.unavailable");
+    if (status === "error") return t("scaleStatus.error");
+    return t("scaleStatus.idle");
+  }, [reading?.stable, status, t]);
 
   useEffect(() => {
     if (isOpen) {
@@ -126,15 +124,15 @@ export function CompletePackingDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!packageNo.trim()) {
-      showError("Package number is required.");
+      showApiErrorToast(t("errors.packageNoRequired"), t("errors.packageNoRequired"));
       return;
     }
     if (!manualMode && !canSubmitScale) {
-      showError("Stable scale weight is required before packing.");
+      showApiErrorToast(t("errors.stableWeightRequired"), t("errors.stableWeightRequired"));
       return;
     }
     if (manualMode && !canSubmitManual) {
-      showError("Manual weight and override reason are required.");
+      showApiErrorToast(t("errors.manualOverrideRequired"), t("errors.manualOverrideRequired"));
       return;
     }
 
@@ -146,12 +144,12 @@ export function CompletePackingDialog({
 
       setCompletedPacking(result);
       setPrintDialogOpen(true);
-      showSuccess("Packing completed.");
+      showSuccess(t("toastPackSuccess"));
       onSuccess();
       onClose();
     } catch (err: unknown) {
-      const message = (err as ApiError).response?.data?.message || "Cannot complete packing.";
-      showError(message);
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.packFailed"));
     } finally {
       setSaving(false);
     }
@@ -162,26 +160,26 @@ export function CompletePackingDialog({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[560px]">
         <DialogHeader>
-          <DialogTitle>Confirm packing</DialogTitle>
+          <DialogTitle>{t("packTitle")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 py-2">
           <Alert>
             <AlertTitle className="flex items-center justify-between gap-3">
-              Local scale
+              {t("localScale")}
               <Badge variant={reading?.stable ? "default" : "secondary"}>{statusLabel}</Badge>
             </AlertTitle>
             <AlertDescription>
-              {error || "Packing prefers stable Local Agent scale readings. Manual override requires approval reason."}
+              {error || t("scaleHint")}
             </AlertDescription>
           </Alert>
 
           <FieldGroup>
             <Field orientation="responsive">
-              <FieldLabel>Shipment</FieldLabel>
+              <FieldLabel>{t("shipment")}</FieldLabel>
               <div className="text-sm font-semibold">{shipmentNo}</div>
             </Field>
             <Field orientation="responsive">
-              <FieldLabel htmlFor="packageNo">Package number</FieldLabel>
+              <FieldLabel htmlFor="packageNo">{t("packageNo")}</FieldLabel>
               <Input
                 id="packageNo"
                 value={packageNo}
@@ -190,7 +188,7 @@ export function CompletePackingDialog({
               />
             </Field>
             <Field orientation="responsive">
-              <FieldLabel htmlFor="weight">Scale weight (kg)</FieldLabel>
+              <FieldLabel htmlFor="weight">{t("scaleWeight")}</FieldLabel>
               <Input
                 id="weight"
                 type="number"
@@ -199,7 +197,7 @@ export function CompletePackingDialog({
                 aria-invalid={!reading?.stable && !manualMode}
               />
               <FieldDescription>
-                Source: {reading?.deviceId ?? "Local Agent"} · {reading?.connectionState ?? status}
+                {t("source")}: {reading?.deviceId ?? "Local Agent"} · {reading?.connectionState ?? status}
               </FieldDescription>
             </Field>
           </FieldGroup>
@@ -207,7 +205,7 @@ export function CompletePackingDialog({
           {manualMode ? (
             <FieldGroup>
               <Field orientation="responsive">
-                <FieldLabel htmlFor="manualWeight">Manual weight (kg)</FieldLabel>
+                <FieldLabel htmlFor="manualWeight">{t("manualWeight")}</FieldLabel>
                 <Input
                   id="manualWeight"
                   type="number"
@@ -219,12 +217,12 @@ export function CompletePackingDialog({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="manualReason">Override reason</FieldLabel>
+                <FieldLabel htmlFor="manualReason">{t("overrideReason")}</FieldLabel>
                 <Textarea
                   id="manualReason"
                   value={manualReason}
                   onChange={(e) => setManualReason(e.target.value)}
-                  placeholder="Example: Scale unavailable, supervisor approved manual weight."
+                  placeholder={t("overrideReasonPlaceholder")}
                   aria-invalid={!manualReason.trim()}
                 />
               </Field>
@@ -232,12 +230,12 @@ export function CompletePackingDialog({
           ) : null}
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>Cancel</Button>
-            <Button type="button" variant="secondary" onClick={reconnect} disabled={saving || status === "connecting"}>Reconnect scale</Button>
+            <Button type="button" variant="outline" onClick={onClose} disabled={saving}>{tc("cancel")}</Button>
+            <Button type="button" variant="secondary" onClick={reconnect} disabled={saving || status === "connecting"}>{t("reconnectScale")}</Button>
             <Button type="button" variant="secondary" onClick={() => setManualMode((value) => !value)} disabled={saving}>
-              {manualMode ? "Use scale" : "Manual override"}
+              {manualMode ? t("useScale") : t("manualOverride")}
             </Button>
-            <Button type="submit" disabled={!canSubmit}>Complete packing</Button>
+            <Button type="submit" disabled={!canSubmit}>{t("completePacking")}</Button>
           </DialogFooter>
         </form>
         </DialogContent>

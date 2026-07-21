@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { previewImportMappings, commitImportMappings } from "@/features/erp-integration/api";
 import { ImportPreviewResult } from "@/features/erp-integration/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,10 +9,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { showError, showSuccess, showInfo } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast, showSuccess, showInfo } from "@/lib/toast";
 import { FileSpreadsheet, Upload, AlertTriangle, CheckCircle, RefreshCw } from "lucide-react";
 
 export default function IntegrationImportPage() {
+  const t = useTranslations("Admin.integrations.import");
+  const tErrors = useTranslations("Errors");
+
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<ImportPreviewResult | null>(null);
   const [loading, setLoading] = useState(false);
@@ -26,7 +31,7 @@ export default function IntegrationImportPage() {
 
   const handleUpload = async () => {
     if (!file) {
-      showError("Vui lòng chọn file CSV trước.");
+      showApiErrorToast("", t("errors.selectFile"));
       return;
     }
     setLoading(true);
@@ -34,13 +39,13 @@ export default function IntegrationImportPage() {
       const result = await previewImportMappings("SAP-ERP", file);
       setPreview(result);
       if (result.errorRows > 0) {
-        showWarning("File import chứa lỗi. Vui lòng sửa lại trước khi commit.");
+        showInfo(t("toastFileErrors"));
       } else {
-        showSuccess("Dữ liệu hợp lệ. Sẵn sàng commit.");
+        showSuccess(t("toastReadyCommit"));
       }
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: string } } };
-      showError(error.response?.data?.error || "Lỗi khi phân tích file CSV.");
+    } catch (err) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.parseFailed"));
     } finally {
       setLoading(false);
     }
@@ -49,7 +54,7 @@ export default function IntegrationImportPage() {
   const handleCommit = async () => {
     if (!preview || preview.status === "committed") return;
     if (preview.errorRows > 0) {
-      showError("Không thể commit dữ liệu có chứa dòng lỗi.");
+      showApiErrorToast("", t("errors.cannotCommitErrors"));
       return;
     }
 
@@ -57,37 +62,32 @@ export default function IntegrationImportPage() {
     try {
       const result = await commitImportMappings(preview.jobId);
       setPreview(result);
-      showSuccess("Nhập dữ liệu thành công vào hệ thống.");
+      showSuccess(t("toastCommitSuccess"));
       setFile(null);
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { error?: string } } };
-      showError(error.response?.data?.error || "Lỗi khi commit dữ liệu.");
+    } catch (err) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.commitFailed"));
     } finally {
       setCommitting(false);
     }
   };
 
-  const showWarning = (msg: string) => {
-    showInfo(msg);
-  };
-
   return (
     <div className="flex flex-col gap-6 text-white p-6 font-sans">
-      <h1 className="text-2xl font-bold">Import Wizard (Ánh xạ dữ liệu ERP)</h1>
+      <h1 className="text-2xl font-bold">{t("title")}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Step 1: Upload Panel */}
         <Card className="bg-zinc-900 border-zinc-800 text-white lg:col-span-1 h-fit">
           <CardHeader>
-            <CardTitle className="text-sm font-semibold">1. Chọn file nhập liệu</CardTitle>
+            <CardTitle className="text-sm font-semibold">{t("step1Title")}</CardTitle>
             <CardDescription className="text-zinc-500 text-[11px]">
-              Tải lên file CSV chứa danh sách mapping (mappingType, externalCode, internalCode, status).
+              {t("step1Desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
             <div className="border border-dashed border-zinc-800 rounded p-6 text-center hover:bg-zinc-900/30 cursor-pointer flex flex-col items-center gap-2">
               <Upload className="w-8 h-8 text-zinc-500" />
-              <span className="text-[11px] text-zinc-400">Kéo thả hoặc nhấp để chọn file CSV</span>
+              <span className="text-[11px] text-zinc-400">{t("dropHint")}</span>
               <Input
                 type="file"
                 accept=".csv"
@@ -102,7 +102,7 @@ export default function IntegrationImportPage() {
                 onClick={() => document.getElementById("csv-file-input")?.click()}
                 className="border-zinc-700 text-zinc-300 mt-2 text-[10px]"
               >
-                Chọn file
+                {t("chooseFile")}
               </Button>
             </div>
 
@@ -126,22 +126,21 @@ export default function IntegrationImportPage() {
               {loading ? (
                 <>
                   <RefreshCw className="w-3 h-3 animate-spin mr-2" />
-                  Đang xử lý...
+                  {t("analyzing")}
                 </>
               ) : (
-                "Phân tích dữ liệu"
+                t("analyze")
               )}
             </Button>
           </CardContent>
         </Card>
 
-        {/* Step 2: Preview Panel */}
         <Card className="bg-zinc-900 border-zinc-800 text-white lg:col-span-2">
           <CardHeader className="flex flex-row justify-between items-center">
             <div>
-              <CardTitle className="text-sm font-semibold">2. Xem trước kết quả (Preview)</CardTitle>
+              <CardTitle className="text-sm font-semibold">{t("step2Title")}</CardTitle>
               <CardDescription className="text-zinc-500 text-[11px]">
-                Kiểm tra lỗi logic ánh xạ trước khi ghi chính thức vào cơ sở dữ liệu.
+                {t("step2Desc")}
               </CardDescription>
             </div>
             {preview && preview.status !== "committed" && (
@@ -153,10 +152,10 @@ export default function IntegrationImportPage() {
                 {committing ? (
                   <>
                     <RefreshCw className="w-3 h-3 animate-spin mr-2" />
-                    Đang lưu...
+                    {t("committing")}
                   </>
                 ) : (
-                  "Lưu vào hệ thống (Commit)"
+                  t("commit")
                 )}
               </Button>
             )}
@@ -164,36 +163,35 @@ export default function IntegrationImportPage() {
           <CardContent className="text-xs">
             {!preview ? (
               <div className="text-center py-16 text-zinc-500 italic">
-                Chưa có dữ liệu preview. Vui lòng hoàn thành bước 1.
+                {t("noPreview")}
               </div>
             ) : (
               <div className="space-y-4">
-                {/* Summary bar */}
                 <div className="grid grid-cols-4 gap-4 bg-zinc-950 p-4 rounded border border-zinc-800/80 font-mono text-[11px]">
                   <div>
-                    <span className="text-zinc-500 block mb-1">Trạng thái</span>
+                    <span className="text-zinc-500 block mb-1">{t("summaryStatus")}</span>
                     {preview.status === "committed" ? (
                       <span className="text-emerald-400 font-bold flex items-center gap-1">
-                        <CheckCircle className="w-3 h-3" /> Thành công
+                        <CheckCircle className="w-3 h-3" /> {t("statusCommitted")}
                       </span>
                     ) : preview.errorRows > 0 ? (
                       <span className="text-rose-400 font-bold flex items-center gap-1">
-                        <AlertTriangle className="w-3 h-3" /> Lỗi dòng
+                        <AlertTriangle className="w-3 h-3" /> {t("statusRowError")}
                       </span>
                     ) : (
-                      <span className="text-cyan-400 font-bold">Hợp lệ</span>
+                      <span className="text-cyan-400 font-bold">{t("statusValid")}</span>
                     )}
                   </div>
                   <div>
-                    <span className="text-zinc-500 block mb-1">Tổng số dòng</span>
+                    <span className="text-zinc-500 block mb-1">{t("totalRows")}</span>
                     <span className="font-bold text-white">{preview.totalRows}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 block mb-1">Dòng hợp lệ</span>
+                    <span className="text-zinc-500 block mb-1">{t("validRows")}</span>
                     <span className="font-bold text-emerald-400">{preview.validRows}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 block mb-1">Dòng lỗi</span>
+                    <span className="text-zinc-500 block mb-1">{t("errorRows")}</span>
                     <span className="font-bold text-rose-400">{preview.errorRows}</span>
                   </div>
                 </div>
@@ -202,12 +200,12 @@ export default function IntegrationImportPage() {
                   <Table className="text-xs">
                     <TableHeader className="bg-zinc-950 sticky top-0">
                       <TableRow className="border-b border-zinc-850">
-                        <TableHead className="w-16 text-zinc-400 text-center">Dòng</TableHead>
-                        <TableHead className="text-zinc-400">Loại Mapping</TableHead>
-                        <TableHead className="text-zinc-400">Mã ERP</TableHead>
-                        <TableHead className="text-zinc-400">Mã WMS</TableHead>
-                        <TableHead className="text-zinc-400">Trạng thái</TableHead>
-                        <TableHead className="text-zinc-400">Kết quả</TableHead>
+                        <TableHead className="w-16 text-zinc-400 text-center">{t("colRow")}</TableHead>
+                        <TableHead className="text-zinc-400">{t("colMappingType")}</TableHead>
+                        <TableHead className="text-zinc-400">{t("colErpCode")}</TableHead>
+                        <TableHead className="text-zinc-400">{t("colWmsCode")}</TableHead>
+                        <TableHead className="text-zinc-400">{t("summaryStatus")}</TableHead>
+                        <TableHead className="text-zinc-400">{t("colResult")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>

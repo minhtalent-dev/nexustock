@@ -1,0 +1,11 @@
+{
+  "Login": {
+    "title": "Đăng nhập",
+    "username": "Tên đăng nhập",
+    "password": "Mật khẩu",
+    "submit": "Đăng nhập",
+    "failed": "Đăng nhập thất bại",
+    "authenticating": "Đang xác thực...",
+    "hintDefault": "Tài khoản mặc định"
+  }
+}

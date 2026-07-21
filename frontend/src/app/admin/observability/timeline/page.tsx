@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { getTimeline, getTraceDetail } from "@/features/observability/api";
 import { ActivityTimelineEntry, TraceDetail, TraceLog } from "@/features/observability/types";
 import { WebhookDelivery } from "@/features/webhook/types";
@@ -11,10 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { showError } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast } from "@/lib/toast";
 import { GitFork, Activity, ChevronDown, ChevronUp, Eye } from "lucide-react";
 
 export default function TimelinePage() {
+  const t = useTranslations("Admin.timeline");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [items, setItems] = useState<ActivityTimelineEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -24,12 +30,10 @@ export default function TimelinePage() {
   const [traceId, setTraceId] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Trace detail dialog state
   const [selectedTraceId, setSelectedTraceId] = useState<string | null>(null);
   const [traceDetail, setTraceDetail] = useState<TraceDetail | null>(null);
   const [traceLoading, setTraceLoading] = useState(false);
 
-  // Collapsed metadata tracking
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -50,8 +54,9 @@ export default function TimelinePage() {
           setItems(data.items);
           setTotal(data.total);
         }
-      } catch {
-        showError("Không thể tải dòng thời gian hoạt động.");
+      } catch (err) {
+        const { codeLabel, message } = resolveApiError(err, tErrors);
+        showApiErrorToast(codeLabel, message || t("errors.loadFailed"));
       } finally {
         if (active) setLoading(false);
       }
@@ -60,7 +65,7 @@ export default function TimelinePage() {
     return () => {
       active = false;
     };
-  }, [entityType, severity, traceId, page, pageSize, refreshTrigger]);
+  }, [entityType, severity, traceId, page, pageSize, refreshTrigger, t, tErrors]);
 
   useEffect(() => {
     if (!selectedTraceId) {
@@ -77,8 +82,9 @@ export default function TimelinePage() {
         if (active) {
           setTraceDetail(data);
         }
-      } catch {
-        showError("Không thể lấy chi tiết Trace.");
+      } catch (err) {
+        const { codeLabel, message } = resolveApiError(err, tErrors);
+        showApiErrorToast(codeLabel, message || t("errors.traceFailed"));
       } finally {
         if (active) setTraceLoading(false);
       }
@@ -87,7 +93,7 @@ export default function TimelinePage() {
     return () => {
       active = false;
     };
-  }, [selectedTraceId]);
+  }, [selectedTraceId, t, tErrors]);
 
   const handleRefresh = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -112,26 +118,24 @@ export default function TimelinePage() {
 
   return (
     <div className="p-6 space-y-4">
-      {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">Dòng thời gian hoạt động</h1>
-        <p className="text-zinc-400 text-sm mt-1">Truy vết dòng thời gian hoạt động của các đơn hàng và đối tượng nghiệp vụ kho.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-white">{t("title")}</h1>
+        <p className="text-zinc-400 text-sm mt-1">{t("subtitle")}</p>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3 items-center">
         <div className="w-44">
           <Select value={entityType} onValueChange={(v) => { setEntityType(v); setPage(1); }}>
             <SelectTrigger id="timeline-entity-filter" className="bg-[#0f0f11]/60 border-zinc-800">
-              <SelectValue placeholder="Đối tượng" />
+              <SelectValue placeholder={t("entityPlaceholder")} />
             </SelectTrigger>
             <SelectContent className="bg-[#151518] border-zinc-800 text-white">
-              <SelectItem value="all">Tất cả đối tượng</SelectItem>
-              <SelectItem value="InboundOrder">Inbound Order</SelectItem>
-              <SelectItem value="Shipment">Shipment</SelectItem>
-              <SelectItem value="InventoryMovement">Inventory Movement</SelectItem>
-              <SelectItem value="WebhookDelivery">Webhook Delivery</SelectItem>
-              <SelectItem value="Alert">Alert</SelectItem>
+              <SelectItem value="all">{t("allEntities")}</SelectItem>
+              <SelectItem value="InboundOrder">{t("entityInboundOrder")}</SelectItem>
+              <SelectItem value="Shipment">{t("entityShipment")}</SelectItem>
+              <SelectItem value="InventoryMovement">{t("entityInventoryMovement")}</SelectItem>
+              <SelectItem value="WebhookDelivery">{t("entityWebhookDelivery")}</SelectItem>
+              <SelectItem value="Alert">{t("entityAlert")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -139,37 +143,36 @@ export default function TimelinePage() {
         <div className="w-44">
           <Select value={severity} onValueChange={(v) => { setSeverity(v); setPage(1); }}>
             <SelectTrigger id="timeline-severity-filter" className="bg-[#0f0f11]/60 border-zinc-800">
-              <SelectValue placeholder="Mức độ" />
+              <SelectValue placeholder={t("severityPlaceholder")} />
             </SelectTrigger>
             <SelectContent className="bg-[#151518] border-zinc-800 text-white">
-              <SelectItem value="all">Tất cả mức độ</SelectItem>
-              <SelectItem value="info">Thông tin (info)</SelectItem>
-              <SelectItem value="warning">Cảnh báo (warning)</SelectItem>
-              <SelectItem value="critical">Nghiêm trọng (critical)</SelectItem>
+              <SelectItem value="all">{t("allSeverities")}</SelectItem>
+              <SelectItem value="info">{t("severityInfo")}</SelectItem>
+              <SelectItem value="warning">{t("severityWarning")}</SelectItem>
+              <SelectItem value="critical">{t("severityCritical")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <Input
           id="timeline-trace-filter"
-          placeholder="Filter by Trace ID..."
+          placeholder={t("traceFilterPlaceholder")}
           value={traceId}
           onChange={(e) => { setTraceId(e.target.value); setPage(1); }}
           className="w-64 bg-[#0f0f11]/60 border-zinc-800 placeholder-zinc-600 rounded-lg text-white"
         />
 
         <Button variant="outline" size="sm" onClick={handleRefresh} className="rounded-lg border-zinc-800">
-          Refresh
+          {tc("refresh")}
         </Button>
       </div>
 
-      {/* Main List */}
       <Card className="border-zinc-800/80 bg-[#0f0f11]/40 rounded-xl">
         <CardContent className="pt-6">
           {loading ? (
-            <p className="text-sm text-zinc-500 py-8 text-center animate-pulse">Đang tải dòng thời gian...</p>
+            <p className="text-sm text-zinc-500 py-8 text-center animate-pulse">{t("loading")}</p>
           ) : items.length === 0 ? (
-            <p className="text-sm text-zinc-500 py-8 text-center italic">Không tìm thấy hoạt động nào.</p>
+            <p className="text-sm text-zinc-500 py-8 text-center italic">{t("empty")}</p>
           ) : (
             <div className="space-y-4">
               {items.map((item) => (
@@ -201,22 +204,21 @@ export default function TimelinePage() {
                         {item.entityType}
                       </span>
                       <span>
-                        Entity ID: <span className="font-mono text-zinc-400">{item.entityId}</span>
+                        {tc("entityId")}: <span className="font-mono text-zinc-400">{item.entityId}</span>
                       </span>
                       {item.actorName && (
                         <span>
-                          Người thực hiện: <span className="text-zinc-400">{item.actorName}</span>
+                          {t("actor")}: <span className="text-zinc-400">{item.actorName}</span>
                         </span>
                       )}
                       <span
                         onClick={() => setSelectedTraceId(item.traceId)}
                         className="cursor-pointer hover:underline text-emerald-400 flex items-center gap-1 font-mono"
                       >
-                        Trace ID: {item.traceId} <Eye className="h-3 w-3" />
+                        {tc("traceId")}: {item.traceId} <Eye className="h-3 w-3" />
                       </span>
                     </div>
 
-                    {/* Metadata Toggle */}
                     {item.metadataJson && (
                       <div className="space-y-1.5 pt-1">
                         <Button
@@ -227,11 +229,11 @@ export default function TimelinePage() {
                         >
                           {expandedItems[item.id] ? (
                             <>
-                              Hide Details <ChevronUp className="h-3 w-3" />
+                              {t("hideDetails")} <ChevronUp className="h-3 w-3" />
                             </>
                           ) : (
                             <>
-                              Show Details <ChevronDown className="h-3 w-3" />
+                              {t("showDetails")} <ChevronDown className="h-3 w-3" />
                             </>
                           )}
                         </Button>
@@ -252,10 +254,9 @@ export default function TimelinePage() {
                 </div>
               ))}
 
-              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex justify-between items-center mt-6 text-sm text-zinc-400 pt-4 border-t border-zinc-900">
-                  <span>Trang {page}/{totalPages} — Tổng {total} bản ghi</span>
+                  <span>{tc("pageOf", { page, totalPages, total })}</span>
                   <div className="flex gap-2">
                     <Button
                       size="sm"
@@ -264,7 +265,7 @@ export default function TimelinePage() {
                       onClick={() => setPage(p => p - 1)}
                       className="rounded-lg border-zinc-800"
                     >
-                      Trước
+                      {tc("previous")}
                     </Button>
                     <Button
                       size="sm"
@@ -273,7 +274,7 @@ export default function TimelinePage() {
                       onClick={() => setPage(p => p + 1)}
                       className="rounded-lg border-zinc-800"
                     >
-                      Tiếp
+                      {tc("next")}
                     </Button>
                   </div>
                 </div>
@@ -283,36 +284,34 @@ export default function TimelinePage() {
         </CardContent>
       </Card>
 
-      {/* Trace ID Lookup Dialog */}
       <Dialog open={selectedTraceId !== null} onOpenChange={(open) => !open && setSelectedTraceId(null)}>
         <DialogContent className="max-w-4xl bg-[#0f0f11] border-zinc-800 text-white rounded-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
-              <GitFork className="h-5 w-5 text-emerald-400" /> Liên kết hoạt động của Trace ID
+              <GitFork className="h-5 w-5 text-emerald-400" /> {t("traceDialogTitle")}
             </DialogTitle>
           </DialogHeader>
           {traceLoading ? (
-            <p className="text-sm text-zinc-500 py-12 text-center animate-pulse">Đang truy vấn liên kết trace logs...</p>
+            <p className="text-sm text-zinc-500 py-12 text-center animate-pulse">{t("loadingTrace")}</p>
           ) : traceDetail ? (
             <div className="space-y-6 py-2">
               <div className="p-3 bg-zinc-950/40 border border-zinc-800 rounded-lg text-xs font-mono text-zinc-400 flex flex-col gap-1">
-                <span>Trace ID: <span className="text-emerald-400">{traceDetail.traceId}</span></span>
+                <span>{tc("traceId")}: <span className="text-emerald-400">{traceDetail.traceId}</span></span>
               </div>
 
-              {/* Trace Logs List */}
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-zinc-200">1. Logs kỹ thuật hệ thống</h3>
+                <h3 className="text-sm font-semibold text-zinc-200">{t("technicalLogs")}</h3>
                 {traceDetail.traceLogs.length === 0 ? (
-                  <p className="text-xs text-zinc-500 italic p-3 bg-zinc-950/10 border border-zinc-850 rounded-lg">Không tìm thấy trace log kỹ thuật nào.</p>
+                  <p className="text-xs text-zinc-500 italic p-3 bg-zinc-950/10 border border-zinc-850 rounded-lg">{t("noTechnicalLogs")}</p>
                 ) : (
                   <div className="max-h-60 overflow-y-auto border border-zinc-850 bg-zinc-950/10 rounded-lg divide-y divide-zinc-900">
                     <Table>
                       <TableHeader className="bg-zinc-900/30">
                         <TableRow className="hover:bg-transparent border-zinc-850">
-                          <TableHead className="text-zinc-400 text-xs py-2 h-8">Thời gian</TableHead>
-                          <TableHead className="text-zinc-400 text-xs py-2 h-8">Level</TableHead>
-                          <TableHead className="text-zinc-400 text-xs py-2 h-8">Span / Source</TableHead>
-                          <TableHead className="text-zinc-400 text-xs py-2 h-8">Nội dung log</TableHead>
+                          <TableHead className="text-zinc-400 text-xs py-2 h-8">{t("colTime")}</TableHead>
+                          <TableHead className="text-zinc-400 text-xs py-2 h-8">{t("colLevel")}</TableHead>
+                          <TableHead className="text-zinc-400 text-xs py-2 h-8">{t("colSpanSource")}</TableHead>
+                          <TableHead className="text-zinc-400 text-xs py-2 h-8">{t("colLogContent")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -340,11 +339,10 @@ export default function TimelinePage() {
                 )}
               </div>
 
-              {/* Activity Timeline list */}
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-zinc-200">2. Sự kiện dòng thời gian nghiệp vụ</h3>
+                <h3 className="text-sm font-semibold text-zinc-200">{t("businessEvents")}</h3>
                 {traceDetail.timelineEntries.length === 0 ? (
-                  <p className="text-xs text-zinc-500 italic p-3 bg-zinc-950/10 border border-zinc-850 rounded-lg">Không tìm thấy sự kiện dòng thời gian nào.</p>
+                  <p className="text-xs text-zinc-500 italic p-3 bg-zinc-950/10 border border-zinc-850 rounded-lg">{t("noBusinessEvents")}</p>
                 ) : (
                   <div className="space-y-2 max-h-60 overflow-y-auto border border-zinc-850 bg-zinc-950/10 p-3 rounded-lg">
                     {traceDetail.timelineEntries.map((e) => (
@@ -356,7 +354,7 @@ export default function TimelinePage() {
                         </div>
                         {e.description && <p className="text-zinc-400 mt-0.5 leading-relaxed">{e.description}</p>}
                         <div className="text-[9px] text-zinc-500 mt-0.5">
-                          EntityType: {e.entityType} | EntityID: {e.entityId}
+                          EntityType: {e.entityType} | {tc("entityId")}: {e.entityId}
                         </div>
                       </div>
                     ))}
@@ -364,21 +362,20 @@ export default function TimelinePage() {
                 )}
               </div>
 
-              {/* Webhook Deliveries list */}
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-zinc-200">3. Giao dịch tích hợp gửi Webhook</h3>
+                <h3 className="text-sm font-semibold text-zinc-200">{t("webhookTransactions")}</h3>
                 {traceDetail.webhookDeliveries.length === 0 ? (
-                  <p className="text-xs text-zinc-500 italic p-3 bg-zinc-950/10 border border-zinc-850 rounded-lg">Không tìm thấy giao dịch webhook nào.</p>
+                  <p className="text-xs text-zinc-500 italic p-3 bg-zinc-950/10 border border-zinc-850 rounded-lg">{t("noWebhookTransactions")}</p>
                 ) : (
                   <div className="max-h-60 overflow-y-auto border border-zinc-850 bg-zinc-950/10 rounded-lg">
                     <Table>
                       <TableHeader className="bg-zinc-900/30">
                         <TableRow className="hover:bg-transparent border-zinc-850">
-                          <TableHead className="text-zinc-400 text-xs py-2 h-8">Event Type</TableHead>
-                          <TableHead className="text-zinc-400 text-xs py-2 h-8">Trạng thái</TableHead>
-                          <TableHead className="text-zinc-400 text-xs py-2 h-8">Retry</TableHead>
-                          <TableHead className="text-zinc-400 text-xs py-2 h-8">HTTP Code</TableHead>
-                          <TableHead className="text-zinc-400 text-xs py-2 h-8">Lỗi chi tiết</TableHead>
+                          <TableHead className="text-zinc-400 text-xs py-2 h-8">{t("colEventType")}</TableHead>
+                          <TableHead className="text-zinc-400 text-xs py-2 h-8">{tc("status")}</TableHead>
+                          <TableHead className="text-zinc-400 text-xs py-2 h-8">{t("colRetry")}</TableHead>
+                          <TableHead className="text-zinc-400 text-xs py-2 h-8">{t("colHttpCode")}</TableHead>
+                          <TableHead className="text-zinc-400 text-xs py-2 h-8">{t("colErrorDetail")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>

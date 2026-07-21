@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "base": "http://localhost:3003",
+  "checks": {
+    "defaultLangVi": true,
+    "switchToEn": true,
+    "cookieNextLocale": true,
+    "persistReload": true,
+    "switchBackVi": true,
+    "noPageError": true,
+    "healthUiVisited": true,
+    "homeVisited": true
+  }
+}

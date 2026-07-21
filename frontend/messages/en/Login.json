@@ -1,0 +1,11 @@
+{
+  "Login": {
+    "title": "Sign in",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Sign in",
+    "failed": "Sign-in failed",
+    "authenticating": "Authenticating…",
+    "hintDefault": "Default account"
+  }
+}

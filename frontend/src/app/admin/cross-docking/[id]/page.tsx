@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,8 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { ArrowLeft, CheckCircle, XCircle, Clock } from "lucide-react";
 
 interface EventDto {
@@ -51,6 +52,9 @@ export default function CandidateDetailPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const t = useTranslations("Admin.crossDocking");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
 
   const [candidate, setCandidate] = useState<CandidateDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -66,12 +70,15 @@ export default function CandidateDetailPage() {
     try {
       const res = await api.get(`/cross-docking/${id}`);
       setCandidate(res.data);
-    } catch (err) {
-      setError(getHttpErrorMessage(err));
+    } catch (err: unknown) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      const errorMessage = message || t("errors.loadDetailFailed");
+      setError(errorMessage);
+      showApiErrorToast(codeLabel, errorMessage);
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, t, tErrors]);
 
   useEffect(() => {
     queueMicrotask(() => void fetchDetail());
@@ -81,11 +88,12 @@ export default function CandidateDetailPage() {
     setActioning(true);
     try {
       await api.post(`/cross-docking/${id}/accept`);
-      showSuccess("Candidate accepted.");
+      showSuccess(t("toastAcceptSuccess"));
       setAcceptOpen(false);
       fetchDetail();
-    } catch (err) {
-      showError(getHttpErrorMessage(err));
+    } catch (err: unknown) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.acceptFailed"));
     } finally {
       setActioning(false);
     }
@@ -96,27 +104,47 @@ export default function CandidateDetailPage() {
     setActioning(true);
     try {
       await api.post(`/cross-docking/${id}/reject`, { reason: rejectReason.trim() });
-      showSuccess("Candidate rejected.");
+      showSuccess(t("toastRejectSuccess"));
       setRejectOpen(false);
       setRejectReason("");
       fetchDetail();
-    } catch (err) {
-      showError(getHttpErrorMessage(err));
+    } catch (err: unknown) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.rejectFailed"));
     } finally {
       setActioning(false);
     }
   };
 
-  if (loading) return (
-    <div className="p-6 space-y-4">
-      <Skeleton className="h-8 w-64" />
-      <Skeleton className="h-40 w-full" />
-    </div>
-  );
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "Pending":
+        return t("statusPending");
+      case "Accepted":
+        return t("statusAccepted");
+      case "Rejected":
+        return t("statusRejected");
+      case "Expired":
+        return t("statusExpired");
+      case "Executing":
+        return t("statusExecuting");
+      default:
+        return status;
+    }
+  };
 
-  if (error || !candidate) return (
-    <div className="p-6 text-center text-red-600">{error ?? "Candidate not found."}</div>
-  );
+  if (loading) {
+    return (
+      <div className="p-6 space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-40 w-full" />
+      </div>
+    );
+  }
+
+  if (error || !candidate) {
+    return <div className="p-6 text-center text-red-600">{error ?? t("notFound")}</div>;
+  }
 
   const isPending = candidate.status === "Pending";
 
@@ -124,26 +152,29 @@ export default function CandidateDetailPage() {
     <div className="p-6 space-y-6 max-w-4xl">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={() => router.push("/admin/cross-docking")}>
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
+          <ArrowLeft className="w-4 h-4 mr-1" /> {t("back")}
         </Button>
-        <h1 className="text-xl font-semibold">Cross-dock candidate</h1>
-        <Badge className={STATUS_COLORS[candidate.status] ?? ""}>{candidate.status}</Badge>
+        <h1 className="text-xl font-semibold">{t("detailTitle")}</h1>
+        <Badge className={STATUS_COLORS[candidate.status] ?? ""}>{getStatusLabel(candidate.status)}</Badge>
       </div>
 
       <Card>
-        <CardHeader><CardTitle>Candidate details</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("candidateDetails")}</CardTitle></CardHeader>
         <CardContent>
           <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
-            <div><dt className="text-muted-foreground">ID</dt><dd className="font-mono text-xs mt-0.5">{candidate.id}</dd></div>
-            <div><dt className="text-muted-foreground">Item ID</dt><dd className="font-mono text-xs mt-0.5">{candidate.itemId}</dd></div>
-            <div><dt className="text-muted-foreground">Lot ID</dt><dd className="font-mono text-xs mt-0.5">{candidate.lotId}</dd></div>
-            <div><dt className="text-muted-foreground">Wave item ID</dt><dd className="font-mono text-xs mt-0.5">{candidate.waveItemId}</dd></div>
-            <div><dt className="text-muted-foreground">Qty available</dt><dd className="mt-0.5">{candidate.qtyAvailable}</dd></div>
-            <div><dt className="text-muted-foreground">Qty requested</dt><dd className="mt-0.5">{candidate.qtyRequested}</dd></div>
-            <div><dt className="text-muted-foreground">Qty matched</dt><dd className="mt-0.5 font-semibold">{candidate.qtyMatched}</dd></div>
-            <div><dt className="text-muted-foreground">Match score</dt><dd className="mt-0.5">{candidate.matchScore}%</dd></div>
+            <div><dt className="text-muted-foreground">{t("fieldId")}</dt><dd className="font-mono text-xs mt-0.5">{candidate.id}</dd></div>
+            <div><dt className="text-muted-foreground">{t("fieldItemId")}</dt><dd className="font-mono text-xs mt-0.5">{candidate.itemId}</dd></div>
+            <div><dt className="text-muted-foreground">{t("fieldLotId")}</dt><dd className="font-mono text-xs mt-0.5">{candidate.lotId}</dd></div>
+            <div><dt className="text-muted-foreground">{t("fieldWaveItemId")}</dt><dd className="font-mono text-xs mt-0.5">{candidate.waveItemId}</dd></div>
+            <div><dt className="text-muted-foreground">{t("fieldQtyAvailable")}</dt><dd className="mt-0.5">{candidate.qtyAvailable}</dd></div>
+            <div><dt className="text-muted-foreground">{t("fieldQtyRequested")}</dt><dd className="mt-0.5">{candidate.qtyRequested}</dd></div>
+            <div><dt className="text-muted-foreground">{t("fieldQtyMatched")}</dt><dd className="mt-0.5 font-semibold">{candidate.qtyMatched}</dd></div>
+            <div><dt className="text-muted-foreground">{t("fieldMatchScore")}</dt><dd className="mt-0.5">{candidate.matchScore}%</dd></div>
             {candidate.rejectedReason && (
-              <div className="col-span-2"><dt className="text-muted-foreground">Reject reason</dt><dd className="mt-0.5 text-red-600">{candidate.rejectedReason}</dd></div>
+              <div className="col-span-2">
+                <dt className="text-muted-foreground">{t("fieldRejectReason")}</dt>
+                <dd className="mt-0.5 text-red-600">{candidate.rejectedReason}</dd>
+              </div>
             )}
           </dl>
         </CardContent>
@@ -152,19 +183,19 @@ export default function CandidateDetailPage() {
       {isPending && (
         <div className="flex gap-3">
           <Button onClick={() => setAcceptOpen(true)} className="bg-green-600 hover:bg-green-700 text-white">
-            <CheckCircle className="w-4 h-4 mr-1" /> Accept
+            <CheckCircle className="w-4 h-4 mr-1" /> {t("accept")}
           </Button>
           <Button variant="outline" onClick={() => setRejectOpen(true)} className="border-red-300 text-red-600 hover:bg-red-50">
-            <XCircle className="w-4 h-4 mr-1" /> Reject
+            <XCircle className="w-4 h-4 mr-1" /> {t("reject")}
           </Button>
         </div>
       )}
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Event timeline</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("eventTimeline")}</CardTitle></CardHeader>
         <CardContent>
           {candidate.events.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No events recorded.</p>
+            <p className="text-sm text-muted-foreground">{t("noEvents")}</p>
           ) : (
             <ol className="relative border-l border-muted ml-3 space-y-4">
               {candidate.events.map((e) => (
@@ -172,8 +203,11 @@ export default function CandidateDetailPage() {
                   <div className="absolute -left-1.5 mt-1 w-3 h-3 rounded-full bg-primary" />
                   <div className="text-sm font-medium">{e.eventType}</div>
                   <div className="text-xs text-muted-foreground flex gap-3">
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{new Date(e.occurredAt).toLocaleString()}</span>
-                    <span>by {e.actor}</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {new Date(e.occurredAt).toLocaleString()}
+                    </span>
+                    <span>{t("byActor", { actor: e.actor })}</span>
                   </div>
                 </li>
               ))}
@@ -184,11 +218,11 @@ export default function CandidateDetailPage() {
 
       <Dialog open={acceptOpen} onOpenChange={setAcceptOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Accept this candidate?</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("acceptDialogTitle")}</DialogTitle></DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAcceptOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setAcceptOpen(false)}>{tc("cancel")}</Button>
             <Button disabled={actioning} onClick={handleAccept} className="bg-green-600 hover:bg-green-700 text-white">
-              {actioning ? "Accepting..." : "Confirm accept"}
+              {actioning ? t("accepting") : t("confirmAccept")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -196,14 +230,19 @@ export default function CandidateDetailPage() {
 
       <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Reject this candidate</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle>{t("rejectDialogTitle")}</DialogTitle></DialogHeader>
           <div className="space-y-2 py-2">
-            <Textarea placeholder="Reason for rejection..." value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} rows={3} />
+            <Textarea
+              placeholder={t("rejectReasonPlaceholder")}
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              rows={3}
+            />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectOpen(false)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setRejectOpen(false)}>{tc("cancel")}</Button>
             <Button variant="destructive" disabled={actioning || !rejectReason.trim()} onClick={handleReject}>
-              {actioning ? "Rejecting..." : "Confirm reject"}
+              {actioning ? t("rejecting") : t("confirmReject")}
             </Button>
           </DialogFooter>
         </DialogContent>

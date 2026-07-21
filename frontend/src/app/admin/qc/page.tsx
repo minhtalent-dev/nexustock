@@ -1,14 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { showError } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast } from "@/lib/toast";
 import { QcResultDialog } from "@/features/qc/components/qc-result-dialog";
 import { HoldReleaseDialog } from "@/features/qc/components/hold-release-dialog";
 import { 
@@ -40,16 +41,18 @@ interface LotDetails {
 }
 
 export default function QcPage() {
+  const t = useTranslations("Admin.qc");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [queue, setQueue] = useState<QcQueueItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Lot Lookup State
   const [lookupLotNo, setLookupLotNo] = useState("");
   const [lookupResult, setLookupResult] = useState<LotDetails[] | null>(null);
   const [lookupLoading, setLookupLoading] = useState(false);
 
-  // Dialog State
   const [activeLot, setActiveLot] = useState<{ id: string; lotNo: string; qcRequestId?: string } | null>(null);
   const [dialogMode, setDialogMode] = useState<"result" | "hold" | "release" | "reject" | null>(null);
 
@@ -59,11 +62,12 @@ export default function QcPage() {
       const res = await api.get<QcQueueItem[]>("/qc/queue");
       setQueue(res.data);
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể tải danh sách hàng chờ QC."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadQueueFailed"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t, tErrors]);
 
   const handleLookup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,7 +79,8 @@ export default function QcPage() {
       const res = await api.get<LotDetails[]>(`/lots/${lookupLotNo.trim()}`);
       setLookupResult(res.data);
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không tìm thấy lô hàng."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.lotNotFound"));
     } finally {
       setLookupLoading(false);
     }
@@ -98,7 +103,6 @@ export default function QcPage() {
   const handleSuccess = () => {
     fetchQueue();
     if (lookupLotNo) {
-      // Re-lookup to update details
       api.get<LotDetails[]>(`/lots/${lookupLotNo.trim()}`).then((res) => {
         setLookupResult(res.data);
       }).catch(() => {});
@@ -108,13 +112,13 @@ export default function QcPage() {
   const getQcStatusBadge = (status: string) => {
     switch (status.toUpperCase()) {
       case "RELEASE":
-        return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Giải phóng (Pass)</Badge>;
+        return <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">{t("statusRelease")}</Badge>;
       case "HOLD":
-        return <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">Đang giữ (Hold)</Badge>;
+        return <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20">{t("statusHold")}</Badge>;
       case "REJECT":
-        return <Badge className="bg-rose-500/10 text-rose-500 border-rose-500/20">Từ chối (Reject)</Badge>;
+        return <Badge className="bg-rose-500/10 text-rose-500 border-rose-500/20">{t("statusReject")}</Badge>;
       case "UNSPEC":
-        return <Badge className="bg-zinc-500/10 text-zinc-400 border-zinc-500/20">Chưa kiểm tra</Badge>;
+        return <Badge className="bg-zinc-500/10 text-zinc-400 border-zinc-500/20">{t("statusUnspec")}</Badge>;
       default:
         return <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20">{status}</Badge>;
     }
@@ -131,19 +135,18 @@ export default function QcPage() {
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-3">
           <CheckSquare className="h-6 w-6 text-emerald-500" />
-          Kiểm định chất lượng
+          {t("title")}
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">Quản lý kiểm định lô hàng nhận kho, chuyển trạng thái giải phóng, giữ hoặc từ chối hàng lỗi.</p>
+        <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* QC Queue List */}
         <div className="lg:col-span-2 flex flex-col gap-4">
           <Card className="bg-zinc-900 border-zinc-800 text-white">
             <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-zinc-800">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <ClipboardCheck className="h-4 w-4 text-emerald-500" />
-                Hàng chờ kiểm định QC ({filteredQueue.length})
+                {t("queueTitle", { count: filteredQueue.length })}
               </CardTitle>
               <Button variant="ghost" size="icon" onClick={fetchQueue} className="h-8 w-8 text-zinc-400 hover:text-white">
                 <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -154,7 +157,7 @@ export default function QcPage() {
                 <div className="relative flex-1">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
                   <Input
-                    placeholder="Tìm theo mã lô hoặc tên vật tư..."
+                    placeholder={t("searchPlaceholder")}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="bg-zinc-800 border-zinc-700 text-white pl-9 h-9 text-xs"
@@ -163,20 +166,20 @@ export default function QcPage() {
               </div>
 
               {loading && queue.length === 0 ? (
-                <div className="text-center py-8 text-zinc-500 text-xs">Đang tải dữ liệu...</div>
+                <div className="text-center py-8 text-zinc-500 text-xs">{t("loading")}</div>
               ) : filteredQueue.length === 0 ? (
-                <div className="text-center py-8 text-zinc-500 text-xs">Không có lô hàng nào chờ kiểm định.</div>
+                <div className="text-center py-8 text-zinc-500 text-xs">{t("queueEmpty")}</div>
               ) : (
                 <div className="overflow-x-auto">
                   <Table className="text-xs">
                     <TableHeader className="border-b border-zinc-800">
                       <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                        <TableHead className="text-zinc-400">Số lô (Lot No)</TableHead>
-                        <TableHead className="text-zinc-400">Vật tư</TableHead>
-                        <TableHead className="text-zinc-400 text-right">SL dự kiến</TableHead>
-                        <TableHead className="text-zinc-400 text-right">SL nhận thực tế</TableHead>
-                        <TableHead className="text-zinc-400">Ngày tạo y/c</TableHead>
-                        <TableHead className="text-zinc-400 text-center">Thao tác</TableHead>
+                        <TableHead className="text-zinc-400">{t("colLotNo")}</TableHead>
+                        <TableHead className="text-zinc-400">{t("colItem")}</TableHead>
+                        <TableHead className="text-zinc-400 text-right">{t("colExpectedQty")}</TableHead>
+                        <TableHead className="text-zinc-400 text-right">{t("colReceivedQty")}</TableHead>
+                        <TableHead className="text-zinc-400">{t("colRequestDate")}</TableHead>
+                        <TableHead className="text-zinc-400 text-center">{t("colActions")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -195,7 +198,7 @@ export default function QcPage() {
                               onClick={() => openQcDialog(item)}
                               className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 px-3 text-[11px] rounded"
                             >
-                              Kiểm định
+                              {t("inspect")}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -208,19 +211,18 @@ export default function QcPage() {
           </Card>
         </div>
 
-        {/* Hold/Release Lookup Controller Panel */}
         <div className="flex flex-col gap-4">
           <Card className="bg-zinc-900 border-zinc-800 text-white">
             <CardHeader className="border-b border-zinc-800 pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <AlertOctagon className="h-4 w-4 text-amber-500" />
-                Quản lý Hold/Release nhanh
+                {t("holdReleaseTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 flex flex-col gap-4">
               <form onSubmit={handleLookup} className="flex gap-2">
                 <Input
-                  placeholder="Nhập số lô cần xử lý..."
+                  placeholder={t("lookupPlaceholder")}
                   value={lookupLotNo}
                   onChange={(e) => setLookupLotNo(e.target.value)}
                   className="bg-zinc-800 border-zinc-700 text-white h-9 text-xs flex-1"
@@ -231,7 +233,7 @@ export default function QcPage() {
               </form>
 
               {lookupLoading && (
-                <div className="text-center py-4 text-zinc-500 text-xs">Đang tìm kiếm thông tin...</div>
+                <div className="text-center py-4 text-zinc-500 text-xs">{t("lookupLoading")}</div>
               )}
 
               {lookupResult && lookupResult.map((lot, idx) => (
@@ -245,10 +247,10 @@ export default function QcPage() {
                   </div>
 
                   <div className="grid grid-cols-2 gap-y-2 text-[11px]">
-                    <span className="text-zinc-500">Vật tư:</span>
+                    <span className="text-zinc-500">{t("itemLabel")}:</span>
                     <span className="text-zinc-300 text-right truncate">{lot.itemName} ({lot.itemCode})</span>
-                    <span className="text-zinc-500">Hạn sử dụng:</span>
-                    <span className="text-zinc-300 text-right">{lot.expiryDate ? new Date(lot.expiryDate).toLocaleDateString("vi-VN") : "N/A"}</span>
+                    <span className="text-zinc-500">{t("expiryLabel")}:</span>
+                    <span className="text-zinc-300 text-right">{lot.expiryDate ? new Date(lot.expiryDate).toLocaleDateString("vi-VN") : tc("notAvailable")}</span>
                   </div>
 
                   <div className="flex gap-2 mt-2 border-t border-zinc-800 pt-3">
@@ -258,7 +260,7 @@ export default function QcPage() {
                       className="bg-amber-600/10 text-amber-500 border border-amber-600/20 hover:bg-amber-600 hover:text-white h-8 px-2 flex-1 text-[11px] gap-1"
                     >
                       <Lock className="h-3.5 w-3.5" />
-                      Hold
+                      {t("hold")}
                     </Button>
                     <Button
                       onClick={() => openActionDialog(lot.id, lot.lotNo, "release")}
@@ -266,7 +268,7 @@ export default function QcPage() {
                       className="bg-emerald-600/10 text-emerald-500 border border-emerald-600/20 hover:bg-emerald-600 hover:text-white h-8 px-2 flex-1 text-[11px] gap-1"
                     >
                       <Unlock className="h-3.5 w-3.5" />
-                      Release
+                      {t("release")}
                     </Button>
                     <Button
                       onClick={() => openActionDialog(lot.id, lot.lotNo, "reject")}
@@ -274,7 +276,7 @@ export default function QcPage() {
                       className="bg-rose-600/10 text-rose-500 border border-rose-600/20 hover:bg-rose-600 hover:text-white h-8 px-2 flex-1 text-[11px] gap-1"
                     >
                       <Ban className="h-3.5 w-3.5" />
-                      Reject
+                      {t("reject")}
                     </Button>
                   </div>
                 </div>
@@ -284,7 +286,6 @@ export default function QcPage() {
         </div>
       </div>
 
-      {/* QC Result Dialog */}
       {dialogMode === "result" && activeLot && (
         <QcResultDialog
           isOpen={true}
@@ -299,7 +300,6 @@ export default function QcPage() {
         />
       )}
 
-      {/* Hold/Release Action Dialogs */}
       {(dialogMode === "hold" || dialogMode === "release" || dialogMode === "reject") && activeLot && (
         <HoldReleaseDialog
           isOpen={true}

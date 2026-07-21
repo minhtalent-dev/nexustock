@@ -2,10 +2,9 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** **95% Execution-Ready** (`rp3` 2026-07-21 — plan brain **9.4/10**, 0 blind spot)
-- **Đánh giá:** Option **B**; §26.4 + §28. `rp3` khóa plugin request, switcher vị trí, namespace, batch B1–B6, showApiError pattern.
-- **Điều kiện nâng thêm (không chặn execute):** tool extract strings nếu catalog phình.
-- **Trạng thái triển khai:** ⬜ Chưa bắt đầu — **rp3 PASS** — chờ `` `tt `` / `/18-auto-execute` / `/04-do-plan`.
+- **Mức hiện tại:** **Module DoD 100%** — `rp4`+`rp5` PASS 2026-07-21
+- **Đánh giá:** Option **B**; foundation + shell + 44 pages; verify + dbm full pages. Catalogs đã chuyển P31a (module merge).
+- **Trạng thái triển khai:** ✅ Hoàn thành 2026-07-21 (`rp5` đóng tài liệu).
 
 ### Quyết định khóa (mặc định an toàn — override trước execute)
 
@@ -813,5 +812,63 @@ PASS_P31 =
 | BS-10 | Version changelog | Cập nhật **v1.4.0** cùng ngày |
 
 **Verdict rp3:** Đủ chi tiết xuyên suốt — **0 điểm mù chặn execute**. Score plan **9.4/10**.
+
+## 29. `/18-auto-execute` hoàn thành (2026-07-21)
+
+| Hạng mục | Kết quả |
+|---|---|
+| Foundation | next-intl + plugin + middleware + provider — **không** `[locale]` |
+| Catalogs | vi/en parity **1855** keys |
+| UI | Sidebar/login/health-ui switcher; 44 pages + features |
+| Verify | `tests/verify_i18n.ps1 -Phase 31` **PASS** |
+| Docs | README Language + CHANGELOG v1.4.0 + master plan ✅ |
+
+**Module DoD P31:** ✅  
+**Downstream (cập nhật 2026-07-21):** **P31a** ✅ → P32 Master-data → P33 Mobile+Errors+Close.
+
+## 30. Follow-up — Phase 31a Catalog Modules (2026-07-21)
+
+FOUNDER khóa **Option B** (tách file theo module, merge lúc load). Spec: [`phase_31a`](file:///d:/1_Project/48_Nexustock/planning/phases/phase_31a_i18n_catalog_modules.md) — **đã execute ✅**.
+
+## 31. `dbm` browser (2026-07-21)
+
+| Check | Result |
+|---|---|
+| Login VI default | PASS — ảnh `01-login-vi.png` |
+| Switch EN + cookie | PASS — `02-login-en.png`, `NEXT_LOCALE=en` |
+| Persist reload | PASS — `03-login-en-reload.png` |
+| Video | `planning/evidence/phase_31_31a_dbm/walkthrough-locale-switch.webm` |
+| Walkthrough | [`walkthrough.md`](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_31_31a_dbm/walkthrough.md) |
+
+## 32. `dbm` full 44 pages — admin (2026-07-21)
+
+Login README admin → crawl inventory §26.2 VI+EN.
+
+| Result | **83 PASS / 4 SKIP / 0 FAIL** |
+| Evidence | [`phase_31_31a_dbm_pages`](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_31_31a_dbm_pages/walkthrough.md) |
+| SKIP | Dynamic `cross-docking/[id]`, `genealogy/[lotNo]` — list rỗng |
+
+## 33. `rp4` + `rp5` — Đóng Module DoD (2026-07-21)
+
+### Reindex đối chiếu plan ↔ code
+
+| Hạng mục P31 | Disk / Evidence | rp5 |
+|---|---|---|
+| next-intl + cookie + middleware + switcher | Có | ✅ |
+| 41 admin + 3 shell = 44 | inventory verify | ✅ |
+| Errors skeleton 8 codes | catalogs Errors | ✅ |
+| `verify_i18n -Phase 31` | PASS 1855 | ✅ |
+| `dbm` login + full pages | 83 PASS / 4 SKIP / 0 FAIL | ✅ |
+| Out of scope MD/mobile/59 | Đúng P32/P33 | ✅ |
+
+### Accepted (không chặn DoD)
+
+- SKIP 2 dynamic detail: thiếu seed — list pages PASS; không phải regression i18n.
+- Catalogs runtime = **P31a modules** (supersede monolith) — đúng chuỗi phase.
+
+### Verdict
+
+**`rp4`:** Đủ chuẩn → cập nhật hoàn thành tài liệu.  
+**`rp5`:** Module DoD **100%**. Downstream: P32.
 
 ---

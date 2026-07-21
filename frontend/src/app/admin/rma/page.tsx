@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { showError, showSuccess } from "@/lib/toast";
-import { getHttpErrorMessage } from "@/lib/http-error";
+import { resolveApiError } from "@/lib/api-error-i18n";
+import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { RefreshCw, Undo2, CheckCircle2, FlaskConical, AlertTriangle, PackageSearch } from "lucide-react";
 
 interface RmaItem {
@@ -34,6 +35,10 @@ interface RmaRequest {
 }
 
 export default function RmaPage() {
+  const t = useTranslations("Admin.rma");
+  const tc = useTranslations("Admin.common");
+  const tErrors = useTranslations("Errors");
+
   const [rmas, setRmas] = useState<RmaRequest[]>([]);
   const [selectedRma, setSelectedRma] = useState<RmaRequest | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,12 +49,13 @@ export default function RmaPage() {
     try {
       const res = await api.get<RmaRequest[]>("/rma");
       setRmas(res.data || []);
-    } catch {
-      showError("Không thể tải danh sách RMA.");
+    } catch (err: unknown) {
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.loadFailed"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t, tErrors]);
 
   useEffect(() => {
     queueMicrotask(() => void fetchRmas());
@@ -70,15 +76,15 @@ export default function RmaPage() {
         ]
       };
       await api.post(`/rma/${rmaId}/qc`, payload);
-      showSuccess(`Đã xử lý QC: ${disposition}`);
+      showSuccess(t("toastQcSuccess", { disposition }));
       fetchRmas();
       if (selectedRma?.id === rmaId) {
-         // Refresh detail view
          const updated = await api.get<RmaRequest>(`/rma/${rmaId}`);
          setSelectedRma(updated.data);
       }
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi khi xử lý QC."));
+      const { codeLabel, message } = resolveApiError(err, tErrors);
+      showApiErrorToast(codeLabel, message || t("errors.qcFailed"));
     } finally {
       setProcessing(false);
     }
@@ -86,10 +92,10 @@ export default function RmaPage() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case "OPEN": return <Badge className="bg-blue-500 hover:bg-blue-600">Mới tạo</Badge>;
-      case "RECEIVED": return <Badge className="bg-amber-500 hover:bg-amber-600">Đã nhận hàng</Badge>;
-      case "QC_COMPLETED": return <Badge className="bg-emerald-500 hover:bg-emerald-600">Hoàn tất QC</Badge>;
-      case "CLOSED": return <Badge className="bg-zinc-500 hover:bg-zinc-600">Đã đóng</Badge>;
+      case "OPEN": return <Badge className="bg-blue-500 hover:bg-blue-600">{t("statusOpen")}</Badge>;
+      case "RECEIVED": return <Badge className="bg-amber-500 hover:bg-amber-600">{t("statusReceived")}</Badge>;
+      case "QC_COMPLETED": return <Badge className="bg-emerald-500 hover:bg-emerald-600">{t("statusQcCompleted")}</Badge>;
+      case "CLOSED": return <Badge className="bg-zinc-500 hover:bg-zinc-600">{t("statusClosed")}</Badge>;
       default: return <Badge variant="outline">{status}</Badge>;
     }
   };
@@ -100,10 +106,10 @@ export default function RmaPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <Undo2 className="h-6 w-6 text-orange-500" />
-            Quản lý Trả hàng (RMA Management)
+            {t("title")}
           </h1>
           <p className="text-xs text-zinc-400 mt-1">
-            Theo dõi, tiếp nhận và kiểm định hàng hóa khách hàng trả lại.
+            {t("subtitle")}
           </p>
         </div>
         <Button
@@ -112,7 +118,7 @@ export default function RmaPage() {
           className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-9 px-4 flex items-center gap-2"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          Làm mới
+          {tc("refresh")}
         </Button>
       </div>
 
@@ -121,15 +127,15 @@ export default function RmaPage() {
           <Card className="bg-zinc-900 border-zinc-800 text-white">
             <CardContent className="p-0">
               {loading && rmas.length === 0 ? (
-                <div className="text-center py-12 text-zinc-500 text-xs font-mono">Đang tải...</div>
+                <div className="text-center py-12 text-zinc-500 text-xs font-mono">{tc("loading")}</div>
               ) : (
                 <Table className="text-xs">
                   <TableHeader className="border-b border-zinc-800">
                     <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                      <TableHead className="text-zinc-400">Mã RMA</TableHead>
-                      <TableHead className="text-zinc-400">Khách hàng</TableHead>
-                      <TableHead className="text-zinc-400">Ngày tạo</TableHead>
-                      <TableHead className="text-zinc-400">Trạng thái</TableHead>
+                      <TableHead className="text-zinc-400">{t("colRmaNo")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colCustomer")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colCreatedAt")}</TableHead>
+                      <TableHead className="text-zinc-400">{t("colStatus")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -159,15 +165,15 @@ export default function RmaPage() {
             <Card className="bg-zinc-900 border-zinc-800 text-white sticky top-6">
               <CardHeader className="border-b border-zinc-800 pb-4">
                 <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                  Chi tiết: {selectedRma.rmaNo}
+                  {t("detailTitle", { rmaNo: selectedRma.rmaNo })}
                   {getStatusBadge(selectedRma.status)}
                 </CardTitle>
                 <div className="text-[10px] text-zinc-500 mt-1">
-                   Tham chiếu: {selectedRma.referenceNo || "N/A"} | Người tạo: {selectedRma.createdBy}
+                   {t("reference")}: {selectedRma.referenceNo || tc("notAvailable")} | {t("createdBy")}: {selectedRma.createdBy}
                 </div>
               </CardHeader>
               <CardContent className="p-4 flex flex-col gap-4">
-                <h4 className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Danh sách sản phẩm</h4>
+                <h4 className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">{t("productList")}</h4>
                 <div className="space-y-3">
                   {selectedRma.items.map(item => (
                     <div key={item.id} className="bg-zinc-800/50 rounded p-3 border border-zinc-700/50 flex flex-col gap-2">
@@ -177,8 +183,8 @@ export default function RmaPage() {
                           <p className="text-[10px] text-zinc-400">{item.itemName}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[10px] text-zinc-500">Dự kiến: <span className="text-zinc-300 font-bold">{item.qtyExpected}</span></p>
-                          <p className="text-[10px] text-zinc-500">Đã nhận: <span className="text-blue-400 font-bold">{item.qtyReceived}</span></p>
+                          <p className="text-[10px] text-zinc-500">{t("expected")}: <span className="text-zinc-300 font-bold">{item.qtyExpected}</span></p>
+                          <p className="text-[10px] text-zinc-500">{t("received")}: <span className="text-blue-400 font-bold">{item.qtyReceived}</span></p>
                         </div>
                       </div>
                       
@@ -189,14 +195,14 @@ export default function RmaPage() {
                             onClick={() => handleProcessQc(selectedRma.id, item, "RESTOCK")}
                             className="bg-emerald-600 hover:bg-emerald-500 text-[10px] h-7 px-2 flex-1"
                           >
-                            <CheckCircle2 className="h-3 w-3 mr-1" /> Restock
+                            <CheckCircle2 className="h-3 w-3 mr-1" /> {t("restock")}
                           </Button>
                           <Button 
                             disabled={processing}
                             onClick={() => handleProcessQc(selectedRma.id, item, "SCRAP")}
                             className="bg-red-600 hover:bg-red-500 text-[10px] h-7 px-2 flex-1"
                           >
-                            <AlertTriangle className="h-3 w-3 mr-1" /> Scrap
+                            <AlertTriangle className="h-3 w-3 mr-1" /> {t("scrap")}
                           </Button>
                         </div>
                       )}
@@ -207,7 +213,7 @@ export default function RmaPage() {
                 {selectedRma.status === "QC_COMPLETED" && (
                   <div className="mt-4 p-4 bg-emerald-900/20 border border-emerald-800/30 rounded-lg flex flex-col items-center text-center gap-2">
                     <FlaskConical className="h-8 w-8 text-emerald-500 opacity-50" />
-                    <p className="text-xs text-emerald-200">Đã hoàn tất quy trình kiểm định QC.</p>
+                    <p className="text-xs text-emerald-200">{t("qcCompleted")}</p>
                   </div>
                 )}
               </CardContent>
@@ -215,7 +221,7 @@ export default function RmaPage() {
           ) : (
             <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-16 text-center text-zinc-500 text-xs flex flex-col items-center justify-center gap-4">
               <PackageSearch className="h-10 w-10 opacity-20" />
-              Chọn một yêu cầu RMA để xem chi tiết và thực hiện xử lý QC.
+              {t("selectHint")}
             </div>
           )}
         </div>
