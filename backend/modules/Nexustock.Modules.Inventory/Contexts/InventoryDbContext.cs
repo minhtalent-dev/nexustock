@@ -72,6 +72,7 @@ public class InventoryDbContext : DbContext
             {
                 t.HasCheckConstraint("chk_inventory_balances_qty_reserved", "qty_reserved >= 0.0");
                 t.HasCheckConstraint("chk_inventory_balances_qty_available", "qty_on_hand >= qty_reserved");
+                t.HasCheckConstraint("chk_inventory_balances_qty_on_hand", "qty_on_hand >= 0.0");
             });
         });
 

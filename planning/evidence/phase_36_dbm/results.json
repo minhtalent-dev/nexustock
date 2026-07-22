@@ -1,0 +1,77 @@
+{
+  "phase": 36,
+  "workflow": "dbm",
+  "pass": 13,
+  "fail": 0,
+  "results": [
+    {
+      "id": "API-LIVE",
+      "status": "PASS",
+      "note": "GET /health/live → 200"
+    },
+    {
+      "id": "API-LOGIN",
+      "status": "PASS",
+      "note": "token=true"
+    },
+    {
+      "id": "LOGIN",
+      "status": "PASS",
+      "note": "admin login OK"
+    },
+    {
+      "id": "FE-OUTBOUND",
+      "status": "PASS",
+      "note": "/admin/outbound loaded"
+    },
+    {
+      "id": "SEED-SHIPMENT",
+      "status": "PASS",
+      "note": "SO-DBM36-1784706525930 http=200 id=936015ba-b6fd-4379-ae24-1ec5558d31fb"
+    },
+    {
+      "id": "FE-SELECT-OPEN",
+      "status": "PASS",
+      "note": "selected SO-DBM36-1784706525930"
+    },
+    {
+      "id": "AC-GEN-PICKS-200",
+      "status": "PASS",
+      "note": "HTTP 200 pickTaskCount=1 url=http://localhost:5024/api/outbound/shipments/936015ba-b6fd-4379-ae24-1ec5558d31fb/generate-picks"
+    },
+    {
+      "id": "AC-GEN-PICKS-COUNT",
+      "status": "PASS",
+      "note": "pickTaskCount=1"
+    },
+    {
+      "id": "AC-URL-CONTRACT",
+      "status": "PASS",
+      "note": "http://localhost:5024/api/outbound/shipments/936015ba-b6fd-4379-ae24-1ec5558d31fb/generate-picks"
+    },
+    {
+      "id": "FE-PICKS-VISIBLE",
+      "status": "PASS",
+      "note": "picksSection=true allocated=true"
+    },
+    {
+      "id": "AC-DUP-PICKS",
+      "status": "PASS",
+      "note": "http=400 code=PICKS_ALREADY_EXIST"
+    },
+    {
+      "id": "FE-MOBILE-DF01",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/mobile/movement is404=false"
+    },
+    {
+      "id": "AC-EVIDENCE",
+      "status": "PASS",
+      "note": "shots+video captured"
+    }
+  ],
+  "base": "http://localhost:3003",
+  "api": "http://localhost:5024",
+  "video": "walkthrough-l2-p0.webm",
+  "at": "2026-07-22T07:48:54.060Z"
+}

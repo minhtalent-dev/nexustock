@@ -253,111 +253,7 @@ public class OutboundController : ControllerBase
         }
     }
 
-    [HttpPost("shipments/{id:guid}/generate-picks")]
-    public async Task<IActionResult> GeneratePicks(Guid id)
-    {
-        if (!await HasPermissionAsync("Outbound.Picks.Execute"))
-        {
-            return Forbid();
-        }
-
-        var tenantId = GetTenantId();
-        var username = User.Identity?.Name ?? "System";
-
-        var shipment = await _context.Shipments.FirstOrDefaultAsync(s => s.Id == id && s.TenantId == tenantId);
-        if (shipment == null)
-        {
-            return NotFound(new { errorCode = "SHIPMENT_NOT_FOUND", message = "Không tìm thấy đơn xuất" });
-        }
-
-        if (shipment.Status != "Open")
-        {
-            return BadRequest(new { errorCode = "INVALID_SHIPMENT_STATUS", message = "Trạng thái đơn xuất không hợp lệ để phân bổ" });
-        }
-
-        var items = await _context.ShipmentItems.Where(i => i.ShipmentId == id && i.TenantId == tenantId).ToListAsync();
-
-        using var transaction = await _context.Database.BeginTransactionAsync();
-        try
-        {
-            foreach (var item in items)
-            {
-                var remainingToAllocate = item.RequestedQty;
-
-                // FIFO Allocation: Query inventories ordered by LotNo. Filter by QcStatus = Release, lock status
-                var inventories = await _context.Inventories
-                    .Where(i => i.ItemId == item.ItemId && i.TenantId == tenantId && (i.QtyOnHand - i.QtyReserved) > 0)
-                    .OrderBy(i => i.LotNo)
-                    .ToListAsync();
-
-                var lotNos = inventories.Select(i => i.LotNo).Distinct().ToList();
-                var releasedLots = await _context.Lots
-                    .Where(l => l.TenantId == tenantId && l.ItemId == item.ItemId && lotNos.Contains(l.LotNo) && l.QcStatus == "Release")
-                    .Select(l => l.LotNo)
-                    .ToListAsync();
-
-                var locationIds = inventories.Select(i => i.LocationId).Distinct().ToList();
-                var lockedOutboundLocations = await _context.LocationLocks
-                    .Where(l => l.TenantId == tenantId && locationIds.Contains(l.LocationId) && (l.LockType == "OUTBOUND" || l.LockType == "ALL"))
-                    .Select(l => l.LocationId)
-                    .ToListAsync();
-
-                var filteredInventories = inventories
-                    .Where(i => releasedLots.Contains(i.LotNo) && !lockedOutboundLocations.Contains(i.LocationId))
-                    .ToList();
-
-                var totalAvailable = filteredInventories.Sum(i => i.QtyOnHand - i.QtyReserved);
-                if (totalAvailable < remainingToAllocate)
-                {
-                    return BadRequest(new { errorCode = "INSUFFICIENT_INVENTORY", message = "Không đủ tồn kho khả dụng để phân bổ sản phẩm" });
-                }
-
-                foreach (var inv in filteredInventories)
-                {
-                    if (remainingToAllocate <= 0) break;
-
-                    var qtyAvailable = inv.QtyOnHand - inv.QtyReserved;
-                    var allocQty = Math.Min(qtyAvailable, remainingToAllocate);
-
-                    inv.QtyReserved += allocQty;
-                    inv.UpdatedAt = DateTime.UtcNow;
-                    inv.UpdatedBy = username;
-
-                    var pickTask = new PickTask
-                    {
-                        Id = Guid.NewGuid(),
-                        TenantId = tenantId,
-                        ShipmentId = shipment.Id,
-                        ItemId = item.ItemId,
-                        LotNo = inv.LotNo,
-                        FromLocationId = inv.LocationId,
-                        Qty = allocQty,
-                        PickedQty = 0,
-                        Status = "Pending",
-                        CreatedAt = DateTime.UtcNow,
-                        CreatedBy = username
-                    };
-                    _context.PickTasks.Add(pickTask);
-
-                    remainingToAllocate -= allocQty;
-                }
-            }
-
-            shipment.Status = "Allocated";
-            shipment.UpdatedAt = DateTime.UtcNow;
-            shipment.UpdatedBy = username;
-
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
-
-            return Ok(new { message = "Sinh pick tasks thành công" });
-        }
-        catch (Exception)
-        {
-            await transaction.RollbackAsync();
-            throw;
-        }
-    }
+    // P36: GeneratePicks chuyển sang Allocation.OutboundGeneratePicksController (cùng URL).
 
     [HttpPost("picks/{id:guid}/complete")]
     public async Task<IActionResult> CompletePick(Guid id, [FromBody] CompletePickRequestDto dto)
@@ -406,6 +302,16 @@ public class OutboundController : ControllerBase
             if (inventory == null || inventory.QtyOnHand < dto.PickedQty)
             {
                 return BadRequest(new { errorCode = "INSUFFICIENT_QTY", message = "Tồn kho thực tế không đủ để hoàn thành pick" });
+            }
+
+            // P36: chặn trừ reserved khi không đủ giữ chỗ
+            if (inventory.QtyReserved < dto.PickedQty)
+            {
+                return BadRequest(new
+                {
+                    errorCode = "RESERVED_UNDERFLOW",
+                    message = "Số lượng giữ chỗ không đủ để hoàn thành pick"
+                });
             }
 
             // Deduct inventory

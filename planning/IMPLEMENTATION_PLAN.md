@@ -183,8 +183,8 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 33 | [Localization Mobile + Errors + Close](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) | **7/7** mobile + `Mobile.json`/`Errors.json`; khóa **59/59 + 0 backlog**. |
 | 34 | [IQC UX Map GCM Part → Nexustock](file:///d:/1_Project/48_Nexustock/planning/phases/phase_34_iqc_ux_map_gcm.md) | Map form IQC GCM; `QcGate`; queue/history UX; optional mobile QC; UAT/training. |
 | 35 | [Admin Nav Ops ↔ Modules Lens](file:///d:/1_Project/48_Nexustock/planning/phases/phase_35_admin_nav_ops_modules_lens.md) | Toggle Modules/Ops; polish Labor+RMA+Utilities; i18n Sidebar; parity href. **✅ ĐÓNG** (`rp4`+`rp5` 2026-07-22). |
-| 36 | [Inventory Integrity L2-P0](file:///d:/1_Project/48_Nexustock/planning/phases/phase_36_inventory_integrity_l2_p0.md) | Hợp nhất allocation · invariant tồn · DF-01 offline. Spec **95%** — chờ Proceed. |
-| 37 | [Go-Live L3 Customer Pilot](file:///d:/1_Project/48_Nexustock/planning/phases/phase_37_golive_l3_customer_pilot.md) | UAT generic · cutover/rollback · hypercare. Spec **95%** — sau P36. |
+| 36 | [Inventory Integrity L2-P0](file:///d:/1_Project/48_Nexustock/planning/phases/phase_36_inventory_integrity_l2_p0.md) | Hợp nhất allocation · invariant tồn · DF-01. **✅ ĐÓNG** (`rp4`+`rp5` Module DoD 100% · dbm · verify 14/0). |
+| 37 | [Go-Live L3 Customer Pilot](file:///d:/1_Project/48_Nexustock/planning/phases/phase_37_golive_l3_customer_pilot.md) | UAT generic · cutover/rollback · hypercare. **✅ 100% Ready** (`rp1`+`rp2`+`rp3`) — chờ Proceed. |
 | 38 | [UI Design System Pass](file:///d:/1_Project/48_Nexustock/planning/phases/phase_38_ui_design_system_pass.md) | Option B token + PageShell + migrate toàn site. Spec **95%** — không block P36. |
 
 ---
@@ -233,8 +233,8 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 33 | Localization Mobile + Errors + Close | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-22: Module DoD **100%**. verify 33 PASS; DBM **14/14**; Milestone 5 **59/59**; disk FAIL_COUNT=0. | 2026-07-22 | [phase_33 §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) |
 | 34 | IQC UX Map GCM Part → Nexustock | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-22. Disk FAIL=0; verify 16/16; dbm 13/13. | 2026-07-22 | [phase_34 §21–§22](file:///d:/1_Project/48_Nexustock/planning/phases/phase_34_iqc_ux_map_gcm.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_34_dbm/walkthrough.md) |
 | 35 | Admin Nav Ops ↔ Modules Lens | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-22. Disk FAIL=0; verify PASS; dbm 14/14 + video. | 2026-07-22 | [phase_35 §26–§27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_35_admin_nav_ops_modules_lens.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_35_dbm/walkthrough.md) |
-| 36 | Inventory Integrity L2-P0 | ⬜ Chưa bắt đầu | Spec **95%** (`/30-auto-project-planner`). P0-01…03. | — | [phase_36](file:///d:/1_Project/48_Nexustock/planning/phases/phase_36_inventory_integrity_l2_p0.md) |
-| 37 | Go-Live L3 Customer Pilot | ⬜ Chưa bắt đầu | Spec **95%**. Block đến P36 DoD. | — | [phase_37](file:///d:/1_Project/48_Nexustock/planning/phases/phase_37_golive_l3_customer_pilot.md) |
+| 36 | Inventory Integrity L2-P0 | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-22. Disk FAIL=0; verify 14/0; dbm 13/0 + video; L2-P0 CLOSED. | 2026-07-22 | [phase_36 §25–§26](file:///d:/1_Project/48_Nexustock/planning/phases/phase_36_inventory_integrity_l2_p0.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_36_dbm/walkthrough.md) |
+| 37 | Go-Live L3 Customer Pilot | ⬜ Chưa bắt đầu | Spec **✅ 100% Ready** (`rp1`+`rp2`+`rp3`). EP0–EP6 · BS-R3 0 block — chờ Proceed. | — | [phase_37 §22](file:///d:/1_Project/48_Nexustock/planning/phases/phase_37_golive_l3_customer_pilot.md) |
 | 38 | UI Design System Pass | ⬜ Chưa bắt đầu | Spec **95%** Option B. Không block P36. | — | [phase_38](file:///d:/1_Project/48_Nexustock/planning/phases/phase_38_ui_design_system_pass.md) |
 
 ### Quy ước trạng thái
@@ -259,8 +259,8 @@ Các deep spec dưới đây **không chặn Phase 01**. Đây là danh sách n�
 | Trước Phase 20 | Local Agent threat model | Nâng Phase 20 từ 90% lên 95% execution-ready | Làm rõ attack vector, Origin allowlist, pairing token, WSS/certificate trust, code signing, spoofing test case. |
 | Trước Phase 23 | SAP contract confirmation | ✅ Đã hoàn thành (100% Ready) | Làm rõ field mapping thật, error code matrix, idempotency, mapping resolver, preview/commit và 3 script verify pass 100%. |
 | Trước Phase 26/30 | Migration rehearsal & incident playbook | ✅ Phase 26 95%; Phase 30 Module DoD ✅ (`rp4` 2026-07-21). AC-08 waived. | Go-live AC pack còn evidence trước ký production. |
-| Trước Phase 36 | L2-P0 integrity deep spec | ✅ Phase 36 **95%** (2026-07-22) | Allocate SoT + CHECK + DF-01. |
-| Trước Phase 37 | L3 pilot UAT/cutover pack | ✅ Phase 37 **95%** (2026-07-22) | Delta sau P30; generic tenant. |
+| Trước Phase 36 | L2-P0 integrity deep spec | ✅ Phase 36 **Module DoD 100%** (`rp4`+`rp5` 2026-07-22) | Allocate SoT + CHECK on_hand + DF-01; verify 14/0; dbm 13/0; L2-P0 CLOSED. |
+| Trước Phase 37 | L3 pilot UAT/cutover pack | ✅ Phase 37 **100% Ready** (`rp1`+`rp2`+`rp3` 2026-07-22) | BS-R3 đóng; Lot-HOLD tách; Register→Login; seed reuse. |
 | Trước Phase 38 | UI Option B design system | ✅ Phase 38 **95%** (2026-07-22) | PageShell + tokens; AUDIT_UI SoT. |
 
 ### Nguyên tắc dùng backlog

@@ -9,6 +9,8 @@ public class ReserveRequestDto
     public string Strategy { get; set; } = "FEFO"; // FEFO, FIFO
     public bool AllowPartial { get; set; } = true;
     public int ReservationTtlMinutes { get; set; } = 1440;
+    /// <summary>P36: tạo PickTask cùng TX với reservation (GeneratePicks). Wave giữ false.</summary>
+    public bool CreatePickTasks { get; set; } = false;
 }
 
 public class ReserveResponseDto

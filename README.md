@@ -18,7 +18,7 @@ Dự án Hệ thống quản lý kho hàng (WMS) xây dựng theo kiến trúc M
 * /docker — Các Dockerfile đóng gói và docker-compose môi trường production.
 * /scripts — Các kịch bản sao lưu DB, phục hồi, và rollback dự phòng.
 * /tests — Các kịch bản tự động kiểm thử hệ thống (Health Check, Backup/Restore, Rollback).
-* /planning — Spec kỹ thuật và tài liệu nghiệp vụ từng Phase.
+* /planning — Spec kỹ thuật và tài liệu nghiệp vụ từng Phase. Nghiệm thu nền generic L2: `planning/ACCEPTANCE_L2_GENERIC_WMS_FOUNDATION.md` (P0 toàn vẹn tồn kho đã đóng Phase 36).
 
 
 ## 🛠️ Hướng dẫn khởi chạy nhanh (First-Run)
@@ -60,6 +60,7 @@ Giao diện sẽ chạy tại cổng `http://localhost:3003`.
 * Nhóm **Mobile** đã có: 7 màn cầm tay + vỏ shell + màn QC tùy chọn; nhóm **Errors** đủ mã lỗi ổn định cho toast có nhãn mã + nội dung (gồm mã chặn lô chưa đạt kiểm định).
 * **Kiểm định chất lượng (Phase 34):** `/admin/qc` hỗ trợ lọc/aging/lịch sử; cổng chặn move/pick khi lô chưa Release; `/mobile/qc` bật bằng công tắc `FF_MOBILE_QC`.
 * **Điều hướng thanh bên (Phase 35):** chuyển Modules ↔ Ops (Nhập / Xuất / Quản kho); ghi nhớ lựa chọn trên máy; cùng đường dẫn trang.
+* **Toàn vẹn tồn kho (Phase 36):** cấp phát lấy hàng một quy tắc; chặn tồn âm; chuyển hàng offline không vượt số khả dụng.
 * **Milestone 5**: **59/59** trang Web VI/EN, **0 backlog** localization product.
 
 ## 🩺 Endpoints kiểm tra sức khỏe

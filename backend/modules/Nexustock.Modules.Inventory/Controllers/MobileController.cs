@@ -206,9 +206,11 @@ public class MobileController : ControllerBase
                                 throw new Exception("Không tìm thấy số dư tồn kho nguồn để dịch chuyển");
                             }
 
-                            if (inventory.QtyOnHand < moveData.Qty)
+                            // P36 DF-01: offline MOVE dùng available (OnHand - Reserved) như online
+                            var available = inventory.QtyOnHand - inventory.QtyReserved;
+                            if (available < moveData.Qty)
                             {
-                                throw new Exception("Số lượng tồn kho nguồn không đủ để dịch chuyển");
+                                throw new Exception("INSUFFICIENT_QTY: Số lượng khả dụng không đủ để dịch chuyển");
                             }
 
                             // 1. Trừ tồn kho nguồn

@@ -12,9 +12,29 @@
 
 | Phase | File | Maturity | Critical Path |
 |---|---|---|---|
-| 36 Inventory Integrity (L2-P0) | `planning/phases/phase_36_inventory_integrity_l2_p0.md` | **95%** | Có |
-| 37 Go-Live L3 Customer Pilot | `planning/phases/phase_37_golive_l3_customer_pilot.md` | **95%** | Có (sau 36) |
+| 36 Inventory Integrity (L2-P0) | `planning/phases/phase_36_inventory_integrity_l2_p0.md` | **✅ Module DoD 100%** (`rp4`+`rp5`) | Có |
+| 37 Go-Live L3 Customer Pilot | `planning/phases/phase_37_golive_l3_customer_pilot.md` | **✅ 100% Ready** (`rp1`+`rp2`+`rp3`) | Có (sau 36) |
 | 38 UI Design System Pass | `planning/phases/phase_38_ui_design_system_pass.md` | **95%** | Không (trừ FOUNDER chốt đẹp-trước-bán) |
+
+### rp3 Phase 37 (2026-07-22)
+
+Blind-spot PASS — BS-R3-01…18; Lot-HOLD tách; Register→Login; xem phase_37 **§22**.
+
+### rp2 Phase 37 (2026-07-22)
+
+Function index + EP0–EP6 + critic **9.5** — `function_index_phase37_l3_pilot.md` · `rp2_phase37_*.md`.
+
+### rp1 Phase 37 (2026-07-22)
+
+Disk freeze §20 — API SoT · DEMO logical · EP0–EP6 · AC pack map → **100% Ready**.
+
+### rp1 Phase 36 (2026-07-22)
+
+Đóng 10 gap disk (circular csproj, route outbound, CHECK trùng, CreatePickTasks cùng TX, …) — xem phase_36 **§20**.
+
+### rp2 Phase 36 (2026-07-22)
+
+Function index + EP0–EP6 + critic **9.5** — xem phase_36 **§21** · `rp2_implementation_plan.md` / `rp2_critic_report.md`.
 
 ---
 
@@ -53,3 +73,7 @@ Cả 3 phase đã trả lời 4 câu Write concurrency / Hardware / Network / Th
 - `planning/AUDIT_UI_UX_PROD_READINESS.md` — Option B khóa P38  
 - 3 file `planning/phases/phase_36|37|38_*.md`  
 - `planning/evidence/phase_36_37_38_planner/walkthrough.md` (file này)
+
+### `rp3` Phase 36 (2026-07-22)
+
+Blind-spot PASS — BS-R3-01..18 dong; xem phase_36 **§22**. Brain plan da refine EP5 QC seed + Wave CreatePickTasks=false.

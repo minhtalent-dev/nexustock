@@ -1,6 +1,6 @@
 # Lịch sử cập nhật dự án
 
-## Phiên bản 1.5.0 - Kiểm định chất lượng, chặn hàng chưa đạt và điều hướng theo thao tác kho (Phase 34–35)
+## Phiên bản 1.5.0 - Kiểm định chất lượng, toàn vẹn tồn kho và điều hướng theo thao tác kho (Phase 34–36)
 *Ngày cập nhật: 22/07/2026*
 
 ### Tính năng mới
@@ -10,6 +10,8 @@
 - **Kiểm định trên thiết bị cầm tay (tùy chọn)**: Có thể bật công tắc để nhân viên kiểm trên sàn; mặc định tắt.
 - **Thông báo lỗi kiểm định rõ ràng**: Khi bị chặn, hệ thống hiển thị mã và nội dung lỗi theo ngôn ngữ đang chọn.
 - **Điều hướng theo module hoặc theo thao tác kho**: Trên thanh bên có thể chuyển giữa nhóm chức năng (Modules) và nhóm nhập/xuất/quản kho (Ops); lựa chọn được ghi nhớ trên máy; không đổi đường dẫn trang đang mở.
+- **Cấp phát lấy hàng thống nhất**: Sinh lệnh lấy hàng dùng cùng một quy tắc cấp phát với phần còn lại của hệ thống — tránh lệch số lượng giữa các màn hình.
+- **Bảo vệ số tồn không âm**: Hệ thống từ chối thao tác làm tồn kho âm; khi lấy hàng hoặc chuyển hàng offline cũng không vượt quá số còn khả dụng (đã trừ phần đang giữ).
 
 ## Phiên bản 1.4.0 - Cổng sẵn sàng vận hành và kiểm soát cắt chuyển (Phase 30)
 *Ngày cập nhật: 21/07/2026*

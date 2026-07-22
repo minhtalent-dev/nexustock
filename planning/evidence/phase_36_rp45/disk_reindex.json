@@ -1,0 +1,132 @@
+﻿{
+    "pass":  25,
+    "fail":  0,
+    "at":  "2026-07-22T14:46:08.1457367+07:00",
+    "rows":  [
+                 {
+                     "id":  "FILE:backend/modules/Nexustock.Modules.Allocation/Controllers/OutboundGeneratePicksController.cs",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "FILE:backend/modules/Nexustock.Modules.Allocation/Services/AllocationService.cs",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "FILE:backend/modules/Nexustock.Modules.Allocation/Dtos/AllocationDtos.cs",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "FILE:backend/modules/Nexustock.Modules.Inventory/Interceptors/InventoryIntegrityInterceptor.cs",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "FILE:backend/modules/Nexustock.Modules.Inventory/Migrations/20260722073000_AddQtyOnHandNonNegativeCheck.cs",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "FILE:tests/verify_l2_p0_integrity.ps1",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "FILE:tests/helpers/dbm_phase36_l2_p0_browser.mjs",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "FILE:planning/evidence/phase_36/results.json",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "FILE:planning/evidence/phase_36_dbm/walkthrough.md",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "FILE:planning/evidence/phase_36_dbm/walkthrough-l2-p0.webm",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "FILE:planning/function_index_phase36_inventory_integrity.md",
+                     "status":  "PASS",
+                     "note":  "exists (promoted from temp)"
+                 },
+                 {
+                     "id":  "FILE:planning/ACCEPTANCE_L2_GENERIC_WMS_FOUNDATION.md",
+                     "status":  "PASS",
+                     "note":  "exists"
+                 },
+                 {
+                     "id":  "CONTENT:no-HttpPost-generate-picks-Inventory",
+                     "status":  "PASS",
+                     "note":  "old route gone"
+                 },
+                 {
+                     "id":  "CONTENT:RESERVED_UNDERFLOW",
+                     "status":  "PASS",
+                     "note":  "guard present"
+                 },
+                 {
+                     "id":  "CONTENT:CreatePickTasks-true",
+                     "status":  "PASS",
+                     "note":  "GeneratePicks CreatePickTasks=true"
+                 },
+                 {
+                     "id":  "CONTENT:no-LotNo-OrderBy",
+                     "status":  "PASS",
+                     "note":  "no LotNo order"
+                 },
+                 {
+                     "id":  "CONTENT:CreatePickTasks-block",
+                     "status":  "PASS",
+                     "note":  "Allocate CreatePickTasks block"
+                 },
+                 {
+                     "id":  "CONTENT:CreatePickTasks-dto",
+                     "status":  "PASS",
+                     "note":  "DTO flag"
+                 },
+                 {
+                     "id":  "CONTENT:no-Inventory-Allocation-ref",
+                     "status":  "PASS",
+                     "note":  "no circular ref"
+                 },
+                 {
+                     "id":  "CONTENT:interceptor-DI",
+                     "status":  "PASS",
+                     "note":  "DI"
+                 },
+                 {
+                     "id":  "CONTENT:DF01",
+                     "status":  "PASS",
+                     "note":  "DF-01"
+                 },
+                 {
+                     "id":  "CONTENT:FE-URL",
+                     "status":  "PASS",
+                     "note":  "FE URL kept"
+                 },
+                 {
+                     "id":  "CONTENT:L2-P0-CLOSED",
+                     "status":  "PASS",
+                     "note":  "ACCEPTANCE P0 CLOSED"
+                 },
+                 {
+                     "id":  "CONTENT:L2-scores",
+                     "status":  "PASS",
+                     "note":  "scores 82.1/86.9"
+                 },
+                 {
+                     "id":  "CONTENT:DoD-all-x",
+                     "status":  "PASS",
+                     "note":  "DoD [x]=11 [ ]=0"
+                 }
+             ]
+}

@@ -1,0 +1,62 @@
+﻿[
+    {
+        "id":  "DOD-01-no-GeneratePicks-Inventory",
+        "ok":  false,
+        "note":  "OutboundController GeneratePicks gone"
+    },
+    {
+        "id":  "DOD-02-OutboundGeneratePicksController",
+        "ok":  true,
+        "note":  "Controller exists"
+    },
+    {
+        "id":  "DOD-03-no-LotNo-order",
+        "ok":  true,
+        "note":  "No LotNo OrderBy in GeneratePicks"
+    },
+    {
+        "id":  "DOD-04-CreatePickTasks",
+        "ok":  true,
+        "note":  "CreatePickTasks in AllocateAsync"
+    },
+    {
+        "id":  "DOD-05-no-Alloc-ref",
+        "ok":  true,
+        "note":  "Inventory no Allocation ref"
+    },
+    {
+        "id":  "DOD-06-interceptor",
+        "ok":  true,
+        "note":  "Interceptor file"
+    },
+    {
+        "id":  "DOD-07-interceptor-DI",
+        "ok":  true,
+        "note":  "DI register"
+    },
+    {
+        "id":  "DOD-08-migration",
+        "ok":  true,
+        "note":  "CHECK migration"
+    },
+    {
+        "id":  "DOD-09-RESERVED_UNDERFLOW",
+        "ok":  true,
+        "note":  "CompletePick guard"
+    },
+    {
+        "id":  "DOD-10-DF01",
+        "ok":  true,
+        "note":  "Mobile MOVE available"
+    },
+    {
+        "id":  "DOD-11-L2-P0-CLOSED",
+        "ok":  true,
+        "note":  "ACCEPTANCE P0 CLOSED"
+    },
+    {
+        "id":  "DOD-12-evidence",
+        "ok":  true,
+        "note":  "evidence phase_36"
+    }
+]

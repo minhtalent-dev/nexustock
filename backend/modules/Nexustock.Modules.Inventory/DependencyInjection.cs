@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nexustock.Modules.Inventory.Contexts;
+using Nexustock.Modules.Inventory.Interceptors;
 using Nexustock.Modules.Inventory.Services;
 using Nexustock.Modules.Identity.Interceptors;
 
@@ -11,6 +12,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInventoryModule(this IServiceCollection services, IConfiguration configuration)
     {
+        // P36: đăng ký trước AddDbContext
+        services.AddSingleton<InventoryIntegrityInterceptor>();
+
         var connectionString = configuration.GetConnectionString("Default");
 
         if (!string.IsNullOrEmpty(connectionString))
@@ -21,6 +25,7 @@ public static class DependencyInjection
                     connectionString,
                     b => b.MigrationsAssembly(typeof(InventoryDbContext).Assembly.FullName));
 
+                options.AddInterceptors(sp.GetRequiredService<InventoryIntegrityInterceptor>());
                 var auditInterceptor = sp.GetService<AuditInterceptor>();
                 if (auditInterceptor != null)
                 {
@@ -34,6 +39,7 @@ public static class DependencyInjection
             {
                 options.UseInMemoryDatabase("NexustockTest_Inventory");
 
+                options.AddInterceptors(sp.GetRequiredService<InventoryIntegrityInterceptor>());
                 var auditInterceptor = sp.GetService<AuditInterceptor>();
                 if (auditInterceptor != null)
                 {

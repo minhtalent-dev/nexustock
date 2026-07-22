@@ -179,6 +179,25 @@ public class AllocationService : IAllocationService
                         };
                         _inventoryContext.AllocationReservations.Add(reservation);
 
+                        // P36: tạo PickTask cùng TX khi GeneratePicks yêu cầu (Wave giữ CreatePickTasks=false)
+                        if (dto.CreatePickTasks)
+                        {
+                            _inventoryContext.PickTasks.Add(new PickTask
+                            {
+                                Id = Guid.NewGuid(),
+                                TenantId = tenantId,
+                                ShipmentId = dto.ShipmentId,
+                                ItemId = line.ItemId,
+                                LotNo = balance.LotNo,
+                                FromLocationId = balance.LocationId,
+                                Qty = allocatedQty,
+                                PickedQty = 0,
+                                Status = "Pending",
+                                CreatedAt = DateTime.UtcNow,
+                                CreatedBy = username
+                            });
+                        }
+
                         totalAllocatedQty += allocatedQty;
                         remainingQty -= allocatedQty;
 

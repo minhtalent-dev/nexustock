@@ -107,5 +107,74 @@
       "L2 SoT Simple 80.8 Weighted 84.8; execute order P36 then P37; P38 parallel/late",
       "FOUNDER must Proceed before /18-auto-execute code"
     ]
+  },
+  "Phase 36 Inventory Integrity L2-P0": {
+    "name": "Phase 36 Inventory Integrity L2-P0",
+    "entityType": "Phase",
+    "observations": [
+      "rp1 2026-07-22: Spec 100% Ready",
+      "Cannot Inventory->Allocation project ref; move GeneratePicks to Allocation module",
+      "CreatePickTasks in same AllocateAsync TX",
+      "DB only add qty_on_hand>=0; other checks exist",
+      "FE URL /api/outbound/shipments/{id}/generate-picks",
+      "Await FOUNDER Proceed before execute",
+      "rp2 2026-07-22: function_index_phase36 + EP0-EP6 brain plan",
+      "critic 9.5/10 PASS",
+      "Execute order EP0 CreatePickTasks TX then EP1 move controller same PR then EP2 interceptor EP3 migration EP4 CompletePick DF-01 EP5 verify EP6 docs",
+      "Await FOUNDER Proceed then /18-auto-execute",
+      "rp3 2026-07-22 PASS: 0 blind spots BS-R3-01 to 18 closed",
+      "Critical: Wave materializes picks itself - CreatePickTasks must stay false",
+      "EP5 must inbound+QC Release before generate-picks; assert pickTaskCount>0",
+      "Ready for FOUNDER Proceed then /18-auto-execute",
+      "2026-07-22 /18-auto-execute COMPLETE Module DoD 100%",
+      "verify_l2_p0_integrity PASS 14/0",
+      "verify_allocation PASS",
+      "L2-P0 CLOSED: CreatePickTasks GeneratePicks via Allocation, interceptor, CHECK on_hand, DF-01, RESERVED_UNDERFLOW",
+      "L2 scores updated Inventory 86 Allocation 88",
+      "P37 unblocked",
+      "2026-07-22 dbm PASS browser 13/0 video walkthrough-l2-p0.webm",
+      "evidence planning/evidence/phase_36_dbm/walkthrough.md",
+      "DoD section 14 all checked",
+      "FE generate-picks pickTaskCount=1 PICKS_ALREADY_EXIST",
+      "P37 unblocked after dbm",
+      "2026-07-22 rp4+rp5 PASS Module DoD 100%",
+      "disk reindex FILE_FAIL=0 CONTENT_FAIL=0",
+      "function_index promoted to planning/",
+      "P37 unblocked — chờ FOUNDER Proceed",
+      "phase_36 section 25-26 closed"
+    ]
+  },
+  "L2 Generic WMS Foundation": {
+    "name": "L2 Generic WMS Foundation",
+    "entityType": "Acceptance",
+    "observations": [
+      "2026-07-22 P0 CLOSED after Phase 36",
+      "Simple 82.1 Weighted 86.9",
+      "Inventory 86 Allocation 88",
+      "Verdict L2 APPROVED P0 CLOSED — pilot via P37"
+    ]
+  },
+  "Phase 37 Go-Live L3 Customer Pilot": {
+    "name": "Phase 37 Go-Live L3 Customer Pilot",
+    "entityType": "Phase",
+    "observations": [
+      "2026-07-22 rp1 100% Ready",
+      "DEMO-GENERIC = logical seed on tenant 0001",
+      "API SoT: inbound/{id}/receive, inventory/move, outbound generate-picks/picks/packing",
+      "L3-UAT-08 via register tenant 0002",
+      "EP0-EP6 defined",
+      "chờ FOUNDER Proceed",
+      "2026-07-22 rp2 PASS critic 9.5",
+      "function_index_phase37_l3_pilot.md created",
+      "EP0-EP6 atomic with pack SKIP and restore PASS*",
+      "Windows docker exec pg_dump documented",
+      "chờ FOUNDER Proceed 18-auto-execute",
+      "2026-07-22 rp3 PASS 0 blind spot",
+      "BS-R3-01 Lot-HOLD separate",
+      "BS-R3-04 Register then Login for token",
+      "BS-R3-05 EP1 reuse products",
+      "EP5 order A-L locked in section 22",
+      "chờ FOUNDER Proceed 18-auto-execute"
+    ]
   }
 }
