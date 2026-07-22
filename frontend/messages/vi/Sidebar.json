@@ -1,5 +1,10 @@
 {
   "Sidebar": {
+    "navMode": {
+      "modules": "Modules",
+      "ops": "Vận hành",
+      "ariaLabel": "Chế độ nhóm sidebar"
+    },
     "groups": {
       "overview": "Tổng quan",
       "materials": "Vật tư & Đơn vị",
@@ -9,6 +14,11 @@
       "inbound": "Nhập kho",
       "outbound": "Xuất kho",
       "inventory": "Tồn kho",
+      "labor": "Lao động & Năng suất",
+      "opsInbound": "Nhập hàng",
+      "opsOutbound": "Xuất hàng",
+      "opsInventory": "Quản kho",
+      "opsOther": "Cấu hình & khác",
       "integration": "Tích hợp ERP",
       "system": "Hệ thống & Quyền"
     },

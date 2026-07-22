@@ -233,10 +233,11 @@ Ký hiệu: ✅ đủ tương đương hoặc mạnh hơn · ◐ một phần / 
 ## 8. Khuyến nghị tiếp theo
 
 1. **Giữ Nexustock là SoT product** — không quay lại WinForms GCM cho product mới.  
-2. Thay GCM Part (IQC): execute **Phase 34** — [`phase_34_iqc_ux_map_gcm.md`](phases/phase_34_iqc_ux_map_gcm.md) + [`IQC_UX_MAP_GCM_PART.md`](IQC_UX_MAP_GCM_PART.md).  
-3. Adapter Handy Keyence (nếu cần desktop parity) — wave riêng sau P34.  
-4. Locale `ja`/`zh` — mở rộng catalogs khi cần.  
-5. Ops: gói ký go-live production (P30 ngoài DoD code).
+2. Thay GCM Part (IQC): **Phase 34 ✅** — [`phase_34_iqc_ux_map_gcm.md`](phases/phase_34_iqc_ux_map_gcm.md).  
+3. Tiếp: xem misfit M1–M3 tại [`AUDIT_FEATURES_MISFIT_REFERENCE_WAREHOUSES.md`](AUDIT_FEATURES_MISFIT_REFERENCE_WAREHOUSES.md).  
+4. Adapter Handy Keyence (nếu cần desktop parity) — wave riêng.  
+5. Locale `ja`/`zh` — mở rộng catalogs khi cần.  
+6. Ops: gói ký go-live production (P30 ngoài DoD code).
 
 ---
 
@@ -252,3 +253,10 @@ Ký hiệu: ✅ đủ tương đương hoặc mạnh hơn · ◐ một phần / 
 ---
 
 **Chữ ký thẩm định:** JARVIS · 2026-07-22 · Status: **APPROVED — phù hợp tham chiếu / product closed**
+
+---
+
+## 10. Tài liệu tiếp nối
+
+- **Thẩm định misfit / không map 1:1 (sau P34):** [`AUDIT_FEATURES_MISFIT_REFERENCE_WAREHOUSES.md`](AUDIT_FEATURES_MISFIT_REFERENCE_WAREHOUSES.md)  
+  → Trả lời: tính năng nào *chưa phù hợp* để clone; M1–M4; điểm cập nhật **9.2/10**.

@@ -59,6 +59,7 @@ Giao diện sẽ chạy tại cổng `http://localhost:3003`.
 * Nhóm **MasterData** đã có: danh mục nền tảng (vật tư, UoM, kho, vùng, vị trí, đối tác, lý do, nhập CSV) hỗ trợ VI/EN.
 * Nhóm **Mobile** đã có: 7 màn cầm tay + vỏ shell + màn QC tùy chọn; nhóm **Errors** đủ mã lỗi ổn định cho toast có nhãn mã + nội dung (gồm mã chặn lô chưa đạt kiểm định).
 * **Kiểm định chất lượng (Phase 34):** `/admin/qc` hỗ trợ lọc/aging/lịch sử; cổng chặn move/pick khi lô chưa Release; `/mobile/qc` bật bằng công tắc `FF_MOBILE_QC`.
+* **Điều hướng thanh bên (Phase 35):** chuyển Modules ↔ Ops (Nhập / Xuất / Quản kho); ghi nhớ lựa chọn trên máy; cùng đường dẫn trang.
 * **Milestone 5**: **59/59** trang Web VI/EN, **0 backlog** localization product.
 
 ## 🩺 Endpoints kiểm tra sức khỏe

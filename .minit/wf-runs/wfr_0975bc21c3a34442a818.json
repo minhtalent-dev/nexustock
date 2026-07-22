@@ -1,0 +1,29 @@
+{
+  "runId": "wfr_0975bc21c3a34442a818",
+  "workflowId": "30-auto-project-planner",
+  "class": "planning",
+  "status": "completed",
+  "planRef": "planning/phases/phase_34_iqc_ux_map_gcm.md",
+  "planHash": "sha256:c06c154b9f299431e384016ef5605140232dfb9393ad2eb52446a4f6a66a7081",
+  "phaseId": "phase_35",
+  "startedAt": "2026-07-22T03:28:48.263Z",
+  "finishedAt": "2026-07-22T03:30:33.036Z",
+  "steps": [
+    {
+      "name": "start",
+      "at": "2026-07-22T03:28:48.263Z"
+    },
+    {
+      "name": "completed",
+      "at": "2026-07-22T03:30:33.036Z"
+    }
+  ],
+  "evidence": [
+    "planning/phases/phase_35_admin_nav_ops_modules_lens.md",
+    "planning/function_index_phase35_admin_nav_lens.md",
+    "planning/IMPLEMENTATION_PLAN.md",
+    "planning/evidence/phase_35_plan/walkthrough.md"
+  ],
+  "decidedBy": "FOUNDER",
+  "uxHint": null
+}

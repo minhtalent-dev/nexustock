@@ -2,7 +2,7 @@
 
 Dự án **Nexustock** là giải pháp quản lý - vận hành kho thế hệ mới, thay thế hệ thống desktop cũ bằng nền tảng Web SPA Next.js hiện đại (kết hợp Tailwind CSS, Shadcn UI), PostgreSQL độc lập, hỗ trợ Redis Cache (optional, recommended) cho backend và roadmap triển khai theo chuẩn WMS production.
 
-Roadmap dùng mô hình **4 stage / 33 phase nhỏ (+ Phase 31a catalog modules)**. Mỗi phase là một deliverable độc lập, có đủ setup, database, backend/API, frontend/RF/mobile, execution flow, validation, exception, observability, test, acceptance, maintenance, extension và rollback.
+Roadmap dùng mô hình **4 stage / 35 phase nhỏ (+ Phase 31a catalog modules)**. Mỗi phase là một deliverable độc lập, có đủ setup, database, backend/API, frontend/RF/mobile, execution flow, validation, exception, observability, test, acceptance, maintenance, extension và rollback.
 
 ---
 
@@ -77,6 +77,7 @@ gantt
     Phase 32: i18n Master-data           :p32, after p31a, 4d
     Phase 33: i18n Mobile+Errors+Close   :p33, after p32, 4d
     Phase 34: IQC UX Map GCM Part        :p34, after p33, 4d
+    Phase 35: Admin Nav Ops↔Modules Lens :p35, after p34, 3d
 ```
 ### Critical Path
 
@@ -176,6 +177,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 32 | [Localization Master-data](file:///d:/1_Project/48_Nexustock/planning/phases/phase_32_localization_master_data.md) | **8/8** MD; chỉ `MasterData.json` + semantic keys. |
 | 33 | [Localization Mobile + Errors + Close](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) | **7/7** mobile + `Mobile.json`/`Errors.json`; khóa **59/59 + 0 backlog**. |
 | 34 | [IQC UX Map GCM Part → Nexustock](file:///d:/1_Project/48_Nexustock/planning/phases/phase_34_iqc_ux_map_gcm.md) | Map form IQC GCM; `QcGate`; queue/history UX; optional mobile QC; UAT/training. |
+| 35 | [Admin Nav Ops ↔ Modules Lens](file:///d:/1_Project/48_Nexustock/planning/phases/phase_35_admin_nav_ops_modules_lens.md) | Toggle Modules/Ops; polish Labor+RMA+Utilities; i18n Sidebar; parity href. **✅ ĐÓNG** (`rp4`+`rp5` 2026-07-22). |
 
 ---
 
@@ -183,7 +185,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 
 > **Hướng dẫn:** Khi hoàn thành một phase, cập nhật trạng thái thành `✅ Hoàn thành`, điền ngày hoàn thành và tóm tắt thông tin đã thực hiện vào cột tương ứng.
 
-### Lộ trình 33 Phase triển khai chi tiết
+### Lộ trình 35 Phase triển khai chi tiết
 
 | Phase | Phân hệ / Tính năng | Trạng thái | Nội dung chính và kết quả kiểm thử | Ngày hoàn thành | Ghi chú vận hành / Rollback plan |
 |:---:|---|:---:|---|---|---|
@@ -222,6 +224,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 32 | Localization Master-data | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-21: Module DoD **100%**. verify 32 PASS; dbm 16/16; 8/8 MD + CRUD. | 2026-07-21 | [phase_32 §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_32_localization_master_data.md) |
 | 33 | Localization Mobile + Errors + Close | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-22: Module DoD **100%**. verify 33 PASS; DBM **14/14**; Milestone 5 **59/59**; disk FAIL_COUNT=0. | 2026-07-22 | [phase_33 §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) |
 | 34 | IQC UX Map GCM Part → Nexustock | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-22. Disk FAIL=0; verify 16/16; dbm 13/13. | 2026-07-22 | [phase_34 §21–§22](file:///d:/1_Project/48_Nexustock/planning/phases/phase_34_iqc_ux_map_gcm.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_34_dbm/walkthrough.md) |
+| 35 | Admin Nav Ops ↔ Modules Lens | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-22. Disk FAIL=0; verify PASS; dbm 14/14 + video. | 2026-07-22 | [phase_35 §26–§27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_35_admin_nav_ops_modules_lens.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_35_dbm/walkthrough.md) |
 
 ### Quy ước trạng thái
 

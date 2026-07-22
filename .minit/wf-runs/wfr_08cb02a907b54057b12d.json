@@ -1,0 +1,28 @@
+{
+  "runId": "wfr_08cb02a907b54057b12d",
+  "workflowId": "05-validate",
+  "class": "execute",
+  "status": "completed",
+  "planRef": "planning/phases/phase_35_admin_nav_ops_modules_lens.md",
+  "planHash": "sha256:55db43a1b9be4a526c5d074d642ffe6a486705c2722a220de9d0628703a1e66d",
+  "phaseId": "phase_35",
+  "startedAt": "2026-07-22T05:50:53.784Z",
+  "finishedAt": "2026-07-22T05:50:57.228Z",
+  "steps": [
+    {
+      "name": "start",
+      "at": "2026-07-22T05:50:53.784Z"
+    },
+    {
+      "name": "completed",
+      "at": "2026-07-22T05:50:57.228Z"
+    }
+  ],
+  "evidence": [
+    "planning/evidence/phase_35_dbm/results.json",
+    "planning/evidence/phase_35_dbm/walkthrough.md",
+    "tests/verify_nav_lens.ps1"
+  ],
+  "decidedBy": "FOUNDER",
+  "uxHint": null
+}

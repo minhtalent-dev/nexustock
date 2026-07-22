@@ -25,11 +25,11 @@
   },
   "quality": {
     "status": "in_progress",
-    "updatedAt": "2026-07-22T02:54:51.069Z",
+    "updatedAt": "2026-07-22T05:50:45.765Z",
     "blockers": [],
     "evidenceMode": "attested",
     "critiqueStatus": "pending",
-    "critiqueUpdatedAt": "2026-07-22T02:54:51.069Z"
+    "critiqueUpdatedAt": "2026-07-22T05:50:45.765Z"
   },
   "security": {
     "status": "failed",

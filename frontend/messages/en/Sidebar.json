@@ -1,5 +1,10 @@
 {
   "Sidebar": {
+    "navMode": {
+      "modules": "Modules",
+      "ops": "Ops",
+      "ariaLabel": "Sidebar grouping mode"
+    },
     "groups": {
       "overview": "Overview",
       "materials": "Products & UoM",
@@ -9,6 +14,11 @@
       "inbound": "Inbound",
       "outbound": "Outbound",
       "inventory": "Inventory",
+      "labor": "Labor & Productivity",
+      "opsInbound": "Inbound ops",
+      "opsOutbound": "Outbound ops",
+      "opsInventory": "Inventory ops",
+      "opsOther": "Config & other",
       "integration": "ERP Integration",
       "system": "System & Access"
     },

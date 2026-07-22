@@ -6,156 +6,23 @@ import clsx from "clsx";
 import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  Home,
-  Activity,
-  Package,
-  Ruler,
-  Warehouse,
-  Grid3X3,
-  MapPin,
-  Users,
-  Tag,
-  Upload,
-  ChevronDown,
-  Shield,
-  Lock,
-  FileText,
-  LogOut,
-  ClipboardList,
-  Archive,
-  CheckSquare,
-  Box,
-  Truck,
-  ClipboardCheck,
-  AlertCircle,
-  Sliders,
-  Layers,
-  RefreshCw,
-  GitFork,
-  Monitor,
-  Zap,
-  Clock,
-  BarChart3,
-  ShieldCheck,
-  GitBranch,
-} from "lucide-react";
+import { ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/language-switcher";
-
-type LinkItem = {
-  href: string;
-  labelKey: string;
-  icon: React.ComponentType<{ className?: string }>;
-  permission?: string;
-};
-
-type NavGroupDef = {
-  titleKey: string;
-  links: LinkItem[];
-};
-
-const navGroupDefs: NavGroupDef[] = [
-  {
-    titleKey: "overview",
-    links: [
-      { href: "/", labelKey: "home", icon: Home },
-      { href: "/health-ui", labelKey: "healthUi", icon: Activity },
-    ],
-  },
-  {
-    titleKey: "materials",
-    links: [
-      { href: "/master-data/products", labelKey: "products", icon: Package, permission: "MasterData.Products.View" },
-      { href: "/master-data/uoms", labelKey: "uoms", icon: Ruler, permission: "MasterData.Uoms.View" },
-    ],
-  },
-  {
-    titleKey: "warehouse",
-    links: [
-      { href: "/master-data/warehouses", labelKey: "warehouses", icon: Warehouse, permission: "MasterData.Warehouses.View" },
-      { href: "/master-data/zones", labelKey: "zones", icon: Grid3X3, permission: "MasterData.Zones.View" },
-      { href: "/master-data/locations", labelKey: "locations", icon: MapPin, permission: "MasterData.Locations.View" },
-    ],
-  },
-  {
-    titleKey: "partners",
-    links: [
-      { href: "/master-data/partners", labelKey: "partners", icon: Users, permission: "MasterData.Partners.View" },
-      { href: "/master-data/reasons", labelKey: "reasons", icon: Tag, permission: "MasterData.Reasons.View" },
-      { href: "/admin/rma", labelKey: "rma", icon: RefreshCw, permission: "rma.read" },
-    ],
-  },
-  {
-    titleKey: "utilities",
-    links: [
-      { href: "/master-data/import", labelKey: "import", icon: Upload, permission: "MasterData.Imports.Preview" },
-    ],
-  },
-  {
-    titleKey: "inbound",
-    links: [
-      { href: "/admin/inbound", labelKey: "inbound", icon: ClipboardList, permission: "Inbound.Orders.View" },
-      { href: "/admin/lots", labelKey: "lots", icon: Archive, permission: "Inbound.Lots.View" },
-      { href: "/admin/qc", labelKey: "qc", icon: CheckSquare, permission: "Qc.Queue.View" },
-      { href: "/admin/putaway", labelKey: "putaway", icon: MapPin, permission: "putaway_slotting.read" },
-    ],
-  },
-  {
-    titleKey: "outbound",
-    links: [
-      { href: "/admin/outbound", labelKey: "outbound", icon: Truck, permission: "Outbound.Shipments.View" },
-      { href: "/admin/allocation", labelKey: "allocation", icon: Layers, permission: "allocation_reservation.read" },
-      { href: "/admin/waves", labelKey: "waves", icon: Layers, permission: "Wave.Manage" },
-      { href: "/admin/cross-docking", labelKey: "crossDocking", icon: Zap, permission: "cross_docking.read" },
-    ],
-  },
-  {
-    titleKey: "inventory",
-    links: [
-      { href: "/admin/inventory", labelKey: "inventory", icon: Box, permission: "Inventory.Balances.View" },
-      { href: "/admin/inventory/stocktakes", labelKey: "stocktakes", icon: ClipboardCheck, permission: "Inventory.CycleCount.View" },
-      { href: "/admin/exceptions", labelKey: "exceptions", icon: AlertCircle, permission: "exception_framework_mvp.read" },
-      { href: "/admin/replenishment", labelKey: "replenishment", icon: RefreshCw, permission: "replenishment.read" },
-      { href: "/admin/lpn", labelKey: "lpn", icon: Layers, permission: "lpn.read" },
-      { href: "/admin/serial", labelKey: "serial", icon: ClipboardList, permission: "serial.read" },
-      { href: "/admin/genealogy", labelKey: "genealogy", icon: GitFork, permission: "material_genealogy.read" },
-      { href: "/admin/labor", labelKey: "labor", icon: BarChart3, permission: "labor_tracking.read" },
-      { href: "/admin/labor/sessions", labelKey: "laborSessions", icon: Clock, permission: "labor_tracking.read" },
-      { href: "/admin/task-interleaving", labelKey: "taskInterleaving", icon: Layers, permission: "task_interleaving.read" },
-    ],
-  },
-  {
-    titleKey: "integration",
-    links: [
-      { href: "/admin/integrations/messages", labelKey: "integrationMessages", icon: FileText, permission: "integration.view" },
-      { href: "/admin/integrations/mappings", labelKey: "integrationMappings", icon: GitFork, permission: "integration.view" },
-      { href: "/admin/integrations/import", labelKey: "integrationImport", icon: Upload, permission: "integration.import" },
-      { href: "/admin/webhooks/subscriptions", labelKey: "webhookSubscriptions", icon: Layers, permission: "webhook.manage" },
-      { href: "/admin/webhooks/deliveries", labelKey: "webhookDeliveries", icon: ClipboardList, permission: "webhook.manage" },
-    ],
-  },
-  {
-    titleKey: "system",
-    links: [
-      { href: "/admin/users", labelKey: "users", icon: Shield, permission: "Identity.Users.View" },
-      { href: "/admin/roles", labelKey: "roles", icon: Lock, permission: "Identity.Roles.View" },
-      { href: "/admin/rules", labelKey: "rules", icon: Sliders, permission: "rule_engine_foundation.read" },
-      { href: "/admin/audit", labelKey: "audit", icon: FileText, permission: "Identity.Audit.View" },
-      { href: "/admin/local-agent", labelKey: "localAgent", icon: Monitor, permission: "local_agent.view" },
-      { href: "/admin/observability", labelKey: "observability", icon: Activity, permission: "observability.read" },
-      { href: "/admin/observability/alerts", labelKey: "alerts", icon: AlertCircle, permission: "observability.read" },
-      { href: "/admin/observability/timeline", labelKey: "timeline", icon: ClipboardList, permission: "observability.read" },
-      { href: "/admin/readiness", labelKey: "readiness", icon: ShieldCheck, permission: "readiness.read" },
-      { href: "/admin/cutover", labelKey: "cutover", icon: GitBranch, permission: "readiness.read" },
-    ],
-  },
-];
+import { MODULES_GROUPS } from "@/components/nav/nav-groups-modules";
+import { OPS_GROUPS } from "@/components/nav/nav-groups-ops";
+import {
+  collapseKey,
+  loadNavMode,
+  saveNavMode,
+  type NavMode,
+} from "@/components/nav/nav-mode";
+import { resolveLinks, type NavLinkDef } from "@/components/nav/nav-registry";
 
 type NavGroup = {
   titleKey: string;
   title: string;
-  links: Array<LinkItem & { label: string }>;
+  links: Array<NavLinkDef & { label: string }>;
 };
 
 function isGroupActive(group: NavGroup, pathname: string, userPermissions: string[]): boolean {
@@ -191,51 +58,70 @@ export default function AppSidebar() {
   const t = useTranslations("Sidebar");
   const tc = useTranslations("Common.actions");
 
-  const navGroups: NavGroup[] = useMemo(
-    () =>
-      navGroupDefs.map((g) => ({
-        titleKey: g.titleKey,
-        title: t(`groups.${g.titleKey}`),
-        links: g.links.map((link) => ({
-          ...link,
-          label: t(`links.${link.labelKey}`),
-        })),
+  const [navMode, setNavMode] = useState<NavMode>("modules");
+
+  const navGroups: NavGroup[] = useMemo(() => {
+    const specs = navMode === "ops" ? OPS_GROUPS : MODULES_GROUPS;
+    return specs.map((g) => ({
+      titleKey: g.titleKey,
+      title: t(`groups.${g.titleKey}`),
+      links: resolveLinks(g.linkIds).map((link) => ({
+        ...link,
+        label: t(`links.${link.labelKey}`),
       })),
-    [t]
-  );
+    }));
+  }, [navMode, t]);
 
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
-    const saved = loadCollapsed();
-    const initial: Record<string, boolean> = {};
-    navGroupDefs.forEach((g) => {
-      if (g.titleKey in saved) {
-        initial[g.titleKey] = saved[g.titleKey];
-      } else {
-        initial[g.titleKey] = true;
-      }
-    });
-    return initial;
-  });
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
+  // Hydrate navMode từ localStorage (SSR-safe)
   useEffect(() => {
-    queueMicrotask(() => {
+    setNavMode(loadNavMode());
+  }, []);
+
+  // Effect A: đổi mode → seed collapsed theo prefix mới
+  useEffect(() => {
+    const saved = loadCollapsed();
+    const next: Record<string, boolean> = {};
+    for (const g of navGroups) {
+      const k = collapseKey(navMode, g.titleKey);
+      if (k in saved) next[k] = saved[k];
+      else next[k] = !isGroupActive(g, pathname, permissions);
+    }
+    setCollapsed((prev) => ({ ...prev, ...next }));
+    saveCollapsed({ ...saved, ...next });
+    // Chỉ re-seed khi đổi mode / danh sách group theo mode
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [navMode, navGroups]);
+
+  // Effect B: pathname/permissions — chỉ bổ sung key thiếu
+  useEffect(() => {
+    setCollapsed((prev) => {
       const saved = loadCollapsed();
-      const initial: Record<string, boolean> = {};
-      navGroups.forEach((g) => {
-        if (g.titleKey in saved) {
-          initial[g.titleKey] = saved[g.titleKey];
-        } else {
-          initial[g.titleKey] = !isGroupActive(g, pathname, permissions);
+      let changed = false;
+      const next = { ...prev };
+      for (const g of navGroups) {
+        const k = collapseKey(navMode, g.titleKey);
+        if (!(k in next)) {
+          next[k] = k in saved ? saved[k] : !isGroupActive(g, pathname, permissions);
+          changed = true;
         }
-      });
-      setCollapsed(initial);
+      }
+      if (changed) saveCollapsed({ ...saved, ...next });
+      return changed ? next : prev;
     });
-  }, [permissions, pathname, navGroups]);
+  }, [pathname, permissions, navGroups, navMode]);
+
+  const onSelectMode = (next: NavMode) => {
+    setNavMode(next);
+    saveNavMode(next);
+  };
 
   const toggle = (titleKey: string) => {
+    const k = collapseKey(navMode, titleKey);
     setCollapsed((prev) => {
-      const next = { ...prev, [titleKey]: !prev[titleKey] };
-      saveCollapsed(next);
+      const next = { ...prev, [k]: !prev[k] };
+      saveCollapsed({ ...loadCollapsed(), ...next });
       return next;
     });
   };
@@ -258,13 +144,47 @@ export default function AppSidebar() {
         </span>
       </Link>
 
+      <div
+        role="group"
+        aria-label={t("navMode.ariaLabel")}
+        className="mb-4 flex gap-1 rounded-lg border border-zinc-800 p-1"
+      >
+        <button
+          type="button"
+          data-testid="nav-mode-modules"
+          onClick={() => onSelectMode("modules")}
+          className={clsx(
+            "flex-1 rounded-md px-2 py-1.5 text-xs font-semibold",
+            navMode === "modules"
+              ? "bg-emerald-500/15 text-emerald-400"
+              : "text-zinc-500 hover:text-zinc-300"
+          )}
+        >
+          {t("navMode.modules")}
+        </button>
+        <button
+          type="button"
+          data-testid="nav-mode-ops"
+          onClick={() => onSelectMode("ops")}
+          className={clsx(
+            "flex-1 rounded-md px-2 py-1.5 text-xs font-semibold",
+            navMode === "ops"
+              ? "bg-emerald-500/15 text-emerald-400"
+              : "text-zinc-500 hover:text-zinc-300"
+          )}
+        >
+          {t("navMode.ops")}
+        </button>
+      </div>
+
       <div className="flex-1 flex flex-col gap-1 overflow-y-auto pr-1">
         {filteredGroups.map((group) => {
           const active = isGroupActive(group, pathname, permissions);
-          const isOpen = !collapsed[group.titleKey];
+          const ck = collapseKey(navMode, group.titleKey);
+          const isOpen = !collapsed[ck];
 
           return (
-            <div key={group.titleKey} className="mb-1">
+            <div key={`${navMode}:${group.titleKey}`} className="mb-1">
               <Button
                 onClick={() => toggle(group.titleKey)}
                 variant="ghost"
@@ -286,7 +206,9 @@ export default function AppSidebar() {
               <div
                 className={clsx(
                   "overflow-hidden transition-all duration-200 ease-in-out",
-                  isOpen ? "max-h-96 opacity-100 mt-1" : "max-h-0 opacity-0"
+                  isOpen
+                    ? "max-h-[min(28rem,70vh)] overflow-y-auto opacity-100 mt-1"
+                    : "max-h-0 opacity-0"
                 )}
               >
                 <nav className="flex flex-col gap-1 pl-1">
@@ -296,7 +218,7 @@ export default function AppSidebar() {
                       (link.href !== "/" && pathname.startsWith(link.href));
                     return (
                       <Link
-                        key={link.href}
+                        key={link.id}
                         href={link.href}
                         className={clsx(
                           "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors",

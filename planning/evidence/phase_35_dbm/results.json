@@ -1,0 +1,80 @@
+{
+  "pass": 14,
+  "fail": 0,
+  "results": [
+    {
+      "id": "API-LIVE",
+      "status": "PASS",
+      "note": "GET /health/live → 200"
+    },
+    {
+      "id": "LOGIN",
+      "status": "PASS",
+      "note": "admin login OK"
+    },
+    {
+      "id": "AC-35-01",
+      "status": "PASS",
+      "note": "toggle Modules/Ops visible"
+    },
+    {
+      "id": "AC-35-05",
+      "status": "PASS",
+      "note": "labor=true rma=true import=true noUtilities=true"
+    },
+    {
+      "id": "AC-35-03",
+      "status": "PASS",
+      "note": "url stable http://localhost:3003/admin/qc"
+    },
+    {
+      "id": "AC-35-06",
+      "status": "PASS",
+      "note": "in=true out=true inv=true other=true"
+    },
+    {
+      "id": "AC-35-02",
+      "status": "PASS",
+      "note": "localStorage=ops"
+    },
+    {
+      "id": "AC-35-DEEP",
+      "status": "PASS",
+      "note": "deep-link qc url; activeHint=true"
+    },
+    {
+      "id": "AC-35-02b",
+      "status": "PASS",
+      "note": "persist after F5=modules"
+    },
+    {
+      "id": "AC-35-08a",
+      "status": "PASS",
+      "note": "VI labor group=true"
+    },
+    {
+      "id": "AC-35-08b",
+      "status": "PASS",
+      "note": "VI opsInbound=true toggleLabel=Vận hành"
+    },
+    {
+      "id": "AC-35-07",
+      "status": "PASS",
+      "note": "admin still sees QC link=true"
+    },
+    {
+      "id": "AC-35-MOUNT",
+      "status": "PASS",
+      "note": "toggle on master-data layout"
+    },
+    {
+      "id": "AC-35-10",
+      "status": "PASS",
+      "note": "shots+video captured"
+    }
+  ],
+  "base": "http://localhost:3003",
+  "api": "http://localhost:5024",
+  "video": "walkthrough-nav-lens.webm",
+  "at": "2026-07-22T05:56:40.778Z"
+}

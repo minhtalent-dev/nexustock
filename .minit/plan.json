@@ -1,10 +1,10 @@
 {
-  "planRef": "planning/phases/phase_34_iqc_ux_map_gcm.md",
-  "planHash": "sha256:c06c154b9f299431e384016ef5605140232dfb9393ad2eb52446a4f6a66a7081",
+  "planRef": "planning/phases/phase_35_admin_nav_ops_modules_lens.md",
+  "planHash": "sha256:55db43a1b9be4a526c5d074d642ffe6a486705c2722a220de9d0628703a1e66d",
   "status": "approved",
-  "phaseId": "phase_34",
-  "boundAt": "2026-07-22T02:44:58.034Z",
+  "phaseId": "phase_35",
+  "boundAt": "2026-07-22T05:50:40.805Z",
   "approvedBy": "FOUNDER",
-  "approvedAt": "2026-07-22T02:45:01.990Z",
-  "updatedAt": "2026-07-22T02:45:01.990Z"
+  "approvedAt": "2026-07-22T05:50:45.402Z",
+  "updatedAt": "2026-07-22T05:50:45.403Z"
 }
