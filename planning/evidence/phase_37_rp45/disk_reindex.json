@@ -1,0 +1,95 @@
+﻿{
+    "pass":  21,
+    "fail":  0,
+    "verify_l3":  "12/0",
+    "at":  "2026-07-22T16:26:41.8696690+07:00",
+    "phase":  37,
+    "rows":  [
+                 {
+                     "path":  "tests/seed/demo_generic_tenant.ps1",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "tests/verify_l3_pilot_smoke.ps1",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "tests/helpers/dbm_phase37_l3_pilot_browser.mjs",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37/uat_signoff.md",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37/cutover_runbook_pilot.md",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37/rollback_rehearsal.md",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37/hypercare.md",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37/ac_pack_status.json",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37/verify_l3_results.json",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37/seed_summary.json",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37/validation_pass.md",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37_dbm/walkthrough.md",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37_dbm/walkthrough-l3-pilot.webm",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37_dbm/results.json",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/function_index_phase37_l3_pilot.md",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37_dbm/shots/05-mobile-movement.png",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "planning/evidence/phase_37_dbm/shots/07-mobile-movement-fixed.png",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "scripts/db-backup.sh",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "scripts/db-restore.sh",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "NO_ASCHILD_mobile_stocktakes",
+                     "status":  "PASS"
+                 },
+                 {
+                     "path":  "movement_render_Link",
+                     "status":  "PASS"
+                 }
+             ],
+    "verify_l2":  "14/0",
+    "workflow":  "rp4_rp5"
+}

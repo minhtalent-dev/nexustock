@@ -73,10 +73,13 @@ export default function NewStocktakePage() {
   return (
     <div className="space-y-6 p-6 max-w-2xl mx-auto">
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/admin/inventory/stocktakes">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          render={<Link href="/admin/inventory/stocktakes" />}
+          nativeButton={false}
+        >
+          <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-2xl font-bold">{t("newTitle")}</h1>
       </div>
@@ -125,8 +128,13 @@ export default function NewStocktakePage() {
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" type="button" asChild>
-                <Link href="/admin/inventory/stocktakes">{tc("cancel")}</Link>
+              <Button
+                variant="outline"
+                type="button"
+                render={<Link href="/admin/inventory/stocktakes" />}
+                nativeButton={false}
+              >
+                {tc("cancel")}
               </Button>
               <Button type="submit" disabled={submitting} className="gap-2">
                 <Save className="h-4 w-4" />

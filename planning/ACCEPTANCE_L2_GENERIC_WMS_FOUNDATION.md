@@ -118,7 +118,7 @@ Evidence: `planning/evidence/phase_36/` · verify_l2_p0 **14/0**.
 | Câu hỏi FOUNDER | Trả lời |
 |---|---|
 | Đủ làm **nền cho công ty khác**? | **Có** — L2 Weighted **86.9**, Simple **82.1** (sau P36) |
-| Đủ bật production multi-site ngay? | **Chưa** — cần P37 L3 (UAT/cutover) |
+| Đủ bật production multi-site ngay? | **Chưa** — P37 `PILOT_READY_CONDITIONAL`; FOUNDER ký PASS* + (tuỳ chọn) restore/pack thật |
 | P0 integrity? | **CLOSED** Phase 36 |
 
 **Chữ ký JARVIS:** 2026-07-22 · **L2 APPROVED — P0 CLOSED** · Simple **82.1** · Weighted **86.9**
@@ -131,7 +131,7 @@ Evidence: `planning/evidence/phase_36/` · verify_l2_p0 **14/0**.
 | Phase | File | Maturity | Ghi chú |
 |---|---|---|---|
 | **36** L2-P0 | `phases/phase_36_inventory_integrity_l2_p0.md` | **✅ ĐÓNG** `rp4`+`rp5` DoD 100% | verify 14/0 · dbm 13/0 · [walkthrough](./evidence/phase_36_dbm/walkthrough.md) |
-| **37** L3 Pilot | `phases/phase_37_golive_l3_customer_pilot.md` | **✅ 100% Ready** (`rp1`+`rp2`+`rp3`) | EP0–EP6 · [function_index](./function_index_phase37_l3_pilot.md) · chờ Proceed |
+| **37** L3 Pilot | `phases/phase_37_golive_l3_customer_pilot.md` | **✅ Module DoD 100% · PILOT_READY_CONDITIONAL** | `rp4`+`rp5` · [rp45](./evidence/phase_37_rp45/validation_pass.md) · [dbm](./evidence/phase_37_dbm/walkthrough.md) |
 | **38** UI Option B | `phases/phase_38_ui_design_system_pass.md` | **95%** | Không block P36 |
 
 Thứ tự: `P36 → P37` · `P38` song song/sau.

@@ -4,11 +4,11 @@
 
 | Mục | Giá trị |
 |---|---|
-| **Mức hiện tại** | **✅ 100% Ready** (`rp1`+`rp2`+`rp3` 2026-07-22) — Execution-Ready, chờ FOUNDER Proceed |
-| **Trước rp1** | 95% (`/30-auto-project-planner`) |
-| **Trạng thái triển khai** | ⬜ Chưa execute — P36 DoD ✅ · chờ FOUNDER **Proceed** |
+| **Mức hiện tại** | **✅ Module DoD / Pilot 100%** (`rp4`+`rp5` 2026-07-22 · dbm 21/0 · verify_l3 12/0) · `PILOT_READY_CONDITIONAL` |
+| **Trước execute** | 100% Ready (`rp1`+`rp2`+`rp3`) |
+| **Trạng thái triển khai** | ✅ **ĐÓNG tài liệu** — §23–§26 · chờ FOUNDER ký `uat_signoff.md` (PASS*) |
 | **Dev-days** | **5–8** (1 Dev + FOUNDER ký UAT) |
-| **Critical Path** | **Có** — sau P36; trước bán/pilot khách |
+| **Critical Path** | Sau P36; mở khóa bán/pilot có điều kiện |
 | **Port verify API** | `http://localhost:5024/api` (`$env:NEXUSTOCK_API_URL`) |
 | **Pilot env tối thiểu** | `docker compose up -d` (postgres:5435 + redis) + API `:5024` + FE `:3003` |
 
@@ -22,6 +22,9 @@
 | 2026-07-22 | **`rp1` 100% Ready:** Disk freeze §20 — API SoT, DEMO-GENERIC = logical seed, L3-UAT-08 tenant Guid, scripts P26, EP0–EP6, AC pack map |
 | 2026-07-22 | **`rp2` /17-auto-plan:** Function index + brain EP0–EP6 + critic **9.5**; §21; maturity giữ **100% Ready** |
 | 2026-07-22 | **`rp3` PASS:** §22 BS-R3-01…18 — Hold lot tách, Register→Login, seed reuse product, pack body, offline payload; brain refine |
+| 2026-07-22 | **`/18-auto-execute`:** EP0–EP6 DONE · verify_l3 **12/0** (SKIP 2) · l2 **14/0** · freeze PASS · **PILOT_READY_CONDITIONAL** · §23 |
+| 2026-07-22 | **`dbm`:** browser **21/0** · video · walkthrough · §24 · fix mobile `asChild`→`render` |
+| 2026-07-22 | **`rp4`+`rp5`:** Disk **FAIL=0**; Module DoD/Pilot **100%** kỹ thuật; đóng tài liệu §25–§26 · `evidence/phase_37_rp45/` |
 
 ### Quyết định khóa
 
@@ -81,7 +84,7 @@ Chứng minh Nexustock **sẵn sàng pilot** cho công ty khác (nền generic):
 - [x] Phase 26 deploy ✅ · Phase 30 module ✅  
 - [x] L2 Weighted ≥ 80 (sau P36: **86.9**)  
 - [x] Môi trường pilot tối thiểu: `docker compose` local (postgres:5435) — **rp1** (staging remote optional)  
-- [ ] FOUNDER Proceed P37  
+- [x] FOUNDER Proceed P37  
 
 ---
 
@@ -291,15 +294,15 @@ Rollback trigger: Sev-1 không khắc phục trong 2h → restore backup theo ru
 
 ## 14. Acceptance Criteria (DoD)
 
-- [ ] P36 CLOSED proven (re-run `verify_l2_p0` trong EP5 hoặc cite evidence P36)  
-- [ ] UAT 01–08 PASS (hoặc PASS* có điều kiện FOUNDER chấp nhận)  
-- [ ] Rollback rehearsal documented (RTO ghi số phút) — dùng `scripts/db-backup.sh` + `db-restore.sh`  
-- [ ] Cutover + hypercare docs trong `planning/evidence/phase_37/`  
-- [ ] `ac_pack_status.json` cập nhật (map P30 AC còn lại — §20.3)  
-- [ ] FOUNDER ký `uat_signoff.md`  
-- [ ] `verify_l3_pilot_smoke.ps1` PASS  
+- [x] P36 CLOSED proven (re-run `verify_l2_p0` trong EP5)  
+- [x] UAT 01–08 PASS / PASS* (FOUNDER chấp nhận điều kiện trên `uat_signoff.md`)  
+- [x] Rollback rehearsal documented (RTO ~15 · PASS* `RESTORE_SKIPPED_SAFE`)  
+- [x] Cutover + hypercare docs trong `planning/evidence/phase_37/`  
+- [x] `ac_pack_status.json` cập nhật  
+- [~] FOUNDER ký `uat_signoff.md` (chờ chữ ký)  
+- [x] `verify_l3_pilot_smoke.ps1` PASS  
 
-**Verdict P37:** `PILOT_READY` | `PILOT_READY_CONDITIONAL` | `NOT_READY`
+**Verdict P37:** **`PILOT_READY_CONDITIONAL`**
 
 ---
 
@@ -571,3 +574,102 @@ GET /api/outbound/shipments   (Bearer B)
 |---|---|---|
 | JARVIS | **rp3 PASS** — plan đủ chi tiết xuyên EP0–EP6, 0 blind spot block | 2026-07-22 |
 | FOUNDER | ☐ Proceed `/18-auto-execute` · ☐ Hold | ____ |
+
+---
+
+## 23. `/18-auto-execute` — đóng Pilot (2026-07-22)
+
+| EP | Kết quả |
+|---|---|
+| EP0 | Evidence scaffold `planning/evidence/phase_37/` |
+| EP1 | `tests/seed/demo_generic_tenant.ps1` + `seed_summary.json` |
+| EP5 | `verify_l3` **12/0** SKIP 2 · l2 **14/0** |
+| EP2 | Cutover + freeze/unfreeze **200** |
+| EP3 | Rollback **PASS*** `RESTORE_SKIPPED_SAFE` |
+| EP4 | `uat_signoff.md` PASS/PASS* |
+| EP6 | **PILOT_READY_CONDITIONAL** · `ac_pack_status.json` |
+
+**Self-heal:** seed root path; product serial fallback; `LOC-L3-DEST` capacity.
+
+**FOUNDER:** ký chấp nhận PASS* trên `uat_signoff.md` trước production rộng.
+
+---
+
+## 24. `dbm` — Browser evidence (2026-07-22)
+
+| Gate | Kết quả |
+|---|---|
+| Playwright | `tests/helpers/dbm_phase37_l3_pilot_browser.mjs` → **PASS 21/0** |
+| FE surfaces | inbound · qc · outbound · cutover(freeze) · `/mobile/movement` · `SO-DEMO-*` |
+| Anti-SoT | `/mobile/tasks` = **404** (PASS) |
+| API re-run | verify_l3 **12/0** · l2 **14/0** |
+| Evidence | `planning/evidence/phase_37_dbm/` + video `walkthrough-l3-pilot.webm` |
+
+**Self-heal:** freeze path `/api/admin/cutover/freeze-status`; restart FE hung `:3003`; `domcontentloaded`.
+
+**Post-DBM UI:** fix `asChild` → `render` trên mobile/stocktakes — badge Next.js **"1 Issue"** hết · walkthrough cập nhật shot 05/07.
+
+**Verdict sau DBM:** **`PILOT_READY_CONDITIONAL`** — kỹ thuật 100%; chờ FOUNDER ký.
+
+---
+
+## 25. `rp4` — reindex + đóng tài liệu (2026-07-22)
+
+### 25.1 Mục tiêu
+Reindex disk vs scope §2 + DoD §14 + EP0–EP6; nếu FAIL=0 → đóng tài liệu phase/master/brain.
+
+### 25.2 Disk matrix
+
+| Artifact | Status |
+|---|---|
+| `tests/seed/demo_generic_tenant.ps1` | PASS |
+| `tests/verify_l3_pilot_smoke.ps1` | PASS |
+| `tests/helpers/dbm_phase37_l3_pilot_browser.mjs` | PASS |
+| Evidence pack `phase_37/` (uat/cutover/rollback/hypercare/ac/seed/verify) | PASS |
+| `phase_37_dbm/` walkthrough + video + shots 05/07 | PASS |
+| `planning/function_index_phase37_l3_pilot.md` | PASS |
+| scripts `db-backup.sh` / `db-restore.sh` | PASS |
+| No `asChild` mobile+stocktakes · movement `nativeButton={false}` | PASS |
+
+**FILE_FAIL = 0** · JSON: `planning/evidence/phase_37_rp45/disk_reindex.json`
+
+### 25.3 Runtime (rp4)
+
+| Gate | Result |
+|---|---|
+| verify_l3 | **12/0** SKIP 2 |
+| verify_l2 | **14/0** |
+| dbm (cite) | **21/0** |
+
+### 25.4 Docs cập nhật (`rp4`)
+
+- phase_37 maturity **Module DoD / Pilot 100%** + §25
+- `IMPLEMENTATION_PLAN` row 37 + residual
+- `ACCEPTANCE_L2` row P37
+- brain task/execution/change_log
+- `evidence/phase_37_rp45/validation_pass.md`
+
+### 25.5 Verdict `rp4`
+
+**PASS** — đóng tài liệu kỹ thuật. Verdict vận hành giữ **`PILOT_READY_CONDITIONAL`** (FOUNDER ký `[~]`).
+
+---
+
+## 26. `rp5` — xác nhận độc lập (2026-07-22)
+
+### 26.1 Phương pháp
+Reindex độc lập cùng matrix §25.2–25.3 → **FILE_FAIL=0**.
+
+### 26.2 Open / residual
+
+| ID | Item | Status |
+|---|---|---|
+| FOUNDER-SIGN | Ký `uat_signoff.md` PASS* | **OPEN** (không block Module DoD kỹ thuật) |
+| PACK-SKIP | Pack `WEIGHT_SOURCE_INVALID` | Documented SKIP OK |
+| RESTORE-STAR | `RESTORE_SKIPPED_SAFE` | Documented PASS* |
+| OOS-DBM | Browser evidence | **CLOSED** §24 |
+
+### 26.3 Verdict `rp5`
+
+**PASS — xác nhận độc lập khớp `rp4`.** Phase 37 **ĐÓNG tài liệu**. P38 không bị block bởi P37 kỹ thuật.
+

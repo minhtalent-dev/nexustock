@@ -1,9 +1,9 @@
 # Function Index — Phase 37 Go-Live L3 Customer Pilot
 
-> **`rp2`+`rp3` 2026-07-22** — Runtime/ops reindex; blind-spot PASS (§22).  
-> SoT: `planning/phases/phase_37_golive_l3_customer_pilot.md` (§20–§22).  
+> **`rp4`+`rp5` 2026-07-22** — Disk FAIL=0 · Module DoD/Pilot 100% kỹ thuật · `PILOT_READY_CONDITIONAL`.  
+> SoT: `planning/phases/phase_37_golive_l3_customer_pilot.md` (§20–§26).  
 > Brain: `C:\Users\mes\.gemini\antigravity\brain\17cf2960-4583-44a5-918a-5eb1c709dc96\`  
-> Status: **100% Ready** (`rp1`+`rp2`+`rp3`) — chờ FOUNDER Proceed.
+> Status: **ĐÓNG tài liệu** — chờ FOUNDER ký `uat_signoff.md`.
 
 ---
 

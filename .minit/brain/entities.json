@@ -176,5 +176,44 @@
       "EP5 order A-L locked in section 22",
       "chờ FOUNDER Proceed 18-auto-execute"
     ]
+  },
+  "Phase37_L3_Pilot": {
+    "name": "Phase37_L3_Pilot",
+    "entityType": "milestone",
+    "observations": [
+      "2026-07-22 /18-auto-execute COMPLETE",
+      "Verdict PILOT_READY_CONDITIONAL",
+      "verify_l3 PASS 12 FAIL 0 SKIP 2 (pack WEIGHT_SOURCE_INVALID, offline UAT-07)",
+      "verify_l2 regress 14/0",
+      "freeze/unfreeze 200",
+      "EP3 rollback PASS* RESTORE_SKIPPED_SAFE",
+      "FOUNDER pending sign uat_signoff.md PASS*",
+      "Evidence planning/evidence/phase_37/",
+      "Scripts tests/seed/demo_generic_tenant.ps1 + tests/verify_l3_pilot_smoke.ps1"
+    ]
+  },
+  "Phase37_L3_Pilot_DBM": {
+    "name": "Phase37_L3_Pilot_DBM",
+    "entityType": "milestone",
+    "observations": [
+      "2026-07-22 dbm PASS 21/0",
+      "Script tests/helpers/dbm_phase37_l3_pilot_browser.mjs",
+      "Evidence planning/evidence/phase_37_dbm/walkthrough-l3-pilot.webm",
+      "Self-heal: freeze path /api/admin/cutover/freeze-status; restart FE :3003",
+      "verify_l3 12/0 + verify_l2 14/0 re-run",
+      "Verdict still PILOT_READY_CONDITIONAL pending FOUNDER sign"
+    ]
+  },
+  "Phase37_rp4_rp5_Close": {
+    "name": "Phase37_rp4_rp5_Close",
+    "entityType": "milestone",
+    "observations": [
+      "2026-07-22 rp4+rp5 PASS Module DoD/Pilot 100% technical",
+      "disk FAIL=0 21/21",
+      "verify_l3 12/0 verify_l2 14/0 dbm 21/0",
+      "Docs closed phase_37 §25-§26",
+      "Verdict PILOT_READY_CONDITIONAL pending FOUNDER uat_signoff",
+      "Evidence planning/evidence/phase_37_rp45/"
+    ]
   }
 }

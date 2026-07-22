@@ -184,10 +184,14 @@ export default function MovementPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" asChild className="text-slate-300">
-              <Link href="/mobile">
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-slate-300"
+              render={<Link href="/mobile" />}
+              nativeButton={false}
+            >
+              <ArrowLeft className="h-4 w-4" />
             </Button>
             <h2 className="text-lg font-bold flex items-center gap-2 text-slate-100">
               <Move className="h-5 w-5 text-blue-500" />

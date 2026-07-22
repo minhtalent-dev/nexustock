@@ -75,11 +75,9 @@ export default function StocktakesPage() {
           {t("title")}
         </h1>
         <div className="flex gap-2">
-          <Button asChild>
-            <Link href="/admin/inventory/stocktakes/new" className="gap-2">
-              <Plus className="h-4 w-4" />
-              {t("createButton")}
-            </Link>
+          <Button render={<Link href="/admin/inventory/stocktakes/new" />} nativeButton={false} className="gap-2">
+            <Plus className="h-4 w-4" />
+            {t("createButton")}
           </Button>
           <Button onClick={fetchStocktakes} variant="outline" className="gap-2">
             <RefreshCw className="h-4 w-4" />
@@ -122,8 +120,13 @@ export default function StocktakesPage() {
                     <TableCell>{s.createdBy}</TableCell>
                     <TableCell>{new Date(s.createdAt).toLocaleString()}</TableCell>
                     <TableCell className="text-right">
-                      <Button asChild size="sm" variant="outline">
-                        <Link href={`/admin/inventory/stocktakes/${s.id}`}>{t("detailBtn")}</Link>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        render={<Link href={`/admin/inventory/stocktakes/${s.id}`} />}
+                        nativeButton={false}
+                      >
+                        {t("detailBtn")}
                       </Button>
                     </TableCell>
                   </TableRow>

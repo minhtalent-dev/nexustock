@@ -1,0 +1,13 @@
+﻿{
+    "tenantId":  "00000000-0000-0000-0000-000000000001",
+    "pack":  "DEMO-GENERIC",
+    "productIds":  [
+                       "f8e8f296-f0ab-4fac-adae-7ecdfe5b268e"
+                   ],
+    "primaryProductId":  "f8e8f296-f0ab-4fac-adae-7ecdfe5b268e",
+    "uomId":  "00000000-0000-0000-0000-000000000012",
+    "partnerId":  "bfc2f0a4-fe61-4804-95e0-bfc9b5072bc5",
+    "locationId":  "2bb0c72e-8880-4540-aaa9-e42025054224",
+    "toLocationId":  "00000000-0000-0000-0000-000000000041",
+    "at":  "2026-07-22T15:56:13.1824282+07:00"
+}

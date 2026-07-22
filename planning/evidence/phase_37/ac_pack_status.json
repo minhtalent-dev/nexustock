@@ -1,0 +1,24 @@
+{
+  "phase": 37,
+  "l2P0": "CLOSED",
+  "uat": { "passed": 7, "failed": 0, "blocked": 0, "skipped": 0, "passStar": 1 },
+  "smoke": { "pass": 12, "fail": 0, "skip": 2 },
+  "rollbackRehearsal": { "rtoMinutes": 15, "status": "PASS_STAR", "code": "RESTORE_SKIPPED_SAFE" },
+  "freezeSmoke": "PASS",
+  "ac08Sap": "WAIVED",
+  "acPack": {
+    "AC-02": "PASS_STAR",
+    "AC-03": "PASS_STAR",
+    "AC-06": "cite_verify_allocation_optional",
+    "AC-09": "trace_via_smoke",
+    "AC-10": "freeze_flag_PASS",
+    "AC-11": "cite_P36_verify_l2",
+    "AC-13": "cutover_runbook_pilot.md",
+    "AC-14": "pending_gitleaks_tool",
+    "AC-08": "WAIVED"
+  },
+  "dbm": { "pass": 21, "fail": 0, "video": "phase_37_dbm/walkthrough-l3-pilot.webm", "at": "2026-07-22T16:19:00+07:00" },
+  "rp45": { "diskFail": 0, "verify_l3": "12/0", "verify_l2": "14/0", "at": "2026-07-22T16:26:00+07:00" },
+  "verdict": "PILOT_READY_CONDITIONAL",
+  "updatedAt": "2026-07-22T16:26:00+07:00"
+}

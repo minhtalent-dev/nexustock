@@ -179,10 +179,13 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/admin/inventory/stocktakes">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            render={<Link href="/admin/inventory/stocktakes" />}
+            nativeButton={false}
+          >
+            <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-2xl font-bold">{t("detailTitle", { stocktakeNo: stocktake.stocktakeNo })}</h1>
         </div>

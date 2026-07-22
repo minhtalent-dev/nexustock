@@ -1,0 +1,66 @@
+﻿{
+    "phase":  37,
+    "pass":  12,
+    "fail":  0,
+    "skip":  2,
+    "shipmentNo":  "SO-DEMO-162620457",
+    "results":  [
+                    {
+                        "id":  "Login",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "Seed script",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "Master ids from seed",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "L3-UAT-01 Lot-HAPPY HAPPY-162620457",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "L3-UAT-03 Move OK",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "Shipment SO-DEMO-162620457",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "L3-UAT-04 pickTaskCount=1",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "L3-UAT-05 Complete pick",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "Pack (weight/governance): {\"errorCode\":\"WEIGHT_SOURCE_INVALID\",\"message\":\"Nguồn cân nặng không hợp lệ.\"}",
+                        "status":  "SKIP"
+                    },
+                    {
+                        "id":  "L3-UAT-02 QC_LOT_ON_HOLD",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "L3-UAT-08 tenant isolation",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "L3-UAT-06 INSUFFICIENT_QTY",
+                        "status":  "PASS"
+                    },
+                    {
+                        "id":  "L3-UAT-07 offline (no INSUFFICIENT in response)",
+                        "status":  "SKIP"
+                    },
+                    {
+                        "id":  "verify_l2_p0_integrity",
+                        "status":  "PASS"
+                    }
+                ],
+    "at":  "2026-07-22T16:26:22.9047974+07:00"
+}

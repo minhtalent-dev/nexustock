@@ -1,0 +1,115 @@
+{
+  "phase": 37,
+  "workflow": "dbm",
+  "pass": 21,
+  "fail": 0,
+  "video": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_37_dbm\\walkthrough-l3-pilot.webm",
+  "results": [
+    {
+      "id": "EVIDENCE-uat_signoff.md",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_37\\uat_signoff.md"
+    },
+    {
+      "id": "EVIDENCE-cutover_runbook_pilot.md",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_37\\cutover_runbook_pilot.md"
+    },
+    {
+      "id": "EVIDENCE-rollback_rehearsal.md",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_37\\rollback_rehearsal.md"
+    },
+    {
+      "id": "EVIDENCE-hypercare.md",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_37\\hypercare.md"
+    },
+    {
+      "id": "EVIDENCE-ac_pack_status.json",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_37\\ac_pack_status.json"
+    },
+    {
+      "id": "EVIDENCE-verify_l3_results.json",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_37\\verify_l3_results.json"
+    },
+    {
+      "id": "EVIDENCE-validation_pass.md",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_37\\validation_pass.md"
+    },
+    {
+      "id": "EVIDENCE-seed_summary.json",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_37\\seed_summary.json"
+    },
+    {
+      "id": "API-LIVE",
+      "status": "PASS",
+      "note": "GET /health/live → 200"
+    },
+    {
+      "id": "API-LOGIN",
+      "status": "PASS",
+      "note": "token=true"
+    },
+    {
+      "id": "API-FREEZE-STATUS",
+      "status": "PASS",
+      "note": "http=200 frozen=false"
+    },
+    {
+      "id": "LOGIN",
+      "status": "PASS",
+      "note": "admin login OK"
+    },
+    {
+      "id": "FE-INBOUND",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/inbound is404=false"
+    },
+    {
+      "id": "FE-QC",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/qc is404=false"
+    },
+    {
+      "id": "FE-OUTBOUND",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/outbound is404=false"
+    },
+    {
+      "id": "FE-CUTOVER",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/cutover is404=false"
+    },
+    {
+      "id": "FE-CUTOVER-FREEZE-CTRL",
+      "status": "PASS",
+      "note": "freezeButtonVisible=true"
+    },
+    {
+      "id": "FE-MOBILE-MOVEMENT",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/mobile/movement is404=false"
+    },
+    {
+      "id": "FE-MOBILE-TASKS-NOT-SOT",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/mobile/tasks is404=false status=404"
+    },
+    {
+      "id": "FE-DEMO-SHIPMENT",
+      "status": "PASS",
+      "note": "SO-DEMO-* visible"
+    },
+    {
+      "id": "AC-EVIDENCE-MEDIA",
+      "status": "PASS",
+      "note": "shots+video captured"
+    }
+  ],
+  "endedAt": "2026-07-22T09:19:16.655Z"
+}
