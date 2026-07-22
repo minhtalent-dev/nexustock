@@ -1,0 +1,80 @@
+{
+  "phase": 34,
+  "at": "2026-07-22T02:54:42.249Z",
+  "pass": 13,
+  "fail": 0,
+  "total": 13,
+  "pageErrors": [],
+  "video": "walkthrough-iqc-ux.webm",
+  "results": [
+    {
+      "id": "api-health",
+      "status": "PASS",
+      "note": "HTTP 200"
+    },
+    {
+      "id": "login",
+      "status": "PASS",
+      "note": "admin login"
+    },
+    {
+      "id": "qc-title-vi",
+      "status": "PASS",
+      "expected": "Kiểm định chất lượng",
+      "found": "Kiểm định chất lượng",
+      "note": "title ok"
+    },
+    {
+      "id": "qc-tabs-vi",
+      "status": "PASS",
+      "note": "queue=1 history=1"
+    },
+    {
+      "id": "qc-filters-vi",
+      "status": "PASS",
+      "note": "dateInputs=2"
+    },
+    {
+      "id": "qc-history-tab-vi",
+      "status": "PASS",
+      "note": "history panel visible"
+    },
+    {
+      "id": "qc-title-en",
+      "status": "PASS",
+      "expected": "Quality Control",
+      "found": "Quality Control",
+      "note": "title ok"
+    },
+    {
+      "id": "qc-history-tab-en",
+      "status": "PASS",
+      "note": "history EN"
+    },
+    {
+      "id": "qc-hold-panel",
+      "status": "PASS",
+      "note": "hold/release panel"
+    },
+    {
+      "id": "mobile-qc-page",
+      "status": "PASS",
+      "note": "System online NEXUSTOCK Handheld VI EN User: NV-KHO Mobile QC Inspect lots on the floor Mobile QC is disabled Enable F"
+    },
+    {
+      "id": "mobile-qc-vi",
+      "status": "PASS",
+      "note": "mobile qc VI"
+    },
+    {
+      "id": "api-qc-queue",
+      "status": "PASS",
+      "note": "HTTP 200 (auth via bearer)"
+    },
+    {
+      "id": "api-qc-history",
+      "status": "PASS",
+      "note": "HTTP 200 (auth via bearer)"
+    }
+  ]
+}

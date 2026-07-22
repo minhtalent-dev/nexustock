@@ -19,6 +19,7 @@
     <ProjectReference Include="..\Nexustock.Modules.MasterData\Nexustock.Modules.MasterData.csproj" />
     <ProjectReference Include="..\Nexustock.Modules.Inventory\Nexustock.Modules.Inventory.csproj" />
     <ProjectReference Include="..\Nexustock.Modules.Rules\Nexustock.Modules.Rules.csproj" />
+    <ProjectReference Include="..\Nexustock.Modules.Qc.Abstractions\Nexustock.Modules.Qc.Abstractions.csproj" />
   </ItemGroup>
 
 </Project>

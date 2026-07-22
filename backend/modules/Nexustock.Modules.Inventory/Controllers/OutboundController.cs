@@ -11,6 +11,7 @@ using Nexustock.Modules.Inventory.Entities;
 using Nexustock.Modules.Inventory.Services;
 using Nexustock.Modules.MasterData.Contexts;
 using Nexustock.Modules.Identity.Services;
+using Nexustock.Modules.Qc.Abstractions;
 
 namespace Nexustock.Modules.Inventory.Controllers;
 
@@ -24,19 +25,22 @@ public class OutboundController : ControllerBase
     private readonly ITenantProvider _tenantProvider;
     private readonly IUserPermissionService _permissionService;
     private readonly IWeightValidationService _weightValidationService;
+    private readonly IQcGateService _qcGate;
 
     public OutboundController(
         InventoryDbContext context,
         MasterDataDbContext masterContext,
         ITenantProvider tenantProvider,
         IUserPermissionService permissionService,
-        IWeightValidationService weightValidationService)
+        IWeightValidationService weightValidationService,
+        IQcGateService qcGate)
     {
         _context = context;
         _masterContext = masterContext;
         _tenantProvider = tenantProvider;
         _permissionService = permissionService;
         _weightValidationService = weightValidationService;
+        _qcGate = qcGate;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -386,12 +390,14 @@ public class OutboundController : ControllerBase
         using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            // QC Status Guard: re-verify QC Status of Lot
-            var lot = await _context.Lots
-                .FirstOrDefaultAsync(l => l.TenantId == tenantId && l.LotNo == pickTask.LotNo && l.ItemId == pickTask.ItemId);
-            if (lot == null || lot.QcStatus != "Release")
+            // QC Gate — SoT Inbound.Lots
+            try
             {
-                return BadRequest(new { errorCode = "LOT_NOT_RELEASED", message = "Lô hàng đã bị khóa chất lượng hoặc không ở trạng thái Release" });
+                await _qcGate.EnsureLotUsableByLotNoAsync(tenantId, pickTask.ItemId, pickTask.LotNo);
+            }
+            catch (QcGateException ex)
+            {
+                return StatusCode(ex.HttpStatus, new { errorCode = ex.ErrorCode, message = ex.Message, traceId = HttpContext.TraceIdentifier });
             }
 
             var inventory = await _context.Inventories

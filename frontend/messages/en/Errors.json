@@ -16,6 +16,9 @@
       "FEATURE_FLAG_INVALID": "Invalid feature flag",
       "FEATURE_FLAG_NOT_FOUND": "Feature flag not found",
       "TASK_RECOMMENDATION_CONFLICT": "Task recommendation conflict",
+      "QC_LOT_NOT_RELEASED": "Lot not QC released",
+      "QC_LOT_ON_HOLD": "Lot on QC hold",
+      "QC_LOT_NOT_FOUND": "QC lot not found",
       "integration": {
         "idempotencyKeyRequired": "Idempotency key required",
         "contractVersionRetired": "Contract version retired",
@@ -43,6 +46,9 @@
       "FEATURE_FLAG_INVALID": "Feature flag name is invalid.",
       "FEATURE_FLAG_NOT_FOUND": "Feature flag was not found.",
       "TASK_RECOMMENDATION_CONFLICT": "Recommendation was already handled or conflicts.",
+      "QC_LOT_NOT_RELEASED": "This lot has not been released by QC.",
+      "QC_LOT_ON_HOLD": "This lot is on QC hold and cannot be moved or picked.",
+      "QC_LOT_NOT_FOUND": "QC could not find this lot.",
       "integration": {
         "idempotencyKeyRequired": "Idempotency-Key header is required.",
         "contractVersionRetired": "Contract version has been retired.",

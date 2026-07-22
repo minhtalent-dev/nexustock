@@ -1,5 +1,15 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 1.5.0 - Kiểm định chất lượng và chặn hàng chưa đạt (Phase 34)
+*Ngày cập nhật: 22/07/2026*
+
+### Tính năng mới
+- **Bản đồ chuyển đổi kiểm định**: Hướng dẫn đối chiếu thao tác kiểm định cũ sang màn hình mới, kèm danh sách kiểm thử chấp nhận.
+- **Chặn di chuyển / lấy hàng khi chưa đạt**: Hệ thống chỉ cho phép dùng lô đã được giải phóng kiểm định; lô đang giữ hoặc chưa kiểm sẽ bị từ chối rõ ràng.
+- **Hàng chờ kiểm định thông minh hơn**: Lọc theo ngày, thời gian chờ; xem lịch sử kiểm định trên cùng màn hình quản trị.
+- **Kiểm định trên thiết bị cầm tay (tùy chọn)**: Có thể bật công tắc để nhân viên kiểm trên sàn; mặc định tắt.
+- **Thông báo lỗi kiểm định rõ ràng**: Khi bị chặn, hệ thống hiển thị mã và nội dung lỗi theo ngôn ngữ đang chọn.
+
 ## Phiên bản 1.4.0 - Cổng sẵn sàng vận hành và kiểm soát cắt chuyển (Phase 30)
 *Ngày cập nhật: 21/07/2026*
 

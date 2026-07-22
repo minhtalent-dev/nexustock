@@ -221,7 +221,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 31a | i18n Catalog Modules | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-21: Module DoD **100%**. modules PascalCase + loadMessages; verify 31a PASS; dbm 0 pageerror. | 2026-07-21 | [phase_31a §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_31a_i18n_catalog_modules.md) |
 | 32 | Localization Master-data | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-21: Module DoD **100%**. verify 32 PASS; dbm 16/16; 8/8 MD + CRUD. | 2026-07-21 | [phase_32 §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_32_localization_master_data.md) |
 | 33 | Localization Mobile + Errors + Close | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-22: Module DoD **100%**. verify 33 PASS; DBM **14/14**; Milestone 5 **59/59**; disk FAIL_COUNT=0. | 2026-07-22 | [phase_33 §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) |
-| 34 | IQC UX Map GCM Part → Nexustock | ⬜ Chưa bắt đầu | **`rp3` PASS** 2026-07-22. Score **9.8/10**. Không điểm mù chặn. Spec §20. | — | [phase_34 §20](file:///d:/1_Project/48_Nexustock/planning/phases/phase_34_iqc_ux_map_gcm.md) |
+| 34 | IQC UX Map GCM Part → Nexustock | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-22. Disk FAIL=0; verify 16/16; dbm 13/13. | 2026-07-22 | [phase_34 §21–§22](file:///d:/1_Project/48_Nexustock/planning/phases/phase_34_iqc_ux_map_gcm.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_34_dbm/walkthrough.md) |
 
 ### Quy ước trạng thái
 

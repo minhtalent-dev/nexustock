@@ -1,0 +1,30 @@
+{
+  "runId": "wfr_a5a47888a0ee44e2a82f",
+  "workflowId": "18-auto-execute",
+  "class": "execute",
+  "status": "completed",
+  "planRef": "planning/phases/phase_34_iqc_ux_map_gcm.md",
+  "planHash": "sha256:2fc26f1af2143e9f53b0087ea11a2235cce6ac2aae38979c16d0b5463c819186",
+  "phaseId": "phase_34",
+  "startedAt": "2026-07-22T02:34:54.107Z",
+  "finishedAt": "2026-07-22T02:46:24.585Z",
+  "steps": [
+    {
+      "name": "start",
+      "at": "2026-07-22T02:34:54.107Z"
+    },
+    {
+      "name": "completed",
+      "at": "2026-07-22T02:46:24.585Z"
+    }
+  ],
+  "evidence": [
+    "05-validate completed wfr_471b1436cb4e4a31a5b3",
+    "verify_iqc_ux_map 15 PASS",
+    "dotnet build succeeded",
+    "CHANGELOG 1.5.0",
+    "P34 master ✅"
+  ],
+  "decidedBy": "FOUNDER",
+  "uxHint": null
+}

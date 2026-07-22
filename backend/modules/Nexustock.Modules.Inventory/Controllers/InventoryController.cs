@@ -10,6 +10,7 @@ using Nexustock.Modules.Inventory.Entities;
 using Nexustock.Modules.Inventory.Services;
 using Nexustock.Modules.MasterData.Contexts;
 using Nexustock.Modules.Identity.Services;
+using Nexustock.Modules.Qc.Abstractions;
 
 namespace Nexustock.Modules.Inventory.Controllers;
 
@@ -22,17 +23,20 @@ public class InventoryController : ControllerBase
     private readonly MasterDataDbContext _masterContext;
     private readonly ITenantProvider _tenantProvider;
     private readonly IUserPermissionService _permissionService;
+    private readonly IQcGateService _qcGate;
 
     public InventoryController(
         InventoryDbContext context,
         MasterDataDbContext masterContext,
         ITenantProvider tenantProvider,
-        IUserPermissionService permissionService)
+        IUserPermissionService permissionService,
+        IQcGateService qcGate)
     {
         _context = context;
         _masterContext = masterContext;
         _tenantProvider = tenantProvider;
         _permissionService = permissionService;
+        _qcGate = qcGate;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -115,13 +119,14 @@ public class InventoryController : ControllerBase
         var username = User.Identity?.Name ?? "System";
         var traceId = HttpContext.TraceIdentifier;
 
-        // 1. Verify QC Status of Lot (LOT_ON_HOLD)
-        var lot = await _context.Lots
-            .FirstOrDefaultAsync(l => l.TenantId == tenantId && l.LotNo == dto.LotNo && l.ItemId == dto.ItemId);
-
-        if (lot == null || lot.QcStatus != "Release")
+        // 1. QC Gate — SoT Inbound.Lots (cùng bảng Lots)
+        try
         {
-            return BadRequest(new { errorCode = "LOT_ON_HOLD", message = "Lô hàng đang bị giữ kiểm định chất lượng, không được di chuyển" });
+            await _qcGate.EnsureLotUsableByLotNoAsync(tenantId, dto.ItemId, dto.LotNo);
+        }
+        catch (QcGateException ex)
+        {
+            return StatusCode(ex.HttpStatus, new { errorCode = ex.ErrorCode, message = ex.Message, traceId });
         }
 
         // 2. Verify Source & Destination Location exist

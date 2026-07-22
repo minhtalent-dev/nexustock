@@ -24,12 +24,12 @@
     "critiqueStatus": "none"
   },
   "quality": {
-    "status": "passed",
-    "updatedAt": "2026-07-21T10:44:40.446Z",
+    "status": "in_progress",
+    "updatedAt": "2026-07-22T02:54:51.069Z",
     "blockers": [],
     "evidenceMode": "attested",
-    "critiqueStatus": "passed",
-    "critiqueUpdatedAt": "2026-07-21T10:44:40.446Z"
+    "critiqueStatus": "pending",
+    "critiqueUpdatedAt": "2026-07-22T02:54:51.069Z"
   },
   "security": {
     "status": "failed",

@@ -9,6 +9,7 @@ using Nexustock.Modules.Lpn.Entities;
 using Nexustock.Modules.Inventory.Contexts;
 using Nexustock.Modules.Inventory.Entities;
 using Nexustock.Modules.MasterData.Contexts;
+using Nexustock.Modules.Qc.Abstractions;
 
 namespace Nexustock.Modules.Lpn.Services;
 
@@ -17,15 +18,18 @@ public class LpnService : ILpnService
     private readonly LpnDbContext _dbContext;
     private readonly InventoryDbContext _inventoryContext;
     private readonly MasterDataDbContext _masterDataContext;
+    private readonly IQcGateService _qcGate;
 
     public LpnService(
         LpnDbContext dbContext,
         InventoryDbContext inventoryContext,
-        MasterDataDbContext masterDataContext)
+        MasterDataDbContext masterDataContext,
+        IQcGateService qcGate)
     {
         _dbContext = dbContext;
         _inventoryContext = inventoryContext;
         _masterDataContext = masterDataContext;
+        _qcGate = qcGate;
     }
 
     public async Task<LpnDto> CreateLpnAsync(Guid tenantId, CreateLpnDto dto, string username)
@@ -89,6 +93,8 @@ public class LpnService : ILpnService
             {
                 throw new Exception("LPN không tồn tại hoặc không ở trạng thái ACTIVE.");
             }
+
+            await _qcGate.EnsureLotUsableByLotNoAsync(tenantId, dto.ItemId, dto.LotNo);
 
             // 2. Tìm dòng tồn kho tự do (chưa thuộc LPN nào) tại vị trí của LPN
             var sourceInv = await _inventoryContext.Inventories
@@ -287,6 +293,11 @@ public class LpnService : ILpnService
             var inventories = await _inventoryContext.Inventories
                 .Where(i => i.TenantId == tenantId && i.LpnId == lpn.Id)
                 .ToListAsync();
+
+            foreach (var inv in inventories)
+            {
+                await _qcGate.EnsureLotUsableByLotNoAsync(tenantId, inv.ItemId, inv.LotNo);
+            }
 
             // 4. Cập nhật vị trí LPN và inventories
             lpn.LocationId = dto.TargetLocationId;

@@ -325,6 +325,28 @@
         "skipOk": "Đã ghi nhận bỏ qua.",
         "loadFailed": "Không thể tải gợi ý việc."
       }
+    },
+    "qc": {
+      "page": {
+        "title": "QC di động",
+        "subtitle": "Kiểm định lô trên sàn",
+        "disabledTitle": "QC di động đang tắt",
+        "disabledHint": "Bật FF_MOBILE_QC để sử dụng màn hình này."
+      },
+      "labels": {
+        "lotPlaceholder": "Quét hoặc nhập số lô",
+        "pass": "Đạt",
+        "fail": "Không đạt",
+        "hold": "Hold",
+        "status": "Trạng thái"
+      },
+      "toast": {
+        "lookupFailed": "Không tìm thấy lô.",
+        "resultOk": "Đã lưu kết quả QC.",
+        "holdOk": "Đã giữ lô.",
+        "needLot": "Nhập số lô trước.",
+        "needRequest": "Không có yêu cầu QC đang chờ cho lô này."
+      }
     }
   }
 }

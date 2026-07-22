@@ -325,6 +325,28 @@
         "skipOk": "Skip recorded.",
         "loadFailed": "Unable to load task suggestion."
       }
+    },
+    "qc": {
+      "page": {
+        "title": "Mobile QC",
+        "subtitle": "Inspect lots on the floor",
+        "disabledTitle": "Mobile QC is disabled",
+        "disabledHint": "Enable FF_MOBILE_QC to use this page."
+      },
+      "labels": {
+        "lotPlaceholder": "Scan or enter lot number",
+        "pass": "Pass",
+        "fail": "Fail",
+        "hold": "Hold",
+        "status": "Status"
+      },
+      "toast": {
+        "lookupFailed": "Lot not found.",
+        "resultOk": "QC result saved.",
+        "holdOk": "Lot held.",
+        "needLot": "Enter a lot number first.",
+        "needRequest": "No pending QC request for this lot."
+      }
     }
   }
 }

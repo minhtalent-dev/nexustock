@@ -1,0 +1,14 @@
+[2026-07-22T02:54:24.034Z] FE=http://localhost:3003 API=http://localhost:5024
+[2026-07-22T02:54:24.058Z] PASS api-health — HTTP 200
+[2026-07-22T02:54:26.085Z] PASS login — admin login
+[2026-07-22T02:54:30.639Z] PASS qc-title-vi — title ok
+[2026-07-22T02:54:30.647Z] PASS qc-tabs-vi — queue=1 history=1
+[2026-07-22T02:54:30.648Z] PASS qc-filters-vi — dateInputs=2
+[2026-07-22T02:54:31.591Z] PASS qc-history-tab-vi — history panel visible
+[2026-07-22T02:54:35.259Z] PASS qc-title-en — title ok
+[2026-07-22T02:54:36.205Z] PASS qc-history-tab-en — history EN
+[2026-07-22T02:54:36.676Z] PASS qc-hold-panel — hold/release panel
+[2026-07-22T02:54:39.247Z] PASS mobile-qc-page — System online NEXUSTOCK Handheld VI EN User: NV-KHO Mobile QC Inspect lots on the floor Mobile QC is disabled Enable F
+[2026-07-22T02:54:42.129Z] PASS mobile-qc-vi — mobile qc VI
+[2026-07-22T02:54:42.180Z] PASS api-qc-queue — HTTP 200 (auth via bearer)
+[2026-07-22T02:54:42.195Z] PASS api-qc-history — HTTP 200 (auth via bearer)

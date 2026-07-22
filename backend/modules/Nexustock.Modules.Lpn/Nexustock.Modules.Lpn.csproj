@@ -13,6 +13,7 @@
     <ProjectReference Include="..\Nexustock.Modules.MasterData\Nexustock.Modules.MasterData.csproj" />
     <ProjectReference Include="..\Nexustock.Modules.Rules\Nexustock.Modules.Rules.csproj" />
     <ProjectReference Include="..\Nexustock.Modules.Identity\Nexustock.Modules.Identity.csproj" />
+    <ProjectReference Include="..\Nexustock.Modules.Qc.Abstractions\Nexustock.Modules.Qc.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

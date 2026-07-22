@@ -16,6 +16,9 @@
       "FEATURE_FLAG_INVALID": "Feature flag không hợp lệ",
       "FEATURE_FLAG_NOT_FOUND": "Không tìm thấy feature flag",
       "TASK_RECOMMENDATION_CONFLICT": "Xung đột gợi ý việc",
+      "QC_LOT_NOT_RELEASED": "Lô chưa được QC giải phóng",
+      "QC_LOT_ON_HOLD": "Lô đang bị giữ QC",
+      "QC_LOT_NOT_FOUND": "Không tìm thấy lô QC",
       "integration": {
         "idempotencyKeyRequired": "Thiếu Idempotency-Key",
         "contractVersionRetired": "Phiên bản hợp đồng đã ngừng",
@@ -43,6 +46,9 @@
       "FEATURE_FLAG_INVALID": "Tên feature flag không hợp lệ.",
       "FEATURE_FLAG_NOT_FOUND": "Không tìm thấy feature flag.",
       "TASK_RECOMMENDATION_CONFLICT": "Gợi ý việc đã được xử lý hoặc xung đột.",
+      "QC_LOT_NOT_RELEASED": "Lô hàng chưa được QC giải phóng.",
+      "QC_LOT_ON_HOLD": "Lô hàng đang bị giữ QC, không thể di chuyển hoặc pick.",
+      "QC_LOT_NOT_FOUND": "Không tìm thấy lô hàng trong QC.",
       "integration": {
         "idempotencyKeyRequired": "Header Idempotency-Key là bắt buộc.",
         "contractVersionRetired": "Phiên bản hợp đồng đã bị ngưng sử dụng.",

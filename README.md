@@ -57,7 +57,8 @@ Giao diện sẽ chạy tại cổng `http://localhost:3003`.
 * Quy tắc tên file: trùng tên nhóm (PascalCase). Quy tắc khóa mới: nhóm theo mục đích (`page`, `actions`, `fields`, `columns`, `status`, `toast`, `errors`, `dialog`) + camelCase.
 * Thêm nhóm mới: tạo cặp file VI/EN và đăng ký trong bộ nạp ngôn ngữ (4 chỗ: catalog-modules, load-messages, merge helper, verify).
 * Nhóm **MasterData** đã có: danh mục nền tảng (vật tư, UoM, kho, vùng, vị trí, đối tác, lý do, nhập CSV) hỗ trợ VI/EN.
-* Nhóm **Mobile** đã có: 7 màn cầm tay + vỏ shell; nhóm **Errors** đủ mã lỗi ổn định cho toast có nhãn mã + nội dung.
+* Nhóm **Mobile** đã có: 7 màn cầm tay + vỏ shell + màn QC tùy chọn; nhóm **Errors** đủ mã lỗi ổn định cho toast có nhãn mã + nội dung (gồm mã chặn lô chưa đạt kiểm định).
+* **Kiểm định chất lượng (Phase 34):** `/admin/qc` hỗ trợ lọc/aging/lịch sử; cổng chặn move/pick khi lô chưa Release; `/mobile/qc` bật bằng công tắc `FF_MOBILE_QC`.
 * **Milestone 5**: **59/59** trang Web VI/EN, **0 backlog** localization product.
 
 ## 🩺 Endpoints kiểm tra sức khỏe

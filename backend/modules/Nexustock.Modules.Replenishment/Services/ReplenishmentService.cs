@@ -10,6 +10,7 @@ using Nexustock.Modules.Inventory.Contexts;
 using Nexustock.Modules.Inventory.Entities;
 using Nexustock.Modules.Exceptions.Contexts;
 using Nexustock.Modules.Exceptions.Entities;
+using Nexustock.Modules.Qc.Abstractions;
 
 namespace Nexustock.Modules.Replenishment.Services;
 
@@ -18,15 +19,18 @@ public class ReplenishmentService : IReplenishmentService
     private readonly ReplenishmentDbContext _replenishmentDb;
     private readonly InventoryDbContext _inventoryDb;
     private readonly ExceptionsDbContext _exceptionsDb;
+    private readonly IQcGateService _qcGate;
 
     public ReplenishmentService(
         ReplenishmentDbContext replenishmentDb,
         InventoryDbContext inventoryDb,
-        ExceptionsDbContext exceptionsDb)
+        ExceptionsDbContext exceptionsDb,
+        IQcGateService qcGate)
     {
         _replenishmentDb = replenishmentDb;
         _inventoryDb = inventoryDb;
         _exceptionsDb = exceptionsDb;
+        _qcGate = qcGate;
     }
 
     public async Task<List<ReplenishmentTask>> GenerateTasksAsync(Guid tenantId, string strategy = "FEFO")
@@ -184,6 +188,8 @@ public class ReplenishmentService : IReplenishmentService
 
         if (task.Status == "COMPLETED" || task.Status == "CANCELLED")
             throw new InvalidOperationException("Task đã hoàn thành hoặc đã bị hủy");
+
+        await _qcGate.EnsureLotUsableByLotNoAsync(task.TenantId, task.ItemId, task.LotNo);
 
         // RESOURCE ORDERING: Sắp xếp Location ID tăng dần để khóa hàng tránh deadlock
         var sortedLocations = new[] { task.SourceLocationId, task.TargetLocationId }

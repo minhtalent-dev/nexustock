@@ -54,7 +54,11 @@ public class QcController : ControllerBase
     }
 
     [HttpGet("queue")]
-    public async Task<IActionResult> GetQueue()
+    public async Task<IActionResult> GetQueue(
+        [FromQuery] string? q = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null,
+        [FromQuery] double? agingHours = null)
     {
         if (!await HasPermissionAsync("Qc.Queue.View"))
         {
@@ -140,13 +144,16 @@ public class QcController : ControllerBase
                 g => g.OrderByDescending(i => i.InboundOrder.CreatedAt).Select(i => i.ExpectedQty).FirstOrDefault()
             );
 
+        var now = DateTime.UtcNow;
         var response = pendingRequests
             .Join(lots, r => r.LotId, l => l.Id, (r, l) => new { r, l })
             .Select(combined => {
                 var prod = products.TryGetValue(combined.l.ItemId, out var p) ? p : null;
                 var rKey = new { combined.l.LotNo, combined.l.ItemId };
-                var recvQty = receivedQtys.TryGetValue(rKey, out var q) ? q : 0;
+                var recvQty = receivedQtys.TryGetValue(rKey, out var qty) ? qty : 0;
                 var expQty = expectedQtys.TryGetValue(combined.l.ItemId, out var eq) ? eq : 0;
+                var hours = Math.Max(0, (now - combined.r.CreatedAt).TotalHours);
+                var bucket = hours >= 72 ? "critical72" : hours >= 24 ? "warn24" : "fresh";
 
                 return new QcQueueResponseDto
                 {
@@ -158,13 +165,207 @@ public class QcController : ControllerBase
                     ItemCode = prod?.Code ?? "Unknown Code",
                     ExpectedQty = expQty,
                     ReceivedQty = recvQty,
-                    CreatedAt = combined.r.CreatedAt
+                    CreatedAt = combined.r.CreatedAt,
+                    AgingHours = Math.Round(hours, 1),
+                    AgingBucket = bucket
                 };
             })
-            .OrderByDescending(dto => dto.CreatedAt)
-            .ToList();
+            .AsEnumerable();
 
-        return Ok(response);
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var term = q.Trim();
+            response = response.Where(dto =>
+                dto.LotNo.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                dto.ItemName.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                dto.ItemCode.Contains(term, StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (from.HasValue)
+        {
+            var fromUtc = DateTime.SpecifyKind(from.Value, DateTimeKind.Utc);
+            response = response.Where(dto => dto.CreatedAt >= fromUtc);
+        }
+
+        if (to.HasValue)
+        {
+            var toUtc = DateTime.SpecifyKind(to.Value, DateTimeKind.Utc);
+            response = response.Where(dto => dto.CreatedAt <= toUtc);
+        }
+
+        if (agingHours.HasValue)
+        {
+            response = response.Where(dto => dto.AgingHours >= agingHours.Value);
+        }
+
+        return Ok(response.OrderByDescending(dto => dto.CreatedAt).ToList());
+    }
+
+    [HttpGet("history")]
+    public async Task<IActionResult> GetHistory(
+        [FromQuery] string? lotNo = null,
+        [FromQuery] DateTime? from = null,
+        [FromQuery] DateTime? to = null)
+    {
+        if (!await HasPermissionAsync("Qc.Queue.View"))
+        {
+            return Forbid();
+        }
+
+        var tenantId = GetTenantId();
+        var items = new List<QcHistoryItemDto>();
+
+        var results = await _qcContext.QcResults
+            .Include(r => r.QcRequest)
+            .Where(r => r.TenantId == tenantId)
+            .OrderByDescending(r => r.CreatedAt)
+            .Take(500)
+            .ToListAsync();
+
+        var resultLotIds = results.Select(r => r.QcRequest!.LotId).Distinct().ToList();
+        var holds = await _qcContext.MaterialHolds
+            .Where(h => h.TenantId == tenantId)
+            .OrderByDescending(h => h.CreatedAt)
+            .Take(500)
+            .ToListAsync();
+
+        var holdLotIds = holds.Select(h => h.LotId).Distinct().ToList();
+        var allLotIds = resultLotIds.Concat(holdLotIds).Distinct().ToList();
+        var lots = await _inboundContext.Lots
+            .Where(l => l.TenantId == tenantId && allLotIds.Contains(l.Id))
+            .ToDictionaryAsync(l => l.Id);
+
+        foreach (var r in results)
+        {
+            if (r.QcRequest == null || !lots.TryGetValue(r.QcRequest.LotId, out var lot)) continue;
+            items.Add(new QcHistoryItemDto
+            {
+                Id = r.Id,
+                EventType = "RESULT",
+                LotId = lot.Id,
+                LotNo = lot.LotNo,
+                Inspector = r.Inspector,
+                IsPassed = r.IsPassed,
+                Metrics = r.Metrics,
+                CreatedAt = r.CreatedAt
+            });
+        }
+
+        foreach (var h in holds)
+        {
+            if (!lots.TryGetValue(h.LotId, out var lot)) continue;
+            items.Add(new QcHistoryItemDto
+            {
+                Id = h.Id,
+                EventType = h.Status == "Released" ? "RELEASE" : "HOLD",
+                LotId = lot.Id,
+                LotNo = lot.LotNo,
+                Inspector = h.Status == "Released" ? h.ReleasedBy : h.HeldBy,
+                ReasonCode = h.ReasonCode,
+                CreatedAt = h.Status == "Released" && h.ReleasedAt.HasValue ? h.ReleasedAt.Value : h.CreatedAt
+            });
+        }
+
+        IEnumerable<QcHistoryItemDto> query = items;
+        if (!string.IsNullOrWhiteSpace(lotNo))
+        {
+            query = query.Where(i => i.LotNo.Contains(lotNo.Trim(), StringComparison.OrdinalIgnoreCase));
+        }
+        if (from.HasValue)
+        {
+            var fromUtc = DateTime.SpecifyKind(from.Value, DateTimeKind.Utc);
+            query = query.Where(i => i.CreatedAt >= fromUtc);
+        }
+        if (to.HasValue)
+        {
+            var toUtc = DateTime.SpecifyKind(to.Value, DateTimeKind.Utc);
+            query = query.Where(i => i.CreatedAt <= toUtc);
+        }
+
+        return Ok(query.OrderByDescending(i => i.CreatedAt).Take(200).ToList());
+    }
+
+    [HttpGet("lots/{lotId:guid}/timeline")]
+    public async Task<IActionResult> GetLotTimeline(Guid lotId)
+    {
+        if (!await HasPermissionAsync("Qc.Queue.View"))
+        {
+            return Forbid();
+        }
+
+        var tenantId = GetTenantId();
+        var lot = await _inboundContext.Lots.FirstOrDefaultAsync(l => l.Id == lotId && l.TenantId == tenantId);
+        if (lot == null) return NotFound(new { errorCode = "QC_LOT_NOT_FOUND", message = "Lot not found" });
+
+        var events = new List<QcTimelineEventDto>();
+
+        var requests = await _qcContext.QcRequests
+            .Where(r => r.TenantId == tenantId && r.LotId == lotId)
+            .ToListAsync();
+        foreach (var req in requests)
+        {
+            events.Add(new QcTimelineEventDto
+            {
+                EventType = "REQUEST",
+                Summary = $"QC request {req.Status}",
+                Actor = req.CreatedBy,
+                At = req.CreatedAt,
+                Details = new Dictionary<string, string?> { ["samplePlan"] = req.SamplePlan, ["status"] = req.Status.ToString() }
+            });
+        }
+
+        var requestIds = requests.Select(r => r.Id).ToList();
+        var results = await _qcContext.QcResults
+            .Where(r => r.TenantId == tenantId && requestIds.Contains(r.QcRequestId))
+            .ToListAsync();
+        foreach (var r in results)
+        {
+            events.Add(new QcTimelineEventDto
+            {
+                EventType = "RESULT",
+                Summary = r.IsPassed ? "Pass → Release" : "Fail → Reject",
+                Actor = r.Inspector,
+                At = r.CreatedAt,
+                Details = new Dictionary<string, string?> { ["metrics"] = r.Metrics, ["attachments"] = r.AttachmentRefs }
+            });
+        }
+
+        var holds = await _qcContext.MaterialHolds
+            .Where(h => h.TenantId == tenantId && h.LotId == lotId)
+            .ToListAsync();
+        foreach (var h in holds)
+        {
+            events.Add(new QcTimelineEventDto
+            {
+                EventType = "HOLD",
+                Summary = $"Hold ({h.ReasonCode})",
+                Actor = h.HeldBy,
+                At = h.CreatedAt,
+                Details = new Dictionary<string, string?> { ["status"] = h.Status }
+            });
+            if (h.Status == "Released" && h.ReleasedAt.HasValue)
+            {
+                events.Add(new QcTimelineEventDto
+                {
+                    EventType = "RELEASE",
+                    Summary = "Released from hold",
+                    Actor = h.ReleasedBy,
+                    At = h.ReleasedAt.Value,
+                    Details = new Dictionary<string, string?> { ["reasonCode"] = h.ReasonCode }
+                });
+            }
+        }
+
+        events.Add(new QcTimelineEventDto
+        {
+            EventType = "STATUS",
+            Summary = $"Current QcStatus = {lot.QcStatus}",
+            Actor = "System",
+            At = DateTime.UtcNow,
+            Details = new Dictionary<string, string?> { ["lotNo"] = lot.LotNo, ["qcStatus"] = lot.QcStatus.ToString() }
+        });
+
+        return Ok(events.OrderBy(e => e.At).ToList());
     }
 
     [HttpPost("{lotId:guid}/result")]

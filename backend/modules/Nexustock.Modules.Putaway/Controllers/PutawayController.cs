@@ -15,6 +15,7 @@ using Nexustock.Modules.Putaway.Services;
 using Nexustock.Modules.MasterData.Contexts;
 using Nexustock.Modules.Inventory.Contexts;
 using Nexustock.Modules.Inventory.Entities;
+using Nexustock.Modules.Qc.Abstractions;
 
 namespace Nexustock.Modules.Putaway.Controllers;
 
@@ -29,6 +30,7 @@ public class PutawayController : ControllerBase
     private readonly IPutawayService _putawayService;
     private readonly ITenantProvider _tenantProvider;
     private readonly IUserPermissionService _permissionService;
+    private readonly IQcGateService _qcGate;
 
     public PutawayController(
         PutawayDbContext context,
@@ -36,7 +38,8 @@ public class PutawayController : ControllerBase
         InventoryDbContext inventoryContext,
         IPutawayService putawayService,
         ITenantProvider tenantProvider,
-        IUserPermissionService permissionService)
+        IUserPermissionService permissionService,
+        IQcGateService qcGate)
     {
         _context = context;
         _masterContext = masterContext;
@@ -44,6 +47,7 @@ public class PutawayController : ControllerBase
         _putawayService = putawayService;
         _tenantProvider = tenantProvider;
         _permissionService = permissionService;
+        _qcGate = qcGate;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -115,10 +119,14 @@ public class PutawayController : ControllerBase
             return NotFound("Không tìm thấy lô hàng");
         }
 
-        // 3. Verify QC Status (LOT_ON_HOLD)
-        if (lot.QcStatus != "Release")
+        // 3. QC Gate — SoT Inbound.Lots
+        try
         {
-            return BadRequest(new { errorCode = "LOT_ON_HOLD", message = "Lô hàng đang bị giữ kiểm định chất lượng, không được di chuyển" });
+            await _qcGate.EnsureLotUsableAsync(tenantId, dto.LotId);
+        }
+        catch (QcGateException ex)
+        {
+            return StatusCode(ex.HttpStatus, new { errorCode = ex.ErrorCode, message = ex.Message, traceId = HttpContext.TraceIdentifier });
         }
 
         // 4. Verify Source & Destination location exist

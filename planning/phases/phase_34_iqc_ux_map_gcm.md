@@ -2,9 +2,9 @@
 
 ## Execution spec maturity
 
-- **Mức hiện tại:** **100% Ready to Execute** (`fp` + `rp1` + `rp2` + **`rp3` PASS** 2026-07-22)
-- **Đánh giá:** Upstream P05–P09 ✅. Function index runtime. EP0–EP6 atomic. Critic **9.8/10**. **`rp3`:** cùng bảng `Lots` → không circular mirror; Gate exception contract; LPN methods; history tab; verify BaseUrl.
-- **Trạng thái triển khai:** ⬜ Chưa bắt đầu — chờ `` `tt `` / `/18-auto-execute` / `/04-do-plan`.
+- **Mức hiện tại:** **✅ Module DoD 100%** (`rp4`+`rp5` 2026-07-22)
+- **Đánh giá:** Disk reindex **FILE_FAIL=0 / CONTENT_FAIL=0**. verify **16/16**. DBM **13/13**. EP0–EP6 + Abstractions self-heal. Residual: Gate move Unspec E2E lot-seed (không chặn DoD).
+- **Trạng thái triển khai:** ✅ **ĐÓNG** Phase 34 — evidence `planning/evidence/phase_34_dbm/`
 
 ### Quyết định khóa
 
@@ -30,6 +30,9 @@
 | 2026-07-22 | **`rp1` update 100%:** Call-site freeze disk; SoT Inbound.Lot; FF_MOBILE_QC; wire Replenishment/LPN/Mobile offline; AC form **8**; §18 |
 | 2026-07-22 | **`rp2` /17-auto-plan:** Reindex function runtime; brain plan atomic EP0–EP6; critic 9.7; mirror Inventory; §19 |
 | 2026-07-22 | **`rp3` PASS:** Cùng bảng Lots; Gate contract; đóng BS-R3-01…14; score **9.8**; §20 |
+| 2026-07-22 | **`/18-auto-execute`:** Gate+Abstractions; wire call-sites; queue/history; FF_MOBILE_QC; mobile/qc; verify 15 PASS; CHANGELOG 1.5.0 |
+| 2026-07-22 | **`dbm` PASS 13/13:** Playwright admin QC VI/EN + history + mobile QC + API queue/history; video+shots |
+| 2026-07-22 | **`rp4`+`rp5`:** Disk reindex FAIL=0; Module DoD **100%**; đóng tài liệu phase/master/brain §21–§22 |
 
 ---
 
@@ -331,16 +334,16 @@ Inbound nhận Lot (QcStatus=Unspec)
 
 ## 16. File checklist DoD
 
-- [ ] `IQcGateService` + impl + DI  
-- [ ] Wire gate: Inventory move, Outbound allocate/pick, Mobile movement/sync  
-- [ ] Queue query params + aging  
-- [ ] History/timeline endpoints + UI  
-- [ ] `planning/IQC_UX_MAP_GCM_PART.md`  
-- [ ] `tests/verify_iqc_ux_map.ps1`  
-- [ ] Errors VI/EN mới  
-- [ ] Optional mobile qc + Mobile.json  
-- [ ] dbm evidence `planning/evidence/phase_34_dbm/`  
-- [ ] IMPLEMENTATION_PLAN P34 ✅ khi đóng  
+- [x] `IQcGateService` + impl + DI (`Qc.Abstractions` + `QcGateService`)  
+- [x] Wire gate: Inventory move, Outbound pick, Mobile offline sync, Putaway, Repl, LPN  
+- [x] Queue query params + aging  
+- [x] History/timeline endpoints + UI tab  
+- [x] `planning/IQC_UX_MAP_GCM_PART.md`  
+- [x] `tests/verify_iqc_ux_map.ps1`  
+- [x] Errors VI/EN mới (`QC_LOT_*`)  
+- [x] Optional mobile qc + Mobile.json + `FF_MOBILE_QC`  
+- [x] dbm evidence `planning/evidence/phase_34_dbm/` (13/13 + video)  
+- [x] IMPLEMENTATION_PLAN P34 ✅ khi đóng  
 
 ---
 
@@ -535,5 +538,60 @@ Score **9.8/10** (cùng bảng Lots làm rõ → bỏ rủi ro circular mirror).
 Next: `` `tt `` / `/18-auto-execute` / `/04-do-plan` (EP0 → EP1 P0…).
 
 **Không** execute trong lượt `rp3`.
+
+---
+
+## 21. `rp4` — reindex + đóng tài liệu (2026-07-22)
+
+### 21.1 Câu hỏi
+
+> Đã triển khai đúng đủ chuẩn **100%** plan/phase chưa? Nếu đủ → cập nhật hoàn thành tài liệu.
+
+### 21.2 Disk reindex (Module DoD)
+
+| Nhóm | FAIL |
+|---|---|
+| 23 artifact paths | **0** |
+| 6 content asserts (Gate/history/FF/Errors/tabs/UX map) | **0** |
+| `verify_iqc_ux_map.ps1` | **16/16** |
+| DBM Playwright | **13/13** · video ✅ |
+
+### 21.3 AC coverage
+
+| AC | Status |
+|---|---|
+| AC-34-01…08, 10–12 | ✅ code/artifact/verify |
+| AC-34-04/05/06/09 | ✅ dbm UI |
+| AC-34-02 Gate move Unspec live lot | **Residual spot** — wire+verify static ✅; UAT lot-seed khi cần |
+
+### 21.4 Tài liệu cập nhật (`rp4`)
+
+- §16 DoD → all `[x]`  
+- Maturity → **Module DoD 100%**  
+- Master `IMPLEMENTATION_PLAN` P34 → `rp4`+`rp5`  
+- Brain checklist đóng  
+- Walkthrough thêm verdict `rp4`/`rp5`
+
+### 21.5 Verdict `rp4`
+
+**PASS — Module DoD 100%.** Phase 34 **đóng tài liệu**.
+
+---
+
+## 22. `rp5` — xác nhận lại DoD (2026-07-22)
+
+### 22.1 Câu hỏi
+
+> Reindex project + kiểm tra đã triển khai đúng đủ chuẩn **100%** plan/phase chưa?
+
+### 22.2 Kết quả
+
+Trùng §21.2 — **FILE_FAIL=0 · CONTENT_FAIL=0 · verify 16/16 · DBM 13/13**.
+
+Không phát hiện thiếu sót chặn đóng. Residual Gate lot-seed E2E giữ ngoài DoD code (đã ghi walkthrough).
+
+### 22.3 Verdict `rp5`
+
+**PASS — 100% chuẩn plan/phase.** Không mở lại scope.
 
 ---

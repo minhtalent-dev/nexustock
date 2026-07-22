@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nexustock.Modules.Qc.Contexts;
 using Nexustock.Modules.Qc.Services;
+using Nexustock.Modules.Qc.Abstractions;
 using Nexustock.Modules.Identity.Interceptors;
 
 namespace Nexustock.Modules.Qc;
@@ -44,6 +45,7 @@ public static class DependencyInjection
 
         // Register QC Services
         services.AddScoped<ITenantProvider, TenantProvider>();
+        services.AddScoped<IQcGateService, QcGateService>();
 
         return services;
     }

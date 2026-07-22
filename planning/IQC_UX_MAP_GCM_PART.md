@@ -1,8 +1,8 @@
-# IQC UX Map — GCM Part → Nexustock
+﻿# IQC UX Map — GCM Part → Nexustock
 
 **Phase:** 34 · **Ngày khởi tạo:** 2026-07-22  
-**Trạng thái:** `rp3` PASS — Ready execute (2026-07-22)  
-**SoT phase:** `planning/phases/phase_34_iqc_ux_map_gcm.md` (§18–§20)
+**Trạng thái:** ✅ Closed — `rp4`+`rp5` Module DoD 100% (2026-07-22)
+**SoT phase:** `planning/phases/phase_34_iqc_ux_map_gcm.md` (§18–§22)
 
 ---
 
@@ -15,17 +15,33 @@
 | 3 | `frm114b_Qc_Input` | QC | Gộp Result dialog | cùng | Không tách màn |
 | 4 | `frm136_IqcList` | Supervisor | `/admin/qc` queue + filters/aging | `GET /api/qc/queue` | Aging badges |
 | 5 | `frm135_IqcOutput` | WH | Outbound / movement **sau** Release | pick/move APIs | `QcGate` bắt buộc |
-| 6 | `frm137_IqcInputResult` | Inspector | `/admin/qc/history` + timeline | `GET /api/qc/history`, `.../timeline` | Read-only |
+| 6 | `frm137_IqcInputResult` | Inspector | `/admin/qc` History tab + timeline | `GET /api/qc/history`, `.../timeline` | Read-only |
 | 7 | `smv_frm6_PartHold` | Auth op | Hold/Release dialog | `POST .../hold\|release` | ReasonCode + permission |
 | 8 | `frm108a_Part_Move_FC` | Operator | Mobile movement / Inventory move | move APIs | Block Hold/Unspec/Reject |
 
-### Field notes (điền EP0)
+### Field notes (EP0)
 
-| Form | Field GCM (ghi khi đọc disk) | Field Nexustock | Gap |
+| Form | Field GCM (parity) | Field Nexustock | Gap |
 |---|---|---|---|
-| frm113 | _(EP0 fill)_ | `metrics`, `attachmentRefs`, `samplePlan` | |
-| frm136 | _(EP0 fill)_ | `q`, `from`, `to`, `agingHours` | |
-| Hold | _(EP0 fill)_ | `reasonCode`, `locationId?` | |
+| frm113 | Lot, Pass/Fail, remark/metrics, attach | `isPassed`, `metrics`, `attachmentRefs`; sample via `QcRequest.SamplePlan` | OK — UI đã có dialog |
+| frm136 | List pending, date range, aging | `q`, `from`, `to`, `agingHours`, `agingBucket` | EP2 filter API+UI |
+| Hold | Reason, location optional | `reasonCode`, `locationId?` | OK — dialog hiện có |
+
+---
+
+## 1b. Call-site freeze (phase §18.3) — EP0
+
+| Call site | Path | Qc check trước P34 | EP1 action |
+|---|---|---|---|
+| Inventory move | `InventoryController` | Inventory.Lot string | → `QcGate` |
+| Outbound pick/allocate | `OutboundController` | string Release | → `QcGate` |
+| Putaway | `PutawayController` | string Release | → `QcGate` |
+| Allocation | `AllocationService` | Inbound enum ✅ | Verify + optional Gate |
+| Mobile offline MOVE | `MobileController.SyncOffline` | ❌ | **Must Gate** |
+| Replenishment | `ReplenishmentService` | filter local | **Must Gate** |
+| LPN Attach/Move | `LpnService` | ❌ | **Must Gate** |
+| Inbound receive | `InboundController` | set Unspec | Allowlist |
+| QC self | `QcController` | ghi status | Allowlist |
 
 ---
 
@@ -60,7 +76,7 @@
 |---|---|
 | Mở IQC Input | Admin → **QC** → chọn lot → **Ghi kết quả** |
 | Xem danh sách IQC | Admin → **QC** → hàng đợi (+ lọc ngày / aging) |
-| Xem kết quả cũ | Admin → **QC History** (hoặc timeline lot) |
+| Xem kết quả cũ | Admin → **QC** → tab History (hoặc timeline lot) |
 | Hold nguyên liệu | QC → **Hold** → chọn lý do |
 | Unhold / Release | Lookup lot → **Release** → lý do |
 | Xuất sau IQC | Chỉ khi lot **Release** → Outbound / Mobile pick |
@@ -68,7 +84,7 @@
 
 ---
 
-## 5. UAT cases (tối thiểu 8)
+## 5. UAT cases (tối thiểu 8) — confirmed EP0
 
 | ID | Case | Expected |
 |---|---|---|
@@ -100,3 +116,4 @@ VMI · invoice divide · CAP · Ford · wafer · BT1500 desktop clone · tách P
 | FOUNDER | | |
 | QC Lead | | |
 | Warehouse Lead | | |
+

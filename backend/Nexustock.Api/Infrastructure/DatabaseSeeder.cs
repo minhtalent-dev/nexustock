@@ -106,7 +106,8 @@ public static class DatabaseSeeder
         ("FF_LABOR_TRACKING_ENABLED", "Enable Labor Tracking feature"),
         ("FF_TASK_INTERLEAVING_ENABLED", "Enable Task Interleaving feature"),
         ("FF_READINESS_GATE_ENABLED", "Enable Readiness Gate API and UI"),
-        ("FF_CUTOVER_FREEZE_ENABLED", "Allow cutover freeze/unfreeze write APIs")
+        ("FF_CUTOVER_FREEZE_ENABLED", "Allow cutover freeze/unfreeze write APIs"),
+        ("FF_MOBILE_QC", "Enable mobile QC / IQC inspection page")
     };
 
     public static async Task SeedAsync(IServiceProvider services)
@@ -232,7 +233,7 @@ public static class DatabaseSeeder
             observabilityDb.FeatureFlags.Add(new FeatureFlag
             {
                 Name = name,
-                Enabled = true,
+                Enabled = name != "FF_MOBILE_QC",
                 RolloutPercentage = 100,
                 WhitelistUserIds = string.Empty,
                 Description = description,

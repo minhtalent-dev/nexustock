@@ -14,6 +14,7 @@ using Nexustock.Modules.MasterData.Contexts;
 using Nexustock.Modules.Inventory.Services;
 using Nexustock.Modules.Identity.Services;
 using Nexustock.Modules.Exceptions.Contexts;
+using Nexustock.Modules.Qc.Abstractions;
 
 namespace Nexustock.Modules.Inventory.Controllers;
 
@@ -26,16 +27,19 @@ public class MobileController : ControllerBase
     private readonly MasterDataDbContext _masterContext;
     private readonly ITenantProvider _tenantProvider;
     private readonly ExceptionsDbContext? _exceptionsContext;
+    private readonly IQcGateService _qcGate;
 
     public MobileController(
         InventoryDbContext context,
         MasterDataDbContext masterContext,
         ITenantProvider tenantProvider,
+        IQcGateService qcGate,
         ExceptionsDbContext? exceptionsContext = null)
     {
         _context = context;
         _masterContext = masterContext;
         _tenantProvider = tenantProvider;
+        _qcGate = qcGate;
         _exceptionsContext = exceptionsContext;
     }
 
@@ -182,6 +186,15 @@ public class MobileController : ControllerBase
                         var moveData = JsonSerializer.Deserialize<MovePayload>(opDto.Payload);
                         if (moveData != null)
                         {
+                            try
+                            {
+                                await _qcGate.EnsureLotUsableByLotNoAsync(tenantId, moveData.ItemId, moveData.LotNo);
+                            }
+                            catch (QcGateException ex)
+                            {
+                                throw new Exception($"{ex.ErrorCode}: {ex.Message}");
+                            }
+
                             var inventory = await _context.Inventories.FirstOrDefaultAsync(i =>
                                 i.TenantId == tenantId &&
                                 i.ItemId == moveData.ItemId &&
