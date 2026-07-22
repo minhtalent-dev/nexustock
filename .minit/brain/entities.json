@@ -76,5 +76,25 @@
       "phase_32 §27 closed; IMPLEMENTATION_PLAN P32 complete",
       "Next Phase 33 Mobile+Errors"
     ]
+  },
+  "Phase33_Localization_Mobile_Errors": {
+    "name": "Phase33_Localization_Mobile_Errors",
+    "entityType": "Phase",
+    "observations": [
+      "rp1 2026-07-21: 98% Ready to Execute; upstream P32 complete",
+      "Inventory freeze 59=41admin+8md+7mobile+3shell",
+      "Blind spots: MobileShell no LanguageSwitcher; Mobile.json missing; Errors expand; toast AC-05c; sync 4 places for Mobile module",
+      "Next: rp2 string map or tt after rp3",
+      "rp1 update 100% 2026-07-21: 100% Ready to Execute",
+      "§22 full string maps shell/home/picking + toast wire AC-05c + Errors expand list + verify-33 steps",
+      "MobileShell LanguageSwitcher mandatory; tasks/next EN strings locked",
+      "Next: rp2 optional or tt /18-auto-execute",
+      "rp2 2026-07-21: EP0-EP6 plan score 9.7/10",
+      "C1 EP1 before EP2; C2 tasks/next wrap MobileShell; C3 multi-phase verify",
+      "Next: rp3 or tt /18-auto-execute",
+      "rp3 PASS 2026-07-21 score 9.8/10 zero blocking blind spots",
+      "BS-33-16 scan-input; BS-33-17 disk titles; BS-33-18 tasks full EN; BS-33-19 EP4 mobile-only must",
+      "Next: tt /18-auto-execute — open new chat recommended"
+    ]
   }
 }

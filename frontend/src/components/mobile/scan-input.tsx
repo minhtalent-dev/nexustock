@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ interface ScanInputProps {
 }
 
 export default function ScanInput({ id, label, onScan, placeholder }: ScanInputProps) {
+  const t = useTranslations("Mobile.common");
   const [value, setValue] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -54,14 +56,14 @@ export default function ScanInput({ id, label, onScan, placeholder }: ScanInputP
             type="text"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder={placeholder || "Quét mã vạch..."}
+            placeholder={placeholder || t("scan.defaultPlaceholder")}
             className="bg-slate-800 border-slate-700 text-white font-mono text-lg focus-visible:ring-emerald-500 pr-10"
             autoComplete="off"
           />
           <Scan className="absolute right-3 top-3 h-4 w-4 text-slate-400 animate-pulse" />
         </div>
         <Button type="button" onClick={focusInput} size="icon" variant="outline" className="border-slate-700 text-slate-300">
-          Focus
+          {t("scan.focus")}
         </Button>
       </div>
     </form>

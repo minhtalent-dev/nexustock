@@ -1,71 +1,74 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import MobileShell from "@/components/mobile/mobile-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowRight, Box, ClipboardCheck, CornerDownLeft, Move, PackageOpen, RefreshCw, Layers, Smartphone, ListOrdered } from "lucide-react";
 
 export default function MobileMenuPage() {
+  const t = useTranslations("Mobile.home");
+
   const menuItems = [
     {
-      title: "Next task",
-      description: "Suggested next warehouse task",
+      title: t("items.nextTask.title"),
+      description: t("items.nextTask.description"),
       icon: <ListOrdered className="h-6 w-6 text-cyan-500" />,
       href: "/mobile/tasks/next",
       disabled: false,
     },
     {
-      title: "Nhận hàng (Inbound)",
-      description: "Nhập kho thực tế từ PO",
+      title: t("items.inbound.title"),
+      description: t("items.inbound.description"),
       icon: <CornerDownLeft className="h-6 w-6 text-emerald-500" />,
       href: "/mobile/receiving",
-      disabled: true, // Placeholder cho phase sau
+      disabled: true,
     },
     {
-      title: "Dịch chuyển (Movement)",
-      description: "Chuyển vị trí kệ tồn kho",
+      title: t("items.movement.title"),
+      description: t("items.movement.description"),
       icon: <Move className="h-6 w-6 text-blue-500" />,
       href: "/mobile/movement",
       disabled: false,
     },
     {
-      title: "Lấy hàng (Picking)",
-      description: "Lấy hàng xuất từ đơn xuất",
+      title: t("items.picking.title"),
+      description: t("items.picking.description"),
       icon: <ClipboardCheck className="h-6 w-6 text-orange-500" />,
       href: "/mobile/picking",
       disabled: false,
     },
     {
-      title: "Bổ sung (Replenishment)",
-      description: "Bổ sung hàng kệ Pick Face hụt",
+      title: t("items.replenishment.title"),
+      description: t("items.replenishment.description"),
       icon: <RefreshCw className="h-6 w-6 text-emerald-500" />,
       href: "/mobile/replenishment",
       disabled: false,
     },
     {
-      title: "Di chuyển Pallet (LPN)",
-      description: "Quét di chuyển nguyên khối Pallet",
+      title: t("items.lpn.title"),
+      description: t("items.lpn.description"),
       icon: <Layers className="h-6 w-6 text-indigo-500" />,
       href: "/mobile/lpn",
       disabled: false,
     },
     {
-      title: "Nhận mã Serial",
-      description: "Quét nhận serial cho vật tư",
+      title: t("items.serial.title"),
+      description: t("items.serial.description"),
       icon: <Smartphone className="h-6 w-6 text-emerald-500" />,
       href: "/mobile/serial",
       disabled: false,
     },
     {
-      title: "Kiểm kê (Cycle count)",
-      description: "Thực hiện kiểm đếm thực tế",
+      title: t("items.counting.title"),
+      description: t("items.counting.description"),
       icon: <Box className="h-6 w-6 text-yellow-500" />,
       href: "/mobile/counting",
       disabled: true,
     },
     {
-      title: "Đóng gói (Packing)",
-      description: "Đóng thùng dán tem xuất",
+      title: t("items.packing.title"),
+      description: t("items.packing.description"),
       icon: <PackageOpen className="h-6 w-6 text-purple-500" />,
       href: "/mobile/packing",
       disabled: true,
@@ -76,8 +79,8 @@ export default function MobileMenuPage() {
     <MobileShell>
       <div className="space-y-4">
         <div className="text-center py-2">
-          <h2 className="text-xl font-bold">Danh mục chức năng</h2>
-          <p className="text-xs text-slate-400">Chọn nhiệm vụ thao tác kho cầm tay</p>
+          <h2 className="text-xl font-bold">{t("page.title")}</h2>
+          <p className="text-xs text-slate-400">{t("page.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-1 gap-3">

@@ -1,0 +1,330 @@
+{
+  "Mobile": {
+    "common": {
+      "scan": {
+        "defaultPlaceholder": "Quét mã vạch...",
+        "focus": "Focus"
+      }
+    },
+    "shell": {
+      "status": {
+        "offline": "Mất kết nối mạng! Hệ thống chuyển sang lưu offline.",
+        "online": "Hệ thống trực tuyến"
+      },
+      "header": {
+        "title": "NEXUSTOCK Handheld",
+        "userLabel": "User: {user}"
+      }
+    },
+    "home": {
+      "page": {
+        "title": "Danh mục chức năng",
+        "subtitle": "Chọn nhiệm vụ thao tác kho cầm tay"
+      },
+      "items": {
+        "nextTask": {
+          "title": "Việc tiếp theo",
+          "description": "Gợi ý công việc kho tối ưu tiếp theo"
+        },
+        "inbound": {
+          "title": "Nhận hàng (Inbound)",
+          "description": "Nhập kho thực tế từ PO"
+        },
+        "movement": {
+          "title": "Dịch chuyển (Movement)",
+          "description": "Chuyển vị trí kệ tồn kho"
+        },
+        "picking": {
+          "title": "Lấy hàng (Picking)",
+          "description": "Lấy hàng xuất từ đơn xuất"
+        },
+        "replenishment": {
+          "title": "Bổ sung (Replenishment)",
+          "description": "Bổ sung hàng kệ Pick Face hụt"
+        },
+        "lpn": {
+          "title": "Di chuyển Pallet (LPN)",
+          "description": "Quét di chuyển nguyên khối Pallet"
+        },
+        "serial": {
+          "title": "Nhận mã Serial",
+          "description": "Quét nhận serial cho vật tư"
+        },
+        "counting": {
+          "title": "Kiểm kê (Cycle count)",
+          "description": "Thực hiện kiểm đếm thực tế"
+        },
+        "packing": {
+          "title": "Đóng gói (Packing)",
+          "description": "Đóng thùng dán tem xuất"
+        }
+      }
+    },
+    "picking": {
+      "page": {
+        "title": "Lấy hàng xuất kho (Picking)"
+      },
+      "states": {
+        "readyTitle": "Sẵn sàng nhận nhiệm vụ",
+        "readyHint": "Hệ thống sẽ tự động giao việc có vị trí kệ gần nhất với bạn"
+      },
+      "fields": {
+        "userLocation": "Khai báo vị trí hiện tại của bạn (Tùy chọn):",
+        "userLocationPlaceholder": "Ví dụ: LOC-A-01",
+        "scanLoc": "Quét mã vị trí kệ",
+        "scanLocPlaceholder": "Quét LOC-A-01...",
+        "scanLot": "Quét mã số lô",
+        "scanLotPlaceholder": "Quét LOT-CC...",
+        "moveHint": "Yêu cầu di chuyển đến vị trí kệ và quét:",
+        "lotHint": "Yêu cầu quét mã số lô sản phẩm:",
+        "qtyHint": "Số lượng cần lấy:",
+        "qtyUnit": "{count} sản phẩm"
+      },
+      "labels": {
+        "currentTask": "Nhiệm vụ đang làm",
+        "type": "Loại:",
+        "orderId": "ID Đơn:",
+        "step": "Bước:"
+      },
+      "actions": {
+        "claim": "Nhận việc tiếp theo",
+        "claiming": "Đang nhận việc...",
+        "complete": "Xác nhận hoàn thành lấy hàng"
+      },
+      "toast": {
+        "noTask": "Không có nhiệm vụ nào sẵn sàng.",
+        "claimFailed": "Không thể lấy nhiệm vụ mới.",
+        "locOk": "Xác nhận vị trí kệ thành công!",
+        "locBad": "Vị trí kệ không hợp lệ!",
+        "lotOk": "Xác nhận số lô hàng thành công!",
+        "lotBad": "Lô hàng không tồn tại trong kho!",
+        "completeOk": "Hoàn thành nhiệm vụ lấy hàng!",
+        "completeFailed": "Lỗi hoàn tất nhiệm vụ."
+      }
+    },
+    "movement": {
+      "page": {
+        "title": "Dịch chuyển kho (Movement)"
+      },
+      "fields": {
+        "scanFrom": "Bước 1: Quét vị trí kệ nguồn",
+        "scanFromPlaceholder": "Quét vị trí nguồn...",
+        "scanLot": "Bước 2: Quét mã số lô sản phẩm",
+        "scanLotPlaceholder": "Quét số lô cần chuyển...",
+        "qty": "Bước 3: Nhập số lượng dịch chuyển",
+        "scanTo": "Bước 4: Quét vị trí kệ đích",
+        "scanToPlaceholder": "Quét vị trí đích...",
+        "qtyPlaceholder": "Nhập số lượng..."
+      },
+      "labels": {
+        "fromLoc": "Vị trí nguồn:",
+        "lotNo": "Số lô hàng:",
+        "qty": "Số lượng chuyển:",
+        "toLoc": "Vị trí đích:",
+        "confirmTitle": "Xác nhận dịch chuyển",
+        "fromShelf": "Từ kệ:",
+        "toShelf": "Đến kệ:",
+        "lot": "Lô hàng:",
+        "quantity": "Số lượng:"
+      },
+      "actions": {
+        "next": "Tiếp tục",
+        "reset": "Làm lại",
+        "confirm": "Xác nhận chuyển",
+        "saveOffline": "Lưu offline",
+        "processing": "Đang xử lý...",
+        "syncQueue": "Đồng bộ hàng đợi offline"
+      },
+      "toast": {
+        "fromOk": "Đã quét vị trí nguồn.",
+        "fromBad": "Vị trí không hợp lệ hoặc bị khóa!",
+        "lotOk": "Đã quét số lô.",
+        "lotBad": "Lô hàng không tồn tại!",
+        "qtyBad": "Số lượng dịch chuyển phải lớn hơn 0",
+        "sameLoc": "Vị trí đích không được trùng vị trí nguồn",
+        "toOk": "Đã quét vị trí đích.",
+        "toBad": "Vị trí đích không hợp lệ!",
+        "offlineSaved": "Mất mạng. Đã lưu nhiệm vụ vào hàng đợi ngoại tuyến thành công!",
+        "moveOk": "Thực hiện dịch chuyển kho thành công!",
+        "moveFailed": "Dịch chuyển kho thất bại!",
+        "syncOk": "Đồng bộ toàn bộ dữ liệu offline thành công!",
+        "syncFailed": "Lỗi đồng bộ dữ liệu ngoại tuyến."
+      }
+    },
+    "replenishment": {
+      "page": {
+        "title": "Bổ sung Pick Face"
+      },
+      "fields": {
+        "userLocation": "Khai báo vị trí hiện tại (Tùy chọn):",
+        "scanSource": "Quét mã vị trí kệ nguồn",
+        "scanSourcePlaceholder": "Quét kệ nguồn...",
+        "scanLot": "Quét mã vạch số lô",
+        "scanLotPlaceholder": "Quét số lô sản phẩm...",
+        "scanTarget": "Quét mã vị trí kệ đích",
+        "scanTargetPlaceholder": "Quét kệ đích...",
+        "userLocationPlaceholder": "Ví dụ: LOC-A-01"
+      },
+      "actions": {
+        "claim": "Nhận việc tiếp theo",
+        "claiming": "Đang nhận việc...",
+        "complete": "Xác nhận hoàn thành bổ sung"
+      },
+      "toast": {
+        "wrongTaskType": "Nhiệm vụ nhận được không phải là Bổ sung hàng. Vui lòng thử lại.",
+        "claimOk": "Đã nhận việc bổ sung hàng thành công!",
+        "noDetail": "Không tìm thấy chi tiết nhiệm vụ bổ sung.",
+        "noTask": "Không còn nhiệm vụ bổ sung nào sẵn sàng.",
+        "claimFailed": "Không thể lấy nhiệm vụ mới.",
+        "sourceMismatch": "Mã vị trí không khớp! Vui lòng quét đúng kệ nguồn: {expected}",
+        "sourceOk": "Đã xác nhận kệ nguồn thành công!",
+        "sourceBad": "Vị trí kệ nguồn không hợp lệ!",
+        "lotMismatch": "Mã số lô sản phẩm không khớp! Vui lòng quét đúng số lô: {expected}",
+        "lotOk": "Đã xác nhận số lô sản phẩm thành công!",
+        "lotBad": "Mã số lô sản phẩm không hợp lệ!",
+        "targetMismatch": "Mã vị trí không khớp! Vui lòng quét đúng kệ đích: {expected}",
+        "targetOk": "Đã xác nhận kệ đích Pick Face thành công!",
+        "targetBad": "Vị trí kệ đích không hợp lệ!",
+        "qtyBad": "Số lượng thực tế phải lớn hơn hoặc bằng 0.",
+        "completeOk": "Hoàn thành nhiệm vụ bổ sung hàng thành công!",
+        "completeFailed": "Gặp lỗi khi hoàn thành nhiệm vụ bổ sung."
+      },
+      "states": {
+        "readyTitle": "Sẵn sàng nhận nhiệm vụ",
+        "readyHint": "Hệ thống sẽ giao nhiệm vụ bổ sung kệ Pick Face thiếu hụt gần vị trí của bạn nhất"
+      },
+      "labels": {
+        "detailTitle": "Chi tiết nhiệm vụ bổ sung",
+        "product": "Sản phẩm:",
+        "lot": "Số lô (Lot):",
+        "sourceBulk": "Kệ Bulk nguồn:",
+        "targetPick": "Kệ Pick đích:",
+        "step1": "Bước 1: Di chuyển đến kệ Bulk nguồn và quét mã:",
+        "step2": "Bước 2: Quét mã số lô sản phẩm cần lấy:",
+        "step3": "Bước 3: Mang hàng đến kệ Pick Face đích và quét mã:",
+        "step4": "Bước 4: Nhập số lượng thực tế dịch chuyển:",
+        "actualQty": "Số lượng thực tế dịch chuyển:",
+        "operator": "Tên người thực hiện:",
+        "operatorPlaceholder": "Nhập tên của bạn...",
+        "qtyUnit": "{count} sản phẩm"
+      }
+    },
+    "lpn": {
+      "page": {
+        "title": "Di chuyển Pallet LPN"
+      },
+      "fields": {
+        "scanLpn": "Quét mã LPN",
+        "scanLpnPlaceholder": "Quét LPN...",
+        "scanTarget": "Quét kệ đích",
+        "scanTargetPlaceholder": "Quét kệ đích..."
+      },
+      "actions": {
+        "confirm": "Xác nhận di chuyển",
+        "processing": "Đang xử lý..."
+      },
+      "toast": {
+        "lpnNotFound": "Không tìm thấy Pallet / LPN có mã: {code}",
+        "lpnOk": "Quét mã LPN thành công!",
+        "lpnBad": "Lỗi khi kiểm tra mã LPN.",
+        "locNotFound": "Không tìm thấy vị trí kệ: {code}",
+        "sameLoc": "Kệ đích phải khác vị trí hiện tại của LPN.",
+        "locOk": "Quét kệ đích thành công!",
+        "locBad": "Lỗi kiểm tra kệ đích.",
+        "moveOk": "Đã di chuyển pallet {lpn} thành công!",
+        "moveFailed": "Lỗi dịch chuyển pallet."
+      },
+      "states": {
+        "readyTitle": "Quét Pallet / LPN",
+        "readyHint": "Vui lòng quét mã barcode LPN để bắt đầu dịch chuyển nguyên khối"
+      },
+      "labels": {
+        "pallet": "Pallet: {lpn}",
+        "itemsOnPallet": "Mặt hàng trên pallet:",
+        "emptyPallet": "Pallet trống",
+        "itemLot": "{code} (Lô: {lot})",
+        "step2": "Bước 2: Quét mã vị trí kệ đích:",
+        "confirmTitle": "Xác nhận di chuyển pallet:",
+        "oldLocation": "Vị trí cũ"
+      }
+    },
+    "serial": {
+      "page": {
+        "title": "Nhận mã Serial"
+      },
+      "fields": {
+        "scanProduct": "Quét sản phẩm",
+        "scanProductPlaceholder": "Quét sản phẩm...",
+        "scanLocation": "Quét kệ cất",
+        "scanLocationPlaceholder": "Quét kệ...",
+        "scanSerial": "Quét mã Serial",
+        "scanSerialPlaceholder": "Quét mã serial sản phẩm..."
+      },
+      "labels": {
+        "product": "Sản phẩm:",
+        "location": "Kệ cất:",
+        "scanned": "Đã quét: {count} mã",
+        "serialList": "Mã serial đã quét ở lượt này:",
+        "emptySerials": "Chưa quét mã nào"
+      },
+      "actions": {
+        "reset": "Hoàn tất & Chuyển sản phẩm khác"
+      },
+      "toast": {
+        "metaFailed": "Không thể tải metadata từ hệ thống.",
+        "productNotFound": "Không tìm thấy sản phẩm có mã: {code}",
+        "notSerialManaged": "Sản phẩm [{code}] không cấu hình quản lý Serial.",
+        "productOk": "Chọn sản phẩm: {code}",
+        "locNotFound": "Không tìm thấy kệ có mã: {code}",
+        "locOk": "Chọn kệ cất: {code}",
+        "dupSerial": "Mã serial này đã được quét ở lượt này.",
+        "serialOk": "Đã nhận thành công mã serial: {serial}",
+        "serialFailed": "Lỗi khi nhận mã serial."
+      },
+      "states": {
+        "productTitle": "Quét mã sản phẩm",
+        "productHint": "Vui lòng quét mã barcode sản phẩm để bắt đầu nhận serial",
+        "locationTitle": "Quét vị trí kệ cất",
+        "locationHint": "Sản phẩm: {code}"
+      }
+    },
+    "tasks": {
+      "page": {
+        "title": "Gợi ý việc tiếp theo",
+        "subtitle": "Tối ưu theo vị trí không gian đang bật"
+      },
+      "states": {
+        "loading": "Đang tìm việc tối ưu tiếp theo...",
+        "emptyTitle": "Không có việc phù hợp",
+        "emptyHint": "Bạn có thể tìm lại hoặc hỏi giám sát."
+      },
+      "labels": {
+        "score": "Điểm: {score}",
+        "locationId": "Location ID",
+        "zoneId": "Zone ID",
+        "skipReason": "Chọn lý do bỏ qua:",
+        "reasonPlaceholder": "Chọn lý do...",
+        "otherOptions": "Lựa chọn khác:"
+      },
+      "reasons": {
+        "TOO_FAR": "Vị trí việc quá xa",
+        "BLOCKED_LOCATION": "Vị trí đang bị khóa",
+        "EQUIPMENT_UNAVAILABLE": "Thiếu thiết bị",
+        "TASK_CONTEXT_SWITCH": "Ưu tiên việc khác"
+      },
+      "actions": {
+        "findAnother": "Tìm lại",
+        "accept": "Nhận việc",
+        "skip": "Bỏ qua gợi ý",
+        "back": "Quay lại",
+        "confirmSkip": "Xác nhận bỏ qua"
+      },
+      "toast": {
+        "acceptOk": "Đã nhận việc thành công!",
+        "needReason": "Vui lòng chọn lý do bỏ qua.",
+        "skipOk": "Đã ghi nhận bỏ qua.",
+        "loadFailed": "Không thể tải gợi ý việc."
+      }
+    }
+  }
+}

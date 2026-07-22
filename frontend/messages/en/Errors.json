@@ -8,7 +8,23 @@
       "TASK_INTERLEAVING_DISABLED": "Task interleaving disabled",
       "UNAUTHORIZED": "Unauthorized",
       "FORBIDDEN": "Forbidden",
-      "UNKNOWN": "Unknown error"
+      "UNKNOWN": "Unknown error",
+      "CONCURRENCY_CONFLICT": "Concurrency conflict",
+      "LOCATION_OVER_CAPACITY": "Location over capacity",
+      "FEATURE_DISABLED": "Feature disabled",
+      "CANDIDATE_NOT_FOUND": "Candidate not found",
+      "FEATURE_FLAG_INVALID": "Invalid feature flag",
+      "FEATURE_FLAG_NOT_FOUND": "Feature flag not found",
+      "TASK_RECOMMENDATION_CONFLICT": "Task recommendation conflict",
+      "integration": {
+        "idempotencyKeyRequired": "Idempotency key required",
+        "contractVersionRetired": "Contract version retired",
+        "payloadHashMismatch": "Payload hash mismatch",
+        "serverError": "Integration server error"
+      },
+      "validation": {
+        "orderAlreadyProcessed": "Order already processed"
+      }
     },
     "messages": {
       "CUTOVER_FROZEN": "Warehouse write APIs are frozen during cutover.",
@@ -19,7 +35,23 @@
       "UNAUTHORIZED": "Session is invalid or expired.",
       "FORBIDDEN": "You are not allowed to perform this action.",
       "UNKNOWN": "An unknown error occurred.",
-      "generic": "Request failed."
+      "generic": "Request failed.",
+      "CONCURRENCY_CONFLICT": "Data was changed by another session. Please retry.",
+      "LOCATION_OVER_CAPACITY": "Quantity exceeds destination location max capacity.",
+      "FEATURE_DISABLED": "This feature is currently disabled.",
+      "CANDIDATE_NOT_FOUND": "Requested candidate was not found.",
+      "FEATURE_FLAG_INVALID": "Feature flag name is invalid.",
+      "FEATURE_FLAG_NOT_FOUND": "Feature flag was not found.",
+      "TASK_RECOMMENDATION_CONFLICT": "Recommendation was already handled or conflicts.",
+      "integration": {
+        "idempotencyKeyRequired": "Idempotency-Key header is required.",
+        "contractVersionRetired": "Contract version has been retired.",
+        "payloadHashMismatch": "Payload hash mismatch for the same idempotency key.",
+        "serverError": "Server error while processing integration."
+      },
+      "validation": {
+        "orderAlreadyProcessed": "Order already exists in WMS."
+      }
     }
   }
 }

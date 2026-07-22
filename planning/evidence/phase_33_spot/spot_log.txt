@@ -1,0 +1,5 @@
+home VI title=Danh mục chức năng
+home EN title=Function menu cookie=en
+picking EN=Outbound picking
+picking VI=Lấy hàng xuất kho (Picking)
+tasks VI=Gợi ý việc tiếp theo

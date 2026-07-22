@@ -11,6 +11,7 @@ export const CATALOG_MODULES = [
   'Admin',
   'Features',
   'MasterData',
+  'Mobile',
 ] as const;
 
 export type CatalogModule = (typeof CATALOG_MODULES)[number];

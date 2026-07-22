@@ -1,9 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Signal, SignalZero } from "lucide-react";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default function MobileShell({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("Mobile.shell");
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
@@ -21,24 +24,26 @@ export default function MobileShell({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-900 text-white select-none max-w-md mx-auto border-x border-slate-800">
-      {/* Offline/Online Status Bar */}
       {!isOnline && (
         <div className="bg-red-600 text-center py-1.5 text-xs font-semibold flex items-center justify-center gap-2 animate-pulse">
           <SignalZero className="h-3 w-3" />
-          Mất kết nối mạng! Hệ thống chuyển sang lưu offline.
-        </div>
-      )}
-      
-      {isOnline && (
-        <div className="bg-green-600 text-center py-1.5 text-xs font-semibold flex items-center justify-center gap-2">
-          <Signal className="h-3 w-3" />
-          Hệ thống trực tuyến
+          {t("status.offline")}
         </div>
       )}
 
-      <header className="bg-slate-800 p-4 flex items-center justify-between border-b border-slate-700">
-        <h1 className="text-lg font-bold">NEXUSTOCK Handheld</h1>
-        <span className="text-xs bg-slate-700 px-2 py-1 rounded">User: NV-KHO</span>
+      {isOnline && (
+        <div className="bg-green-600 text-center py-1.5 text-xs font-semibold flex items-center justify-center gap-2">
+          <Signal className="h-3 w-3" />
+          {t("status.online")}
+        </div>
+      )}
+
+      <header className="bg-slate-800 p-4 flex items-center justify-between gap-2 border-b border-slate-700">
+        <h1 className="text-lg font-bold truncate">{t("header.title")}</h1>
+        <div className="flex items-center gap-2 shrink-0">
+          <LanguageSwitcher className="scale-90 origin-right" />
+          <span className="text-xs bg-slate-700 px-2 py-1 rounded">{t("header.userLabel", { user: "NV-KHO" })}</span>
+        </div>
       </header>
 
       <main className="flex-1 p-4 overflow-y-auto space-y-4">{children}</main>

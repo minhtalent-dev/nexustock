@@ -1,0 +1,11 @@
+{
+  "gate": "quality",
+  "authorAgentId": "jarvis-dbm-author",
+  "criticAgentId": "critic-tkt_833233027cab4e6e",
+  "spawnTicketId": "tkt_833233027cab4e6e",
+  "subagentStatus": "closed",
+  "status": "closed",
+  "openedAt": "2026-07-21T10:43:59.643Z",
+  "draftFingerprint": "8a389e0cda9a6bec0a96ab42238c02f65e3f4cfe481f36d25649ee0dd3480b17",
+  "etag": 2
+}

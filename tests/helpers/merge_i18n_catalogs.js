@@ -13,6 +13,7 @@ const modules = [
   'Admin',
   'Features',
   'MasterData',
+  'Mobile',
 ];
 
 const messagesRoot = process.argv[2];

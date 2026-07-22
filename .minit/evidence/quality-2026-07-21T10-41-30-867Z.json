@@ -1,0 +1,27 @@
+{
+  "gate": "quality",
+  "mode": "verified",
+  "createdAt": "2026-07-21T10:41:30.867Z",
+  "commandId": "pytest",
+  "argv": [
+    "py",
+    "-3",
+    "-m",
+    "pytest",
+    "-q"
+  ],
+  "exitCode": 5,
+  "stdoutTail": "\r\nno tests ran in 0.45s\r\n",
+  "stderrTail": "",
+  "layers": [
+    {
+      "name": "unit",
+      "passed": false,
+      "commandId": "pytest",
+      "exitCode": 5,
+      "timedOut": false
+    }
+  ],
+  "requireSmokeEvidence": true,
+  "smokeConfigured": false
+}

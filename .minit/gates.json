@@ -24,12 +24,12 @@
     "critiqueStatus": "none"
   },
   "quality": {
-    "status": "in_progress",
-    "updatedAt": "2026-07-21T10:10:23.527Z",
+    "status": "passed",
+    "updatedAt": "2026-07-21T10:44:40.446Z",
     "blockers": [],
     "evidenceMode": "attested",
-    "critiqueStatus": "pending",
-    "critiqueUpdatedAt": "2026-07-21T10:10:23.527Z"
+    "critiqueStatus": "passed",
+    "critiqueUpdatedAt": "2026-07-21T10:44:40.446Z"
   },
   "security": {
     "status": "failed",
@@ -58,7 +58,7 @@
   },
   "learn": {
     "status": "passed",
-    "updatedAt": "2026-07-21T10:17:03.781Z",
+    "updatedAt": "2026-07-21T10:29:42.504Z",
     "blockers": [],
     "critiqueStatus": "none"
   }

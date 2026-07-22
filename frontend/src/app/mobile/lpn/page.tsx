@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import MobileShell from "@/components/mobile/mobile-shell";
 import ScanInput from "@/components/mobile/scan-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { showError, showSuccess } from "@/lib/toast";
+import { showError, showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
 import api from "@/lib/api";
-import { getHttpErrorMessage } from "@/lib/http-error";
 import { ArrowLeft, Box, ArrowRight, Layers } from "lucide-react";
 import Link from "next/link";
 
@@ -33,40 +34,40 @@ interface StorageLocation {
 }
 
 export default function MobileLpnPage() {
+  const t = useTranslations("Mobile.lpn");
+  const tErrors = useTranslations("Errors");
   const [lpn, setLpn] = useState<Lpn | null>(null);
   const [lpnItems, setLpnItems] = useState<LpnItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<"SCAN_LPN" | "SCAN_TARGET_LOC" | "CONFIRM">("SCAN_LPN");
-
   const [targetLocation, setTargetLocation] = useState<StorageLocation | null>(null);
   const [targetLocationCode, setTargetLocationCode] = useState("");
+
+  const showApiErr = (err: unknown, fallback: string) => {
+    const { codeLabel, message } = resolveApiError(err, tErrors);
+    showApiErrorToast(codeLabel, message || fallback);
+  };
 
   const handleScanLpn = async (barcode: string) => {
     setLoading(true);
     try {
-      // 1. Tìm LPN theo mã quét
       const lpnsRes = await api.get<Lpn[]>("/lpns");
-      const matchedLpn = lpnsRes.data.find(
-        (l) => l.lpnNo.toUpperCase() === barcode.toUpperCase()
-      );
+      const matchedLpn = lpnsRes.data.find((l) => l.lpnNo.toUpperCase() === barcode.toUpperCase());
 
       if (!matchedLpn) {
-        showError(`Không tìm thấy Pallet / LPN có mã: ${barcode}`);
+        showError(t("toast.lpnNotFound", { code: barcode }));
         return;
       }
 
       setLpn(matchedLpn);
-
-      // 2. Load các items trên LPN
       const itemsRes = await api.get<{ items: LpnItem[] }>("/inventory/balances", {
-        params: { lpnId: matchedLpn.id }
+        params: { lpnId: matchedLpn.id },
       });
       setLpnItems(itemsRes.data?.items || []);
-
-      showSuccess("Quét mã LPN thành công!");
+      showSuccess(t("toast.lpnOk"));
       setCurrentStep("SCAN_TARGET_LOC");
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi khi kiểm tra mã LPN."));
+      showApiErr(err, t("toast.lpnBad"));
     } finally {
       setLoading(false);
     }
@@ -75,28 +76,27 @@ export default function MobileLpnPage() {
   const handleScanTargetLocation = async (barcode: string) => {
     setLoading(true);
     try {
-      // 1. Kiểm tra vị trí kệ đích có hợp lệ không
       const locsRes = await api.get<{ items: StorageLocation[] }>("/master-data/storage-locations");
       const matchedLoc = (locsRes.data.items || []).find(
         (l) => l.code.toUpperCase() === barcode.toUpperCase()
       );
 
       if (!matchedLoc) {
-        showError(`Không tìm thấy vị trí kệ: ${barcode}`);
+        showError(t("toast.locNotFound", { code: barcode }));
         return;
       }
 
       if (lpn && matchedLoc.id === lpn.locationId) {
-        showError("Kệ đích phải khác vị trí hiện tại của LPN.");
+        showError(t("toast.sameLoc"));
         return;
       }
 
       setTargetLocation(matchedLoc);
       setTargetLocationCode(barcode);
-      showSuccess("Quét kệ đích thành công!");
+      showSuccess(t("toast.locOk"));
       setCurrentStep("CONFIRM");
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi kiểm tra kệ đích."));
+      showApiErr(err, t("toast.locBad"));
     } finally {
       setLoading(false);
     }
@@ -108,18 +108,16 @@ export default function MobileLpnPage() {
     setLoading(true);
     try {
       await api.post(`/lpns/${lpn.id}/move`, {
-        targetLocationId: targetLocation.id
+        targetLocationId: targetLocation.id,
       });
-
-      showSuccess(`Đã di chuyển pallet ${lpn.lpnNo} thành công!`);
-      // Reset
+      showSuccess(t("toast.moveOk", { lpn: lpn.lpnNo }));
       setLpn(null);
       setLpnItems([]);
       setTargetLocation(null);
       setTargetLocationCode("");
       setCurrentStep("SCAN_LPN");
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Lỗi dịch chuyển pallet."));
+      showApiErr(err, t("toast.moveFailed"));
     } finally {
       setLoading(false);
     }
@@ -134,7 +132,7 @@ export default function MobileLpnPage() {
           </Link>
           <h2 className="text-lg font-bold flex items-center gap-2 text-slate-100">
             <Layers className="h-5 w-5 text-emerald-500" />
-            Di chuyển Pallet LPN
+            {t("page.title")}
           </h2>
         </div>
 
@@ -142,28 +140,36 @@ export default function MobileLpnPage() {
           <div className="space-y-4 py-8">
             <div className="text-center space-y-2">
               <Box className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
-              <h3 className="text-base font-semibold text-slate-200">Quét Pallet / LPN</h3>
-              <p className="text-xs text-slate-400">Vui lòng quét mã barcode LPN để bắt đầu dịch chuyển nguyên khối</p>
+              <h3 className="text-base font-semibold text-slate-200">{t("states.readyTitle")}</h3>
+              <p className="text-xs text-slate-400">{t("states.readyHint")}</p>
             </div>
-            <ScanInput id="lpnBarcodeScan" label="Quét mã LPN" onScan={handleScanLpn} placeholder="Quét LPN..." />
+            <ScanInput
+              id="lpnBarcodeScan"
+              label={t("fields.scanLpn")}
+              onScan={handleScanLpn}
+              placeholder={t("fields.scanLpnPlaceholder")}
+            />
           </div>
         )}
 
         {lpn && (
           <Card className="border-slate-800 bg-slate-800/40">
             <CardHeader className="pb-2 border-b border-slate-800/80">
-              <CardTitle className="text-xs font-semibold text-slate-200">Pallet: {lpn.lpnNo}</CardTitle>
+              <CardTitle className="text-xs font-semibold text-slate-200">
+                {t("labels.pallet", { lpn: lpn.lpnNo })}
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
-              {/* LPN Items list */}
               <div className="bg-slate-900/60 p-3 rounded text-xs space-y-1.5 border border-slate-800 max-h-[150px] overflow-y-auto">
-                <span className="text-[10px] text-slate-500 block border-b border-slate-800 pb-1">Mặt hàng trên pallet:</span>
+                <span className="text-[10px] text-slate-500 block border-b border-slate-800 pb-1">
+                  {t("labels.itemsOnPallet")}
+                </span>
                 {lpnItems.length === 0 ? (
-                  <div className="text-slate-400 italic text-center py-2">Pallet trống</div>
+                  <div className="text-slate-400 italic text-center py-2">{t("labels.emptyPallet")}</div>
                 ) : (
                   lpnItems.map((item, idx) => (
                     <div key={idx} className="flex justify-between text-[11px] text-slate-200">
-                      <span>{item.itemCode} (Lô: {item.lotNo})</span>
+                      <span>{t("labels.itemLot", { code: item.itemCode, lot: item.lotNo })}</span>
                       <span className="font-bold text-white">{item.qtyOnHand}</span>
                     </div>
                   ))
@@ -173,26 +179,35 @@ export default function MobileLpnPage() {
               {currentStep === "SCAN_TARGET_LOC" && (
                 <div className="space-y-4 pt-2">
                   <div className="bg-slate-850 p-3 rounded text-center border border-amber-500/20">
-                    <span className="text-xs text-slate-400 block">Bước 2: Quét mã vị trí kệ đích:</span>
+                    <span className="text-xs text-slate-400 block">{t("labels.step2")}</span>
                   </div>
-                  <ScanInput id="targetLocationScan" label="Quét kệ đích" onScan={handleScanTargetLocation} placeholder="Quét kệ đích..." />
+                  <ScanInput
+                    id="targetLocationScan"
+                    label={t("fields.scanTarget")}
+                    onScan={handleScanTargetLocation}
+                    placeholder={t("fields.scanTargetPlaceholder")}
+                  />
                 </div>
               )}
 
               {currentStep === "CONFIRM" && (
                 <div className="space-y-4 pt-2">
                   <div className="bg-slate-850 p-4 rounded text-center border border-emerald-500/20 space-y-2">
-                    <span className="text-xs text-slate-400 block">Xác nhận di chuyển pallet:</span>
+                    <span className="text-xs text-slate-400 block">{t("labels.confirmTitle")}</span>
                     <span className="text-lg font-bold font-mono text-emerald-400 block">{lpn.lpnNo}</span>
                     <div className="flex items-center justify-center gap-3 text-xs text-white pt-1">
-                      <span className="font-mono text-zinc-400">Vị trí cũ</span>
+                      <span className="font-mono text-zinc-400">{t("labels.oldLocation")}</span>
                       <ArrowRight className="h-3.5 w-3.5 text-emerald-500" />
                       <span className="font-mono text-emerald-400 font-bold">{targetLocationCode}</span>
                     </div>
                   </div>
 
-                  <Button onClick={handleConfirmMove} disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-lg shadow-lg">
-                    {loading ? "Đang xử lý..." : "Xác nhận di chuyển"}
+                  <Button
+                    onClick={handleConfirmMove}
+                    disabled={loading}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-lg shadow-lg"
+                  >
+                    {loading ? t("actions.processing") : t("actions.confirm")}
                   </Button>
                 </div>
               )}

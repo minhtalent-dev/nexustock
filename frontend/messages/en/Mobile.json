@@ -1,0 +1,330 @@
+{
+  "Mobile": {
+    "common": {
+      "scan": {
+        "defaultPlaceholder": "Scan barcode...",
+        "focus": "Focus"
+      }
+    },
+    "shell": {
+      "status": {
+        "offline": "Network lost! Switching to offline queue.",
+        "online": "System online"
+      },
+      "header": {
+        "title": "NEXUSTOCK Handheld",
+        "userLabel": "User: {user}"
+      }
+    },
+    "home": {
+      "page": {
+        "title": "Function menu",
+        "subtitle": "Choose a handheld warehouse task"
+      },
+      "items": {
+        "nextTask": {
+          "title": "Next task",
+          "description": "Suggested next warehouse task"
+        },
+        "inbound": {
+          "title": "Inbound receiving",
+          "description": "Receive goods from PO"
+        },
+        "movement": {
+          "title": "Movement",
+          "description": "Move stock between locations"
+        },
+        "picking": {
+          "title": "Picking",
+          "description": "Pick for outbound orders"
+        },
+        "replenishment": {
+          "title": "Replenishment",
+          "description": "Replenish pick-face locations"
+        },
+        "lpn": {
+          "title": "LPN move",
+          "description": "Move whole pallet by LPN scan"
+        },
+        "serial": {
+          "title": "Serial receive",
+          "description": "Scan serials for products"
+        },
+        "counting": {
+          "title": "Cycle count",
+          "description": "Perform physical counts"
+        },
+        "packing": {
+          "title": "Packing",
+          "description": "Pack and label shipments"
+        }
+      }
+    },
+    "picking": {
+      "page": {
+        "title": "Outbound picking"
+      },
+      "states": {
+        "readyTitle": "Ready to claim a task",
+        "readyHint": "The system assigns the nearest available pick location"
+      },
+      "fields": {
+        "userLocation": "Your current location (optional):",
+        "userLocationPlaceholder": "e.g. LOC-A-01",
+        "scanLoc": "Scan location code",
+        "scanLocPlaceholder": "Scan LOC-A-01...",
+        "scanLot": "Scan lot code",
+        "scanLotPlaceholder": "Scan LOT-CC...",
+        "moveHint": "Go to location and scan:",
+        "lotHint": "Scan product lot code:",
+        "qtyHint": "Quantity to pick:",
+        "qtyUnit": "{count} units"
+      },
+      "labels": {
+        "currentTask": "Active task",
+        "type": "Type:",
+        "orderId": "Order ID:",
+        "step": "Step:"
+      },
+      "actions": {
+        "claim": "Claim next task",
+        "claiming": "Claiming...",
+        "complete": "Confirm pick complete"
+      },
+      "toast": {
+        "noTask": "No tasks available.",
+        "claimFailed": "Unable to claim a new task.",
+        "locOk": "Location confirmed!",
+        "locBad": "Invalid location!",
+        "lotOk": "Lot confirmed!",
+        "lotBad": "Lot not found in warehouse!",
+        "completeOk": "Pick task completed!",
+        "completeFailed": "Failed to complete task."
+      }
+    },
+    "movement": {
+      "page": {
+        "title": "Stock movement"
+      },
+      "fields": {
+        "scanFrom": "Step 1: Scan source location",
+        "scanFromPlaceholder": "Scan source location...",
+        "scanLot": "Step 2: Scan lot code",
+        "scanLotPlaceholder": "Scan lot to move...",
+        "qty": "Step 3: Enter quantity",
+        "scanTo": "Step 4: Scan destination location",
+        "scanToPlaceholder": "Scan destination...",
+        "qtyPlaceholder": "Enter quantity..."
+      },
+      "labels": {
+        "fromLoc": "Source:",
+        "lotNo": "Lot:",
+        "qty": "Quantity:",
+        "toLoc": "Destination:",
+        "confirmTitle": "Confirm movement",
+        "fromShelf": "From:",
+        "toShelf": "To:",
+        "lot": "Lot:",
+        "quantity": "Quantity:"
+      },
+      "actions": {
+        "next": "Continue",
+        "reset": "Reset",
+        "confirm": "Confirm move",
+        "saveOffline": "Save offline",
+        "processing": "Processing...",
+        "syncQueue": "Sync offline queue"
+      },
+      "toast": {
+        "fromOk": "Source location scanned.",
+        "fromBad": "Invalid or locked location!",
+        "lotOk": "Lot scanned.",
+        "lotBad": "Lot not found!",
+        "qtyBad": "Quantity must be greater than 0",
+        "sameLoc": "Destination cannot match source",
+        "toOk": "Destination scanned.",
+        "toBad": "Invalid destination!",
+        "offlineSaved": "Offline. Task saved to offline queue!",
+        "moveOk": "Stock movement completed!",
+        "moveFailed": "Stock movement failed!",
+        "syncOk": "Offline queue synced!",
+        "syncFailed": "Offline sync failed."
+      }
+    },
+    "replenishment": {
+      "page": {
+        "title": "Pick-face replenishment"
+      },
+      "fields": {
+        "userLocation": "Current location (optional):",
+        "scanSource": "Scan source location",
+        "scanSourcePlaceholder": "Scan source...",
+        "scanLot": "Scan lot barcode",
+        "scanLotPlaceholder": "Scan product lot...",
+        "scanTarget": "Scan target location",
+        "scanTargetPlaceholder": "Scan target...",
+        "userLocationPlaceholder": "Example: LOC-A-01"
+      },
+      "actions": {
+        "claim": "Claim next task",
+        "claiming": "Claiming...",
+        "complete": "Confirm replenishment complete"
+      },
+      "toast": {
+        "wrongTaskType": "Claimed task is not replenishment. Try again.",
+        "claimOk": "Replenishment task claimed!",
+        "noDetail": "Replenishment task detail not found.",
+        "noTask": "No replenishment tasks available.",
+        "claimFailed": "Unable to claim a new task.",
+        "sourceMismatch": "Location mismatch! Scan source: {expected}",
+        "sourceOk": "Source location confirmed!",
+        "sourceBad": "Invalid source location!",
+        "lotMismatch": "Lot mismatch! Scan lot: {expected}",
+        "lotOk": "Lot confirmed!",
+        "lotBad": "Invalid lot code!",
+        "targetMismatch": "Location mismatch! Scan target: {expected}",
+        "targetOk": "Pick-face target confirmed!",
+        "targetBad": "Invalid target location!",
+        "qtyBad": "Actual quantity must be >= 0.",
+        "completeOk": "Replenishment completed!",
+        "completeFailed": "Failed to complete replenishment."
+      },
+      "states": {
+        "readyTitle": "Ready to claim a task",
+        "readyHint": "The system assigns the nearest pick-face replenishment task to your location"
+      },
+      "labels": {
+        "detailTitle": "Replenishment task detail",
+        "product": "Product:",
+        "lot": "Lot:",
+        "sourceBulk": "Bulk source:",
+        "targetPick": "Pick target:",
+        "step1": "Step 1: Go to bulk source and scan:",
+        "step2": "Step 2: Scan the lot to pick:",
+        "step3": "Step 3: Deliver to pick-face target and scan:",
+        "step4": "Step 4: Enter actual moved quantity:",
+        "actualQty": "Actual quantity moved:",
+        "operator": "Operator name:",
+        "operatorPlaceholder": "Enter your name...",
+        "qtyUnit": "{count} units"
+      }
+    },
+    "lpn": {
+      "page": {
+        "title": "LPN pallet move"
+      },
+      "fields": {
+        "scanLpn": "Scan LPN",
+        "scanLpnPlaceholder": "Scan LPN...",
+        "scanTarget": "Scan target location",
+        "scanTargetPlaceholder": "Scan target..."
+      },
+      "actions": {
+        "confirm": "Confirm move",
+        "processing": "Processing..."
+      },
+      "toast": {
+        "lpnNotFound": "LPN not found: {code}",
+        "lpnOk": "LPN scanned!",
+        "lpnBad": "Failed to validate LPN.",
+        "locNotFound": "Location not found: {code}",
+        "sameLoc": "Target must differ from current LPN location.",
+        "locOk": "Target location scanned!",
+        "locBad": "Failed to validate target.",
+        "moveOk": "Pallet {lpn} moved successfully!",
+        "moveFailed": "Failed to move pallet."
+      },
+      "states": {
+        "readyTitle": "Scan pallet / LPN",
+        "readyHint": "Scan the LPN barcode to start full-pallet move"
+      },
+      "labels": {
+        "pallet": "Pallet: {lpn}",
+        "itemsOnPallet": "Items on pallet:",
+        "emptyPallet": "Empty pallet",
+        "itemLot": "{code} (Lot: {lot})",
+        "step2": "Step 2: Scan target location:",
+        "confirmTitle": "Confirm pallet move:",
+        "oldLocation": "Previous location"
+      }
+    },
+    "serial": {
+      "page": {
+        "title": "Serial receive"
+      },
+      "fields": {
+        "scanProduct": "Scan product",
+        "scanProductPlaceholder": "Scan product...",
+        "scanLocation": "Scan putaway location",
+        "scanLocationPlaceholder": "Scan location...",
+        "scanSerial": "Scan serial",
+        "scanSerialPlaceholder": "Scan product serial..."
+      },
+      "labels": {
+        "product": "Product:",
+        "location": "Location:",
+        "scanned": "Scanned: {count} serials",
+        "serialList": "Serials scanned this session:",
+        "emptySerials": "No serials yet"
+      },
+      "actions": {
+        "reset": "Finish & switch product"
+      },
+      "toast": {
+        "metaFailed": "Unable to load metadata.",
+        "productNotFound": "Product not found: {code}",
+        "notSerialManaged": "Product [{code}] is not serial-managed.",
+        "productOk": "Selected product: {code}",
+        "locNotFound": "Location not found: {code}",
+        "locOk": "Selected location: {code}",
+        "dupSerial": "This serial was already scanned.",
+        "serialOk": "Serial received: {serial}",
+        "serialFailed": "Failed to receive serial."
+      },
+      "states": {
+        "productTitle": "Scan product",
+        "productHint": "Scan the product barcode to start serial receive",
+        "locationTitle": "Scan putaway location",
+        "locationHint": "Product: {code}"
+      }
+    },
+    "tasks": {
+      "page": {
+        "title": "Suggested next task",
+        "subtitle": "Spatial optimization active"
+      },
+      "states": {
+        "loading": "Finding optimal next task...",
+        "emptyTitle": "No eligible task found",
+        "emptyHint": "You can request another search or consult supervisor."
+      },
+      "labels": {
+        "score": "Score: {score}",
+        "locationId": "Location ID",
+        "zoneId": "Zone ID",
+        "skipReason": "Select reason to skip:",
+        "reasonPlaceholder": "Choose reason...",
+        "otherOptions": "Other options:"
+      },
+      "reasons": {
+        "TOO_FAR": "Task location is too far",
+        "BLOCKED_LOCATION": "Location is blocked",
+        "EQUIPMENT_UNAVAILABLE": "Missing equipment",
+        "TASK_CONTEXT_SWITCH": "Prefer other work"
+      },
+      "actions": {
+        "findAnother": "Request another search",
+        "accept": "Accept task",
+        "skip": "Skip suggestion",
+        "back": "Back",
+        "confirmSkip": "Confirm skip"
+      },
+      "toast": {
+        "acceptOk": "Task accepted successfully!",
+        "needReason": "Please select a reason to skip.",
+        "skipOk": "Skip recorded.",
+        "loadFailed": "Unable to load task suggestion."
+      }
+    }
+  }
+}

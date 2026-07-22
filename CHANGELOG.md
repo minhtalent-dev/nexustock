@@ -7,6 +7,8 @@
 - **Giao diện đa ngôn ngữ**: Cho phép chuyển Tiếng Việt / English ngay trên hệ thống; lựa chọn được giữ khi làm việc tiếp.
 - **Kho ngôn ngữ theo nhóm chức năng**: Chuỗi giao diện được tổ chức theo từng nhóm (dễ cập nhật, giảm xung đột khi nhiều người chỉnh cùng lúc).
 - **Danh mục nền tảng đa ngôn ngữ**: Màn hình quản lý vật tư, đơn vị tính, kho, vùng, vị trí, đối tác, mã lý do và nhập liệu CSV hỗ trợ chuyển ngôn ngữ đầy đủ.
+- **Ứng dụng cầm tay đa ngôn ngữ**: Toàn bộ màn hình thao tác kho trên thiết bị cầm tay (lấy hàng, dịch chuyển, bổ sung, pallet, serial, gợi ý việc) hỗ trợ chuyển Tiếng Việt / English; thanh trạng thái và nút đổi ngôn ngữ luôn sẵn trên màn hình cầm tay.
+- **Thông báo lỗi rõ ràng hơn**: Khi thao tác thất bại, hệ thống hiển thị nhãn mã lỗi kèm nội dung dễ hiểu theo ngôn ngữ đang chọn.
 - **Bảng sẵn sàng hệ thống**: Cho phép quản trị viên xem nhanh tình trạng các thành phần quan trọng trước khi vận hành chính thức.
 - **Bảng theo dõi cắt chuyển**: Ghi nhận từng bước chuyển sang vận hành mới, kèm lịch sử thao tác rõ ràng.
 - **Khóa ghi nghiệp vụ khi cắt chuyển**: Khi cần, có thể tạm khóa thao tác ghi dữ liệu kho để tránh sai lệch trong lúc chuyển hệ thống; mở khóa lại khi hoàn tất.

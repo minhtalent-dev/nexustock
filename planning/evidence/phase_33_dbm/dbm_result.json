@@ -1,0 +1,210 @@
+{
+  "ok": true,
+  "base": "http://localhost:3003",
+  "spotDoD": {
+    "required": [
+      "home",
+      "picking",
+      "tasks"
+    ],
+    "fail": []
+  },
+  "full7": {
+    "total": 14,
+    "pass": 14,
+    "fail": []
+  },
+  "cookie": "en",
+  "checks": {
+    "homeViEn": true,
+    "pickingViEn": true,
+    "tasksViEn": true,
+    "all7BothLocales": true,
+    "switcherOnShell": true,
+    "cookieEnAfterSwitch": true
+  },
+  "results": [
+    {
+      "id": "home",
+      "path": "/mobile",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Danh mục chức năng",
+      "foundTitle": "Danh mục chức năng",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "picking",
+      "path": "/mobile/picking",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Lấy hàng xuất kho (Picking)",
+      "foundTitle": "Lấy hàng xuất kho (Picking)",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "movement",
+      "path": "/mobile/movement",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Dịch chuyển kho (Movement)",
+      "foundTitle": "Dịch chuyển kho (Movement)",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "replenishment",
+      "path": "/mobile/replenishment",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Bổ sung Pick Face",
+      "foundTitle": "Bổ sung Pick Face",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "lpn",
+      "path": "/mobile/lpn",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Di chuyển Pallet LPN",
+      "foundTitle": "Di chuyển Pallet LPN",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "serial",
+      "path": "/mobile/serial",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Nhận mã Serial",
+      "foundTitle": "Nhận mã Serial",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "tasks",
+      "path": "/mobile/tasks/next",
+      "locale": "vi",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Gợi ý việc tiếp theo",
+      "foundTitle": "Gợi ý việc tiếp theo",
+      "lang": "vi",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "home",
+      "path": "/mobile",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Function menu",
+      "foundTitle": "Function menu",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "picking",
+      "path": "/mobile/picking",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Outbound picking",
+      "foundTitle": "Outbound picking",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "movement",
+      "path": "/mobile/movement",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Stock movement",
+      "foundTitle": "Stock movement",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "replenishment",
+      "path": "/mobile/replenishment",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Pick-face replenishment",
+      "foundTitle": "Pick-face replenishment",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "lpn",
+      "path": "/mobile/lpn",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "LPN pallet move",
+      "foundTitle": "LPN pallet move",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "serial",
+      "path": "/mobile/serial",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Serial receive",
+      "foundTitle": "Serial receive",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    },
+    {
+      "id": "tasks",
+      "path": "/mobile/tasks/next",
+      "locale": "en",
+      "status": "PASS",
+      "titleOk": true,
+      "switcherOk": true,
+      "expectedTitle": "Suggested next task",
+      "foundTitle": "Suggested next task",
+      "lang": "en",
+      "pageErrors": [],
+      "note": ""
+    }
+  ]
+}

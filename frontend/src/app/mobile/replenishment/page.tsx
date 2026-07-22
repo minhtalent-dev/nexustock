@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import MobileShell from "@/components/mobile/mobile-shell";
 import ScanInput from "@/components/mobile/scan-input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { showError, showSuccess } from "@/lib/toast";
+import { showError, showSuccess, showApiErrorToast } from "@/lib/toast";
+import { resolveApiError } from "@/lib/api-error-i18n";
 import api from "@/lib/api";
-import { getHttpErrorMessage } from "@/lib/http-error";
 import { ArrowLeft, Box, ArrowRight, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
@@ -55,47 +56,46 @@ interface Product {
 }
 
 export default function MobileReplenishmentPage() {
+  const t = useTranslations("Mobile.replenishment");
+  const tErrors = useTranslations("Errors");
   const [mobileTask, setMobileTask] = useState<MobileTask | null>(null);
   const [taskDetail, setTaskDetail] = useState<ReplenishmentTaskDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<"CLAIM" | "SCAN_SOURCE_LOC" | "SCAN_LOT" | "SCAN_TARGET_LOC" | "INPUT_QTY">("CLAIM");
-
   const [userLocation, setUserLocation] = useState("");
   const [actualQty, setActualQty] = useState<number>(0);
   const [operatorName, setOperatorName] = useState("");
 
+  const showApiErr = (err: unknown, fallback: string) => {
+    const { codeLabel, message } = resolveApiError(err, tErrors);
+    showApiErrorToast(codeLabel, message || fallback);
+  };
+
   const handleClaimNextTask = async () => {
     setLoading(true);
     try {
-      // 1. Claim next task từ Mobile task pool
       const res = await api.get<{ task: MobileTask; message: string }>("/mobile/tasks/next", {
-        params: { currentLocationCode: userLocation }
+        params: { currentLocationCode: userLocation },
       });
 
       if (res.data.task) {
         const claimedTask = res.data.task;
 
         if (claimedTask.referenceType !== "REPLENISHMENT") {
-          // Chỉ nhận nhiệm vụ Replenishment
-          showError("Nhiệm vụ nhận được không phải là Bổ sung hàng. Vui lòng thử lại.");
-          await api.post(`/mobile/tasks/${claimedTask.id}/complete`); // Giải phóng hoặc trả lại
+          showError(t("toast.wrongTaskType"));
+          await api.post(`/mobile/tasks/${claimedTask.id}/complete`);
           return;
         }
 
         setMobileTask(claimedTask);
 
-        // 2. Fetch chi tiết ReplenishmentTask tương ứng
-        // Vì API GET /api/replenishment/tasks trả về tất cả, ta lọc theo ID
         const tasksRes = await api.get<ReplenishmentTaskApiItem[]>("/replenishment/tasks");
-        const detail = tasksRes.data.find((t) => t.id === claimedTask.referenceId);
+        const detail = tasksRes.data.find((item) => item.id === claimedTask.referenceId);
 
         if (detail) {
-          // Load location codes để hiển thị trực quan
           const locsRes = await api.get<StorageLocation[]>("/masterdata/locations");
           const sourceLoc = locsRes.data.find((l) => l.id === detail.sourceLocationId);
           const targetLoc = locsRes.data.find((l) => l.id === detail.targetLocationId);
-
-          // Load sản phẩm
           const prodsRes = await api.get<Product[]>("/masterdata/products");
           const prod = prodsRes.data.find((p) => p.id === detail.itemId);
 
@@ -109,21 +109,21 @@ export default function MobileReplenishmentPage() {
             targetLocationId: detail.targetLocationId,
             targetLocationCode: targetLoc?.code || detail.targetLocationId.substring(0, 8),
             lotNo: detail.lotNo,
-            requestedQty: detail.requestedQty
+            requestedQty: detail.requestedQty,
           });
 
           setActualQty(detail.requestedQty);
           setCurrentStep("SCAN_SOURCE_LOC");
-          showSuccess("Đã nhận việc bổ sung hàng thành công!");
+          showSuccess(t("toast.claimOk"));
         } else {
-          showError("Không tìm thấy chi tiết nhiệm vụ bổ sung.");
+          showError(t("toast.noDetail"));
           setMobileTask(null);
         }
       } else {
-        showError(res.data.message || "Không còn nhiệm vụ bổ sung nào sẵn sàng.");
+        showError(res.data.message || t("toast.noTask"));
       }
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Không thể lấy nhiệm vụ mới."));
+      showApiErr(err, t("toast.claimFailed"));
     } finally {
       setLoading(false);
     }
@@ -132,7 +132,7 @@ export default function MobileReplenishmentPage() {
   const handleScanSourceLocation = async (barcode: string) => {
     if (!taskDetail) return;
     if (barcode.toUpperCase() !== taskDetail.sourceLocationCode.toUpperCase()) {
-      showError(`Mã vị trí không khớp! Vui lòng quét đúng kệ nguồn: ${taskDetail.sourceLocationCode}`);
+      showError(t("toast.sourceMismatch", { expected: taskDetail.sourceLocationCode }));
       return;
     }
 
@@ -140,10 +140,10 @@ export default function MobileReplenishmentPage() {
     try {
       await api.post("/mobile/scan/validate", { barcode, context: "LOCATION" });
       setUserLocation(barcode);
-      showSuccess("Đã xác nhận kệ nguồn thành công!");
+      showSuccess(t("toast.sourceOk"));
       setCurrentStep("SCAN_LOT");
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Vị trí kệ nguồn không hợp lệ!"));
+      showApiErr(err, t("toast.sourceBad"));
     } finally {
       setLoading(false);
     }
@@ -152,17 +152,17 @@ export default function MobileReplenishmentPage() {
   const handleScanLot = async (barcode: string) => {
     if (!taskDetail) return;
     if (barcode !== taskDetail.lotNo) {
-      showError(`Mã số lô sản phẩm không khớp! Vui lòng quét đúng số lô: ${taskDetail.lotNo}`);
+      showError(t("toast.lotMismatch", { expected: taskDetail.lotNo }));
       return;
     }
 
     setLoading(true);
     try {
       await api.post("/mobile/scan/validate", { barcode, context: "LOT" });
-      showSuccess("Đã xác nhận số lô sản phẩm thành công!");
+      showSuccess(t("toast.lotOk"));
       setCurrentStep("SCAN_TARGET_LOC");
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Mã số lô sản phẩm không hợp lệ!"));
+      showApiErr(err, t("toast.lotBad"));
     } finally {
       setLoading(false);
     }
@@ -171,17 +171,17 @@ export default function MobileReplenishmentPage() {
   const handleScanTargetLocation = async (barcode: string) => {
     if (!taskDetail) return;
     if (barcode.toUpperCase() !== taskDetail.targetLocationCode.toUpperCase()) {
-      showError(`Mã vị trí không khớp! Vui lòng quét đúng kệ đích: ${taskDetail.targetLocationCode}`);
+      showError(t("toast.targetMismatch", { expected: taskDetail.targetLocationCode }));
       return;
     }
 
     setLoading(true);
     try {
       await api.post("/mobile/scan/validate", { barcode, context: "LOCATION" });
-      showSuccess("Đã xác nhận kệ đích Pick Face thành công!");
+      showSuccess(t("toast.targetOk"));
       setCurrentStep("INPUT_QTY");
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Vị trí kệ đích không hợp lệ!"));
+      showApiErr(err, t("toast.targetBad"));
     } finally {
       setLoading(false);
     }
@@ -190,25 +190,22 @@ export default function MobileReplenishmentPage() {
   const handleCompleteTask = async () => {
     if (!mobileTask || !taskDetail) return;
     if (actualQty < 0) {
-      showError("Số lượng thực tế phải lớn hơn hoặc bằng 0.");
+      showError(t("toast.qtyBad"));
       return;
     }
 
     setLoading(true);
     try {
-      const payload = {
+      await api.post(`/replenishment/tasks/${taskDetail.id}/complete`, {
         actualQty,
-        operatorName: operatorName || "Handheld User"
-      };
-      // Gọi qua API Complete của Replenishment Controller để chạy toàn bộ logic nghiệp vụ
-      await api.post(`/replenishment/tasks/${taskDetail.id}/complete`, payload);
-
-      showSuccess("Hoàn thành nhiệm vụ bổ sung hàng thành công!");
+        operatorName: operatorName || "Handheld User",
+      });
+      showSuccess(t("toast.completeOk"));
       setMobileTask(null);
       setTaskDetail(null);
       setCurrentStep("CLAIM");
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Gặp lỗi khi hoàn thành nhiệm vụ bổ sung."));
+      showApiErr(err, t("toast.completeFailed"));
     } finally {
       setLoading(false);
     }
@@ -225,7 +222,7 @@ export default function MobileReplenishmentPage() {
           </Button>
           <h2 className="text-lg font-bold flex items-center gap-2 text-slate-100">
             <RefreshCw className="h-5 w-5 text-emerald-500" />
-            Bổ sung Pick Face
+            {t("page.title")}
           </h2>
         </div>
 
@@ -233,25 +230,31 @@ export default function MobileReplenishmentPage() {
           <div className="space-y-4 py-8">
             <div className="text-center space-y-2">
               <Box className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
-              <h3 className="text-base font-semibold text-slate-200">Sẵn sàng nhận nhiệm vụ</h3>
-              <p className="text-xs text-slate-400">Hệ thống sẽ giao nhiệm vụ bổ sung kệ Pick Face thiếu hụt gần vị trí của bạn nhất</p>
+              <h3 className="text-base font-semibold text-slate-200">{t("states.readyTitle")}</h3>
+              <p className="text-xs text-slate-400">{t("states.readyHint")}</p>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="userLoc" className="text-xs text-slate-400 block">Khai báo vị trí hiện tại (Tùy chọn):</label>
+              <label htmlFor="userLoc" className="text-xs text-slate-400 block">
+                {t("fields.userLocation")}
+              </label>
               <input
                 id="userLoc"
                 type="text"
                 value={userLocation}
                 onChange={(e) => setUserLocation(e.target.value.toUpperCase())}
-                placeholder="Ví dụ: LOC-A-01"
+                placeholder={t("fields.userLocationPlaceholder")}
                 className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono text-sm text-center"
               />
             </div>
 
-            <Button onClick={handleClaimNextTask} disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-base font-bold rounded-lg shadow-lg gap-2">
+            <Button
+              onClick={handleClaimNextTask}
+              disabled={loading}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-base font-bold rounded-lg shadow-lg gap-2"
+            >
               <ArrowRight className="h-5 w-5" />
-              {loading ? "Đang nhận việc..." : "Nhận việc tiếp theo"}
+              {loading ? t("actions.claiming") : t("actions.claim")}
             </Button>
           </div>
         )}
@@ -259,57 +262,91 @@ export default function MobileReplenishmentPage() {
         {mobileTask && taskDetail && (
           <Card className="border-slate-800 bg-slate-800/40">
             <CardHeader className="pb-2 border-b border-slate-800/80">
-              <CardTitle className="text-xs font-semibold text-slate-200">Chi tiết nhiệm vụ bổ sung</CardTitle>
+              <CardTitle className="text-xs font-semibold text-slate-200">{t("labels.detailTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
               <div className="bg-slate-900/60 p-3 rounded text-xs space-y-1.5 border border-slate-800">
-                <div>Sản phẩm: <span className="text-white font-bold">{taskDetail.itemCode} - {taskDetail.itemName}</span></div>
-                <div>Số lô (Lot): <span className="text-zinc-200 font-bold">{taskDetail.lotNo}</span></div>
+                <div>
+                  {t("labels.product")}{" "}
+                  <span className="text-white font-bold">
+                    {taskDetail.itemCode} - {taskDetail.itemName}
+                  </span>
+                </div>
+                <div>
+                  {t("labels.lot")} <span className="text-zinc-200 font-bold">{taskDetail.lotNo}</span>
+                </div>
                 <div className="grid grid-cols-2 gap-2 mt-1 pt-1.5 border-t border-slate-800/60">
-                  <div>Kệ Bulk nguồn: <span className="text-amber-500 font-bold font-mono block text-sm">{taskDetail.sourceLocationCode}</span></div>
-                  <div>Kệ Pick đích: <span className="text-emerald-500 font-bold font-mono block text-sm">{taskDetail.targetLocationCode}</span></div>
+                  <div>
+                    {t("labels.sourceBulk")}{" "}
+                    <span className="text-amber-500 font-bold font-mono block text-sm">
+                      {taskDetail.sourceLocationCode}
+                    </span>
+                  </div>
+                  <div>
+                    {t("labels.targetPick")}{" "}
+                    <span className="text-emerald-500 font-bold font-mono block text-sm">
+                      {taskDetail.targetLocationCode}
+                    </span>
+                  </div>
                 </div>
               </div>
 
               {currentStep === "SCAN_SOURCE_LOC" && (
                 <div className="space-y-4 pt-2">
                   <div className="bg-slate-850 p-3 rounded text-center border border-amber-500/20">
-                    <span className="text-xs text-slate-400 block">Bước 1: Di chuyển đến kệ Bulk nguồn và quét mã:</span>
+                    <span className="text-xs text-slate-400 block">{t("labels.step1")}</span>
                     <span className="text-lg font-bold font-mono text-amber-500">{taskDetail.sourceLocationCode}</span>
                   </div>
-                  <ScanInput id="sourceLocScan" label="Quét mã vị trí kệ nguồn" onScan={handleScanSourceLocation} placeholder="Quét kệ nguồn..." />
+                  <ScanInput
+                    id="sourceLocScan"
+                    label={t("fields.scanSource")}
+                    onScan={handleScanSourceLocation}
+                    placeholder={t("fields.scanSourcePlaceholder")}
+                  />
                 </div>
               )}
 
               {currentStep === "SCAN_LOT" && (
                 <div className="space-y-4 pt-2">
                   <div className="bg-slate-850 p-3 rounded text-center border border-amber-500/20">
-                    <span className="text-xs text-slate-400 block">Bước 2: Quét mã số lô sản phẩm cần lấy:</span>
+                    <span className="text-xs text-slate-400 block">{t("labels.step2")}</span>
                     <span className="text-base font-bold font-mono text-white">{taskDetail.lotNo}</span>
                   </div>
-                  <ScanInput id="lotScan" label="Quét mã vạch số lô" onScan={handleScanLot} placeholder="Quét số lô sản phẩm..." />
+                  <ScanInput
+                    id="lotScan"
+                    label={t("fields.scanLot")}
+                    onScan={handleScanLot}
+                    placeholder={t("fields.scanLotPlaceholder")}
+                  />
                 </div>
               )}
 
               {currentStep === "SCAN_TARGET_LOC" && (
                 <div className="space-y-4 pt-2">
                   <div className="bg-slate-850 p-3 rounded text-center border border-emerald-500/20">
-                    <span className="text-xs text-slate-400 block">Bước 3: Mang hàng đến kệ Pick Face đích và quét mã:</span>
+                    <span className="text-xs text-slate-400 block">{t("labels.step3")}</span>
                     <span className="text-lg font-bold font-mono text-emerald-500">{taskDetail.targetLocationCode}</span>
                   </div>
-                  <ScanInput id="targetLocScan" label="Quét mã vị trí kệ đích" onScan={handleScanTargetLocation} placeholder="Quét kệ đích..." />
+                  <ScanInput
+                    id="targetLocScan"
+                    label={t("fields.scanTarget")}
+                    onScan={handleScanTargetLocation}
+                    placeholder={t("fields.scanTargetPlaceholder")}
+                  />
                 </div>
               )}
 
               {currentStep === "INPUT_QTY" && (
                 <div className="space-y-4 pt-2">
                   <div className="bg-slate-850 p-3 rounded text-center border border-emerald-500/20">
-                    <span className="text-xs text-slate-400 block">Bước 4: Nhập số lượng thực tế dịch chuyển:</span>
-                    <span className="text-2xl font-bold font-mono text-emerald-400">{taskDetail.requestedQty} sản phẩm</span>
+                    <span className="text-xs text-slate-400 block">{t("labels.step4")}</span>
+                    <span className="text-2xl font-bold font-mono text-emerald-400">
+                      {t("labels.qtyUnit", { count: taskDetail.requestedQty })}
+                    </span>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs text-slate-400 block">Số lượng thực tế dịch chuyển:</label>
+                    <label className="text-xs text-slate-400 block">{t("labels.actualQty")}</label>
                     <input
                       type="number"
                       value={actualQty}
@@ -319,18 +356,22 @@ export default function MobileReplenishmentPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs text-slate-400 block">Tên người thực hiện:</label>
+                    <label className="text-xs text-slate-400 block">{t("labels.operator")}</label>
                     <input
                       type="text"
-                      placeholder="Nhập tên của bạn..."
+                      placeholder={t("labels.operatorPlaceholder")}
                       value={operatorName}
                       onChange={(e) => setOperatorName(e.target.value)}
                       className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-sm"
                     />
                   </div>
 
-                  <Button onClick={handleCompleteTask} disabled={loading} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-lg shadow-lg">
-                    Xác nhận hoàn thành bổ sung
+                  <Button
+                    onClick={handleCompleteTask}
+                    disabled={loading}
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-lg shadow-lg"
+                  >
+                    {t("actions.complete")}
                   </Button>
                 </div>
               )}

@@ -1,6 +1,6 @@
-# Phase 31 / 31a / 32 — verify i18n catalogs & inventory
+# Phase 31 / 31a / 32 / 33 — verify i18n catalogs & inventory
 param(
-  [ValidateSet("31", "31a", "32")]
+  [ValidateSet("31", "31a", "32", "33")]
   [string]$Phase = "31a"
 )
 
@@ -15,6 +15,9 @@ $CATALOG_MODULES = @(
   "Common", "Language", "Sidebar", "Breadcrumb", "Errors",
   "Home", "Login", "HealthUi", "Admin", "Features", "MasterData"
 )
+if ($Phase -eq "33") {
+  $CATALOG_MODULES += "Mobile"
+}
 
 Write-Host "=== verify_i18n.ps1 Phase $Phase ==="
 
@@ -59,9 +62,15 @@ Write-Host "PASS: catalogs parity count=$($vi.count)"
 # --- Foundation ---
 $adminPages = @(Get-ChildItem (Join-Path $appRoot "admin") -Recurse -Filter page.tsx)
 $shell = @("page.tsx", "login\page.tsx", "health-ui\page.tsx") | Where-Object { Test-Path (Join-Path $appRoot $_) }
-$total = $adminPages.Count + $shell.Count
-if ($total -ne 44) { throw "Expected 44 P31 pages, found $total" }
-Write-Host "PASS: inventory 44/44"
+$foundation = $adminPages.Count + $shell.Count
+if ($Phase -eq "33") {
+  $allPages = @(Get-ChildItem $appRoot -Recurse -Filter page.tsx)
+  if ($allPages.Count -ne 59) { throw "Expected 59 pages, found $($allPages.Count)" }
+  Write-Host "PASS: inventory 59/59"
+} else {
+  if ($foundation -ne 44) { throw "Expected 44 P31 pages, found $foundation" }
+  Write-Host "PASS: inventory 44/44"
+}
 
 $i18nPkg = Join-Path $frontend "node_modules\next-intl\package.json"
 if (-not (Test-Path $i18nPkg)) { throw "next-intl not installed" }
@@ -80,7 +89,7 @@ if ($request -match 'messages/\$\{locale\}\.json' -or $request -match 'messages/
 }
 Write-Host "PASS: request.ts loadMessages"
 
-if ($Phase -eq "31a" -or $Phase -eq "32") {
+if ($Phase -eq "31a" -or $Phase -eq "32" -or $Phase -eq "33") {
   foreach ($f in @("load-messages.ts", "merge-messages.ts", "catalog-modules.ts")) {
     if (-not (Test-Path (Join-Path $frontend "src\i18n\$f"))) { throw "Missing i18n/$f" }
   }
@@ -102,10 +111,11 @@ if ($Phase -eq "31a" -or $Phase -eq "32") {
   $load = Get-Content (Join-Path $frontend "src\i18n\load-messages.ts") -Raw
   if ($load -match 'import\(`\$\{') { throw "load-messages must not use dynamic import template" }
   if ($load -notmatch 'MasterData') { throw "load-messages.ts missing MasterData static import" }
-  Write-Host "PASS: static import map (+MasterData)"
+  if ($Phase -eq "33" -and $load -notmatch 'Mobile') { throw "load-messages.ts missing Mobile static import" }
+  Write-Host "PASS: static import map (+MasterData$(if ($Phase -eq '33') { '+Mobile' } else { '' }))"
 }
 
-if ($Phase -eq "32") {
+if ($Phase -eq "32" -or $Phase -eq "33") {
   $mdAreas = @("common", "products", "uoms", "warehouses", "zones", "locations", "partners", "reasons", "import")
   foreach ($loc in @("vi", "en")) {
     $mdPath = Join-Path $messages "$loc\MasterData.json"
@@ -131,6 +141,91 @@ if ($Phase -eq "32") {
   $catalogModulesSrc = Get-Content (Join-Path $frontend "src\i18n\catalog-modules.ts") -Raw
   if ($catalogModulesSrc -notmatch "'MasterData'") { throw "catalog-modules.ts missing MasterData" }
   Write-Host "PASS: catalog-modules MasterData"
+}
+
+if ($Phase -eq "33") {
+  if ($CATALOG_MODULES.Count -ne 12) { throw "Expected 12 catalog modules, found $($CATALOG_MODULES.Count)" }
+  Write-Host "PASS: 12 catalog modules"
+
+  $mobileAreas = @("common", "shell", "home", "picking", "movement", "replenishment", "lpn", "serial", "tasks")
+  foreach ($loc in @("vi", "en")) {
+    $mobPath = Join-Path $messages "$loc\Mobile.json"
+    $mob = Get-Content $mobPath -Raw | ConvertFrom-Json
+    $roots = @($mob.PSObject.Properties.Name)
+    if ($roots.Count -ne 1 -or $roots[0] -ne "Mobile") { throw "Bad root in $loc/Mobile.json" }
+    foreach ($area in $mobileAreas) {
+      if (-not ($mob.Mobile.PSObject.Properties.Name -contains $area)) {
+        throw "Missing Mobile.$area in $loc"
+      }
+    }
+  }
+  Write-Host "PASS: Mobile areas ($($mobileAreas.Count))"
+
+  $mobilePages = @(Get-ChildItem (Join-Path $appRoot "mobile") -Recurse -Filter page.tsx)
+  if ($mobilePages.Count -ne 7) { throw "Expected 7 mobile pages, found $($mobilePages.Count)" }
+  Write-Host "PASS: inventory mobile 7/7"
+
+  $mobKebab = @($vi.keys | Where-Object { $_ -like "Mobile.*" -and ($_ -split '\.' | Where-Object { $_ -match '-' }).Count -gt 0 })
+  if ($mobKebab.Count -gt 0) { throw "Kebab under Mobile.*: $($mobKebab -join ', ')" }
+  Write-Host "PASS: no kebab under Mobile.*"
+
+  $catalogModulesSrc = Get-Content (Join-Path $frontend "src\i18n\catalog-modules.ts") -Raw
+  if ($catalogModulesSrc -notmatch "'Mobile'") { throw "catalog-modules.ts missing Mobile" }
+  $mergeHelper = Get-Content (Join-Path $PSScriptRoot "helpers\merge_i18n_catalogs.js") -Raw
+  if ($mergeHelper -notmatch "'Mobile'") { throw "merge_i18n_catalogs.js missing Mobile" }
+  Write-Host "PASS: catalog-modules + merge helper Mobile"
+
+  $shellSrc = Get-Content (Join-Path $frontend "src\components\mobile\mobile-shell.tsx") -Raw
+  if ($shellSrc -notmatch 'LanguageSwitcher') { throw "mobile-shell missing LanguageSwitcher" }
+  if ($shellSrc -notmatch "Mobile\.shell") { throw "mobile-shell missing Mobile.shell translations" }
+  Write-Host "PASS: MobileShell + LanguageSwitcher"
+
+  $scanSrc = Get-Content (Join-Path $frontend "src\components\mobile\scan-input.tsx") -Raw
+  if ($scanSrc -notmatch "Mobile\.common") { throw "scan-input missing Mobile.common" }
+  Write-Host "PASS: scan-input i18n"
+
+  $titles = @{
+    "picking" = "Lấy hàng xuất kho (Picking)"
+    "movement" = "Dịch chuyển kho (Movement)"
+    "replenishment" = "Bổ sung Pick Face"
+    "lpn" = "Di chuyển Pallet LPN"
+    "serial" = "Nhận mã Serial"
+    "tasks" = "Gợi ý việc tiếp theo"
+  }
+  $viMob = Get-Content (Join-Path $messages "vi\Mobile.json") -Raw | ConvertFrom-Json
+  foreach ($area in $titles.Keys) {
+    $actual = $viMob.Mobile.$area.page.title
+    if ($actual -ne $titles[$area]) {
+      throw "page.title SoT mismatch $area : expected '$($titles[$area])' got '$actual'"
+    }
+  }
+  Write-Host "PASS: page.title disk SoT"
+
+  $mobileGetHttp = Select-String -Path (Join-Path $appRoot "mobile\**\*.tsx") -Pattern "getHttpErrorMessage" -SimpleMatch -ErrorAction SilentlyContinue
+  $mobileCompGetHttp = Select-String -Path (Join-Path $frontend "src\components\mobile\*.tsx") -Pattern "getHttpErrorMessage" -SimpleMatch -ErrorAction SilentlyContinue
+  if ($mobileGetHttp -or $mobileCompGetHttp) {
+    throw "mobile still uses getHttpErrorMessage"
+  }
+  Write-Host "PASS: mobile free of getHttpErrorMessage"
+
+  foreach ($rel in @(
+    "mobile\page.tsx",
+    "mobile\picking\page.tsx",
+    "mobile\movement\page.tsx",
+    "mobile\replenishment\page.tsx",
+    "mobile\lpn\page.tsx",
+    "mobile\serial\page.tsx",
+    "mobile\tasks\next\page.tsx"
+  )) {
+    $src = Get-Content (Join-Path $appRoot $rel) -Raw
+    if ($src -notmatch "useTranslations") { throw "$rel missing useTranslations" }
+    if ($src -notmatch "resolveApiError" -and $rel -ne "mobile\page.tsx") {
+      throw "$rel missing resolveApiError"
+    }
+  }
+  $tasksSrc = Get-Content (Join-Path $appRoot "mobile\tasks\next\page.tsx") -Raw
+  if ($tasksSrc -notmatch "MobileShell") { throw "tasks/next missing MobileShell" }
+  Write-Host "PASS: seven mobile pages wired"
 }
 
 # deepMerge snippet

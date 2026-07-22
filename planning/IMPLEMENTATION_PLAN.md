@@ -112,7 +112,7 @@ Critical path là chuỗi phase dài nhất quyết định ngày go-live sớm 
 - **Milestone 2: Advanced Rules (Sau Phase 19)** - Putaway, allocation, replenishment, và wave picking tự động hóa hoạt động ổn định.
 - **Milestone 3: Local Integration (Sau Phase 24)** - Hoàn tất tích hợp phần cứng bàn cân, máy in tem nhãn và đồng bộ hóa đơn hàng với SAP.
 - **Milestone 4: Production Ready (Sau Phase 30)** - Vượt qua hardening, UAT, diễn tập rollback, ký biên bản bàn giao go-live.
-- **Milestone 5: Product Localization (Sau Phase 33)** - **59/59** pages Web VI/EN, **0 backlog**, switcher locale, catalogs parity (module files PascalCase + merge + semantic keys mới), errorCodeLabel + message localized. (P31 → **P31a** → P32 → P33; Option B catalogs + Opt1 naming; `rp1` P31a PASS 2026-07-21)
+- **Milestone 5: Product Localization (Sau Phase 33)** - ✅ **59/59** pages Web VI/EN, **0 backlog**, switcher locale (sidebar + mobile shell), catalogs parity (12 modules PascalCase + merge + semantic keys), errorCodeLabel + message localized. (P31 → P31a → P32 → **P33 ✅** · `rp4`+`rp5` 2026-07-22)
 
 ### Chính sách Buffer rủi ro
 
@@ -219,7 +219,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 31 | Localization Foundation + Admin | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-21: Module DoD **100%**. verify PASS; dbm 83/4/0; catalogs qua P31a. | 2026-07-21 | [phase_31 §33](file:///d:/1_Project/48_Nexustock/planning/phases/phase_31_localization_vi_en.md) |
 | 31a | i18n Catalog Modules | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-21: Module DoD **100%**. modules PascalCase + loadMessages; verify 31a PASS; dbm 0 pageerror. | 2026-07-21 | [phase_31a §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_31a_i18n_catalog_modules.md) |
 | 32 | Localization Master-data | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-21: Module DoD **100%**. verify 32 PASS; dbm 16/16; 8/8 MD + CRUD. | 2026-07-21 | [phase_32 §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_32_localization_master_data.md) |
-| 33 | Localization Mobile + Errors + Close | ⬜ Chưa bắt đầu | **95% Ready**. Wave D — `Mobile.json`/`Errors.json`; **59/59**. Phụ thuộc P32. | — | [phase_33](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) |
+| 33 | Localization Mobile + Errors + Close | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-22: Module DoD **100%**. verify 33 PASS; DBM **14/14**; Milestone 5 **59/59**; disk FAIL_COUNT=0. | 2026-07-22 | [phase_33 §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) |
 
 ### Quy ước trạng thái
 

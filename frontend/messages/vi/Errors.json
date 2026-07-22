@@ -8,7 +8,23 @@
       "TASK_INTERLEAVING_DISABLED": "Task interleaving đang tắt",
       "UNAUTHORIZED": "Không có quyền",
       "FORBIDDEN": "Bị từ chối truy cập",
-      "UNKNOWN": "Lỗi không xác định"
+      "UNKNOWN": "Lỗi không xác định",
+      "CONCURRENCY_CONFLICT": "Xung đột đồng thời",
+      "LOCATION_OVER_CAPACITY": "Vượt sức chứa vị trí",
+      "FEATURE_DISABLED": "Tính năng đang tắt",
+      "CANDIDATE_NOT_FOUND": "Không tìm thấy ứng viên",
+      "FEATURE_FLAG_INVALID": "Feature flag không hợp lệ",
+      "FEATURE_FLAG_NOT_FOUND": "Không tìm thấy feature flag",
+      "TASK_RECOMMENDATION_CONFLICT": "Xung đột gợi ý việc",
+      "integration": {
+        "idempotencyKeyRequired": "Thiếu Idempotency-Key",
+        "contractVersionRetired": "Phiên bản hợp đồng đã ngừng",
+        "payloadHashMismatch": "Hash payload không khớp",
+        "serverError": "Lỗi máy chủ tích hợp"
+      },
+      "validation": {
+        "orderAlreadyProcessed": "Đơn đã được xử lý"
+      }
     },
     "messages": {
       "CUTOVER_FROZEN": "Các API ghi nghiệp vụ kho đang bị đóng băng trong cutover.",
@@ -19,7 +35,23 @@
       "UNAUTHORIZED": "Phiên đăng nhập không hợp lệ hoặc hết hạn.",
       "FORBIDDEN": "Bạn không được phép thực hiện thao tác này.",
       "UNKNOWN": "Đã xảy ra lỗi không xác định.",
-      "generic": "Yêu cầu thất bại."
+      "generic": "Yêu cầu thất bại.",
+      "CONCURRENCY_CONFLICT": "Dữ liệu đã thay đổi bởi phiên khác. Vui lòng thử lại.",
+      "LOCATION_OVER_CAPACITY": "Số lượng vượt sức chứa tối đa của vị trí đích.",
+      "FEATURE_DISABLED": "Tính năng này hiện đang tắt.",
+      "CANDIDATE_NOT_FOUND": "Không tìm thấy ứng viên yêu cầu.",
+      "FEATURE_FLAG_INVALID": "Tên feature flag không hợp lệ.",
+      "FEATURE_FLAG_NOT_FOUND": "Không tìm thấy feature flag.",
+      "TASK_RECOMMENDATION_CONFLICT": "Gợi ý việc đã được xử lý hoặc xung đột.",
+      "integration": {
+        "idempotencyKeyRequired": "Header Idempotency-Key là bắt buộc.",
+        "contractVersionRetired": "Phiên bản hợp đồng đã bị ngưng sử dụng.",
+        "payloadHashMismatch": "Hash payload không khớp với cùng khóa idempotency.",
+        "serverError": "Lỗi máy chủ khi xử lý tích hợp."
+      },
+      "validation": {
+        "orderAlreadyProcessed": "Đơn hàng đã tồn tại trong WMS."
+      }
     }
   }
 }
