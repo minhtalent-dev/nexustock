@@ -2,7 +2,8 @@
 
 **Ngày:** 2026-07-22  
 **Phạm vi:** Đối chiếu khả năng / kiến trúc / độ phủ nghiệp vụ giữa **Nexustock** và 3 dự án đã add vào workspace dùng làm tham chiếu khi thiết kế sản phẩm.  
-**Verdict tổng:** **PHÙ HỢP** — Nexustock là **siêu tập (superset) hiện đại hóa** của các năng lực cốt lõi từ 3 tham chiếu, đủ đóng roadmap product; một số flow nhà máy GCM rất đặc thù chưa port 1:1 (xem gap).
+**Verdict tổng:** **PHÙ HỢP** — Nexustock là **siêu tập (superset) hiện đại hóa** của các năng lực cốt lõi từ 3 tham chiếu, đủ đóng roadmap product; một số flow nhà máy GCM rất đặc thù chưa port 1:1 (xem gap).  
+**Cập nhật:** Sau Phase **34–35** ✅ — biên bản nghiệm thu chức năng [`ACCEPTANCE_FUNCTION_PARITY_REFERENCE_WAREHOUSES.md`](ACCEPTANCE_FUNCTION_PARITY_REFERENCE_WAREHOUSES.md) (**53** dòng · **0 HOLD** · **§9 deep disk evidence**).
 
 ---
 
@@ -102,7 +103,7 @@ Tiêu chí thẩm định:
 | Đường dẫn | `D:\1_Project\48_Nexustock` |
 | Vai trò | **WMS Modular Monolith** full product |
 | Stack | .NET 8 Web API · EF Core · PostgreSQL · Redis · Next.js 16 · Local Agent Windows |
-| Roadmap | Phase **01–33** (+31a) — **34/34 ✅** (2026-07-22) |
+| Roadmap | Phase **01–35** (+31a) — **35/35 ✅** (2026-07-22) |
 | Modules backend | 26+ module (Identity → Readiness) |
 | UI | Admin Next.js (**59** pages) + Mobile RF (**7**) + Health UI |
 | i18n | VI/EN product-wide (Milestone 5) |

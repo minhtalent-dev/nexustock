@@ -96,5 +96,16 @@
       "BS-33-16 scan-input; BS-33-17 disk titles; BS-33-18 tasks full EN; BS-33-19 EP4 mobile-only must",
       "Next: tt /18-auto-execute — open new chat recommended"
     ]
+  },
+  "Nexustock Roadmap P36-P38": {
+    "name": "Nexustock Roadmap P36-P38",
+    "entityType": "Roadmap",
+    "observations": [
+      "2026-07-22 /30-auto-project-planner: Phase 36 Inventory Integrity L2-P0 95% (Allocate SoT + CHECK + DF-01)",
+      "Phase 37 Go-Live L3 Customer Pilot 95% blocked by P36; generic UAT; AC-08 SAP waived",
+      "Phase 38 UI Design System Option B 95% from AUDIT_UI; does not block P36",
+      "L2 SoT Simple 80.8 Weighted 84.8; execute order P36 then P37; P38 parallel/late",
+      "FOUNDER must Proceed before /18-auto-execute code"
+    ]
   }
 }

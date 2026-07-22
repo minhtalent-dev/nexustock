@@ -17,8 +17,11 @@ Phần “chưa phù hợp” chủ yếu là: (A) flow **Sharp/GCM nhà máy** 
 
 | Hạng mục | Trạng thái |
 |---|---|
-| Roadmap code | Phase **01–34** ✅ (Module DoD) |
+| Roadmap code | Phase **01–35** ✅ (Module DoD) |
 | Gap IQC UX / Gate (audit lần 1) | **Đã đóng** bằng P34 (`QcGate`, `/admin/qc` filter/history, optional `/mobile/qc`) |
+| Nav Ops lens | **Đã đóng** P35 |
+| Nghiệm thu chức năng | [`ACCEPTANCE_FUNCTION_PARITY_REFERENCE_WAREHOUSES.md`](ACCEPTANCE_FUNCTION_PARITY_REFERENCE_WAREHOUSES.md) |
+| **`rf` gap còn thiếu** | [`GAP_FUNCTIONS_REFERENCE_TO_NEXUSTOCK.md`](GAP_FUNCTIONS_REFERENCE_TO_NEXUSTOCK.md) — form/model inventory |
 | Evidence | [`evidence/phase_34_dbm/walkthrough.md`](evidence/phase_34_dbm/walkthrough.md) |
 | Điểm Part sau P34 (ước lượng) | **8.5 → ~9.0** ở trục QC/IQC parity vận hành |
 
