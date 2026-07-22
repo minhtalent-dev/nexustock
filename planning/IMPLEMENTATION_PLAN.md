@@ -76,8 +76,8 @@ gantt
     Phase 31a: i18n Catalog Modules      :p31a, after p31, 2d
     Phase 32: i18n Master-data           :p32, after p31a, 4d
     Phase 33: i18n Mobile+Errors+Close   :p33, after p32, 4d
+    Phase 34: IQC UX Map GCM Part        :p34, after p33, 4d
 ```
-
 ### Critical Path
 
 > **Ghi chú:** Tag `crit` trong Gantt hiển thị màu đỏ trong VS Code Mermaid Preview / Mermaid Live Editor. Trên GitHub/Gitea, các task dưới đây cần được ưu tiên theo dõi thủ công.
@@ -175,6 +175,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 31a | [i18n Catalog Modules](file:///d:/1_Project/48_Nexustock/planning/phases/phase_31a_i18n_catalog_modules.md) | Tách `messages/{vi\|en}/{Namespace}.json` (PascalCase 1:1) + merge; key mới = semantic sections. |
 | 32 | [Localization Master-data](file:///d:/1_Project/48_Nexustock/planning/phases/phase_32_localization_master_data.md) | **8/8** MD; chỉ `MasterData.json` + semantic keys. |
 | 33 | [Localization Mobile + Errors + Close](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) | **7/7** mobile + `Mobile.json`/`Errors.json`; khóa **59/59 + 0 backlog**. |
+| 34 | [IQC UX Map GCM Part → Nexustock](file:///d:/1_Project/48_Nexustock/planning/phases/phase_34_iqc_ux_map_gcm.md) | Map form IQC GCM; `QcGate`; queue/history UX; optional mobile QC; UAT/training. |
 
 ---
 
@@ -220,6 +221,7 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 31a | i18n Catalog Modules | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-21: Module DoD **100%**. modules PascalCase + loadMessages; verify 31a PASS; dbm 0 pageerror. | 2026-07-21 | [phase_31a §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_31a_i18n_catalog_modules.md) |
 | 32 | Localization Master-data | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-21: Module DoD **100%**. verify 32 PASS; dbm 16/16; 8/8 MD + CRUD. | 2026-07-21 | [phase_32 §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_32_localization_master_data.md) |
 | 33 | Localization Mobile + Errors + Close | ✅ Hoàn thành | `rp4`+`rp5` 2026-07-22: Module DoD **100%**. verify 33 PASS; DBM **14/14**; Milestone 5 **59/59**; disk FAIL_COUNT=0. | 2026-07-22 | [phase_33 §27](file:///d:/1_Project/48_Nexustock/planning/phases/phase_33_localization_mobile_errors.md) |
+| 34 | IQC UX Map GCM Part → Nexustock | ⬜ Chưa bắt đầu | **`rp3` PASS** 2026-07-22. Score **9.8/10**. Không điểm mù chặn. Spec §20. | — | [phase_34 §20](file:///d:/1_Project/48_Nexustock/planning/phases/phase_34_iqc_ux_map_gcm.md) |
 
 ### Quy ước trạng thái
 
