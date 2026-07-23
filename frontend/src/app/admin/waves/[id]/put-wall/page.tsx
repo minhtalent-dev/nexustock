@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState, useRef, use } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -150,11 +152,11 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
   };
 
   if (loading && !wave) {
-    return <div className="text-center py-12 text-zinc-500 text-xs font-mono">{t("loading")}</div>;
+    return <div className="text-center py-12 text-muted-foreground text-xs font-mono">{t("loading")}</div>;
   }
 
   if (!wave) {
-    return <div className="text-center py-12 text-zinc-500 text-xs font-mono">{t("notFound")}</div>;
+    return <div className="text-center py-12 text-muted-foreground text-xs font-mono">{t("notFound")}</div>;
   }
 
   const shipmentGroup = wave.items.reduce((acc, curr) => {
@@ -172,11 +174,11 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
   const slotsList = Object.values(shipmentGroup).sort((a, b) => a.slot - b.slot);
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-white">
+    <PageShell className="gap-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href={`/admin/waves/${waveId}`}>
-            <Button variant="outline" className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-9 w-9 p-0">
+            <Button variant="outline" className="border-border hover:bg-muted text-zinc-300 h-9 w-9 p-0">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
@@ -185,29 +187,29 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
               <LayoutGrid className="h-6 w-6 text-amber-500" />
               {t("putWallTitle")}
             </h1>
-            <p className="text-xs text-zinc-400 mt-1">{t("putWallSubtitle", { waveNo: wave.waveNo })}</p>
+            <p className="text-xs text-muted-foreground mt-1">{t("putWallSubtitle", { waveNo: wave.waveNo })}</p>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
-          <Card className="bg-zinc-900 border-zinc-800 text-white">
-            <CardHeader className="border-b border-zinc-800 pb-3">
-              <CardTitle className="text-xs font-semibold text-zinc-400 flex items-center gap-2">
+          <Card className="bg-card border-border text-white">
+            <CardHeader className="border-b border-border pb-3">
+              <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
                 <ScanBarcode className="h-4 w-4 text-indigo-400" />
                 {t("scanTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 flex flex-col gap-4">
               <form onSubmit={handleSortSubmit} className="flex flex-col gap-2">
-                <label className="text-[10px] text-zinc-500 font-mono">{t("barcodeLabel")}</label>
+                <label className="text-[10px] text-muted-foreground font-mono">{t("barcodeLabel")}</label>
                 <Input
                   ref={inputRef}
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
                   placeholder={t("barcodePlaceholder")}
-                  className="bg-zinc-950 border-zinc-800 text-zinc-200 h-10 text-xs focus-visible:ring-indigo-600 focus-visible:ring-offset-0"
+                  className="bg-background border-border text-zinc-200 h-10 text-xs focus-visible:ring-indigo-600 focus-visible:ring-offset-0"
                 />
                 <Button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 text-xs mt-2">
                   {t("confirmScan")}
@@ -243,9 +245,9 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
         </div>
 
         <div className="lg:col-span-3">
-          <Card className="bg-zinc-900 border-zinc-800 text-white">
-            <CardHeader className="border-b border-zinc-800 pb-3">
-              <CardTitle className="text-xs font-semibold text-zinc-400">{t("slotsTitle")}</CardTitle>
+          <Card className="bg-card border-border text-white">
+            <CardHeader className="border-b border-border pb-3">
+              <CardTitle className="text-xs font-semibold text-muted-foreground">{t("slotsTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -255,7 +257,7 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
                   const isComplete = sortedCount > 0 && sortedCount === pickedCount;
                   const isEmpty = sortedCount === 0;
 
-                  let slotColorClasses = "bg-zinc-950 border-zinc-800 hover:border-zinc-700 text-zinc-400";
+                  let slotColorClasses = "bg-background border-border hover:border-border text-muted-foreground";
                   if (isComplete) {
                     slotColorClasses = "bg-emerald-950/30 border-emerald-500/50 text-emerald-400 hover:border-emerald-500 shadow-lg shadow-emerald-500/10";
                   } else if (!isEmpty) {
@@ -273,7 +275,7 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
                       className={`border rounded-lg p-4 flex flex-col items-center justify-between gap-3 min-h-[140px] text-center transition-all ${slotColorClasses}`}
                     >
                       <div className="flex flex-col items-center gap-1 w-full">
-                        <span className={`text-[10px] uppercase font-mono ${isFlashing ? "text-black" : "text-zinc-500"}`}>
+                        <span className={`text-[10px] uppercase font-mono ${isFlashing ? "text-black" : "text-muted-foreground"}`}>
                           {t("sortSlotLabel")}
                         </span>
                         <span className="text-xl font-black font-mono tracking-wider">
@@ -296,7 +298,7 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
                             <CheckCircle2 className="h-3 w-3" /> {t("statusComplete")}
                           </span>
                         ) : isEmpty ? (
-                          <span className="text-[10px] uppercase tracking-widest text-zinc-600 bg-zinc-900/60 px-2 py-0.5 rounded border border-zinc-800/30">
+                          <span className="text-[10px] uppercase tracking-widest text-zinc-600 bg-card/60 px-2 py-0.5 rounded border border-border/30">
                             {t("statusEmpty")}
                           </span>
                         ) : (
@@ -313,6 +315,6 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
           </Card>
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

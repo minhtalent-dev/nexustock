@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -19,12 +21,12 @@ export default function GenealogyIndexPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 text-white p-6 font-sans">
+    <PageShell className="gap-6">
       <div className="flex items-center gap-3">
         <GitFork className="h-6 w-6 text-indigo-400" />
         <h1 className="text-2xl font-bold">{t("title")}</h1>
       </div>
-      <p className="text-zinc-400 text-sm">{t("subtitle")}</p>
+      <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
 
       <div className="flex gap-3 max-w-md">
         <Input
@@ -32,13 +34,13 @@ export default function GenealogyIndexPage() {
           value={lotNo}
           onChange={(e) => setLotNo(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-          className="bg-zinc-900 border-zinc-700 text-white placeholder:text-zinc-500"
+          className="bg-card border-border text-white placeholder:text-muted-foreground"
         />
         <Button onClick={handleSearch} className="bg-indigo-600 hover:bg-indigo-500 text-white">
           <Search className="h-4 w-4 mr-2" />
           {t("searchBtn")}
         </Button>
       </div>
-    </div>
+    </PageShell>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -168,21 +170,21 @@ export default function RolesPage() {
   }, {} as Record<string, Permission[]>);
 
   return (
-    <div className="flex flex-col gap-6 font-sans">
+    <PageShell className="gap-6">
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <ShieldCheck className="h-6 w-6 text-emerald-500" />
           {t("title")}
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
+        <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <Card className="bg-[#111] border-zinc-800/80 lg:col-span-1">
-          <CardHeader className="py-4 border-b border-zinc-800/60 flex flex-row items-center justify-between">
+        <Card className="bg-[#111] border-border/80 lg:col-span-1">
+          <CardHeader className="py-4 border-b border-border/60 flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-sm font-semibold text-white">{t("listTitle")}</CardTitle>
-              <CardDescription className="text-[10px] text-zinc-500">{t("listHint")}</CardDescription>
+              <CardDescription className="text-[10px] text-muted-foreground">{t("listHint")}</CardDescription>
             </div>
             <Button onClick={openCreateRole} variant="ghost" size="sm" className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-8 px-2 text-xs gap-1">
               <Plus className="h-3.5 w-3.5" /> {t("addRole")}
@@ -204,17 +206,17 @@ export default function RolesPage() {
                       <TableRow
                         key={role.id}
                         onClick={() => selectRole(role)}
-                        className={`border-b border-zinc-800/30 cursor-pointer transition-colors ${
+                        className={`border-b border-border/30 cursor-pointer transition-colors ${
                           isSelected
                             ? "bg-zinc-850 hover:bg-zinc-850"
-                            : "hover:bg-zinc-900/10"
+                            : "hover:bg-card/10"
                         }`}
                       >
                         <TableCell className="py-3 px-4 h-12 flex flex-col justify-center">
                           <span className={`text-sm font-medium ${isSelected ? "text-emerald-400" : "text-zinc-200"}`}>
                             {role.name}
                           </span>
-                          <span className="text-[10px] text-zinc-500 line-clamp-1 mt-0.5">{role.description || t("noDescription")}</span>
+                          <span className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{role.description || t("noDescription")}</span>
                         </TableCell>
                         <TableCell className="py-3 px-4 h-12 text-right w-16 align-middle">
                           {role.name !== "Admin" && (
@@ -240,10 +242,10 @@ export default function RolesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#111] border-zinc-800/80 lg:col-span-2">
+        <Card className="bg-[#111] border-border/80 lg:col-span-2">
           {selectedRole ? (
             <>
-              <CardHeader className="py-4 border-b border-zinc-800/60 flex flex-row items-center justify-between">
+              <CardHeader className="py-4 border-b border-border/60 flex flex-row items-center justify-between">
                 <div>
                   <CardTitle className="text-sm font-semibold text-white">
                     {t("matrixTitle")} <span className="text-emerald-400 font-mono">{selectedRole.name}</span>
@@ -269,8 +271,8 @@ export default function RolesPage() {
               </CardHeader>
               <CardContent className="p-6 flex flex-col gap-6 max-h-[60vh] overflow-y-auto">
                 {Object.keys(groupedPermissions).map((category) => (
-                  <div key={category} className="flex flex-col gap-2.5 border-b border-zinc-800/30 pb-4 last:border-b-0 last:pb-0">
-                    <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider flex items-center gap-2">
+                  <div key={category} className="flex flex-col gap-2.5 border-b border-border/30 pb-4 last:border-b-0 last:pb-0">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                       <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
                       {category}
                     </h3>
@@ -278,14 +280,14 @@ export default function RolesPage() {
                       {groupedPermissions[category].map((perm) => (
                         <div
                           key={perm.id}
-                          className="flex items-start gap-2.5 p-3 rounded-lg border border-zinc-800/50 bg-zinc-900/10 hover:border-zinc-800 transition-colors"
+                          className="flex items-start gap-2.5 p-3 rounded-lg border border-border/50 bg-card/10 hover:border-border transition-colors"
                         >
                           <Checkbox
                             id={`perm-${perm.id}`}
                             checked={rolePermissions.includes(perm.id) || selectedRole.name === "Admin"}
                             disabled={selectedRole.name === "Admin"}
                             onCheckedChange={() => handlePermissionToggle(perm.id)}
-                            className="border-zinc-700 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 mt-0.5"
+                            className="border-border data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600 mt-0.5"
                           />
                           <div className="flex flex-col">
                             <label
@@ -313,37 +315,37 @@ export default function RolesPage() {
       </div>
 
       <Dialog open={isRoleOpen} onOpenChange={setIsRoleOpen}>
-        <DialogContent className="bg-[#111] border border-zinc-800 text-zinc-100 max-w-sm font-sans">
+        <DialogContent className="bg-[#111] border border-border text-zinc-100 max-w-sm font-sans">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold text-white">{t("createDialogTitle")}</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleCreateRole} className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="rname" className="text-xs text-zinc-400">{t("labelRoleName")}</Label>
+              <Label htmlFor="rname" className="text-xs text-muted-foreground">{t("labelRoleName")}</Label>
               <Input
                 id="rname"
                 value={roleName}
                 onChange={(e) => setRoleName(e.target.value)}
-                className="bg-zinc-900 border-zinc-800 text-sm"
+                className="bg-card border-border text-sm"
                 placeholder={t("roleNamePlaceholder")}
                 required
               />
             </div>
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="rdesc" className="text-xs text-zinc-400">{t("labelRoleDesc")}</Label>
+              <Label htmlFor="rdesc" className="text-xs text-muted-foreground">{t("labelRoleDesc")}</Label>
               <Input
                 id="rdesc"
                 value={roleDesc}
                 onChange={(e) => setRoleDesc(e.target.value)}
-                className="bg-zinc-900 border-zinc-800 text-sm"
+                className="bg-card border-border text-sm"
                 placeholder={t("roleDescPlaceholder")}
               />
             </div>
 
             <DialogFooter className="mt-4 gap-2">
-              <Button type="button" onClick={() => setIsRoleOpen(false)} variant="ghost" className="text-zinc-400 hover:text-zinc-200 h-9 text-sm">
+              <Button type="button" onClick={() => setIsRoleOpen(false)} variant="ghost" className="text-muted-foreground hover:text-zinc-200 h-9 text-sm">
                 {tc("cancel")}
               </Button>
               <Button type="submit" disabled={savingRole} className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-sm">
@@ -353,6 +355,6 @@ export default function RolesPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

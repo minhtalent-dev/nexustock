@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { taskInterleavingApi, TaskRecommendationListItemDto, TaskRecommendationDetailResponse, TaskInterleavingKpiResponse } from "@/lib/task-interleaving-api";
@@ -130,7 +132,7 @@ export default function TaskInterleavingPage() {
   const totalPages = Math.ceil(total / 10);
 
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <PageShell className="gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
@@ -316,6 +318,6 @@ export default function TaskInterleavingPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

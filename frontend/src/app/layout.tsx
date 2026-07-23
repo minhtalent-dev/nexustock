@@ -37,7 +37,7 @@ export default async function RootLayout({
       lang={locale}
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col bg-[#0a0a0a]">
+      <body className="min-h-full flex flex-col bg-background">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ConfirmDialogProvider>
             <TooltipProvider>

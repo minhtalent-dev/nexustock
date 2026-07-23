@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -116,7 +118,8 @@ export default function CrossDockingPage() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="p-6 space-y-4">
+    <PageShell className="gap-6">
+      <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{t("title")}</h1>
@@ -233,5 +236,6 @@ export default function CrossDockingPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PageShell>
   );
 }

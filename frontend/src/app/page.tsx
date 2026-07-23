@@ -8,7 +8,7 @@ export default async function Home() {
   const tc = await getTranslations("Common.states");
 
   return (
-    <div className="flex h-screen w-screen bg-[#0a0a0a] text-zinc-100 font-sans overflow-hidden">
+    <div className="flex h-screen w-screen bg-background text-foreground font-sans overflow-hidden">
       <AppSidebar />
 
       <main className="flex-1 flex flex-col overflow-y-auto">

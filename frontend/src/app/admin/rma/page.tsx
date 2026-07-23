@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -101,21 +103,21 @@ export default function RmaPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-white">
+    <PageShell className="gap-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <Undo2 className="h-6 w-6 text-orange-500" />
             {t("title")}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {t("subtitle")}
           </p>
         </div>
         <Button
           onClick={fetchRmas}
           variant="outline"
-          className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-9 px-4 flex items-center gap-2"
+          className="border-border hover:bg-muted text-zinc-300 h-9 px-4 flex items-center gap-2"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           {tc("refresh")}
@@ -124,18 +126,18 @@ export default function RmaPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <Card className="bg-zinc-900 border-zinc-800 text-white">
+          <Card className="bg-card border-border text-white">
             <CardContent className="p-0">
               {loading && rmas.length === 0 ? (
-                <div className="text-center py-12 text-zinc-500 text-xs font-mono">{tc("loading")}</div>
+                <div className="text-center py-12 text-muted-foreground text-xs font-mono">{tc("loading")}</div>
               ) : (
                 <Table className="text-xs">
-                  <TableHeader className="border-b border-zinc-800">
-                    <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                      <TableHead className="text-zinc-400">{t("colRmaNo")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colCustomer")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colCreatedAt")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colStatus")}</TableHead>
+                  <TableHeader className="border-b border-border">
+                    <TableRow className="border-b border-border hover:bg-muted/50">
+                      <TableHead className="text-muted-foreground">{t("colRmaNo")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colCustomer")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colCreatedAt")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colStatus")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -143,13 +145,13 @@ export default function RmaPage() {
                       <TableRow 
                         key={r.id} 
                         onClick={() => setSelectedRma(r)}
-                        className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 cursor-pointer ${
-                          selectedRma?.id === r.id ? "bg-zinc-800/80" : ""
+                        className={`border-b border-border/50 hover:bg-muted/30 cursor-pointer ${
+                          selectedRma?.id === r.id ? "bg-muted/80" : ""
                         }`}
                       >
                         <TableCell className="font-bold text-zinc-200 font-mono">{r.rmaNo}</TableCell>
                         <TableCell className="text-zinc-300">{r.customerName}</TableCell>
-                        <TableCell className="text-zinc-400">{new Date(r.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-muted-foreground">{new Date(r.createdAt).toLocaleDateString()}</TableCell>
                         <TableCell>{getStatusBadge(r.status)}</TableCell>
                       </TableRow>
                     ))}
@@ -162,34 +164,34 @@ export default function RmaPage() {
 
         <div className="lg:col-span-1">
           {selectedRma ? (
-            <Card className="bg-zinc-900 border-zinc-800 text-white sticky top-6">
-              <CardHeader className="border-b border-zinc-800 pb-4">
+            <Card className="bg-card border-border text-white sticky top-6">
+              <CardHeader className="border-b border-border pb-4">
                 <CardTitle className="text-sm font-semibold flex items-center justify-between">
                   {t("detailTitle", { rmaNo: selectedRma.rmaNo })}
                   {getStatusBadge(selectedRma.status)}
                 </CardTitle>
-                <div className="text-[10px] text-zinc-500 mt-1">
+                <div className="text-[10px] text-muted-foreground mt-1">
                    {t("reference")}: {selectedRma.referenceNo || tc("notAvailable")} | {t("createdBy")}: {selectedRma.createdBy}
                 </div>
               </CardHeader>
               <CardContent className="p-4 flex flex-col gap-4">
-                <h4 className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">{t("productList")}</h4>
+                <h4 className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">{t("productList")}</h4>
                 <div className="space-y-3">
                   {selectedRma.items.map(item => (
-                    <div key={item.id} className="bg-zinc-800/50 rounded p-3 border border-zinc-700/50 flex flex-col gap-2">
+                    <div key={item.id} className="bg-muted/50 rounded p-3 border border-border/50 flex flex-col gap-2">
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="text-[11px] font-bold text-zinc-200">{item.itemCode}</p>
-                          <p className="text-[10px] text-zinc-400">{item.itemName}</p>
+                          <p className="text-[10px] text-muted-foreground">{item.itemName}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[10px] text-zinc-500">{t("expected")}: <span className="text-zinc-300 font-bold">{item.qtyExpected}</span></p>
-                          <p className="text-[10px] text-zinc-500">{t("received")}: <span className="text-blue-400 font-bold">{item.qtyReceived}</span></p>
+                          <p className="text-[10px] text-muted-foreground">{t("expected")}: <span className="text-zinc-300 font-bold">{item.qtyExpected}</span></p>
+                          <p className="text-[10px] text-muted-foreground">{t("received")}: <span className="text-blue-400 font-bold">{item.qtyReceived}</span></p>
                         </div>
                       </div>
                       
                       {selectedRma.status === "RECEIVED" && (
-                        <div className="flex gap-2 mt-2 pt-2 border-t border-zinc-700">
+                        <div className="flex gap-2 mt-2 pt-2 border-t border-border">
                           <Button 
                             disabled={processing}
                             onClick={() => handleProcessQc(selectedRma.id, item, "RESTOCK")}
@@ -219,13 +221,13 @@ export default function RmaPage() {
               </CardContent>
             </Card>
           ) : (
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-16 text-center text-zinc-500 text-xs flex flex-col items-center justify-center gap-4">
+            <div className="bg-card border border-border rounded-lg p-16 text-center text-muted-foreground text-xs flex flex-col items-center justify-center gap-4">
               <PackageSearch className="h-10 w-10 opacity-20" />
               {t("selectHint")}
             </div>
           )}
         </div>
       </div>
-    </div>
+    </PageShell>
   );
 }

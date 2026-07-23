@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { previewImportMappings, commitImportMappings } from "@/features/erp-integration/api";
@@ -73,21 +75,21 @@ export default function IntegrationImportPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 text-white p-6 font-sans">
+    <PageShell className="gap-6">
       <h1 className="text-2xl font-bold">{t("title")}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="bg-zinc-900 border-zinc-800 text-white lg:col-span-1 h-fit">
+        <Card className="bg-card border-border text-white lg:col-span-1 h-fit">
           <CardHeader>
             <CardTitle className="text-sm font-semibold">{t("step1Title")}</CardTitle>
-            <CardDescription className="text-zinc-500 text-[11px]">
+            <CardDescription className="text-muted-foreground text-[11px]">
               {t("step1Desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
-            <div className="border border-dashed border-zinc-800 rounded p-6 text-center hover:bg-zinc-900/30 cursor-pointer flex flex-col items-center gap-2">
-              <Upload className="w-8 h-8 text-zinc-500" />
-              <span className="text-[11px] text-zinc-400">{t("dropHint")}</span>
+            <div className="border border-dashed border-border rounded p-6 text-center hover:bg-card/30 cursor-pointer flex flex-col items-center gap-2">
+              <Upload className="w-8 h-8 text-muted-foreground" />
+              <span className="text-[11px] text-muted-foreground">{t("dropHint")}</span>
               <Input
                 type="file"
                 accept=".csv"
@@ -100,21 +102,21 @@ export default function IntegrationImportPage() {
                 variant="outline"
                 size="xs"
                 onClick={() => document.getElementById("csv-file-input")?.click()}
-                className="border-zinc-700 text-zinc-300 mt-2 text-[10px]"
+                className="border-border text-zinc-300 mt-2 text-[10px]"
               >
                 {t("chooseFile")}
               </Button>
             </div>
 
             {file && (
-              <div className="bg-zinc-950 p-3 rounded border border-zinc-900 flex items-center justify-between">
+              <div className="bg-background p-3 rounded border border-zinc-900 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <FileSpreadsheet className="w-4 h-4 text-amber-500" />
                   <span className="font-mono text-[11px] truncate max-w-[150px]" title={file.name}>
                     {file.name}
                   </span>
                 </div>
-                <span className="text-[9px] text-zinc-500">{(file.size / 1024).toFixed(1)} KB</span>
+                <span className="text-[9px] text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</span>
               </div>
             )}
 
@@ -135,11 +137,11 @@ export default function IntegrationImportPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-zinc-900 border-zinc-800 text-white lg:col-span-2">
+        <Card className="bg-card border-border text-white lg:col-span-2">
           <CardHeader className="flex flex-row justify-between items-center">
             <div>
               <CardTitle className="text-sm font-semibold">{t("step2Title")}</CardTitle>
-              <CardDescription className="text-zinc-500 text-[11px]">
+              <CardDescription className="text-muted-foreground text-[11px]">
                 {t("step2Desc")}
               </CardDescription>
             </div>
@@ -162,14 +164,14 @@ export default function IntegrationImportPage() {
           </CardHeader>
           <CardContent className="text-xs">
             {!preview ? (
-              <div className="text-center py-16 text-zinc-500 italic">
+              <div className="text-center py-16 text-muted-foreground italic">
                 {t("noPreview")}
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="grid grid-cols-4 gap-4 bg-zinc-950 p-4 rounded border border-zinc-800/80 font-mono text-[11px]">
+                <div className="grid grid-cols-4 gap-4 bg-background p-4 rounded border border-border/80 font-mono text-[11px]">
                   <div>
-                    <span className="text-zinc-500 block mb-1">{t("summaryStatus")}</span>
+                    <span className="text-muted-foreground block mb-1">{t("summaryStatus")}</span>
                     {preview.status === "committed" ? (
                       <span className="text-emerald-400 font-bold flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" /> {t("statusCommitted")}
@@ -183,44 +185,44 @@ export default function IntegrationImportPage() {
                     )}
                   </div>
                   <div>
-                    <span className="text-zinc-500 block mb-1">{t("totalRows")}</span>
+                    <span className="text-muted-foreground block mb-1">{t("totalRows")}</span>
                     <span className="font-bold text-white">{preview.totalRows}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 block mb-1">{t("validRows")}</span>
+                    <span className="text-muted-foreground block mb-1">{t("validRows")}</span>
                     <span className="font-bold text-emerald-400">{preview.validRows}</span>
                   </div>
                   <div>
-                    <span className="text-zinc-500 block mb-1">{t("errorRows")}</span>
+                    <span className="text-muted-foreground block mb-1">{t("errorRows")}</span>
                     <span className="font-bold text-rose-400">{preview.errorRows}</span>
                   </div>
                 </div>
 
                 <div className="max-h-[400px] overflow-y-auto border border-zinc-850 rounded">
                   <Table className="text-xs">
-                    <TableHeader className="bg-zinc-950 sticky top-0">
+                    <TableHeader className="bg-background sticky top-0">
                       <TableRow className="border-b border-zinc-850">
-                        <TableHead className="w-16 text-zinc-400 text-center">{t("colRow")}</TableHead>
-                        <TableHead className="text-zinc-400">{t("colMappingType")}</TableHead>
-                        <TableHead className="text-zinc-400">{t("colErpCode")}</TableHead>
-                        <TableHead className="text-zinc-400">{t("colWmsCode")}</TableHead>
-                        <TableHead className="text-zinc-400">{t("summaryStatus")}</TableHead>
-                        <TableHead className="text-zinc-400">{t("colResult")}</TableHead>
+                        <TableHead className="w-16 text-muted-foreground text-center">{t("colRow")}</TableHead>
+                        <TableHead className="text-muted-foreground">{t("colMappingType")}</TableHead>
+                        <TableHead className="text-muted-foreground">{t("colErpCode")}</TableHead>
+                        <TableHead className="text-muted-foreground">{t("colWmsCode")}</TableHead>
+                        <TableHead className="text-muted-foreground">{t("summaryStatus")}</TableHead>
+                        <TableHead className="text-muted-foreground">{t("colResult")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {preview.rows.map((row) => (
                         <TableRow
                           key={row.rowIndex}
-                          className={`border-b border-zinc-850/50 hover:bg-zinc-800/20 ${
+                          className={`border-b border-zinc-850/50 hover:bg-muted/20 ${
                             !row.isValid ? "bg-rose-950/10" : ""
                           }`}
                         >
-                          <TableCell className="text-center font-mono text-zinc-500">{row.rowIndex}</TableCell>
+                          <TableCell className="text-center font-mono text-muted-foreground">{row.rowIndex}</TableCell>
                           <TableCell className="font-semibold">{row.rawData.mappingtype}</TableCell>
                           <TableCell className="font-mono text-amber-400">{row.rawData.externalcode}</TableCell>
                           <TableCell className="font-mono text-emerald-400">{row.rawData.internalcode}</TableCell>
-                          <TableCell className="font-mono text-zinc-400">{row.rawData.status}</TableCell>
+                          <TableCell className="font-mono text-muted-foreground">{row.rawData.status}</TableCell>
                           <TableCell>
                             {row.isValid ? (
                               <Badge className="bg-emerald-950 text-emerald-400 border border-emerald-900/30 text-[9px]">
@@ -242,6 +244,6 @@ export default function IntegrationImportPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageShell>
   );
 }

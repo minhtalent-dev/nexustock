@@ -9,6 +9,7 @@ import {
   StartLaborSessionRequest,
 } from "@/lib/labor-api";
 import { Button } from "@/components/ui/button";
+import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -210,7 +211,7 @@ export default function LaborSessionsPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <PageShell className="gap-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("sessionsTitle")}</h1>
@@ -431,6 +432,6 @@ export default function LaborSessionsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

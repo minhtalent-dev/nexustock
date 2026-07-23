@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useEffect, useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -139,7 +141,7 @@ export default function IntegrationMappingsPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 text-white p-6 font-sans">
+    <PageShell className="gap-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <div className="flex gap-4">
@@ -148,13 +150,13 @@ export default function IntegrationMappingsPage() {
               placeholder={t("searchPlaceholder")}
               value={searchCode}
               onChange={(e) => setSearchCode(e.target.value)}
-              className="bg-zinc-900 border-zinc-800 text-white w-48 text-xs h-9"
+              className="bg-card border-border text-white w-48 text-xs h-9"
             />
             <Select value={mappingType} onValueChange={(val) => { setMappingType(val); setPage(1); }}>
-              <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white w-40 text-xs h-9">
+              <SelectTrigger className="bg-card border-border text-white w-40 text-xs h-9">
                 <SelectValue placeholder={t("typePlaceholder")} />
               </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-zinc-800 text-white text-xs">
+              <SelectContent className="bg-card border-border text-white text-xs">
                 <SelectItem value="all">{t("typeAll")}</SelectItem>
                 <SelectItem value="item">{t("typeItem")}</SelectItem>
                 <SelectItem value="warehouse">{t("typeWarehouse")}</SelectItem>
@@ -162,7 +164,7 @@ export default function IntegrationMappingsPage() {
                 <SelectItem value="uom">{t("typeUom")}</SelectItem>
               </SelectContent>
             </Select>
-            <Button type="submit" size="sm" className="bg-zinc-800 border border-zinc-700 hover:bg-zinc-700 text-xs">{t("searchBtn")}</Button>
+            <Button type="submit" size="sm" className="bg-muted border border-border hover:bg-zinc-700 text-xs">{t("searchBtn")}</Button>
           </form>
           <Button onClick={() => setIsAddOpen(true)} size="sm" className="bg-emerald-600 hover:bg-emerald-500 text-xs">
             {t("addMapping")}
@@ -170,36 +172,36 @@ export default function IntegrationMappingsPage() {
         </div>
       </div>
 
-      <Card className="bg-zinc-900 border-zinc-800 text-white">
+      <Card className="bg-card border-border text-white">
         <CardHeader>
           <CardTitle className="text-sm font-semibold">{t("cardTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-6 text-xs text-zinc-400 font-mono">{t("loading")}</div>
+            <div className="text-center py-6 text-xs text-muted-foreground font-mono">{t("loading")}</div>
           ) : (
             <Table className="text-xs">
-              <TableHeader className="border-b border-zinc-800">
+              <TableHeader className="border-b border-border">
                 <TableRow>
-                  <TableHead className="text-zinc-400">{t("colExternalSystem")}</TableHead>
-                  <TableHead className="text-zinc-400">{t("colMappingType")}</TableHead>
-                  <TableHead className="text-zinc-400">{t("colExternalCode")}</TableHead>
-                  <TableHead className="text-zinc-400">{t("colInternalCode")}</TableHead>
-                  <TableHead className="text-zinc-400">{t("colStatus")}</TableHead>
-                  <TableHead className="text-zinc-400">{t("colCreatedAt")}</TableHead>
-                  <TableHead className="text-zinc-400 text-right">{t("colActions")}</TableHead>
+                  <TableHead className="text-muted-foreground">{t("colExternalSystem")}</TableHead>
+                  <TableHead className="text-muted-foreground">{t("colMappingType")}</TableHead>
+                  <TableHead className="text-muted-foreground">{t("colExternalCode")}</TableHead>
+                  <TableHead className="text-muted-foreground">{t("colInternalCode")}</TableHead>
+                  <TableHead className="text-muted-foreground">{t("colStatus")}</TableHead>
+                  <TableHead className="text-muted-foreground">{t("colCreatedAt")}</TableHead>
+                  <TableHead className="text-muted-foreground text-right">{t("colActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {mappings.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-6 text-zinc-500">
+                    <TableCell colSpan={7} className="text-center py-6 text-muted-foreground">
                       {t("empty")}
                     </TableCell>
                   </TableRow>
                 ) : (
                   mappings.map((m) => (
-                    <TableRow key={m.id} className="hover:bg-zinc-800/30">
+                    <TableRow key={m.id} className="hover:bg-muted/30">
                       <TableCell className="font-semibold">{m.externalSystem}</TableCell>
                       <TableCell>{getTypeLabel(m.mappingType)}</TableCell>
                       <TableCell className="font-mono text-amber-400">{m.externalCode}</TableCell>
@@ -218,7 +220,7 @@ export default function IntegrationMappingsPage() {
                             setIsEditing(m);
                             setEditForm({ internalCode: m.internalCode, status: m.status });
                           }}
-                          className="border-zinc-700 text-zinc-300 hover:text-white hover:bg-zinc-800 text-[10px] h-7"
+                          className="border-border text-zinc-300 hover:text-white hover:bg-muted text-[10px] h-7"
                         >
                           {tc("edit")}
                         </Button>
@@ -239,13 +241,13 @@ export default function IntegrationMappingsPage() {
           )}
 
           <div className="flex justify-between items-center mt-4">
-            <div className="text-[10px] text-zinc-500">{t("totalMappings", { total })}</div>
+            <div className="text-[10px] text-muted-foreground">{t("totalMappings", { total })}</div>
             <div className="flex gap-2">
               <Button
                 size="xs"
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
-                className="bg-zinc-800 border border-zinc-750 text-white text-[10px] h-7 disabled:opacity-50"
+                className="bg-muted border border-zinc-750 text-white text-[10px] h-7 disabled:opacity-50"
               >
                 {tc("previous")}
               </Button>
@@ -253,7 +255,7 @@ export default function IntegrationMappingsPage() {
                 size="xs"
                 disabled={page * pageSize >= total}
                 onClick={() => setPage(page + 1)}
-                className="bg-zinc-800 border border-zinc-750 text-white text-[10px] h-7 disabled:opacity-50"
+                className="bg-muted border border-zinc-750 text-white text-[10px] h-7 disabled:opacity-50"
               >
                 {tc("next")}
               </Button>
@@ -263,29 +265,29 @@ export default function IntegrationMappingsPage() {
       </Card>
 
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="bg-zinc-950 border-zinc-850 text-white text-xs max-w-md">
+        <DialogContent className="bg-background border-zinc-850 text-white text-xs max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold">{t("addDialogTitle")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAdd} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-zinc-400">{t("externalSystemLabel")}</Label>
+              <Label className="text-muted-foreground">{t("externalSystemLabel")}</Label>
               <Input
                 value={newMapping.externalSystem}
                 onChange={(e) => setNewMapping({ ...newMapping, externalSystem: e.target.value })}
-                className="bg-zinc-900 border-zinc-800 text-white text-xs h-9"
+                className="bg-card border-border text-white text-xs h-9"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-zinc-400">{t("mappingTypeLabel")}</Label>
+              <Label className="text-muted-foreground">{t("mappingTypeLabel")}</Label>
               <Select
                 value={newMapping.mappingType}
                 onValueChange={(val) => setNewMapping({ ...newMapping, mappingType: val })}
               >
-                <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white text-xs h-9">
+                <SelectTrigger className="bg-card border-border text-white text-xs h-9">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-800 text-white text-xs">
+                <SelectContent className="bg-card border-border text-white text-xs">
                   <SelectItem value="item">{t("typeItemFull")}</SelectItem>
                   <SelectItem value="warehouse">{t("typeWarehouseFull")}</SelectItem>
                   <SelectItem value="partner">{t("typePartnerFull")}</SelectItem>
@@ -294,21 +296,21 @@ export default function IntegrationMappingsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-zinc-400">{t("externalCodeLabel")}</Label>
+              <Label className="text-muted-foreground">{t("externalCodeLabel")}</Label>
               <Input
                 placeholder={t("externalCodePlaceholder")}
                 value={newMapping.externalCode}
                 onChange={(e) => setNewMapping({ ...newMapping, externalCode: e.target.value })}
-                className="bg-zinc-900 border-zinc-800 text-white text-xs h-9"
+                className="bg-card border-border text-white text-xs h-9"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-zinc-400">{t("internalCodeLabel")}</Label>
+              <Label className="text-muted-foreground">{t("internalCodeLabel")}</Label>
               <Input
                 placeholder={t("internalCodePlaceholder")}
                 value={newMapping.internalCode}
                 onChange={(e) => setNewMapping({ ...newMapping, internalCode: e.target.value })}
-                className="bg-zinc-900 border-zinc-800 text-white text-xs h-9"
+                className="bg-card border-border text-white text-xs h-9"
               />
             </div>
             <DialogFooter className="pt-2">
@@ -320,37 +322,37 @@ export default function IntegrationMappingsPage() {
       </Dialog>
 
       <Dialog open={isEditing !== null} onOpenChange={() => setIsEditing(null)}>
-        <DialogContent className="bg-zinc-950 border-zinc-850 text-white text-xs max-w-md">
+        <DialogContent className="bg-background border-zinc-850 text-white text-xs max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold">{t("editDialogTitle")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-4">
             <div className="space-y-2">
-              <Label className="text-zinc-400">{t("externalCodeReadonly")}</Label>
+              <Label className="text-muted-foreground">{t("externalCodeReadonly")}</Label>
               <Input
                 disabled
                 value={isEditing?.externalCode || ""}
-                className="bg-zinc-900/50 border-zinc-800 text-zinc-500 text-xs h-9 cursor-not-allowed"
+                className="bg-card/50 border-border text-muted-foreground text-xs h-9 cursor-not-allowed"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-zinc-400">{t("internalCodeLabel")}</Label>
+              <Label className="text-muted-foreground">{t("internalCodeLabel")}</Label>
               <Input
                 value={editForm.internalCode}
                 onChange={(e) => setEditForm({ ...editForm, internalCode: e.target.value })}
-                className="bg-zinc-900 border-zinc-800 text-white text-xs h-9"
+                className="bg-card border-border text-white text-xs h-9"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-zinc-400">{t("colStatus")}</Label>
+              <Label className="text-muted-foreground">{t("colStatus")}</Label>
               <Select
                 value={editForm.status}
                 onValueChange={(val: "active" | "inactive") => setEditForm({ ...editForm, status: val })}
               >
-                <SelectTrigger className="bg-zinc-900 border-zinc-800 text-white text-xs h-9">
+                <SelectTrigger className="bg-card border-border text-white text-xs h-9">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border-zinc-800 text-white text-xs">
+                <SelectContent className="bg-card border-border text-white text-xs">
                   <SelectItem value="active">{t("statusActiveFull")}</SelectItem>
                   <SelectItem value="inactive">{t("statusInactiveFull")}</SelectItem>
                 </SelectContent>
@@ -363,6 +365,6 @@ export default function IntegrationMappingsPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

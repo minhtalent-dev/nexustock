@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import MobileShell from "@/components/mobile/mobile-shell";
@@ -98,19 +100,20 @@ export default function PickingPage() {
   };
 
   return (
-    <MobileShell>
+    <PageShell className="gap-6">
+      <MobileShell>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
-            className="text-slate-300"
+            className="text-muted-foreground"
             render={<Link href="/mobile" />}
             nativeButton={false}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-lg font-bold flex items-center gap-2 text-slate-100">
+          <h2 className="text-lg font-bold flex items-center gap-2 text-foreground">
             <ClipboardCheck className="h-5 w-5 text-orange-500" />
             {t("page.title")}
           </h2>
@@ -121,11 +124,11 @@ export default function PickingPage() {
             <div className="text-center space-y-2">
               <Box className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
               <h3 className="text-base font-semibold text-slate-200">{t("states.readyTitle")}</h3>
-              <p className="text-xs text-slate-400">{t("states.readyHint")}</p>
+              <p className="text-xs text-muted-foreground">{t("states.readyHint")}</p>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="userLoc" className="text-xs text-slate-400 block">
+              <label htmlFor="userLoc" className="text-xs text-muted-foreground block">
                 {t("fields.userLocation")}
               </label>
               <input
@@ -134,7 +137,7 @@ export default function PickingPage() {
                 value={userLocation}
                 onChange={(e) => setUserLocation(e.target.value.toUpperCase())}
                 placeholder={t("fields.userLocationPlaceholder")}
-                className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono text-sm text-center"
+                className="w-full bg-muted border border-border rounded p-2 text-white font-mono text-sm text-center"
               />
             </div>
 
@@ -150,12 +153,12 @@ export default function PickingPage() {
         )}
 
         {task && (
-          <Card className="border-slate-800 bg-slate-800/40">
-            <CardHeader className="pb-2 border-b border-slate-800/80">
+          <Card className="border-border bg-card/40">
+            <CardHeader className="pb-2 border-b border-border/80">
               <CardTitle className="text-sm font-semibold text-slate-200">{t("labels.currentTask")}</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
-              <div className="grid grid-cols-2 gap-2 text-xs font-mono text-slate-300">
+              <div className="grid grid-cols-2 gap-2 text-xs font-mono text-muted-foreground">
                 <div>
                   {t("labels.type")} <span className="text-orange-500 font-bold">{task.referenceType}</span>
                 </div>
@@ -170,8 +173,8 @@ export default function PickingPage() {
 
               {currentStep === "SCAN_LOC" && (
                 <div className="space-y-4 pt-2">
-                  <div className="bg-slate-800/80 p-3 rounded text-center border border-orange-500/25">
-                    <span className="text-xs text-slate-400 block">{t("fields.moveHint")}</span>
+                  <div className="bg-muted/80 p-3 rounded text-center border border-orange-500/25">
+                    <span className="text-xs text-muted-foreground block">{t("fields.moveHint")}</span>
                     <span className="text-lg font-bold font-mono text-orange-500">LOC-A-01</span>
                   </div>
                   <ScanInput
@@ -185,8 +188,8 @@ export default function PickingPage() {
 
               {currentStep === "SCAN_LOT" && (
                 <div className="space-y-4 pt-2">
-                  <div className="bg-slate-800/80 p-3 rounded text-center border border-orange-500/25">
-                    <span className="text-xs text-slate-400 block">{t("fields.lotHint")}</span>
+                  <div className="bg-muted/80 p-3 rounded text-center border border-orange-500/25">
+                    <span className="text-xs text-muted-foreground block">{t("fields.lotHint")}</span>
                     <span className="text-base font-bold font-mono text-white">LOT-CC-1783908121977</span>
                   </div>
                   <ScanInput
@@ -200,8 +203,8 @@ export default function PickingPage() {
 
               {currentStep === "INPUT_QTY" && (
                 <div className="space-y-4 pt-2">
-                  <div className="bg-slate-800/80 p-3 rounded text-center border border-orange-500/25">
-                    <span className="text-xs text-slate-400 block">{t("fields.qtyHint")}</span>
+                  <div className="bg-muted/80 p-3 rounded text-center border border-orange-500/25">
+                    <span className="text-xs text-muted-foreground block">{t("fields.qtyHint")}</span>
                     <span className="text-2xl font-bold font-mono text-emerald-400">
                       {t("fields.qtyUnit", { count: 10 })}
                     </span>
@@ -221,5 +224,6 @@ export default function PickingPage() {
         )}
       </div>
     </MobileShell>
+    </PageShell>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -38,8 +40,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-[#0a0a0a] text-zinc-100 font-sans">
-      <div className="w-full max-w-md p-8 bg-[#111]/60 border border-zinc-800/80 backdrop-blur-md rounded-2xl shadow-2xl flex flex-col gap-6">
+    <div className="flex h-screen w-screen items-center justify-center bg-background text-zinc-100 font-sans">
+      <div className="w-full max-w-md p-8 bg-[#111]/60 border border-border/80 backdrop-blur-md rounded-2xl shadow-2xl flex flex-col gap-6">
         <div className="flex justify-end">
           <LanguageSwitcher />
         </div>
@@ -50,12 +52,12 @@ export default function LoginPage() {
               WMS
             </span>
           </h1>
-          <p className="text-xs text-zinc-500 uppercase tracking-widest font-mono mt-1">{t("title")}</p>
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-mono mt-1">{t("title")}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <Label htmlFor="email" className="text-xs font-medium text-zinc-400">
+            <Label htmlFor="email" className="text-xs font-medium text-muted-foreground">
               {t("username")}
             </Label>
             <div className="relative">
@@ -66,7 +68,7 @@ export default function LoginPage() {
                 placeholder="name@nexustock.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 bg-zinc-900/50 border-zinc-800 text-sm focus:border-emerald-500/80 focus:ring-emerald-500/20"
+                className="pl-10 bg-card/50 border-border text-sm focus:border-emerald-500/80 focus:ring-emerald-500/20"
                 required
                 autoComplete="email"
               />
@@ -74,7 +76,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-col gap-2">
-            <Label htmlFor="password" className="text-xs font-medium text-zinc-400">
+            <Label htmlFor="password" className="text-xs font-medium text-muted-foreground">
               {t("password")}
             </Label>
             <div className="relative">
@@ -85,7 +87,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="pl-10 bg-zinc-900/50 border-zinc-800 text-sm focus:border-emerald-500/80 focus:ring-emerald-500/20"
+                className="pl-10 bg-card/50 border-border text-sm focus:border-emerald-500/80 focus:ring-emerald-500/20"
                 required
                 autoComplete="current-password"
               />

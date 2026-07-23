@@ -136,7 +136,7 @@ export default function AppSidebar() {
     .filter((group) => group.links.length > 0);
 
   return (
-    <aside className="w-60 border-r border-zinc-800/80 bg-[#0a0a0a] p-4 flex-shrink-0 flex flex-col min-h-screen">
+    <aside className="w-60 border-r border-border bg-sidebar p-4 flex-shrink-0 flex flex-col min-h-screen">
       <Link href="/" className="flex items-center gap-2 mb-6 px-1 pt-1">
         <span className="text-lg font-bold text-white tracking-tight">Nexustock</span>
         <span className="text-[10px] text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">

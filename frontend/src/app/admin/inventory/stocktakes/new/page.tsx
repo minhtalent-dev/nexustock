@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -71,7 +73,7 @@ export default function NewStocktakePage() {
   };
 
   return (
-    <div className="space-y-6 p-6 max-w-2xl mx-auto">
+    <PageShell className="gap-6">
       <div className="flex items-center gap-2">
         <Button
           variant="ghost"
@@ -144,6 +146,6 @@ export default function NewStocktakePage() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   );
 }

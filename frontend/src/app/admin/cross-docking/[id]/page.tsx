@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -135,21 +137,27 @@ export default function CandidateDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6 space-y-4">
-        <Skeleton className="h-8 w-64" />
-        <Skeleton className="h-40 w-full" />
-      </div>
+      <PageShell className="gap-6">
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-40 w-full" />
+        </div>
+      </PageShell>
     );
   }
 
   if (error || !candidate) {
-    return <div className="p-6 text-center text-red-600">{error ?? t("notFound")}</div>;
+    return (
+      <PageShell>
+        <div className="text-center text-destructive">{error ?? t("notFound")}</div>
+      </PageShell>
+    );
   }
 
   const isPending = candidate.status === "Pending";
 
   return (
-    <div className="p-6 space-y-6 max-w-4xl">
+    <PageShell className="gap-6 max-w-4xl">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" onClick={() => router.push("/admin/cross-docking")}>
           <ArrowLeft className="w-4 h-4 mr-1" /> {t("back")}
@@ -247,6 +255,6 @@ export default function CandidateDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

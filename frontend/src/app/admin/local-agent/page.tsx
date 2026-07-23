@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -178,7 +180,7 @@ export default function LocalAgentAdminPage() {
       case "revoked":
         return <Badge className="bg-rose-500/20 text-rose-400 border border-rose-500/30">{t("statusRevoked")}</Badge>;
       default:
-        return <Badge className="bg-zinc-500/20 text-zinc-400 border border-zinc-500/30">{status}</Badge>;
+        return <Badge className="bg-zinc-500/20 text-muted-foreground border border-zinc-500/30">{status}</Badge>;
     }
   };
 
@@ -191,7 +193,7 @@ export default function LocalAgentAdminPage() {
       case "certificate_error":
         return <ShieldAlert className="h-5 w-5 text-rose-500" />;
       case "port_unavailable":
-        return <XCircle className="h-5 w-5 text-zinc-500" />;
+        return <XCircle className="h-5 w-5 text-muted-foreground" />;
       case "connecting":
       default:
         return <RefreshCw className="h-5 w-5 text-indigo-400 animate-spin" />;
@@ -207,7 +209,7 @@ export default function LocalAgentAdminPage() {
       case "certificate_error":
         return <span className="text-rose-400 font-semibold">{t("statusCertError")}</span>;
       case "port_unavailable":
-        return <span className="text-zinc-400">{t("statusPortUnavailable")}</span>;
+        return <span className="text-muted-foreground">{t("statusPortUnavailable")}</span>;
       case "connecting":
       default:
         return <span className="text-indigo-400">{t("statusConnecting")}</span>;
@@ -215,13 +217,13 @@ export default function LocalAgentAdminPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 text-white p-6 font-sans bg-zinc-950 min-h-screen">
-      <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+    <PageShell className="gap-6">
+      <div className="flex items-center justify-between border-b border-border pb-4">
         <div className="flex items-center gap-3">
           <Monitor className="h-6 w-6 text-indigo-400" />
           <div>
             <h1 className="text-2xl font-bold">{t("title")}</h1>
-            <p className="text-zinc-400 text-sm mt-0.5">{t("subtitle")}</p>
+            <p className="text-muted-foreground text-sm mt-0.5">{t("subtitle")}</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -238,7 +240,7 @@ export default function LocalAgentAdminPage() {
             <Key className="h-4 w-4 mr-2" />
             {t("createPairingCode")}
           </Button>
-          <Button onClick={scanLocalAgent} variant="outline" className="border-zinc-700 hover:bg-zinc-800 text-zinc-300">
+          <Button onClick={scanLocalAgent} variant="outline" className="border-border hover:bg-muted text-zinc-300">
             <RefreshCw className={`h-4 w-4 mr-2 ${isScanning ? "animate-spin" : ""}`} />
             {t("rescanAgent")}
           </Button>
@@ -247,50 +249,50 @@ export default function LocalAgentAdminPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 flex flex-col gap-6">
-          <Card className="bg-zinc-900 border-zinc-800 text-white">
-            <CardHeader className="border-b border-zinc-800 pb-4">
+          <Card className="bg-card border-border text-white">
+            <CardHeader className="border-b border-border pb-4">
               <CardTitle className="text-lg flex items-center gap-2">
                 {getLocalAgentStatusIcon(localAgentInfo.status)}
                 {t("localConnectionTitle")}
               </CardTitle>
-              <CardDescription className="text-zinc-400 text-xs">
+              <CardDescription className="text-muted-foreground text-xs">
                 {t("localConnectionHint")}
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-4 flex flex-col gap-4">
-              <div className="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800">
-                <span className="text-zinc-400 text-sm">{t("statusLabel")}</span>
+              <div className="flex justify-between items-center bg-background p-3 rounded-lg border border-border">
+                <span className="text-muted-foreground text-sm">{t("statusLabel")}</span>
                 <span className="text-sm">{getLocalAgentStatusText(localAgentInfo.status)}</span>
               </div>
 
               {localAgentInfo.port && (
-                <div className="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800 text-xs">
-                  <span className="text-zinc-400">{t("activePort")}</span>
+                <div className="flex justify-between items-center bg-background p-3 rounded-lg border border-border text-xs">
+                  <span className="text-muted-foreground">{t("activePort")}</span>
                   <code className="text-indigo-300">{localAgentInfo.port}</code>
                 </div>
               )}
 
               {localAgentInfo.stationCode && (
-                <div className="flex justify-between items-center bg-zinc-950 p-3 rounded-lg border border-zinc-800 text-xs">
-                  <span className="text-zinc-400">{t("stationCode")}</span>
+                <div className="flex justify-between items-center bg-background p-3 rounded-lg border border-border text-xs">
+                  <span className="text-muted-foreground">{t("stationCode")}</span>
                   <code className="text-indigo-300">{localAgentInfo.stationCode}</code>
                 </div>
               )}
 
               {localAgentInfo.status === "unpaired" && (
-                <div className="flex flex-col gap-3 mt-2 border-t border-zinc-800 pt-4">
+                <div className="flex flex-col gap-3 mt-2 border-t border-border pt-4">
                   <span className="text-xs font-semibold text-zinc-300">{t("pairSectionTitle")}</span>
                   <Input
                     placeholder={t("stationCodePlaceholder")}
                     value={pairingStationCode}
                     onChange={(e) => setPairingStationCode(e.target.value)}
-                    className="bg-zinc-950 border-zinc-800 text-white text-xs placeholder:text-zinc-600 focus:border-indigo-500"
+                    className="bg-background border-border text-white text-xs placeholder:text-zinc-600 focus:border-indigo-500"
                   />
                   <Input
                     placeholder={t("pairingCodePlaceholder")}
                     value={pairingCode}
                     onChange={(e) => setPairingCode(e.target.value)}
-                    className="bg-zinc-950 border-zinc-800 text-white text-xs placeholder:text-zinc-600 focus:border-indigo-500"
+                    className="bg-background border-border text-white text-xs placeholder:text-zinc-600 focus:border-indigo-500"
                   />
                   <Button
                     onClick={handlePairAgent}
@@ -320,11 +322,11 @@ export default function LocalAgentAdminPage() {
         </div>
 
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <Card className="bg-zinc-900 border-zinc-800 text-white">
-            <CardHeader className="border-b border-zinc-800 pb-4 flex flex-row items-center justify-between">
+          <Card className="bg-card border-border text-white">
+            <CardHeader className="border-b border-border pb-4 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-lg">{t("stationsTitle")}</CardTitle>
-                <CardDescription className="text-zinc-400 text-xs">
+                <CardDescription className="text-muted-foreground text-xs">
                   {t("stationsHint")}
                 </CardDescription>
               </div>
@@ -336,43 +338,43 @@ export default function LocalAgentAdminPage() {
                     setSearch(e.target.value);
                     setPage(1);
                   }}
-                  className="bg-zinc-950 border-zinc-800 text-white text-xs placeholder:text-zinc-600 focus:border-indigo-500"
+                  className="bg-background border-border text-white text-xs placeholder:text-zinc-600 focus:border-indigo-500"
                 />
               </div>
             </CardHeader>
             <CardContent className="p-0">
               <Table>
-                <TableHeader className="bg-zinc-950/50">
-                  <TableRow className="border-zinc-800">
-                    <TableHead className="text-zinc-400 text-xs font-medium">{t("colStationCode")}</TableHead>
-                    <TableHead className="text-zinc-400 text-xs font-medium">{t("colStationName")}</TableHead>
-                    <TableHead className="text-zinc-400 text-xs font-medium">{t("colStatus")}</TableHead>
-                    <TableHead className="text-zinc-400 text-xs font-medium">{t("colMachineName")}</TableHead>
-                    <TableHead className="text-zinc-400 text-xs font-medium">{t("colLastHeartbeat")}</TableHead>
-                    <TableHead className="text-right text-zinc-400 text-xs font-medium pr-4">{t("colActions")}</TableHead>
+                <TableHeader className="bg-background/50">
+                  <TableRow className="border-border">
+                    <TableHead className="text-muted-foreground text-xs font-medium">{t("colStationCode")}</TableHead>
+                    <TableHead className="text-muted-foreground text-xs font-medium">{t("colStationName")}</TableHead>
+                    <TableHead className="text-muted-foreground text-xs font-medium">{t("colStatus")}</TableHead>
+                    <TableHead className="text-muted-foreground text-xs font-medium">{t("colMachineName")}</TableHead>
+                    <TableHead className="text-muted-foreground text-xs font-medium">{t("colLastHeartbeat")}</TableHead>
+                    <TableHead className="text-right text-muted-foreground text-xs font-medium pr-4">{t("colActions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-zinc-500 text-xs">
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-xs">
                         {t("loadingStations")}
                       </TableCell>
                     </TableRow>
                   ) : stations.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-zinc-500 text-xs">
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground text-xs">
                         {t("emptyStations")}
                       </TableCell>
                     </TableRow>
                   ) : (
                     stations.map((st) => (
-                      <TableRow key={st.stationId} className="border-zinc-800 hover:bg-zinc-800/30">
+                      <TableRow key={st.stationId} className="border-border hover:bg-muted/30">
                         <TableCell className="font-semibold text-xs text-indigo-300">{st.stationCode}</TableCell>
                         <TableCell className="text-xs">{st.name}</TableCell>
                         <TableCell className="text-xs">{getStatusBadge(st.status)}</TableCell>
-                        <TableCell className="text-xs text-zinc-400">{st.machineName || "-"}</TableCell>
-                        <TableCell className="text-xs text-zinc-400">
+                        <TableCell className="text-xs text-muted-foreground">{st.machineName || "-"}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
                           {st.lastHeartbeatAt ? new Date(st.lastHeartbeatAt).toLocaleString() : "-"}
                         </TableCell>
                         <TableCell className="text-right pr-4">
@@ -401,39 +403,39 @@ export default function LocalAgentAdminPage() {
       </div>
 
       <Dialog open={showPairingDialog} onOpenChange={setShowPairingDialog}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-white">
           <DialogHeader>
             <DialogTitle>{t("pairingDialogTitle")}</DialogTitle>
-            <DialogDescription className="text-zinc-400 text-xs">
+            <DialogDescription className="text-muted-foreground text-xs">
               {t("pairingDialogHint")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-4 my-2">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-zinc-400">{t("labelStationCode")}</label>
+              <label className="text-xs text-muted-foreground">{t("labelStationCode")}</label>
               <Input
                 placeholder={t("stationCodeExample")}
                 value={dialogStationCode}
                 onChange={(e) => setDialogStationCode(e.target.value)}
                 disabled={!!generatedCode}
-                className="bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-700 focus:border-indigo-500"
+                className="bg-background border-border text-white placeholder:text-zinc-700 focus:border-indigo-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-zinc-400">{t("labelStationName")}</label>
+              <label className="text-xs text-muted-foreground">{t("labelStationName")}</label>
               <Input
                 placeholder={t("stationNameExample")}
                 value={dialogStationName}
                 onChange={(e) => setDialogStationName(e.target.value)}
                 disabled={!!generatedCode}
-                className="bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-700 focus:border-indigo-500"
+                className="bg-background border-border text-white placeholder:text-zinc-700 focus:border-indigo-500"
               />
             </div>
 
             {generatedCode && (
-              <div className="bg-zinc-950 border border-zinc-800 p-4 rounded-lg flex flex-col items-center gap-2 mt-2">
-                <span className="text-xs text-zinc-400">{t("generatedCodeLabel")}</span>
+              <div className="bg-background border border-border p-4 rounded-lg flex flex-col items-center gap-2 mt-2">
+                <span className="text-xs text-muted-foreground">{t("generatedCodeLabel")}</span>
                 <span className="text-3xl font-extrabold tracking-widest text-indigo-400">{generatedCode}</span>
                 <span className="text-2xs text-rose-400 mt-1">
                   {t("expiresAt", { time: codeExpiresAt ? new Date(codeExpiresAt).toLocaleTimeString() : "-" })}
@@ -445,34 +447,34 @@ export default function LocalAgentAdminPage() {
           <DialogFooter>
             {!generatedCode ? (
               <>
-                <Button variant="ghost" onClick={() => setShowPairingDialog(false)} className="text-zinc-400">{tc("cancel")}</Button>
+                <Button variant="ghost" onClick={() => setShowPairingDialog(false)} className="text-muted-foreground">{tc("cancel")}</Button>
                 <Button onClick={handleCreatePairingCode} disabled={isGeneratingCode} className="bg-indigo-600 hover:bg-indigo-500 text-white">
                   {isGeneratingCode ? t("generating") : t("generateCode")}
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setShowPairingDialog(false)} className="bg-zinc-800 hover:bg-zinc-700 text-white w-full">{tc("close")}</Button>
+              <Button onClick={() => setShowPairingDialog(false)} className="bg-muted hover:bg-zinc-700 text-white w-full">{tc("close")}</Button>
             )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showRevokeDialog} onOpenChange={setShowRevokeDialog}>
-        <DialogContent className="bg-zinc-900 border-zinc-800 text-white">
+        <DialogContent className="bg-card border-border text-white">
           <DialogHeader>
             <DialogTitle className="text-rose-400">{t("revokeDialogTitle")}</DialogTitle>
-            <DialogDescription className="text-zinc-400 text-xs">
+            <DialogDescription className="text-muted-foreground text-xs">
               {t("revokeDialogHint")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex flex-col gap-4 my-2">
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-zinc-400">{t("revokeReasonLabel")}</label>
+              <label className="text-xs text-muted-foreground">{t("revokeReasonLabel")}</label>
               <select
                 value={revokeReason}
                 onChange={(e) => setRevokeReason(e.target.value)}
-                className="bg-zinc-950 border border-zinc-800 text-white rounded px-3 py-2 text-xs focus:border-indigo-500"
+                className="bg-background border border-border text-white rounded px-3 py-2 text-xs focus:border-indigo-500"
               >
                 <option value="DECOMMISSIONED">{t("reasonDecommissioned")}</option>
                 <option value="SECURITY_BREACH">{t("reasonSecurityBreach")}</option>
@@ -481,24 +483,24 @@ export default function LocalAgentAdminPage() {
               </select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs text-zinc-400">{t("revokeDescLabel")}</label>
+              <label className="text-xs text-muted-foreground">{t("revokeDescLabel")}</label>
               <Input
                 placeholder={t("revokeDescPlaceholder")}
                 value={revokeDescription}
                 onChange={(e) => setRevokeDescription(e.target.value)}
-                className="bg-zinc-950 border-zinc-800 text-white placeholder:text-zinc-700 focus:border-indigo-500"
+                className="bg-background border-border text-white placeholder:text-zinc-700 focus:border-indigo-500"
               />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowRevokeDialog(false)} className="text-zinc-400">{tc("cancel")}</Button>
+            <Button variant="ghost" onClick={() => setShowRevokeDialog(false)} className="text-muted-foreground">{tc("cancel")}</Button>
             <Button onClick={handleRevokeStation} disabled={isRevoking} className="bg-rose-600 hover:bg-rose-500 text-white">
               {isRevoking ? tc("processing") : t("confirmRevoke")}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

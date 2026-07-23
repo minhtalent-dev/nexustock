@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -120,14 +122,14 @@ export default function UsersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans">
+    <PageShell className="gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             <Users className="h-6 w-6 text-emerald-500" />
             {t("title")}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 h-9 text-sm">
           <UserPlus className="h-4 w-4" />
@@ -135,20 +137,20 @@ export default function UsersPage() {
         </Button>
       </div>
 
-      <Card className="bg-[#111] border-zinc-800/80">
-        <CardHeader className="py-4 border-b border-zinc-800/60 flex flex-row items-center justify-between">
+      <Card className="bg-[#111] border-border/80">
+        <CardHeader className="py-4 border-b border-border/60 flex flex-row items-center justify-between">
           <CardTitle className="text-sm font-semibold text-white">{t("listTitle")}</CardTitle>
           {loading && <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />}
         </CardHeader>
         <CardContent className="p-0">
           <Table>
-            <TableHeader className="bg-zinc-900/30 border-b border-zinc-800/60">
+            <TableHeader className="bg-card/30 border-b border-border/60">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-zinc-400 font-semibold h-11">{t("colFullName")}</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11">{t("colEmail")}</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11">{t("colRoles")}</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11 text-center w-36">{tc("status")}</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11 text-right w-24 pr-6">{tc("actions")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11">{t("colFullName")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11">{t("colEmail")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11">{t("colRoles")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11 text-center w-36">{tc("status")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11 text-right w-24 pr-6">{tc("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -160,7 +162,7 @@ export default function UsersPage() {
                 </TableRow>
               ) : (
                 users.map((user) => (
-                  <TableRow key={user.id} className="border-b border-zinc-800/30 hover:bg-zinc-900/10">
+                  <TableRow key={user.id} className="border-b border-border/30 hover:bg-card/10">
                     <TableCell className="font-medium text-white h-12">{user.fullName}</TableCell>
                     <TableCell className="text-zinc-300 font-mono text-sm h-12">{user.email}</TableCell>
                     <TableCell className="h-12">
@@ -169,7 +171,7 @@ export default function UsersPage() {
                           <span className="text-xs text-zinc-600">—</span>
                         ) : (
                           user.roles.map((r) => (
-                            <Badge key={r} variant="secondary" className="bg-zinc-800 text-zinc-300 border-zinc-700/50 hover:bg-zinc-800">
+                            <Badge key={r} variant="secondary" className="bg-muted text-zinc-300 border-border/50 hover:bg-muted">
                               {r}
                             </Badge>
                           ))
@@ -201,7 +203,7 @@ export default function UsersPage() {
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-[#111] border border-zinc-800 text-zinc-100 max-w-md">
+        <DialogContent className="bg-[#111] border border-border text-zinc-100 max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-white">
               {editingUser ? t("dialogEditTitle") : t("dialogCreateTitle")}
@@ -210,14 +212,14 @@ export default function UsersPage() {
 
           <form onSubmit={handleSave} className="flex flex-col gap-4 py-2">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="email" className="text-xs text-zinc-400">{t("colEmail")}</Label>
+              <Label htmlFor="email" className="text-xs text-muted-foreground">{t("colEmail")}</Label>
               <Input
                 id="email"
                 type="email"
                 disabled={!!editingUser}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-zinc-900 border-zinc-800 text-sm"
+                className="bg-card border-border text-sm"
                 placeholder="user@nexustock.com"
                 required
               />
@@ -225,13 +227,13 @@ export default function UsersPage() {
 
             {!editingUser && (
               <div className="flex flex-col gap-2">
-                <Label htmlFor="pass" className="text-xs text-zinc-400">{t("labelPassword")}</Label>
+                <Label htmlFor="pass" className="text-xs text-muted-foreground">{t("labelPassword")}</Label>
                 <Input
                   id="pass"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-zinc-900 border-zinc-800 text-sm"
+                  className="bg-card border-border text-sm"
                   placeholder={t("passwordPlaceholder")}
                   required
                 />
@@ -239,27 +241,27 @@ export default function UsersPage() {
             )}
 
             <div className="flex flex-col gap-2">
-              <Label htmlFor="name" className="text-xs text-zinc-400">{t("labelFullName")}</Label>
+              <Label htmlFor="name" className="text-xs text-muted-foreground">{t("labelFullName")}</Label>
               <Input
                 id="name"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                className="bg-zinc-900 border-zinc-800 text-sm"
+                className="bg-card border-border text-sm"
                 placeholder={t("fullNamePlaceholder")}
                 required
               />
             </div>
 
             <div className="flex flex-col gap-2 mt-1">
-              <Label className="text-xs text-zinc-400">{t("labelSystemRoles")}</Label>
-              <div className="grid grid-cols-2 gap-2 p-3 bg-zinc-900/50 border border-zinc-800/80 rounded-lg">
+              <Label className="text-xs text-muted-foreground">{t("labelSystemRoles")}</Label>
+              <div className="grid grid-cols-2 gap-2 p-3 bg-card/50 border border-border/80 rounded-lg">
                 {roles.map((role) => (
                   <div key={role.id} className="flex items-center gap-2">
                     <Checkbox
                       id={`role-${role.id}`}
                       checked={selectedRoles.includes(role.name)}
                       onCheckedChange={() => handleRoleToggle(role.name)}
-                      className="border-zinc-700 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                      className="border-border data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                     />
                     <label htmlFor={`role-${role.id}`} className="text-xs text-zinc-300 font-medium cursor-pointer select-none">
                       {role.name}
@@ -274,7 +276,7 @@ export default function UsersPage() {
                 id="active"
                 checked={isActive}
                 onCheckedChange={(checked) => setIsActive(!!checked)}
-                className="border-zinc-700 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
+                className="border-border data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
               />
               <label htmlFor="active" className="text-xs text-zinc-300 font-medium cursor-pointer select-none">
                 {t("activateAccount")}
@@ -282,7 +284,7 @@ export default function UsersPage() {
             </div>
 
             <DialogFooter className="mt-4 gap-2">
-              <Button type="button" onClick={() => setIsOpen(false)} variant="ghost" className="text-zinc-400 hover:text-zinc-200 h-9 text-sm">
+              <Button type="button" onClick={() => setIsOpen(false)} variant="ghost" className="text-muted-foreground hover:text-zinc-200 h-9 text-sm">
                 {tc("cancel")}
               </Button>
               <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-sm">
@@ -292,6 +294,6 @@ export default function UsersPage() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

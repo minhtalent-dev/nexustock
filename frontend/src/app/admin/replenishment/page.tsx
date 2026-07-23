@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -216,7 +218,7 @@ export default function ReplenishmentPage() {
         return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">{t("statusAssigned")}</Badge>;
       case "PENDING":
       default:
-        return <Badge className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300">{t("statusPending")}</Badge>;
+        return <Badge className="bg-muted hover:bg-zinc-700 text-zinc-300">{t("statusPending")}</Badge>;
     }
   };
 
@@ -231,14 +233,14 @@ export default function ReplenishmentPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-white">
+    <PageShell className="gap-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <Layers className="h-6 w-6 text-emerald-500" />
             {t("title")}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-3">
           <Button
@@ -255,18 +257,18 @@ export default function ReplenishmentPage() {
               fetchTasks();
             }}
             variant="outline"
-            className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-9 w-9 p-0"
+            className="border-border hover:bg-muted text-zinc-300 h-9 w-9 p-0"
           >
             <RefreshCw className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      <div className="flex border-b border-zinc-800">
+      <div className="flex border-b border-border">
         <button
           onClick={() => setActiveTab("tasks")}
           className={`py-2.5 px-4 text-xs font-semibold border-b-2 transition-all ${
-            activeTab === "tasks" ? "border-emerald-500 text-emerald-500" : "border-transparent text-zinc-400 hover:text-white"
+            activeTab === "tasks" ? "border-emerald-500 text-emerald-500" : "border-transparent text-muted-foreground hover:text-white"
           }`}
         >
           {t("tabTasks")}
@@ -274,7 +276,7 @@ export default function ReplenishmentPage() {
         <button
           onClick={() => setActiveTab("rules")}
           className={`py-2.5 px-4 text-xs font-semibold border-b-2 transition-all ${
-            activeTab === "rules" ? "border-emerald-500 text-emerald-500" : "border-transparent text-zinc-400 hover:text-white"
+            activeTab === "rules" ? "border-emerald-500 text-emerald-500" : "border-transparent text-muted-foreground hover:text-white"
           }`}
         >
           {t("tabRules")}
@@ -282,43 +284,43 @@ export default function ReplenishmentPage() {
       </div>
 
       {activeTab === "tasks" ? (
-        <Card className="bg-zinc-900 border-zinc-800 text-white">
+        <Card className="bg-card border-border text-white">
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-emerald-500" />
               {t("tasksTitle")}
             </CardTitle>
-            <CardDescription className="text-xs text-zinc-500">{t("tasksDesc")}</CardDescription>
+            <CardDescription className="text-xs text-muted-foreground">{t("tasksDesc")}</CardDescription>
           </CardHeader>
           <CardContent>
             {loadingTasks && tasks.length === 0 ? (
-              <div className="text-center py-12 text-zinc-500 text-xs">{t("loadingTasks")}</div>
+              <div className="text-center py-12 text-muted-foreground text-xs">{t("loadingTasks")}</div>
             ) : tasks.length === 0 ? (
-              <div className="text-center py-12 text-zinc-500 text-xs">{t("emptyTasks")}</div>
+              <div className="text-center py-12 text-muted-foreground text-xs">{t("emptyTasks")}</div>
             ) : (
               <div className="overflow-x-auto">
                 <Table className="text-xs">
-                  <TableHeader className="border-b border-zinc-800">
-                    <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                      <TableHead className="text-zinc-400">{t("colProduct")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colSourceBulk")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colTargetPickFace")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colLotNo")}</TableHead>
-                      <TableHead className="text-zinc-400 text-right">{t("colRequestedQty")}</TableHead>
-                      <TableHead className="text-zinc-400 text-right">{t("colActualQty")}</TableHead>
-                      <TableHead className="text-zinc-400 text-center">{t("colStatus")}</TableHead>
-                      <TableHead className="text-zinc-400 text-center">{t("colActions")}</TableHead>
+                  <TableHeader className="border-b border-border">
+                    <TableRow className="border-b border-border hover:bg-muted/50">
+                      <TableHead className="text-muted-foreground">{t("colProduct")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colSourceBulk")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colTargetPickFace")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colLotNo")}</TableHead>
+                      <TableHead className="text-muted-foreground text-right">{t("colRequestedQty")}</TableHead>
+                      <TableHead className="text-muted-foreground text-right">{t("colActualQty")}</TableHead>
+                      <TableHead className="text-muted-foreground text-center">{t("colStatus")}</TableHead>
+                      <TableHead className="text-muted-foreground text-center">{t("colActions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {tasks.map((task) => (
-                      <TableRow key={task.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                      <TableRow key={task.id} className="border-b border-border/50 hover:bg-muted/30">
                         <TableCell className="font-medium text-zinc-300">{getProductCode(task.itemId)}</TableCell>
                         <TableCell className="text-zinc-300 font-mono">{getLocationCode(task.sourceLocationId)}</TableCell>
                         <TableCell className="text-emerald-400 font-mono">{getLocationCode(task.targetLocationId)}</TableCell>
                         <TableCell className="text-zinc-300">{task.lotNo}</TableCell>
                         <TableCell className="text-right font-semibold">{task.requestedQty}</TableCell>
-                        <TableCell className="text-right text-zinc-400">{task.actualQty ?? "-"}</TableCell>
+                        <TableCell className="text-right text-muted-foreground">{task.actualQty ?? "-"}</TableCell>
                         <TableCell className="text-center">{getStatusBadge(task.status)}</TableCell>
                         <TableCell className="text-center flex justify-center gap-2">
                           {(task.status === "PENDING" || task.status === "ASSIGNED") && (
@@ -332,7 +334,7 @@ export default function ReplenishmentPage() {
                               <Button
                                 onClick={() => handleCancelTask(task.id)}
                                 variant="outline"
-                                className="border-zinc-800 hover:bg-zinc-800 text-rose-500 h-7 px-3 text-[10px] rounded"
+                                className="border-border hover:bg-muted text-rose-500 h-7 px-3 text-[10px] rounded"
                               >
                                 {t("cancelBtn")}
                               </Button>
@@ -350,7 +352,7 @@ export default function ReplenishmentPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card className="bg-zinc-900 border-zinc-800 text-white">
+            <Card className="bg-card border-border text-white">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <Settings className="h-4 w-4 text-emerald-500" />
@@ -359,29 +361,29 @@ export default function ReplenishmentPage() {
               </CardHeader>
               <CardContent>
                 {loadingRules && rules.length === 0 ? (
-                  <div className="text-center py-12 text-zinc-500 text-xs">{t("loadingRules")}</div>
+                  <div className="text-center py-12 text-muted-foreground text-xs">{t("loadingRules")}</div>
                 ) : rules.length === 0 ? (
-                  <div className="text-center py-12 text-zinc-500 text-xs">{t("emptyRules")}</div>
+                  <div className="text-center py-12 text-muted-foreground text-xs">{t("emptyRules")}</div>
                 ) : (
                   <div className="overflow-x-auto">
                     <Table className="text-xs">
-                      <TableHeader className="border-b border-zinc-800">
-                        <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                          <TableHead className="text-zinc-400">{t("colProduct")}</TableHead>
-                          <TableHead className="text-zinc-400">{t("colPickFace")}</TableHead>
-                          <TableHead className="text-zinc-400 text-right">{t("colMinQty")}</TableHead>
-                          <TableHead className="text-zinc-400 text-right">{t("colMaxQty")}</TableHead>
-                          <TableHead className="text-zinc-400">{t("colCreatedBy")}</TableHead>
+                      <TableHeader className="border-b border-border">
+                        <TableRow className="border-b border-border hover:bg-muted/50">
+                          <TableHead className="text-muted-foreground">{t("colProduct")}</TableHead>
+                          <TableHead className="text-muted-foreground">{t("colPickFace")}</TableHead>
+                          <TableHead className="text-muted-foreground text-right">{t("colMinQty")}</TableHead>
+                          <TableHead className="text-muted-foreground text-right">{t("colMaxQty")}</TableHead>
+                          <TableHead className="text-muted-foreground">{t("colCreatedBy")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {rules.map((rule) => (
-                          <TableRow key={rule.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                          <TableRow key={rule.id} className="border-b border-border/50 hover:bg-muted/30">
                             <TableCell className="font-semibold text-zinc-200">{getProductCode(rule.itemId)}</TableCell>
                             <TableCell className="font-mono text-zinc-300">{getLocationCode(rule.locationId)}</TableCell>
                             <TableCell className="text-right text-amber-500 font-semibold">{rule.minQty}</TableCell>
                             <TableCell className="text-right text-emerald-500 font-semibold">{rule.maxQty}</TableCell>
-                            <TableCell className="text-zinc-400">{rule.createdBy}</TableCell>
+                            <TableCell className="text-muted-foreground">{rule.createdBy}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
@@ -393,7 +395,7 @@ export default function ReplenishmentPage() {
           </div>
 
           <div className="lg:col-span-1">
-            <Card className="bg-zinc-900 border-zinc-800 text-white">
+            <Card className="bg-card border-border text-white">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <Plus className="h-4 w-4 text-emerald-500" />
@@ -403,12 +405,12 @@ export default function ReplenishmentPage() {
               <CardContent>
                 <form onSubmit={handleCreateRule} className="flex flex-col gap-4 text-xs">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-zinc-500">{t("itemLabel")}</label>
+                    <label className="text-[10px] text-muted-foreground">{t("itemLabel")}</label>
                     {products.length > 0 ? (
                       <select
                         value={newRule.itemId}
                         onChange={(e) => setNewRule({ ...newRule, itemId: e.target.value })}
-                        className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                       >
                         <option value="">{t("selectProduct")}</option>
                         {products.map((p) => (
@@ -423,18 +425,18 @@ export default function ReplenishmentPage() {
                         placeholder={t("itemIdPlaceholder")}
                         value={newRule.itemId}
                         onChange={(e) => setNewRule({ ...newRule, itemId: e.target.value })}
-                        className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
+                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
                       />
                     )}
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] text-zinc-500">{t("locationLabel")}</label>
+                    <label className="text-[10px] text-muted-foreground">{t("locationLabel")}</label>
                     {locations.length > 0 ? (
                       <select
                         value={newRule.locationId}
                         onChange={(e) => setNewRule({ ...newRule, locationId: e.target.value })}
-                        className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                       >
                         <option value="">{t("selectLocation")}</option>
                         {locations.map((l) => (
@@ -449,28 +451,28 @@ export default function ReplenishmentPage() {
                         placeholder={t("locationIdPlaceholder")}
                         value={newRule.locationId}
                         onChange={(e) => setNewRule({ ...newRule, locationId: e.target.value })}
-                        className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
+                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
                       />
                     )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] text-zinc-500">{t("minQtyLabel")}</label>
+                      <label className="text-[10px] text-muted-foreground">{t("minQtyLabel")}</label>
                       <input
                         type="number"
                         value={newRule.minQty}
                         onChange={(e) => setNewRule({ ...newRule, minQty: parseFloat(e.target.value) || 0 })}
-                        className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                       />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] text-zinc-500">{t("maxQtyLabel")}</label>
+                      <label className="text-[10px] text-muted-foreground">{t("maxQtyLabel")}</label>
                       <input
                         type="number"
                         value={newRule.maxQty}
                         onChange={(e) => setNewRule({ ...newRule, maxQty: parseFloat(e.target.value) || 0 })}
-                        className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                       />
                     </div>
                   </div>
@@ -491,18 +493,18 @@ export default function ReplenishmentPage() {
 
       {completingTask && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500" />
                 {t("completeDialogTitle")}
               </h3>
-              <button onClick={() => setCompletingTask(null)} className="text-zinc-500 hover:text-white transition-all">
+              <button onClick={() => setCompletingTask(null)} className="text-muted-foreground hover:text-white transition-all">
                 <X className="h-4 w-4" />
               </button>
             </div>
             <div className="p-4 flex flex-col gap-4 text-xs">
-              <div className="bg-zinc-950/40 p-3 rounded border border-zinc-800/80 font-mono text-[11px] text-zinc-400 flex flex-col gap-1">
+              <div className="bg-background/40 p-3 rounded border border-border/80 font-mono text-[11px] text-muted-foreground flex flex-col gap-1">
                 <div>{t("completeProduct", { product: getProductCode(completingTask.itemId) })}</div>
                 <div>{t("completeLot", { lot: completingTask.lotNo })}</div>
                 <div>{t("completeFromBulk", { location: getLocationCode(completingTask.sourceLocationId) })}</div>
@@ -513,28 +515,28 @@ export default function ReplenishmentPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-zinc-500">{t("actualQtyLabel")}</label>
+                <label className="text-[10px] text-muted-foreground">{t("actualQtyLabel")}</label>
                 <input
                   type="number"
                   value={actualQty}
                   onChange={(e) => setActualQty(parseFloat(e.target.value) || 0)}
-                  className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-bold"
+                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-bold"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-zinc-500">{t("operatorLabel")}</label>
+                <label className="text-[10px] text-muted-foreground">{t("operatorLabel")}</label>
                 <input
                   type="text"
                   placeholder={t("operatorPlaceholder")}
                   value={operatorName}
                   onChange={(e) => setOperatorName(e.target.value)}
-                  className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                 />
               </div>
             </div>
-            <div className="flex justify-end gap-3 p-4 border-t border-zinc-800 bg-zinc-950/20">
-              <Button onClick={() => setCompletingTask(null)} variant="outline" className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs h-8 px-4">
+            <div className="flex justify-end gap-3 p-4 border-t border-border bg-background/20">
+              <Button onClick={() => setCompletingTask(null)} variant="outline" className="border-border hover:bg-muted text-zinc-300 text-xs h-8 px-4">
                 {t("cancelBtn")}
               </Button>
               <Button onClick={handleCompleteTask} disabled={submittingComplete} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4">
@@ -544,6 +546,6 @@ export default function ReplenishmentPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

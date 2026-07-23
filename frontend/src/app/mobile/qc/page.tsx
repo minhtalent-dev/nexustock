@@ -109,22 +109,23 @@ export default function MobileQcPage() {
   };
 
   return (
-    <MobileShell>
+    <PageShell className="gap-6">
+      <MobileShell>
       <div className="flex flex-col gap-4 p-4 text-white">
         <div className="flex items-center gap-2">
           <CheckSquare className="h-5 w-5 text-emerald-500" />
           <div>
             <h1 className="text-lg font-semibold">{t("page.title")}</h1>
-            <p className="text-xs text-zinc-400">{t("page.subtitle")}</p>
+            <p className="text-xs text-muted-foreground">{t("page.subtitle")}</p>
           </div>
         </div>
 
         {enabled === false && (
-          <Card className="bg-zinc-900 border-zinc-800">
+          <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="text-sm text-amber-400">{t("page.disabledTitle")}</CardTitle>
             </CardHeader>
-            <CardContent className="text-xs text-zinc-400">{t("page.disabledHint")}</CardContent>
+            <CardContent className="text-xs text-muted-foreground">{t("page.disabledHint")}</CardContent>
           </Card>
         )}
 
@@ -135,7 +136,7 @@ export default function MobileQcPage() {
                 value={lotNo}
                 onChange={(e) => setLotNo(e.target.value)}
                 placeholder={t("labels.lotPlaceholder")}
-                className="bg-zinc-900 border-zinc-700 text-white"
+                className="bg-card border-border text-white"
                 onKeyDown={(e) => e.key === "Enter" && void lookup()}
               />
               <Button onClick={() => void lookup()} disabled={busy} className="bg-emerald-600 hover:bg-emerald-500">
@@ -144,13 +145,13 @@ export default function MobileQcPage() {
             </div>
 
             {lot && (
-              <Card className="bg-zinc-900 border-zinc-800">
+              <Card className="bg-card border-border">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm">{lot.lotNo}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3 text-xs">
                   <div className="text-zinc-300">{lot.itemName} ({lot.itemCode})</div>
-                  <div className="text-zinc-400">
+                  <div className="text-muted-foreground">
                     {t("labels.status")}: <span className="text-white">{lot.qcStatus}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 pt-2">
@@ -171,5 +172,6 @@ export default function MobileQcPage() {
         )}
       </div>
     </MobileShell>
+    </PageShell>
   );
 }

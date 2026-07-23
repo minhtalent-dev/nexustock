@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -260,20 +262,20 @@ export default function LpnPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-white">
+    <PageShell className="gap-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <Layers className="h-6 w-6 text-emerald-500" />
             {t("title")}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <div>
           <Button
             onClick={fetchLpns}
             variant="outline"
-            className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-9 px-4 flex items-center gap-2"
+            className="border-border hover:bg-muted text-zinc-300 h-9 px-4 flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${loadingLpns ? "animate-spin" : ""}`} />
             {t("refresh")}
@@ -283,7 +285,7 @@ export default function LpnPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 flex flex-col gap-6">
-          <Card className="bg-zinc-900 border-zinc-800 text-white">
+          <Card className="bg-card border-border text-white">
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Plus className="h-4 w-4 text-emerald-500" />
@@ -293,21 +295,21 @@ export default function LpnPage() {
             <CardContent>
               <form onSubmit={handleCreateLpn} className="flex flex-col gap-4 text-xs">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-zinc-500">{t("lpnNoLabel")}</label>
+                  <label className="text-[10px] text-muted-foreground">{t("lpnNoLabel")}</label>
                   <input
                     type="text"
                     placeholder={t("lpnNoPlaceholder")}
                     value={newLpn.lpnNo}
                     onChange={(e) => setNewLpn({ ...newLpn, lpnNo: e.target.value.toUpperCase() })}
-                    className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
+                    className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] text-zinc-500">{t("initialLocationLabel")}</label>
+                  <label className="text-[10px] text-muted-foreground">{t("initialLocationLabel")}</label>
                   <select
                     value={newLpn.locationId}
                     onChange={(e) => setNewLpn({ ...newLpn, locationId: e.target.value })}
-                    className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                    className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                   >
                     <option value="">{t("selectLocation")}</option>
                     {locations.map((l) => (
@@ -324,28 +326,28 @@ export default function LpnPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-zinc-900 border-zinc-800 text-white">
+          <Card className="bg-card border-border text-white">
             <CardHeader>
               <CardTitle className="text-sm font-semibold">{t("listTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               {loadingLpns && lpns.length === 0 ? (
-                <div className="text-center py-8 text-zinc-500 text-xs">{t("loadingList")}</div>
+                <div className="text-center py-8 text-muted-foreground text-xs">{t("loadingList")}</div>
               ) : lpns.length === 0 ? (
-                <div className="text-center py-8 text-zinc-500 text-xs">{t("emptyList")}</div>
+                <div className="text-center py-8 text-muted-foreground text-xs">{t("emptyList")}</div>
               ) : (
                 <div className="flex flex-col max-h-[400px] overflow-y-auto">
                   {lpns.map((lpn) => (
                     <button
                       key={lpn.id}
                       onClick={() => handleSelectLpn(lpn)}
-                      className={`text-left p-3.5 border-b border-zinc-800 hover:bg-zinc-800/40 transition-all flex items-center justify-between text-xs ${
-                        selectedLpn?.id === lpn.id ? "bg-zinc-800/80 border-l-4 border-l-emerald-500" : ""
+                      className={`text-left p-3.5 border-b border-border hover:bg-muted/40 transition-all flex items-center justify-between text-xs ${
+                        selectedLpn?.id === lpn.id ? "bg-muted/80 border-l-4 border-l-emerald-500" : ""
                       }`}
                     >
                       <div className="flex flex-col gap-1">
                         <span className="font-bold text-zinc-200 font-mono">{lpn.lpnNo}</span>
-                        <span className="text-[10px] text-zinc-400">
+                        <span className="text-[10px] text-muted-foreground">
                           {t("locationPrefix")} {getLocationCode(lpn.locationId)}
                         </span>
                       </div>
@@ -361,9 +363,9 @@ export default function LpnPage() {
         <div className="lg:col-span-2 flex flex-col gap-6">
           {selectedLpn ? (
             <>
-              <div className="flex items-center justify-between gap-4 bg-zinc-900 p-4 border border-zinc-800 rounded-lg">
+              <div className="flex items-center justify-between gap-4 bg-card p-4 border border-border rounded-lg">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">{t("selectedLabel")}</span>
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">{t("selectedLabel")}</span>
                   <h2 className="text-xl font-bold font-mono text-emerald-400">{selectedLpn.lpnNo}</h2>
                   <span className="text-xs text-zinc-300">
                     {t("locationPrefix")}{" "}
@@ -375,14 +377,14 @@ export default function LpnPage() {
                     <LogIn className="h-4 w-4" />
                     {t("attachBtn")}
                   </Button>
-                  <Button onClick={() => setShowMoveModal(true)} variant="outline" className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs h-8 px-4 flex items-center gap-2">
+                  <Button onClick={() => setShowMoveModal(true)} variant="outline" className="border-border hover:bg-muted text-zinc-300 text-xs h-8 px-4 flex items-center gap-2">
                     <ArrowRight className="h-4 w-4 text-emerald-500" />
                     {t("moveBtn")}
                   </Button>
                 </div>
               </div>
 
-              <Card className="bg-zinc-900 border-zinc-800 text-white">
+              <Card className="bg-card border-border text-white">
                 <CardHeader>
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
                     <ClipboardList className="h-4 w-4 text-emerald-500" />
@@ -391,24 +393,24 @@ export default function LpnPage() {
                 </CardHeader>
                 <CardContent>
                   {loadingDetails ? (
-                    <div className="text-center py-8 text-zinc-500 text-xs">{t("loadingItems")}</div>
+                    <div className="text-center py-8 text-muted-foreground text-xs">{t("loadingItems")}</div>
                   ) : lpnItems.length === 0 ? (
-                    <div className="text-center py-8 text-zinc-500 text-xs">{t("emptyItems")}</div>
+                    <div className="text-center py-8 text-muted-foreground text-xs">{t("emptyItems")}</div>
                   ) : (
                     <Table className="text-xs">
-                      <TableHeader className="border-b border-zinc-800">
-                        <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                          <TableHead className="text-zinc-400">{t("colProduct")}</TableHead>
-                          <TableHead className="text-zinc-400">{t("colLotNo")}</TableHead>
-                          <TableHead className="text-zinc-400 text-right">{t("colOnHand")}</TableHead>
-                          <TableHead className="text-zinc-400 text-right">{t("colReserved")}</TableHead>
-                          <TableHead className="text-zinc-400 text-right">{t("colAvailable")}</TableHead>
-                          <TableHead className="text-zinc-400 text-center">{t("colActions")}</TableHead>
+                      <TableHeader className="border-b border-border">
+                        <TableRow className="border-b border-border hover:bg-muted/50">
+                          <TableHead className="text-muted-foreground">{t("colProduct")}</TableHead>
+                          <TableHead className="text-muted-foreground">{t("colLotNo")}</TableHead>
+                          <TableHead className="text-muted-foreground text-right">{t("colOnHand")}</TableHead>
+                          <TableHead className="text-muted-foreground text-right">{t("colReserved")}</TableHead>
+                          <TableHead className="text-muted-foreground text-right">{t("colAvailable")}</TableHead>
+                          <TableHead className="text-muted-foreground text-center">{t("colActions")}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {lpnItems.map((item) => (
-                          <TableRow key={item.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30">
+                          <TableRow key={item.id} className="border-b border-border/50 hover:bg-muted/30">
                             <TableCell className="font-semibold text-zinc-300">
                               {item.itemCode} - {item.itemName}
                             </TableCell>
@@ -420,7 +422,7 @@ export default function LpnPage() {
                               <Button
                                 onClick={() => handleDetachItem(item, item.qtyOnHand)}
                                 variant="outline"
-                                className="border-zinc-800 hover:bg-zinc-800 text-rose-500 h-7 px-3 text-[10px] rounded"
+                                className="border-border hover:bg-muted text-rose-500 h-7 px-3 text-[10px] rounded"
                               >
                                 {t("detachBtn")}
                               </Button>
@@ -433,7 +435,7 @@ export default function LpnPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-zinc-900 border-zinc-800 text-white">
+              <Card className="bg-card border-border text-white">
                 <CardHeader>
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
                     <Settings className="h-4 w-4 text-emerald-500" />
@@ -442,22 +444,22 @@ export default function LpnPage() {
                 </CardHeader>
                 <CardContent>
                   {loadingDetails ? (
-                    <div className="text-center py-8 text-zinc-500 text-xs">{t("loadingEvents")}</div>
+                    <div className="text-center py-8 text-muted-foreground text-xs">{t("loadingEvents")}</div>
                   ) : lpnEvents.length === 0 ? (
-                    <div className="text-center py-8 text-zinc-500 text-xs">{t("emptyEvents")}</div>
+                    <div className="text-center py-8 text-muted-foreground text-xs">{t("emptyEvents")}</div>
                   ) : (
-                    <div className="relative border-l border-zinc-800 pl-4 space-y-4 text-xs ml-2">
+                    <div className="relative border-l border-border pl-4 space-y-4 text-xs ml-2">
                       {lpnEvents.map((evt) => (
                         <div key={evt.id} className="relative">
-                          <div className="absolute -left-[21px] top-1 bg-zinc-900 border border-zinc-700 w-2.5 h-2.5 rounded-full flex items-center justify-center">
+                          <div className="absolute -left-[21px] top-1 bg-card border border-border w-2.5 h-2.5 rounded-full flex items-center justify-center">
                             <div className="w-1 h-1 bg-emerald-500 rounded-full" />
                           </div>
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
-                              <Badge className="bg-zinc-800 text-zinc-300 text-[9px] hover:bg-zinc-800 scale-90 px-2 py-0.5">
+                              <Badge className="bg-muted text-zinc-300 text-[9px] hover:bg-muted scale-90 px-2 py-0.5">
                                 {evt.eventType}
                               </Badge>
-                              <span className="text-[10px] text-zinc-500">
+                              <span className="text-[10px] text-muted-foreground">
                                 {t("eventBy", {
                                   at: new Date(evt.createdAt).toLocaleString(),
                                   by: evt.createdBy,
@@ -474,7 +476,7 @@ export default function LpnPage() {
               </Card>
             </>
           ) : (
-            <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-16 text-center text-zinc-500 text-xs flex flex-col items-center justify-center gap-2">
+            <div className="bg-card border border-border rounded-lg p-16 text-center text-muted-foreground text-xs flex flex-col items-center justify-center gap-2">
               <Layers className="h-10 w-10 text-zinc-700 animate-pulse" />
               {t("selectHint")}
             </div>
@@ -484,23 +486,23 @@ export default function LpnPage() {
 
       {showAttachModal && selectedLpn && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <LogIn className="h-4 w-4 text-emerald-500" />
                 {t("attachDialogTitle", { lpnNo: selectedLpn.lpnNo })}
               </h3>
-              <button onClick={() => setShowAttachModal(false)} className="text-zinc-500 hover:text-white transition-all">
+              <button onClick={() => setShowAttachModal(false)} className="text-muted-foreground hover:text-white transition-all">
                 <X className="h-4 w-4" />
               </button>
             </div>
             <form onSubmit={handleAttachItem} className="p-4 flex flex-col gap-4 text-xs">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-zinc-500">{t("productLabel")}</label>
+                <label className="text-[10px] text-muted-foreground">{t("productLabel")}</label>
                 <select
                   value={attachForm.itemId}
                   onChange={(e) => setAttachForm({ ...attachForm, itemId: e.target.value })}
-                  className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                 >
                   <option value="">{t("selectProduct")}</option>
                   {products.map((p) => (
@@ -512,28 +514,28 @@ export default function LpnPage() {
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-zinc-500">{t("lotNoLabel")}</label>
+                <label className="text-[10px] text-muted-foreground">{t("lotNoLabel")}</label>
                 <input
                   type="text"
                   placeholder={t("lotNoPlaceholder")}
                   value={attachForm.lotNo}
                   onChange={(e) => setAttachForm({ ...attachForm, lotNo: e.target.value })}
-                  className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                 />
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-zinc-500">{t("attachQtyLabel")}</label>
+                <label className="text-[10px] text-muted-foreground">{t("attachQtyLabel")}</label>
                 <input
                   type="number"
                   value={attachForm.qty}
                   onChange={(e) => setAttachForm({ ...attachForm, qty: parseFloat(e.target.value) || 0 })}
-                  className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-bold"
+                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-bold"
                 />
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" onClick={() => setShowAttachModal(false)} variant="outline" className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs h-8 px-4">
+                <Button type="button" onClick={() => setShowAttachModal(false)} variant="outline" className="border-border hover:bg-muted text-zinc-300 text-xs h-8 px-4">
                   {tc("cancel")}
                 </Button>
                 <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4">
@@ -547,23 +549,23 @@ export default function LpnPage() {
 
       {showMoveModal && selectedLpn && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
+            <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <ArrowRight className="h-4 w-4 text-emerald-500" />
                 {t("moveDialogTitle", { lpnNo: selectedLpn.lpnNo })}
               </h3>
-              <button onClick={() => setShowMoveModal(false)} className="text-zinc-500 hover:text-white transition-all">
+              <button onClick={() => setShowMoveModal(false)} className="text-muted-foreground hover:text-white transition-all">
                 <X className="h-4 w-4" />
               </button>
             </div>
             <div className="p-4 flex flex-col gap-4 text-xs">
               <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] text-zinc-500">{t("targetLocationLabel")}</label>
+                <label className="text-[10px] text-muted-foreground">{t("targetLocationLabel")}</label>
                 <select
                   value={moveLocationId}
                   onChange={(e) => setMoveLocationId(e.target.value)}
-                  className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
                 >
                   <option value="">{t("selectTargetLocation")}</option>
                   {locations
@@ -577,7 +579,7 @@ export default function LpnPage() {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button onClick={() => setShowMoveModal(false)} variant="outline" className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs h-8 px-4">
+                <Button onClick={() => setShowMoveModal(false)} variant="outline" className="border-border hover:bg-muted text-zinc-300 text-xs h-8 px-4">
                   {tc("cancel")}
                 </Button>
                 <Button onClick={handleMoveLpn} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4">
@@ -588,6 +590,6 @@ export default function LpnPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

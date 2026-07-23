@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { laborApi, LaborKpiResponse, LaborKpiChartResponse } from "@/lib/labor-api";
@@ -86,7 +88,8 @@ export default function LaborDashboardPage() {
   const summary = kpi?.summary;
 
   return (
-    <div className="p-6 space-y-6">
+    <PageShell className="gap-6">
+      <div className="p-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">{t("dashboardTitle")}</h1>
@@ -254,5 +257,6 @@ export default function LaborDashboardPage() {
         <LaborZoneProductivityGrid data={charts?.zoneProductivity ?? []} loading={loading} />
       </div>
     </div>
+    </PageShell>
   );
 }

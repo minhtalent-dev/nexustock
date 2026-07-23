@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -133,13 +135,13 @@ export default function AuditPage() {
     try {
       const parsed = JSON.parse(jsonStr);
       return (
-        <pre className="text-[11px] font-mono text-zinc-300 bg-zinc-950 p-3 rounded-lg border border-zinc-850 overflow-x-auto max-h-60 leading-relaxed">
+        <pre className="text-[11px] font-mono text-zinc-300 bg-background p-3 rounded-lg border border-zinc-850 overflow-x-auto max-h-60 leading-relaxed">
           {JSON.stringify(parsed, null, 2)}
         </pre>
       );
     } catch {
       return (
-        <pre className="text-[11px] font-mono text-zinc-300 bg-zinc-950 p-3 rounded-lg border border-zinc-850 overflow-x-auto max-h-60 leading-relaxed">
+        <pre className="text-[11px] font-mono text-zinc-300 bg-background p-3 rounded-lg border border-zinc-850 overflow-x-auto max-h-60 leading-relaxed">
           {jsonStr}
         </pre>
       );
@@ -147,17 +149,17 @@ export default function AuditPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans">
+    <PageShell className="gap-6">
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <FileText className="h-6 w-6 text-emerald-500" />
           {t("title")}
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
+        <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
       </div>
 
-      <Card className="bg-[#111] border-zinc-800/80">
-        <CardHeader className="py-4 border-b border-zinc-800/60">
+      <Card className="bg-[#111] border-border/80">
+        <CardHeader className="py-4 border-b border-border/60">
           <CardTitle className="text-sm font-semibold text-white flex items-center gap-2">
             <Filter className="h-4 w-4 text-emerald-500" />
             {t("filterTitle")}
@@ -166,51 +168,51 @@ export default function AuditPage() {
         <CardContent className="p-4">
           <form onSubmit={handleApplyFilter} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="entity" className="text-xs text-zinc-400">{t("labelEntity")}</Label>
+              <Label htmlFor="entity" className="text-xs text-muted-foreground">{t("labelEntity")}</Label>
               <Input
                 id="entity"
                 value={entityName}
                 onChange={(e) => setEntityName(e.target.value)}
                 placeholder={t("entityPlaceholder")}
-                className="bg-zinc-900 border-zinc-800 text-sm h-9"
+                className="bg-card border-border text-sm h-9"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="act" className="text-xs text-zinc-400">{t("labelAction")}</Label>
+              <Label htmlFor="act" className="text-xs text-muted-foreground">{t("labelAction")}</Label>
               <Input
                 id="act"
                 value={action}
                 onChange={(e) => setAction(e.target.value)}
                 placeholder={t("actionPlaceholder")}
-                className="bg-zinc-900 border-zinc-800 text-sm h-9"
+                className="bg-card border-border text-sm h-9"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="from" className="text-xs text-zinc-400">{t("labelFrom")}</Label>
+              <Label htmlFor="from" className="text-xs text-muted-foreground">{t("labelFrom")}</Label>
               <Input
                 id="from"
                 type="date"
                 value={from}
                 onChange={(e) => setFrom(e.target.value)}
-                className="bg-zinc-900 border-zinc-800 text-sm h-9"
+                className="bg-card border-border text-sm h-9"
               />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="to" className="text-xs text-zinc-400">{t("labelTo")}</Label>
+              <Label htmlFor="to" className="text-xs text-muted-foreground">{t("labelTo")}</Label>
               <Input
                 id="to"
                 type="date"
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="bg-zinc-900 border-zinc-800 text-sm h-9"
+                className="bg-card border-border text-sm h-9"
               />
             </div>
 
             <div className="md:col-span-4 flex items-center justify-end gap-2 mt-2">
-              <Button type="button" onClick={handleResetFilter} variant="ghost" className="text-zinc-400 hover:text-zinc-200 h-9 text-xs">
+              <Button type="button" onClick={handleResetFilter} variant="ghost" className="text-muted-foreground hover:text-zinc-200 h-9 text-xs">
                 {t("resetFilter")}
               </Button>
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-xs gap-1.5 px-4">
@@ -222,8 +224,8 @@ export default function AuditPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-[#111] border-zinc-800/80">
-        <CardHeader className="py-4 border-b border-zinc-800/60 flex flex-row items-center justify-between">
+      <Card className="bg-[#111] border-border/80">
+        <CardHeader className="py-4 border-b border-border/60 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-sm font-semibold text-white">{t("historyTitle")}</CardTitle>
             <CardDescription className="text-[10px] text-zinc-550">
@@ -234,14 +236,14 @@ export default function AuditPage() {
         </CardHeader>
         <CardContent className="p-0">
           <Table>
-            <TableHeader className="bg-zinc-900/30 border-b border-zinc-800/60">
+            <TableHeader className="bg-card/30 border-b border-border/60">
               <TableRow className="hover:bg-transparent">
-                <TableHead className="text-zinc-400 font-semibold h-11 pl-6">{t("colTime")}</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11">{t("colUser")}</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11">{t("colEntity")}</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11">{t("colAction")}</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11">{t("colTraceId")}</TableHead>
-                <TableHead className="text-zinc-400 font-semibold h-11 text-right w-24 pr-6">{t("colDetail")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11 pl-6">{t("colTime")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11">{t("colUser")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11">{t("colEntity")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11">{t("colAction")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11">{t("colTraceId")}</TableHead>
+                <TableHead className="text-muted-foreground font-semibold h-11 text-right w-24 pr-6">{t("colDetail")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -253,7 +255,7 @@ export default function AuditPage() {
                 </TableRow>
               ) : (
                 data.items.map((log) => (
-                  <TableRow key={log.id} className="border-b border-zinc-800/30 hover:bg-zinc-900/10">
+                  <TableRow key={log.id} className="border-b border-border/30 hover:bg-card/10">
                     <TableCell className="font-mono text-sm text-zinc-300 h-12 pl-6">
                       {formattedDate(log.timestamp)}
                     </TableCell>
@@ -275,7 +277,7 @@ export default function AuditPage() {
                         {log.action}
                       </span>
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-zinc-500 truncate max-w-[120px] h-12" title={log.traceId}>
+                    <TableCell className="font-mono text-xs text-muted-foreground truncate max-w-[120px] h-12" title={log.traceId}>
                       {log.traceId || "—"}
                     </TableCell>
                     <TableCell className="text-right h-12 pr-6">
@@ -290,7 +292,7 @@ export default function AuditPage() {
           </Table>
 
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800/60">
+            <div className="flex items-center justify-between px-6 py-4 border-t border-border/60">
               <span className="text-xs text-zinc-550">
                 {t("pageInfo", { page, totalPages })}
               </span>
@@ -300,7 +302,7 @@ export default function AuditPage() {
                   disabled={page === 1}
                   variant="outline"
                   size="sm"
-                  className="border-zinc-800 hover:bg-zinc-900 text-zinc-300 h-8 w-8 p-0 rounded-md"
+                  className="border-border hover:bg-card text-zinc-300 h-8 w-8 p-0 rounded-md"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
@@ -309,7 +311,7 @@ export default function AuditPage() {
                   disabled={page === totalPages}
                   variant="outline"
                   size="sm"
-                  className="border-zinc-800 hover:bg-zinc-900 text-zinc-300 h-8 w-8 p-0 rounded-md"
+                  className="border-border hover:bg-card text-zinc-300 h-8 w-8 p-0 rounded-md"
                 >
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -320,7 +322,7 @@ export default function AuditPage() {
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-[#111] border border-zinc-800 text-zinc-100 max-w-2xl font-sans">
+        <DialogContent className="bg-[#111] border border-border text-zinc-100 max-w-2xl font-sans">
           <DialogHeader className="border-b border-zinc-850 pb-3">
             <DialogTitle className="text-sm font-semibold text-white">
               {t("detailTitle")}
@@ -331,24 +333,24 @@ export default function AuditPage() {
             <div className="flex flex-col gap-4 py-3">
               <div className="grid grid-cols-2 gap-4 text-xs">
                 <div className="flex flex-col gap-1">
-                  <span className="text-zinc-500">{t("detailEntity")}</span>
+                  <span className="text-muted-foreground">{t("detailEntity")}</span>
                   <span className="font-semibold text-white">{selectedLog.entityName}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-zinc-500">{t("detailAction")}</span>
+                  <span className="text-muted-foreground">{t("detailAction")}</span>
                   <span className="font-mono font-bold text-emerald-400">{selectedLog.action}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-zinc-500">{t("detailUser")}</span>
+                  <span className="text-muted-foreground">{t("detailUser")}</span>
                   <span className="font-semibold text-zinc-200">{selectedLog.userName}</span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-zinc-500">{t("detailTime")}</span>
+                  <span className="text-muted-foreground">{t("detailTime")}</span>
                   <span className="font-mono text-zinc-350">{formattedDate(selectedLog.timestamp)}</span>
                 </div>
                 <div className="flex flex-col gap-1 col-span-2">
-                  <span className="text-zinc-500">{t("detailTraceId")}</span>
-                  <span className="font-mono text-zinc-400 break-all">{selectedLog.traceId || "—"}</span>
+                  <span className="text-muted-foreground">{t("detailTraceId")}</span>
+                  <span className="font-mono text-muted-foreground break-all">{selectedLog.traceId || "—"}</span>
                 </div>
               </div>
 
@@ -366,6 +368,6 @@ export default function AuditPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

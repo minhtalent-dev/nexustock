@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import MobileShell from "@/components/mobile/mobile-shell";
@@ -76,23 +78,24 @@ export default function MobileMenuPage() {
   ];
 
   return (
-    <MobileShell>
+    <PageShell className="gap-6">
+      <MobileShell>
       <div className="space-y-4">
         <div className="text-center py-2">
           <h2 className="text-xl font-bold">{t("page.title")}</h2>
-          <p className="text-xs text-slate-400">{t("page.subtitle")}</p>
+          <p className="text-xs text-muted-foreground">{t("page.subtitle")}</p>
         </div>
 
         <div className="grid grid-cols-1 gap-3">
           {menuItems.map((item, idx) => {
             const cardContent = (
-              <Card className={`border-slate-800 bg-slate-800/50 hover:bg-slate-800 transition ${item.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
+              <Card className={`border-border bg-muted/50 hover:bg-muted transition ${item.disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
                 <CardContent className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-900 rounded-lg">{item.icon}</div>
+                    <div className="p-2 bg-background rounded-lg">{item.icon}</div>
                     <div className="text-left">
                       <div className="font-semibold text-sm text-white">{item.title}</div>
-                      <div className="text-xs text-slate-400">{item.description}</div>
+                      <div className="text-xs text-muted-foreground">{item.description}</div>
                     </div>
                   </div>
                   {!item.disabled && <ArrowRight className="h-4 w-4 text-slate-500" />}
@@ -113,5 +116,6 @@ export default function MobileMenuPage() {
         </div>
       </div>
     </MobileShell>
+    </PageShell>
   );
 }

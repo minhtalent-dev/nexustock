@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -109,13 +111,14 @@ export default function MobileSerialPage() {
   };
 
   return (
-    <MobileShell>
+    <PageShell className="gap-6">
+      <MobileShell>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Link href="/mobile" className="text-slate-300 hover:text-white p-2">
+          <Link href="/mobile" className="text-muted-foreground hover:text-white p-2">
             <ArrowLeft className="h-4 w-4" />
           </Link>
-          <h2 className="text-lg font-bold flex items-center gap-2 text-slate-100">
+          <h2 className="text-lg font-bold flex items-center gap-2 text-foreground">
             <Smartphone className="h-5 w-5 text-emerald-500" />
             {t("page.title")}
           </h2>
@@ -126,7 +129,7 @@ export default function MobileSerialPage() {
             <div className="text-center space-y-2">
               <Box className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
               <h3 className="text-base font-semibold text-slate-200">{t("states.productTitle")}</h3>
-              <p className="text-xs text-slate-400">{t("states.productHint")}</p>
+              <p className="text-xs text-muted-foreground">{t("states.productHint")}</p>
             </div>
             <ScanInput
               id="productBarcodeScan"
@@ -142,7 +145,7 @@ export default function MobileSerialPage() {
             <div className="text-center space-y-2">
               <MapPin className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
               <h3 className="text-base font-semibold text-slate-200">{t("states.locationTitle")}</h3>
-              <p className="text-xs text-slate-400">{t("states.locationHint", { code: selectedProduct.code })}</p>
+              <p className="text-xs text-muted-foreground">{t("states.locationHint", { code: selectedProduct.code })}</p>
             </div>
             <ScanInput
               id="locationBarcodeScan"
@@ -155,17 +158,17 @@ export default function MobileSerialPage() {
 
         {currentStep === "SCAN_SERIAL" && selectedProduct && selectedLocation && (
           <div className="space-y-4">
-            <Card className="border-slate-800 bg-slate-800/40">
+            <Card className="border-border bg-card/40">
               <CardContent className="p-4 space-y-2 text-xs">
-                <p className="text-slate-300">
+                <p className="text-muted-foreground">
                   {t("labels.product")}{" "}
                   <span className="font-mono font-bold text-white">{selectedProduct.code}</span>
                 </p>
-                <p className="text-slate-300">
+                <p className="text-muted-foreground">
                   {t("labels.location")}{" "}
                   <span className="font-mono font-bold text-white">{selectedLocation.code}</span>
                 </p>
-                <p className="text-slate-300">
+                <p className="text-muted-foreground">
                   <span className="font-mono font-bold text-emerald-400">
                     {t("labels.scanned", { count: scannedSerials.length })}
                   </span>
@@ -180,12 +183,12 @@ export default function MobileSerialPage() {
               placeholder={t("fields.scanSerialPlaceholder")}
             />
 
-            <div className="bg-slate-900/60 p-3 rounded text-xs space-y-1.5 border border-slate-800 max-h-[200px] overflow-y-auto">
-              <span className="text-[10px] text-slate-500 block border-b border-slate-800 pb-1">
+            <div className="bg-background/60 p-3 rounded text-xs space-y-1.5 border border-border max-h-[200px] overflow-y-auto">
+              <span className="text-[10px] text-slate-500 block border-b border-border pb-1">
                 {t("labels.serialList")}
               </span>
               {scannedSerials.length === 0 ? (
-                <div className="text-slate-400 italic text-center py-2">{t("labels.emptySerials")}</div>
+                <div className="text-muted-foreground italic text-center py-2">{t("labels.emptySerials")}</div>
               ) : (
                 scannedSerials.map((s, idx) => (
                   <div key={idx} className="flex justify-between text-[11px] text-slate-200">
@@ -196,12 +199,13 @@ export default function MobileSerialPage() {
               )}
             </div>
 
-            <Button onClick={handleReset} variant="outline" className="border-slate-700 text-slate-300 w-full h-10">
+            <Button onClick={handleReset} variant="outline" className="border-border text-muted-foreground w-full h-10">
               {t("actions.reset")}
             </Button>
           </div>
         )}
       </div>
     </MobileShell>
+    </PageShell>
   );
 }

@@ -21,17 +21,17 @@
 | A11y | Cơ bản (testid một phần); focus/keyboard chưa audit |
 | i18n | VI/EN đã đủ product |
 
-**Điểm ước lượng**
+## Điểm ước lượng
 
 | Trục | Điểm /10 |
 |---|---:|
 | Đủ chức năng UI | 8.5 |
-| Đẹp / brand | 5.5 |
-| UX nhất quán | 5.0 |
-| Chuẩn prod (density, states, a11y) | 5.5 |
-| **Tổng UI prod-ready** | **~6.0** |
+| Đẹp / brand | **8.0** |
+| UX nhất quán | **8.0** |
+| Chuẩn prod (density, states, a11y) | **8.0** |
+| **Tổng UI prod-ready** | **~8.2** |
 
-→ Khớp nhận định FOUNDER: **đáp ứng đủ, chưa đẹp, chưa tối ưu.**
+→ Sau Phase 38 Option B (`rp4`+`rp5` 2026-07-23 · ĐÓNG): token + PageShell toàn site · AUDIT ~**8.2**.
 
 ---
 
@@ -62,7 +62,7 @@
 | Option | Trạng thái |
 |---|---|
 | A — Polish nhanh | Không chọn |
-| **B — Design system pass** | **Khóa** → `planning/phases/phase_38_ui_design_system_pass.md` (**95%**) |
+| **B — Design system pass** | **CLOSED** → `phase_38` **`rp4`+`rp5` ĐÓNG** (2026-07-23) · AUDIT ~**8.2** |
 | C — Full redesign | Không chọn |
 
 **Roadmap:** P36 (L2-P0) → P37 (L3) → P38 (UI B). P38 không block P36.

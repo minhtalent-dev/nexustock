@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import * as React from "react";
 import { useTranslations } from "next-intl";
 import { readinessApi, CutoverLogDto, FreezeStatusResponse } from "@/lib/readiness-api";
@@ -90,7 +92,7 @@ export default function CutoverPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <PageShell className="gap-6">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
@@ -171,6 +173,6 @@ export default function CutoverPage() {
           </table>
         </div>
       </section>
-    </div>
+    </PageShell>
   );
 }

@@ -215,5 +215,56 @@
       "Verdict PILOT_READY_CONDITIONAL pending FOUNDER uat_signoff",
       "Evidence planning/evidence/phase_37_rp45/"
     ]
+  },
+  "Phase38_rp1_100_Ready": {
+    "name": "Phase38_rp1_100_Ready",
+    "entityType": "milestone",
+    "observations": [
+      "2026-07-22 rp1 PASS 100% Ready",
+      "SoT planning/temp/AUDIT_UI_UX_PROD_READINESS.md ~6.0",
+      "Inventory admin41 master8 mobile8",
+      "EP0-EP6 map W0-W6",
+      "Must fix sidebar-primary purple in W0",
+      "No asChild Base UI render rule",
+      "Await FOUNDER Proceed"
+    ]
+  },
+  "Phase38_rp2_rp3_Ready": {
+    "name": "Phase38_rp2_rp3_Ready",
+    "entityType": "milestone",
+    "observations": [
+      "2026-07-22 rp2+rp3 PASS",
+      "critic 9.5",
+      "function_index_phase38_ui_design_system.md",
+      "BS-R3-01..16 closed",
+      "PageShell content-only; layout keeps p-6",
+      "EP5 verify #0a0a0a + zinc-950",
+      "Await FOUNDER Proceed /18-auto-execute"
+    ]
+  },
+  "Phase38_UI_Module_DoD": {
+    "name": "Phase38_UI_Module_DoD",
+    "entityType": "milestone",
+    "observations": [
+      "2026-07-22 /18-auto-execute COMPLETE",
+      "Module DoD 100%",
+      "AUDIT ~8.2",
+      "PageShell 57/57 allowlist 1 mobile/tasks/next",
+      "verify_ui_shell_classes PASS",
+      "verify_nav_lens + verify_i18n PASS",
+      "Tokens primary ops non-purple sidebar"
+    ]
+  },
+  "Phase38_UI_DBM": {
+    "name": "Phase38_UI_DBM",
+    "entityType": "milestone",
+    "observations": [
+      "2026-07-22 dbm PASS 32/0",
+      "Script tests/helpers/dbm_phase38_ui_browser.mjs",
+      "walkthrough-ui-design.webm",
+      "PageShell DOM on qc/products/inbound/outbound/cutover/movement",
+      "verify_ui nav i18n PASS",
+      "Self-heal login race"
+    ]
   }
 }

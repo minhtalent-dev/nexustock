@@ -62,6 +62,7 @@ Giao diện sẽ chạy tại cổng `http://localhost:3003`.
 * **Điều hướng thanh bên (Phase 35):** chuyển Modules ↔ Ops (Nhập / Xuất / Quản kho); ghi nhớ lựa chọn trên máy; cùng đường dẫn trang.
 * **Toàn vẹn tồn kho (Phase 36):** cấp phát lấy hàng một quy tắc; chặn tồn âm; chuyển hàng offline không vượt số khả dụng.
 * **Cổng pilot (Phase 37):** bộ kiểm thử vận hành + biên bản nghiệm thu; khóa/mở ghi khi cắt chuyển; trạng thái sẵn sàng pilot có điều kiện (chờ ký chấp nhận).
+* **Giao diện thống nhất (Phase 38):** cùng khung trang, màu hệ thống và trạng thái trống/tải/lỗi trên quản trị và thiết bị cầm tay.
 * **Milestone 5**: **59/59** trang Web VI/EN, **0 backlog** localization product.
 
 ## 🩺 Endpoints kiểm tra sức khỏe

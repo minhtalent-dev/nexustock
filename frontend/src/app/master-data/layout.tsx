@@ -7,9 +7,9 @@ export default function MasterDataLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-[#0a0a0a]">
+    <div className="flex min-h-screen bg-background">
       <AppSidebar />
-      <main className="flex-1 p-6 overflow-auto">
+      <main className="flex-1 overflow-auto p-6">
         <BreadcrumbNav />
         {children}
       </main>

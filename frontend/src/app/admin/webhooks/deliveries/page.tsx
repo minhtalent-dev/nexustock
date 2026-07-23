@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { getDeliveries, replayDelivery, replayBulk } from "@/features/webhook/api";
@@ -97,7 +99,8 @@ export default function WebhookDeliveriesPage() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="p-6 space-y-4">
+    <PageShell className="gap-6">
+      <div className="p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">{t("title")}</h1>
@@ -242,5 +245,6 @@ export default function WebhookDeliveriesPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PageShell>
   );
 }

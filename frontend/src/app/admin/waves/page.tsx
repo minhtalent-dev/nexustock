@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -127,14 +129,14 @@ export default function WavesPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-white">
+    <PageShell className="gap-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <Layers className="h-6 w-6 text-indigo-400" />
             {t("title")}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
+          <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -147,7 +149,7 @@ export default function WavesPage() {
           <Button
             onClick={fetchWaves}
             variant="outline"
-            className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-9 px-4 flex items-center gap-2 text-xs"
+            className="border-border hover:bg-muted text-zinc-300 h-9 px-4 flex items-center gap-2 text-xs"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             {tc("refresh")}
@@ -156,30 +158,30 @@ export default function WavesPage() {
       </div>
 
       {showCreateForm && (
-        <Card className="bg-zinc-900 border-indigo-900/40 text-white">
-          <CardHeader className="border-b border-zinc-800 pb-3">
+        <Card className="bg-card border-indigo-900/40 text-white">
+          <CardHeader className="border-b border-border pb-3">
             <CardTitle className="text-sm font-semibold text-indigo-300">{t("createStepTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 flex flex-col gap-4">
             {loadingShipments ? (
-              <div className="text-center py-6 text-zinc-500 text-xs font-mono">{t("loadingShipments")}</div>
+              <div className="text-center py-6 text-muted-foreground text-xs font-mono">{t("loadingShipments")}</div>
             ) : openShipments.length === 0 ? (
-              <div className="text-center py-6 text-zinc-500 text-xs">{t("noOpenShipments")}</div>
+              <div className="text-center py-6 text-muted-foreground text-xs">{t("noOpenShipments")}</div>
             ) : (
-              <div className="max-h-60 overflow-y-auto border border-zinc-800 rounded">
+              <div className="max-h-60 overflow-y-auto border border-border rounded">
                 <Table className="text-xs">
-                  <TableHeader className="bg-zinc-950 border-b border-zinc-800">
+                  <TableHeader className="bg-background border-b border-border">
                     <TableRow className="hover:bg-transparent">
                       <TableHead className="w-12"></TableHead>
-                      <TableHead className="text-zinc-400">{t("colShipmentNo")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colCustomer")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colCreatedAt")}</TableHead>
-                      <TableHead className="text-zinc-400">{tc("status")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colShipmentNo")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colCustomer")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colCreatedAt")}</TableHead>
+                      <TableHead className="text-muted-foreground">{tc("status")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {openShipments.map((s) => (
-                      <TableRow key={s.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
+                      <TableRow key={s.id} className="border-b border-border/50 hover:bg-muted/20">
                         <TableCell>
                           <Checkbox
                             checked={selectedShipmentIds.includes(s.id)}
@@ -194,9 +196,9 @@ export default function WavesPage() {
                           )}
                         </TableCell>
                         <TableCell className="text-zinc-300">{s.partnerName}</TableCell>
-                        <TableCell className="text-zinc-400">{new Date(s.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell className="text-muted-foreground">{new Date(s.createdAt).toLocaleDateString()}</TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={s.status === "Open" ? "border-zinc-700 text-zinc-400" : "border-indigo-800 text-indigo-400"}>
+                          <Badge variant="outline" className={s.status === "Open" ? "border-border text-muted-foreground" : "border-indigo-800 text-indigo-400"}>
                             {s.status}
                           </Badge>
                         </TableCell>
@@ -210,7 +212,7 @@ export default function WavesPage() {
               <Button
                 onClick={() => setShowCreateForm(false)}
                 variant="outline"
-                className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-8 text-xs px-3"
+                className="border-border hover:bg-muted text-zinc-300 h-8 text-xs px-3"
               >
                 {tc("cancel")}
               </Button>
@@ -228,39 +230,39 @@ export default function WavesPage() {
         </Card>
       )}
 
-      <Card className="bg-zinc-900 border-zinc-800 text-white">
+      <Card className="bg-card border-border text-white">
         <CardContent className="p-0">
           {loading && waves.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 text-xs font-mono">{t("loading")}</div>
+            <div className="text-center py-12 text-muted-foreground text-xs font-mono">{t("loading")}</div>
           ) : waves.length === 0 ? (
-            <div className="text-center py-12 text-zinc-500 text-xs">{t("emptyWaves")}</div>
+            <div className="text-center py-12 text-muted-foreground text-xs">{t("emptyWaves")}</div>
           ) : (
             <Table className="text-xs">
-              <TableHeader className="border-b border-zinc-800">
-                <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                  <TableHead className="text-zinc-400">{t("colWaveNo")}</TableHead>
-                  <TableHead className="text-zinc-400 text-right">{t("colItemCount")}</TableHead>
-                  <TableHead className="text-zinc-400 text-right">{t("colTotalQty")}</TableHead>
-                  <TableHead className="text-zinc-400">{t("colCreatedBy")}</TableHead>
-                  <TableHead className="text-zinc-400">{t("colCreatedAt")}</TableHead>
-                  <TableHead className="text-zinc-400">{tc("status")}</TableHead>
+              <TableHeader className="border-b border-border">
+                <TableRow className="border-b border-border hover:bg-muted/50">
+                  <TableHead className="text-muted-foreground">{t("colWaveNo")}</TableHead>
+                  <TableHead className="text-muted-foreground text-right">{t("colItemCount")}</TableHead>
+                  <TableHead className="text-muted-foreground text-right">{t("colTotalQty")}</TableHead>
+                  <TableHead className="text-muted-foreground">{t("colCreatedBy")}</TableHead>
+                  <TableHead className="text-muted-foreground">{t("colCreatedAt")}</TableHead>
+                  <TableHead className="text-muted-foreground">{tc("status")}</TableHead>
                   <TableHead className="w-20"></TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {waves.map((w) => (
-                  <TableRow key={w.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
+                  <TableRow key={w.id} className="border-b border-border/50 hover:bg-muted/20">
                     <TableCell className="font-bold text-indigo-400 font-mono">{w.waveNo}</TableCell>
                     <TableCell className="text-right text-zinc-300 font-bold">{w.itemCount}</TableCell>
                     <TableCell className="text-right text-zinc-300 font-bold">{w.totalQty.toLocaleString()}</TableCell>
-                    <TableCell className="text-zinc-400">{w.createdBy}</TableCell>
-                    <TableCell className="text-zinc-400">{new Date(w.createdAt).toLocaleString()}</TableCell>
+                    <TableCell className="text-muted-foreground">{w.createdBy}</TableCell>
+                    <TableCell className="text-muted-foreground">{new Date(w.createdAt).toLocaleString()}</TableCell>
                     <TableCell>{getStatusBadge(w.status)}</TableCell>
                     <TableCell>
                       <Link href={`/admin/waves/${w.id}`}>
                         <Button
                           variant="ghost"
-                          className="text-indigo-400 hover:text-indigo-300 hover:bg-zinc-800/80 h-7 w-7 p-0"
+                          className="text-indigo-400 hover:text-indigo-300 hover:bg-muted/80 h-7 w-7 p-0"
                         >
                           <ArrowRight className="h-4 w-4" />
                         </Button>
@@ -273,6 +275,6 @@ export default function WavesPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   );
 }

@@ -1,6 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { PageShell } from "@/components/layout/page-shell";
+
+import { use, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -67,7 +69,7 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
     const isHold = node.status === "HOLD";
     return (
       <div key={node.lotId} className="flex flex-col items-center gap-2">
-        <Card className={`bg-zinc-900 border-2 ${isHold ? "border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]" : "border-zinc-800"} text-white w-64`}>
+        <Card className={`bg-card border-2 ${isHold ? "border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]" : "border-border"} text-white w-64`}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex justify-between items-center">
               <span>{t("lotLabel", { lotNo: node.lotNo })}</span>
@@ -75,10 +77,10 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
             </CardTitle>
           </CardHeader>
           <CardContent className="text-xs space-y-1">
-            <div className="text-zinc-400">
+            <div className="text-muted-foreground">
               {t("productLabel", { code: node.productCode, name: node.productName })}
             </div>
-            <div className="text-zinc-400">
+            <div className="text-muted-foreground">
               {t("stockLabel")} <span className="text-zinc-200 font-bold">{node.qtyOnHand}</span>
             </div>
           </CardContent>
@@ -86,7 +88,7 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
         {node.children && node.children.length > 0 && (
           <div className="flex flex-col items-center mt-2 w-full">
             <div className="h-4 w-0.5 bg-zinc-700"></div>
-            <div className="flex gap-6 border-t border-zinc-700 pt-4 w-full justify-center">
+            <div className="flex gap-6 border-t border-border pt-4 w-full justify-center">
               {node.children.map((child) => renderNode(child))}
             </div>
           </div>
@@ -95,15 +97,15 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
     );
   };
 
-  if (loading) return <div className="text-zinc-500 p-6 font-mono text-center text-xs">{t("loadingTree")}</div>;
-  if (!tree) return <div className="text-zinc-500 p-6 font-mono text-center text-xs">{t("notFound")}</div>;
+  if (loading) return <div className="text-muted-foreground p-6 font-mono text-center text-xs">{t("loadingTree")}</div>;
+  if (!tree) return <div className="text-muted-foreground p-6 font-mono text-center text-xs">{t("notFound")}</div>;
 
   return (
-    <div className="flex flex-col gap-6 text-white p-6 font-sans">
+    <PageShell className="gap-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <Link href="/admin/lots">
-            <Button variant="outline" className="border-zinc-800 text-zinc-300 hover:bg-zinc-800">
+            <Button variant="outline" className="border-border text-zinc-300 hover:bg-muted">
               <ArrowLeft className="h-4 w-4 mr-2" /> {t("back")}
             </Button>
           </Link>
@@ -116,9 +118,9 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
         </Button>
       </div>
 
-      <div className="overflow-auto border border-zinc-800 bg-zinc-950/40 rounded-xl p-8 min-h-[500px] flex justify-center items-start">
+      <div className="overflow-auto border border-border bg-background/40 rounded-xl p-8 min-h-[500px] flex justify-center items-start">
         {renderNode(tree)}
       </div>
-    </div>
+    </PageShell>
   );
 }

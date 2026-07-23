@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import MobileShell from "@/components/mobile/mobile-shell";
@@ -180,20 +182,21 @@ export default function MovementPage() {
   const dash = "—";
 
   return (
-    <MobileShell>
+    <PageShell className="gap-6">
+      <MobileShell>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
               size="icon"
-              className="text-slate-300"
+              className="text-muted-foreground"
               render={<Link href="/mobile" />}
               nativeButton={false}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h2 className="text-lg font-bold flex items-center gap-2 text-slate-100">
+            <h2 className="text-lg font-bold flex items-center gap-2 text-foreground">
               <Move className="h-5 w-5 text-blue-500" />
               {t("page.title")}
             </h2>
@@ -213,9 +216,9 @@ export default function MovementPage() {
           )}
         </div>
 
-        <Card className="border-slate-800 bg-slate-800/40">
+        <Card className="border-border bg-card/40">
           <CardContent className="p-4 space-y-4">
-            <div className="space-y-2 text-xs font-mono text-slate-400 border-b border-slate-800/60 pb-3">
+            <div className="space-y-2 text-xs font-mono text-muted-foreground border-b border-border/60 pb-3">
               <div>
                 {t("labels.fromLoc")}{" "}
                 <span className="text-white font-bold">{fromLoc || dash}</span>
@@ -252,7 +255,7 @@ export default function MovementPage() {
             {currentStep === "INPUT_QTY" && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="moveQty" className="text-sm font-semibold text-slate-300">
+                  <Label htmlFor="moveQty" className="text-sm font-semibold text-muted-foreground">
                     {t("fields.qty")}
                   </Label>
                   <Input
@@ -262,7 +265,7 @@ export default function MovementPage() {
                     value={qty}
                     onChange={(e) => setQty(e.target.value)}
                     placeholder={t("fields.qtyPlaceholder")}
-                    className="bg-slate-800 border-slate-700 text-white font-mono text-lg"
+                    className="bg-muted border-border text-white font-mono text-lg"
                   />
                 </div>
                 <Button onClick={handleInputQty} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold">
@@ -282,7 +285,7 @@ export default function MovementPage() {
 
             {currentStep === "CONFIRM" && (
               <div className="space-y-4 pt-2">
-                <div className="bg-slate-850 p-4 rounded text-sm space-y-2 text-slate-200 border border-slate-700">
+                <div className="bg-slate-850 p-4 rounded text-sm space-y-2 text-slate-200 border border-border">
                   <div className="text-center font-bold text-base text-blue-400 mb-2">{t("labels.confirmTitle")}</div>
                   <div>
                     {t("labels.fromShelf")} <span className="font-bold text-white font-mono">{fromLoc}</span>
@@ -299,7 +302,7 @@ export default function MovementPage() {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button onClick={resetForm} variant="outline" className="flex-1 border-slate-700 text-slate-300">
+                  <Button onClick={resetForm} variant="outline" className="flex-1 border-border text-muted-foreground">
                     {t("actions.reset")}
                   </Button>
                   <Button
@@ -316,5 +319,6 @@ export default function MovementPage() {
         </Card>
       </div>
     </MobileShell>
+    </PageShell>
   );
 }

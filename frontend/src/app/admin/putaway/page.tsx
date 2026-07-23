@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -207,17 +209,17 @@ export default function PutawayPage() {
 
     return (
       <div className="flex flex-col gap-2 mt-4">
-        <div className="flex justify-between items-center text-xs text-zinc-400">
+        <div className="flex justify-between items-center text-xs text-muted-foreground">
           <span>{t("gridTitle")}</span>
           <div className="flex gap-4">
             <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-emerald-500/20 border border-emerald-500 inline-block animate-pulse"></span> {t("legendProposed")}</span>
-            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-zinc-800 border border-zinc-700 inline-block"></span> {t("legendFree")}</span>
+            <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-muted border border-border inline-block"></span> {t("legendFree")}</span>
             <span className="flex items-center gap-1"><span className="h-3 w-3 rounded bg-rose-950/20 border border-rose-900 inline-block"></span> {t("legendOccupied")}</span>
           </div>
         </div>
 
         <div 
-          className="grid gap-2 border border-zinc-800 p-4 rounded-lg bg-zinc-950 overflow-auto max-h-[300px] select-none"
+          className="grid gap-2 border border-border p-4 rounded-lg bg-background overflow-auto max-h-[300px] select-none"
           style={{
             gridTemplateColumns: `repeat(${columnsCount}, minmax(80px, 1fr))`,
             gridTemplateRows: `repeat(${rowsCount}, minmax(50px, 1fr))`
@@ -236,7 +238,7 @@ export default function PutawayPage() {
               const isSelected = selectedCandidate?.locationId === loc.locationId;
               const proposal = proposalsData.proposals.find(p => p.locationId === loc.locationId);
 
-              let cellStyle = "border-zinc-800 bg-zinc-900/40 text-zinc-500";
+              let cellStyle = "border-border bg-card/40 text-muted-foreground";
               if (loc.status === "PROPOSED") {
                 cellStyle = isSelected 
                   ? "border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold shadow-md shadow-emerald-500/10 cursor-pointer animate-pulse"
@@ -246,7 +248,7 @@ export default function PutawayPage() {
               } else if (loc.status === "FREE") {
                 cellStyle = isSelected
                   ? "border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold cursor-pointer"
-                  : "border-zinc-700 bg-zinc-800/40 text-zinc-300 cursor-pointer hover:border-zinc-500 transition-colors";
+                  : "border-border bg-muted/40 text-zinc-300 cursor-pointer hover:border-zinc-500 transition-colors";
               }
 
               const handleCellClick = () => {
@@ -283,66 +285,66 @@ export default function PutawayPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-white">
+    <PageShell className="gap-6">
       <div>
         <h1 className="text-2xl font-bold flex items-center gap-3">
           <MapPin className="h-6 w-6 text-emerald-500" />
           {t("title")}
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
+        <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
         <div className="xl:col-span-2 flex flex-col gap-4">
-          <Card className="bg-zinc-900 border-zinc-800 text-white">
-            <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-zinc-800">
+          <Card className="bg-card border-border text-white">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Layers className="h-4 w-4 text-emerald-500" />
                 {t("queueTitle", { count: filteredBalances.length })}
               </CardTitle>
-              <Button variant="ghost" size="icon" onClick={fetchBalances} className="h-8 w-8 text-zinc-400 hover:text-white">
+              <Button variant="ghost" size="icon" onClick={fetchBalances} className="h-8 w-8 text-muted-foreground hover:text-white">
                 <RefreshCw className={`h-4 w-4 ${loadingBalances ? "animate-spin" : ""}`} />
               </Button>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="relative mb-4">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder={t("searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-zinc-800 border-zinc-700 text-white pl-9 h-9 text-xs"
+                  className="bg-muted border-border text-white pl-9 h-9 text-xs"
                 />
               </div>
 
               {loadingBalances && balances.length === 0 ? (
-                <div className="text-center py-8 text-zinc-500 text-xs">{t("loading")}</div>
+                <div className="text-center py-8 text-muted-foreground text-xs">{t("loading")}</div>
               ) : filteredBalances.length === 0 ? (
-                <div className="text-center py-8 text-zinc-500 text-xs">{t("queueEmpty")}</div>
+                <div className="text-center py-8 text-muted-foreground text-xs">{t("queueEmpty")}</div>
               ) : (
                 <div className="overflow-x-auto max-h-[500px]">
                   <Table className="text-xs">
-                    <TableHeader className="border-b border-zinc-800">
-                      <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                        <TableHead className="text-zinc-400">{t("colLotLocation")}</TableHead>
-                        <TableHead className="text-zinc-400">{t("colItem")}</TableHead>
-                        <TableHead className="text-zinc-400 text-right">{t("colAvailableQty")}</TableHead>
-                        <TableHead className="text-zinc-400 text-center">{t("colActions")}</TableHead>
+                    <TableHeader className="border-b border-border">
+                      <TableRow className="border-b border-border hover:bg-muted/50">
+                        <TableHead className="text-muted-foreground">{t("colLotLocation")}</TableHead>
+                        <TableHead className="text-muted-foreground">{t("colItem")}</TableHead>
+                        <TableHead className="text-muted-foreground text-right">{t("colAvailableQty")}</TableHead>
+                        <TableHead className="text-muted-foreground text-center">{t("colActions")}</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredBalances.map((item) => (
                         <TableRow 
                           key={item.id} 
-                          className={`border-b border-zinc-800/50 hover:bg-zinc-800/30 ${activeItem?.id === item.id ? "bg-zinc-800/50" : ""}`}
+                          className={`border-b border-border/50 hover:bg-muted/30 ${activeItem?.id === item.id ? "bg-muted/50" : ""}`}
                         >
                           <TableCell>
                             <div className="font-semibold text-zinc-200">{item.lotNo}</div>
-                            <div className="text-[10px] text-zinc-500 font-mono">{t("atLocation")}: {item.locationCode}</div>
+                            <div className="text-[10px] text-muted-foreground font-mono">{t("atLocation")}: {item.locationCode}</div>
                           </TableCell>
                           <TableCell>
                             <div className="font-medium text-zinc-300 truncate max-w-[120px]">{item.itemName}</div>
-                            <div className="text-[10px] text-zinc-500 font-mono">{item.itemCode}</div>
+                            <div className="text-[10px] text-muted-foreground font-mono">{item.itemCode}</div>
                           </TableCell>
                           <TableCell className="text-right text-zinc-200 font-medium">
                             {item.qtyAvailable.toLocaleString()}
@@ -366,8 +368,8 @@ export default function PutawayPage() {
         </div>
 
         <div className="xl:col-span-3 flex flex-col gap-4">
-          <Card className="bg-zinc-900 border-zinc-800 text-white min-h-[400px]">
-            <CardHeader className="border-b border-zinc-800 pb-2">
+          <Card className="bg-card border-border text-white min-h-[400px]">
+            <CardHeader className="border-b border-border pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-emerald-500" />
                 {t("proposalTitle")}
@@ -375,29 +377,29 @@ export default function PutawayPage() {
             </CardHeader>
             <CardContent className="pt-4">
               {!activeItem ? (
-                <div className="flex flex-col items-center justify-center py-20 text-zinc-500 text-xs gap-2">
+                <div className="flex flex-col items-center justify-center py-20 text-muted-foreground text-xs gap-2">
                   <MapPin className="h-8 w-8 text-zinc-700 animate-bounce" />
                   {t("selectItemHint")}
                 </div>
               ) : loadingProposals ? (
-                <div className="text-center py-20 text-zinc-500 text-xs">{t("loadingProposals")}</div>
+                <div className="text-center py-20 text-muted-foreground text-xs">{t("loadingProposals")}</div>
               ) : proposalsData ? (
                 <div className="flex flex-col gap-4 text-xs">
-                  <div className="bg-zinc-800/30 p-3 rounded-lg border border-zinc-800 grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="bg-muted/30 p-3 rounded-lg border border-border grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
-                      <span className="text-[10px] text-zinc-500">{t("lotNo")}</span>
+                      <span className="text-[10px] text-muted-foreground">{t("lotNo")}</span>
                       <div className="font-semibold text-zinc-200">{proposalsData.lotNo}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-zinc-500">{t("colItem")}</span>
+                      <span className="text-[10px] text-muted-foreground">{t("colItem")}</span>
                       <div className="font-semibold text-zinc-200 truncate">{proposalsData.itemName}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-zinc-500">{t("putawayQty")}</span>
+                      <span className="text-[10px] text-muted-foreground">{t("putawayQty")}</span>
                       <div className="font-semibold text-zinc-200">{proposalsData.qty.toLocaleString()}</div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-zinc-500">{t("currentLocation")}</span>
+                      <span className="text-[10px] text-muted-foreground">{t("currentLocation")}</span>
                       <div className="font-semibold text-zinc-200">{activeItem.locationCode}</div>
                     </div>
                   </div>
@@ -405,17 +407,17 @@ export default function PutawayPage() {
                   {render2DGridMap()}
 
                   <div className="flex flex-col gap-2 mt-2">
-                    <span className="text-zinc-400 font-semibold">{t("candidatesTitle")}</span>
-                    <div className="overflow-x-auto border border-zinc-800 rounded-lg">
+                    <span className="text-muted-foreground font-semibold">{t("candidatesTitle")}</span>
+                    <div className="overflow-x-auto border border-border rounded-lg">
                       <Table className="text-xs">
-                        <TableHeader className="border-b border-zinc-800 bg-zinc-950/40">
-                          <TableRow className="border-b border-zinc-800">
-                            <TableHead className="text-zinc-400 w-12 text-center">{t("colSelect")}</TableHead>
-                            <TableHead className="text-zinc-400">{t("colLocation")}</TableHead>
-                            <TableHead className="text-zinc-400">{t("colZone")}</TableHead>
-                            <TableHead className="text-zinc-400 text-right">{t("colScore")}</TableHead>
-                            <TableHead className="text-zinc-400">{t("colReason")}</TableHead>
-                            <TableHead className="text-zinc-400 text-center">{t("colActions")}</TableHead>
+                        <TableHeader className="border-b border-border bg-background/40">
+                          <TableRow className="border-b border-border">
+                            <TableHead className="text-muted-foreground w-12 text-center">{t("colSelect")}</TableHead>
+                            <TableHead className="text-muted-foreground">{t("colLocation")}</TableHead>
+                            <TableHead className="text-muted-foreground">{t("colZone")}</TableHead>
+                            <TableHead className="text-muted-foreground text-right">{t("colScore")}</TableHead>
+                            <TableHead className="text-muted-foreground">{t("colReason")}</TableHead>
+                            <TableHead className="text-muted-foreground text-center">{t("colActions")}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -424,7 +426,7 @@ export default function PutawayPage() {
                             return (
                               <TableRow 
                                 key={candidate.locationId}
-                                className={`border-b border-zinc-800/50 hover:bg-zinc-800/20 ${isSelected ? "bg-emerald-500/5 border-l-2 border-l-emerald-500" : ""}`}
+                                className={`border-b border-border/50 hover:bg-muted/20 ${isSelected ? "bg-emerald-500/5 border-l-2 border-l-emerald-500" : ""}`}
                               >
                                 <TableCell className="text-center">
                                   <input 
@@ -436,7 +438,7 @@ export default function PutawayPage() {
                                   />
                                 </TableCell>
                                 <TableCell className="font-semibold text-zinc-200">{candidate.locationCode}</TableCell>
-                                <TableCell className="text-zinc-400">{candidate.zoneCode}</TableCell>
+                                <TableCell className="text-muted-foreground">{candidate.zoneCode}</TableCell>
                                 <TableCell className="text-right text-emerald-400 font-bold">{candidate.score} {t("scoreUnit")}</TableCell>
                                 <TableCell className="text-zinc-300 max-w-[200px] truncate" title={candidate.reason}>
                                   {candidate.reason}
@@ -460,7 +462,7 @@ export default function PutawayPage() {
                   </div>
 
                   {selectedCandidate && (
-                    <div className="flex justify-between items-center bg-zinc-850 p-4 border border-zinc-800 rounded-lg mt-4 bg-zinc-950/20">
+                    <div className="flex justify-between items-center bg-zinc-850 p-4 border border-border rounded-lg mt-4 bg-background/20">
                       <div className="flex items-center gap-2 text-zinc-300">
                         <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                         <span>{t("confirmPutaway", { location: selectedCandidate.locationCode, score: selectedCandidate.score })}</span>
@@ -476,7 +478,7 @@ export default function PutawayPage() {
                   )}
                 </div>
               ) : (
-                <div className="text-center py-20 text-zinc-500 text-xs">{t("noSuitableSlots")}</div>
+                <div className="text-center py-20 text-muted-foreground text-xs">{t("noSuitableSlots")}</div>
               )}
             </CardContent>
           </Card>
@@ -485,21 +487,21 @@ export default function PutawayPage() {
 
       {rejectingProposal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-lg w-full max-w-sm p-6 text-white text-xs flex flex-col gap-4 shadow-xl">
+          <div className="bg-card border border-border rounded-lg w-full max-w-sm p-6 text-white text-xs flex flex-col gap-4 shadow-xl">
             <div>
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <XCircle className="h-5 w-5 text-rose-500" />
                 {t("rejectDialogTitle")}
               </h3>
-              <p className="text-[10px] text-zinc-400 mt-1">{t("rejectDialogHint", { location: rejectingProposal.locationCode })}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{t("rejectDialogHint", { location: rejectingProposal.locationCode })}</p>
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-zinc-400">{t("rejectReasonLabel")}</label>
+              <label className="text-muted-foreground">{t("rejectReasonLabel")}</label>
               <select
                 value={rejectReasonCode}
                 onChange={(e) => setRejectReasonCode(e.target.value)}
-                className="bg-zinc-800 border border-zinc-700 text-white rounded p-2 h-9 focus:outline-none"
+                className="bg-muted border border-border text-white rounded p-2 h-9 focus:outline-none"
               >
                 <option value="LOC_FULL">{t("reasonLocFull")}</option>
                 <option value="LOC_DIRTY">{t("reasonLocDirty")}</option>
@@ -509,20 +511,20 @@ export default function PutawayPage() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label className="text-zinc-400">{t("rejectNoteLabel")}</label>
+              <label className="text-muted-foreground">{t("rejectNoteLabel")}</label>
               <Input
                 placeholder={t("rejectNotePlaceholder")}
                 value={rejectNote}
                 onChange={(e) => setRejectNote(e.target.value)}
-                className="bg-zinc-800 border-zinc-700 text-white h-9 text-xs"
+                className="bg-muted border-border text-white h-9 text-xs"
               />
             </div>
 
-            <div className="flex gap-2 justify-end border-t border-zinc-800 pt-4 mt-2">
+            <div className="flex gap-2 justify-end border-t border-border pt-4 mt-2">
               <Button
                 variant="ghost"
                 onClick={() => setRejectingProposal(null)}
-                className="text-zinc-400 hover:text-white text-xs"
+                className="text-muted-foreground hover:text-white text-xs"
               >
                 {tc("cancel")}
               </Button>
@@ -536,6 +538,6 @@ export default function PutawayPage() {
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
   );
 }

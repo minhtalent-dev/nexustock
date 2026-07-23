@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
@@ -146,7 +148,7 @@ export default function ReceivePage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-4 text-zinc-400">
+      <div className="flex flex-col items-center justify-center py-24 gap-4 text-muted-foreground">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />
         <span className="text-sm">{t("loadingDetail")}</span>
       </div>
@@ -155,11 +157,11 @@ export default function ReceivePage() {
 
   if (!order) {
     return (
-      <div className="flex flex-col items-center justify-center py-24 gap-4 text-zinc-400">
+      <div className="flex flex-col items-center justify-center py-24 gap-4 text-muted-foreground">
         <AlertTriangle className="h-12 w-12 text-red-500" />
         <span className="text-sm">{t("notFound")}</span>
         <Link href="/admin/inbound">
-          <Button className="bg-zinc-800 hover:bg-zinc-700 text-white gap-2">
+          <Button className="bg-muted hover:bg-zinc-700 text-white gap-2">
             <ArrowLeft className="h-4 w-4" />
             {t("backToList")}
           </Button>
@@ -169,10 +171,10 @@ export default function ReceivePage() {
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans">
+    <PageShell className="gap-6">
       <div className="flex items-center gap-4">
         <Link href="/admin/inbound">
-          <Button variant="ghost" className="h-9 w-9 p-0 border border-zinc-800 hover:bg-zinc-850 text-zinc-400 hover:text-white">
+          <Button variant="ghost" className="h-9 w-9 p-0 border border-border hover:bg-zinc-850 text-muted-foreground hover:text-white">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
@@ -180,28 +182,28 @@ export default function ReceivePage() {
           <h1 className="text-2xl font-bold text-white flex items-center gap-3">
             {t("receiveTitle", { orderNo: order.orderNo })}
           </h1>
-          <p className="text-xs text-zinc-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             {t("receiveSubtitle", { partner: order.partnerName, status: order.status })}
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-6">
-        <Card className="bg-[#111] border-zinc-800/80 col-span-3">
-          <CardHeader className="py-4 border-b border-zinc-800/60">
+        <Card className="bg-[#111] border-border/80 col-span-3">
+          <CardHeader className="py-4 border-b border-border/60">
             <CardTitle className="text-sm font-semibold text-white">{t("receiveLinesTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
-              <TableHeader className="bg-zinc-900/30 border-b border-zinc-800/60">
+              <TableHeader className="bg-card/30 border-b border-border/60">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-zinc-400 font-semibold h-11">{t("colItem")}</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11">{t("colUom")}</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">{t("colExpectedQty")}</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">{t("colReceivedQty")}</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">{t("colTolerance")}</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-right">{t("colProgress")}</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-right w-32 pr-6">{t("colActions")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11">{t("colItem")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11">{t("colUom")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colExpectedQty")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colReceivedQty")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colTolerance")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colProgress")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11 text-right w-32 pr-6">{t("colActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -210,31 +212,31 @@ export default function ReceivePage() {
                   const isCompleted = i.receivedQty >= i.expectedQty;
 
                   return (
-                    <TableRow key={i.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/20">
+                    <TableRow key={i.id} className="border-b border-border/50 hover:bg-card/20">
                       <TableCell className="text-white font-medium">
                         <div>
                           <p>{i.itemName}</p>
-                          <p className="text-[10px] text-zinc-500 font-normal">{i.itemCode}</p>
+                          <p className="text-[10px] text-muted-foreground font-normal">{i.itemCode}</p>
                         </div>
                       </TableCell>
                       <TableCell className="text-zinc-300">{i.uomName}</TableCell>
                       <TableCell className="text-right text-zinc-300 font-mono">{i.expectedQty}</TableCell>
                       <TableCell className="text-right text-emerald-400 font-mono font-semibold">{i.receivedQty}</TableCell>
-                      <TableCell className="text-right text-zinc-400 font-mono">{(i.tolerance * 100).toFixed(0)}%</TableCell>
+                      <TableCell className="text-right text-muted-foreground font-mono">{(i.tolerance * 100).toFixed(0)}%</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <div className="w-16 bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                          <div className="w-16 bg-muted rounded-full h-1.5 overflow-hidden">
                             <div
                               className={`h-full rounded-full ${isCompleted ? "bg-emerald-500" : "bg-amber-500"}`}
                               style={{ width: `${progressPercent}%` }}
                             />
                           </div>
-                          <span className="text-xs font-mono text-zinc-400">{progressPercent}%</span>
+                          <span className="text-xs font-mono text-muted-foreground">{progressPercent}%</span>
                         </div>
                       </TableCell>
                       <TableCell className="text-right pr-6">
                         {order.status === "Completed" || order.status === "Cancelled" ? (
-                          <span className="text-xs text-zinc-500">{tc("notAvailable")}</span>
+                          <span className="text-xs text-muted-foreground">{tc("notAvailable")}</span>
                         ) : (
                           <Button
                             onClick={() => openReceiveDialog(i)}
@@ -255,7 +257,7 @@ export default function ReceivePage() {
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-zinc-950 border-zinc-800 text-white max-w-lg">
+        <DialogContent className="bg-background border-border text-white max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-white flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-emerald-500" />
@@ -264,21 +266,21 @@ export default function ReceivePage() {
           </DialogHeader>
           {selectedItem && (
             <form onSubmit={handleReceive} className="space-y-4">
-              <div className="bg-zinc-900/60 p-3 rounded-lg border border-zinc-850">
-                <p className="text-xs text-zinc-500 font-semibold uppercase">{t("itemToReceive")}</p>
+              <div className="bg-card/60 p-3 rounded-lg border border-zinc-850">
+                <p className="text-xs text-muted-foreground font-semibold uppercase">{t("itemToReceive")}</p>
                 <p className="text-sm font-bold text-white mt-0.5">{selectedItem.itemName}</p>
-                <p className="text-[10px] text-zinc-400 font-normal">{t("itemCode")}: {selectedItem.itemCode}</p>
-                <div className="grid grid-cols-3 gap-2 mt-3 text-xs text-zinc-400">
+                <p className="text-[10px] text-muted-foreground font-normal">{t("itemCode")}: {selectedItem.itemCode}</p>
+                <div className="grid grid-cols-3 gap-2 mt-3 text-xs text-muted-foreground">
                   <div>
-                    <p className="text-zinc-500">{t("expected")}</p>
+                    <p className="text-muted-foreground">{t("expected")}</p>
                     <p className="font-semibold text-zinc-200 mt-0.5 font-mono">{selectedItem.expectedQty} {selectedItem.uomName}</p>
                   </div>
                   <div>
-                    <p className="text-zinc-500">{t("received")}</p>
+                    <p className="text-muted-foreground">{t("received")}</p>
                     <p className="font-semibold text-emerald-400 mt-0.5 font-mono">{selectedItem.receivedQty} {selectedItem.uomName}</p>
                   </div>
                   <div>
-                    <p className="text-zinc-500">{t("tolerance")}</p>
+                    <p className="text-muted-foreground">{t("tolerance")}</p>
                     <p className="font-semibold text-amber-500 mt-0.5 font-mono">{(selectedItem.tolerance * 100).toFixed(0)}%</p>
                   </div>
                 </div>
@@ -291,7 +293,7 @@ export default function ReceivePage() {
                   placeholder={t("lotNoPlaceholder")}
                   value={lotNo}
                   onChange={(e) => setLotNo(e.target.value)}
-                  className="bg-zinc-900 border-zinc-800 text-white focus-visible:ring-emerald-500"
+                  className="bg-card border-border text-white focus-visible:ring-emerald-500"
                 />
               </div>
 
@@ -305,7 +307,7 @@ export default function ReceivePage() {
                     step="any"
                     value={receivedQty}
                     onChange={(e) => setReceivedQty(parseFloat(e.target.value) || 0)}
-                    className="bg-zinc-900 border-zinc-800 text-white focus-visible:ring-emerald-500 font-mono"
+                    className="bg-card border-border text-white focus-visible:ring-emerald-500 font-mono"
                   />
                 </div>
                 <div className="space-y-2">
@@ -314,7 +316,7 @@ export default function ReceivePage() {
                     id="location"
                     value={toLocationId}
                     onChange={(e) => setToLocationId(e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-zinc-800 bg-zinc-900 px-3 py-1 text-sm shadow-sm transition-colors text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                    className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-1 text-sm shadow-sm transition-colors text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
                   >
                     <option value="">{t("locationPlaceholder")}</option>
                     {locations.map((loc) => (
@@ -334,7 +336,7 @@ export default function ReceivePage() {
                     type="date"
                     value={productionDate}
                     onChange={(e) => setProductionDate(e.target.value)}
-                    className="bg-zinc-900 border-zinc-800 text-white focus-visible:ring-emerald-500"
+                    className="bg-card border-border text-white focus-visible:ring-emerald-500"
                   />
                 </div>
                 <div className="space-y-2">
@@ -344,7 +346,7 @@ export default function ReceivePage() {
                     type="date"
                     value={expiryDate}
                     onChange={(e) => setExpiryDate(e.target.value)}
-                    className="bg-zinc-900 border-zinc-800 text-white focus-visible:ring-emerald-500"
+                    className="bg-card border-border text-white focus-visible:ring-emerald-500"
                   />
                 </div>
               </div>
@@ -356,8 +358,8 @@ export default function ReceivePage() {
                 </div>
               )}
 
-              <DialogFooter className="border-t border-zinc-800 pt-4 flex gap-2">
-                <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-zinc-400 hover:text-white">
+              <DialogFooter className="border-t border-border pt-4 flex gap-2">
+                <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-white">
                   {tc("cancel")}
                 </Button>
                 <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-white min-w-24">
@@ -368,6 +370,6 @@ export default function ReceivePage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

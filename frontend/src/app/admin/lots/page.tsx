@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -63,30 +65,30 @@ export default function LotsPage() {
       case "REJECT":
         return <Badge className="bg-red-500/10 text-red-500 border-red-500/20">{t("statusReject")}</Badge>;
       case "UNSPEC":
-        return <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20">{t("statusUnspec")}</Badge>;
+        return <Badge className="bg-zinc-500/10 text-muted-foreground border-zinc-500/20">{t("statusUnspec")}</Badge>;
       default:
-        return <Badge className="bg-zinc-500/10 text-zinc-500 border-zinc-500/20">{status}</Badge>;
+        return <Badge className="bg-zinc-500/10 text-muted-foreground border-zinc-500/20">{status}</Badge>;
     }
   };
 
   return (
-    <div className="flex flex-col gap-6 font-sans">
+    <PageShell className="gap-6">
       <div>
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <Tag className="h-6 w-6 text-emerald-500" />
           {t("title")}
         </h1>
-        <p className="text-xs text-zinc-400 mt-1">{t("subtitle")}</p>
+        <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
       </div>
 
-      <Card className="bg-[#111] border-zinc-800/80">
+      <Card className="bg-[#111] border-border/80">
         <CardContent className="p-6">
           <form onSubmit={handleSearch} className="flex gap-3 max-w-md">
             <Input
               placeholder={t("searchPlaceholder")}
               value={searchLotNo}
               onChange={(e) => setSearchLotNo(e.target.value)}
-              className="bg-zinc-900 border-zinc-800 text-white focus-visible:ring-emerald-500 text-sm h-10"
+              className="bg-card border-border text-white focus-visible:ring-emerald-500 text-sm h-10"
             />
             <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-500 text-white h-10 px-5 gap-2 shrink-0">
               {loading ? (
@@ -101,25 +103,25 @@ export default function LotsPage() {
       </Card>
 
       {searched && (
-        <Card className="bg-[#111] border-zinc-800/80">
-          <CardHeader className="py-4 border-b border-zinc-800/60">
+        <Card className="bg-[#111] border-border/80">
+          <CardHeader className="py-4 border-b border-border/60">
             <CardTitle className="text-sm font-semibold text-white">{t("resultsTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
-              <TableHeader className="bg-zinc-900/30 border-b border-zinc-800/60">
+              <TableHeader className="bg-card/30 border-b border-border/60">
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-zinc-400 font-semibold h-11">{t("colLotNo")}</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11">{t("colItem")}</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-center w-40">{t("colProductionDate")}</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-center w-40">{t("colExpiryDate")}</TableHead>
-                  <TableHead className="text-zinc-400 font-semibold h-11 text-center w-40">{t("colQcStatus")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11">{t("colLotNo")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11">{t("colItem")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11 text-center w-40">{t("colProductionDate")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11 text-center w-40">{t("colExpiryDate")}</TableHead>
+                  <TableHead className="text-muted-foreground font-semibold h-11 text-center w-40">{t("colQcStatus")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {lots.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-zinc-500 py-12">
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-12">
                       <div className="flex flex-col items-center gap-2">
                         <AlertCircle className="h-8 w-8 text-zinc-600" />
                         <span>{t("empty")}</span>
@@ -128,7 +130,7 @@ export default function LotsPage() {
                   </TableRow>
                 ) : (
                   lots.map((l) => (
-                    <TableRow key={l.id} className="border-b border-zinc-800/50 hover:bg-zinc-900/20">
+                    <TableRow key={l.id} className="border-b border-border/50 hover:bg-card/20">
                       <TableCell className="text-white font-semibold">
                         <Link href={`/admin/genealogy/${l.lotNo}`} className="text-indigo-400 hover:underline">
                           {l.lotNo}
@@ -137,13 +139,13 @@ export default function LotsPage() {
                       <TableCell className="text-zinc-300">
                         <div>
                           <p>{l.itemName}</p>
-                          <p className="text-[10px] text-zinc-500 font-normal">{l.itemCode}</p>
+                          <p className="text-[10px] text-muted-foreground font-normal">{l.itemCode}</p>
                         </div>
                       </TableCell>
-                      <TableCell className="text-center text-zinc-400 font-mono">
+                      <TableCell className="text-center text-muted-foreground font-mono">
                         {l.productionDate ? new Date(l.productionDate).toLocaleDateString("vi-VN") : "—"}
                       </TableCell>
-                      <TableCell className="text-center text-zinc-400 font-mono">
+                      <TableCell className="text-center text-muted-foreground font-mono">
                         {l.expiryDate ? new Date(l.expiryDate).toLocaleDateString("vi-VN") : "—"}
                       </TableCell>
                       <TableCell className="text-center">{getQcBadge(l.qcStatus)}</TableCell>
@@ -155,6 +157,6 @@ export default function LotsPage() {
           </CardContent>
         </Card>
       )}
-    </div>
+    </PageShell>
   );
 }

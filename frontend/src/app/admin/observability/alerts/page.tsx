@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { getAlerts, ackAlert, resolveAlert } from "@/features/observability/api";
@@ -115,19 +117,20 @@ export default function AlertCenterPage() {
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="p-6 space-y-4">
+    <PageShell className="gap-6">
+      <div className="p-6 space-y-4">
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-white">{t("title")}</h1>
-        <p className="text-zinc-400 text-sm mt-1">{t("subtitle")}</p>
+        <p className="text-muted-foreground text-sm mt-1">{t("subtitle")}</p>
       </div>
 
       <div className="flex flex-wrap gap-3 items-center">
         <div className="w-44">
           <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
-            <SelectTrigger id="alert-status-filter" className="bg-[#0f0f11]/60 border-zinc-800">
+            <SelectTrigger id="alert-status-filter" className="bg-[#0f0f11]/60 border-border">
               <SelectValue placeholder={t("statusPlaceholder")} />
             </SelectTrigger>
-            <SelectContent className="bg-[#151518] border-zinc-800 text-white">
+            <SelectContent className="bg-[#151518] border-border text-white">
               <SelectItem value="all">{t("allStatuses")}</SelectItem>
               <SelectItem value="open">{t("statusOpen")}</SelectItem>
               <SelectItem value="acknowledged">{t("statusAcknowledged")}</SelectItem>
@@ -138,10 +141,10 @@ export default function AlertCenterPage() {
 
         <div className="w-44">
           <Select value={severity} onValueChange={(v) => { setSeverity(v); setPage(1); }}>
-            <SelectTrigger id="alert-severity-filter" className="bg-[#0f0f11]/60 border-zinc-800">
+            <SelectTrigger id="alert-severity-filter" className="bg-[#0f0f11]/60 border-border">
               <SelectValue placeholder={t("severityPlaceholder")} />
             </SelectTrigger>
-            <SelectContent className="bg-[#151518] border-zinc-800 text-white">
+            <SelectContent className="bg-[#151518] border-border text-white">
               <SelectItem value="all">{t("allSeverities")}</SelectItem>
               <SelectItem value="warning">{t("severityWarning")}</SelectItem>
               <SelectItem value="critical">{t("severityCritical")}</SelectItem>
@@ -149,37 +152,37 @@ export default function AlertCenterPage() {
           </Select>
         </div>
 
-        <Button variant="outline" size="sm" onClick={() => setRefreshTrigger(prev => prev + 1)} className="rounded-lg border-zinc-800">
+        <Button variant="outline" size="sm" onClick={() => setRefreshTrigger(prev => prev + 1)} className="rounded-lg border-border">
           {tc("refresh")}
         </Button>
       </div>
 
-      <Card className="border-zinc-800/80 bg-[#0f0f11]/40 rounded-xl">
+      <Card className="border-border/80 bg-[#0f0f11]/40 rounded-xl">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-white">{t("listTitle", { total })}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-zinc-500 py-8 text-center animate-pulse">{t("loadingAlerts")}</p>
+            <p className="text-sm text-muted-foreground py-8 text-center animate-pulse">{t("loadingAlerts")}</p>
           ) : (
             <>
               <div className="overflow-x-auto">
                 <Table>
-                  <TableHeader className="border-zinc-800">
-                    <TableRow className="border-zinc-800 hover:bg-transparent">
-                      <TableHead className="text-zinc-400">{t("colTitle")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colSeverity")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colStatus")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colValueThreshold")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colSourceModule")}</TableHead>
-                      <TableHead className="text-zinc-400">{t("colCreatedAt")}</TableHead>
-                      <TableHead className="text-right text-zinc-400">{t("colActions")}</TableHead>
+                  <TableHeader className="border-border">
+                    <TableRow className="border-border hover:bg-transparent">
+                      <TableHead className="text-muted-foreground">{t("colTitle")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colSeverity")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colStatus")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colValueThreshold")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colSourceModule")}</TableHead>
+                      <TableHead className="text-muted-foreground">{t("colCreatedAt")}</TableHead>
+                      <TableHead className="text-right text-muted-foreground">{t("colActions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {alerts.length === 0 && (
                       <TableRow className="hover:bg-transparent">
-                        <TableCell colSpan={7} className="text-center py-8 text-zinc-500 italic">
+                        <TableCell colSpan={7} className="text-center py-8 text-muted-foreground italic">
                           {t("empty")}
                         </TableCell>
                       </TableRow>
@@ -188,7 +191,7 @@ export default function AlertCenterPage() {
                       <TableRow
                         key={a.id}
                         onClick={() => setSelectedAlert(a)}
-                        className="cursor-pointer border-zinc-800/60 hover:bg-zinc-800/20 transition-colors"
+                        className="cursor-pointer border-border/60 hover:bg-muted/20 transition-colors"
                       >
                         <TableCell className="font-semibold text-zinc-200">{a.title}</TableCell>
                         <TableCell>{getSeverityBadge(a.severity)}</TableCell>
@@ -196,8 +199,8 @@ export default function AlertCenterPage() {
                         <TableCell className="font-mono text-zinc-300">
                           {a.metricValue !== undefined ? `${a.metricValue}/${a.thresholdValue ?? "—"}` : "—"}
                         </TableCell>
-                        <TableCell className="text-zinc-400">{a.sourceModule}</TableCell>
-                        <TableCell className="text-xs text-zinc-500">
+                        <TableCell className="text-muted-foreground">{a.sourceModule}</TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
                           {new Date(a.createdAt).toLocaleString("vi-VN")}
                         </TableCell>
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -206,7 +209,7 @@ export default function AlertCenterPage() {
                               <Button
                                 size="xs"
                                 variant="outline"
-                                className="rounded-lg border-zinc-800 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/5"
+                                className="rounded-lg border-border text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-500/5"
                                 onClick={() => { setSelectedAlert(a); setActionType("ack"); }}
                               >
                                 {t("ack")}
@@ -216,7 +219,7 @@ export default function AlertCenterPage() {
                               <Button
                                 size="xs"
                                 variant="outline"
-                                className="rounded-lg border-zinc-800 text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5"
+                                className="rounded-lg border-border text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5"
                                 onClick={() => { setSelectedAlert(a); setActionType("resolve"); }}
                               >
                                 {t("resolve")}
@@ -231,7 +234,7 @@ export default function AlertCenterPage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="flex justify-between items-center mt-6 text-sm text-zinc-400">
+                <div className="flex justify-between items-center mt-6 text-sm text-muted-foreground">
                   <span>{tc("pageOf", { page, totalPages, total })}</span>
                   <div className="flex gap-2">
                     <Button
@@ -239,7 +242,7 @@ export default function AlertCenterPage() {
                       variant="outline"
                       disabled={page <= 1}
                       onClick={() => setPage(p => p - 1)}
-                      className="rounded-lg border-zinc-800"
+                      className="rounded-lg border-border"
                     >
                       {tc("previous")}
                     </Button>
@@ -248,7 +251,7 @@ export default function AlertCenterPage() {
                       variant="outline"
                       disabled={page >= totalPages}
                       onClick={() => setPage(p => p + 1)}
-                      className="rounded-lg border-zinc-800"
+                      className="rounded-lg border-border"
                     >
                       {tc("next")}
                     </Button>
@@ -261,7 +264,7 @@ export default function AlertCenterPage() {
       </Card>
 
       <Dialog open={!!selectedAlert && actionType === null} onOpenChange={(open) => !open && setSelectedAlert(null)}>
-        <DialogContent className="max-w-2xl bg-[#0f0f11] border-zinc-800 text-white rounded-xl">
+        <DialogContent className="max-w-2xl bg-[#0f0f11] border-border text-white rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-red-500" /> {t("detailTitle")}
@@ -269,40 +272,40 @@ export default function AlertCenterPage() {
           </DialogHeader>
           {selectedAlert && (
             <div className="space-y-4 py-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-zinc-950/40 rounded-lg border border-zinc-800/80">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-background/40 rounded-lg border border-border/80">
                 <div>
-                  <span className="text-zinc-500 text-xs block">{t("alertType")}</span>
+                  <span className="text-muted-foreground text-xs block">{t("alertType")}</span>
                   <span className="font-mono text-sm">{selectedAlert.alertType}</span>
                 </div>
                 <div>
-                  <span className="text-zinc-500 text-xs block">{t("statusSeverity")}</span>
+                  <span className="text-muted-foreground text-xs block">{t("statusSeverity")}</span>
                   <div className="flex gap-2 mt-1">
                     {getStatusBadge(selectedAlert.status)}
                     {getSeverityBadge(selectedAlert.severity)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-zinc-500 text-xs block">{t("sourceModule")}</span>
+                  <span className="text-muted-foreground text-xs block">{t("sourceModule")}</span>
                   <span className="text-zinc-200 text-sm font-semibold">{selectedAlert.sourceModule}</span>
                 </div>
                 {selectedAlert.traceId && (
                   <div>
-                    <span className="text-zinc-500 text-xs block">{tc("traceId")}</span>
+                    <span className="text-muted-foreground text-xs block">{tc("traceId")}</span>
                     <span className="font-mono text-xs text-emerald-400 block break-all">{selectedAlert.traceId}</span>
                   </div>
                 )}
               </div>
 
               <div>
-                <Label className="text-zinc-400 text-xs">{t("messageInfo")}</Label>
-                <p className="text-zinc-200 text-sm mt-1 bg-zinc-950/20 p-3 rounded-lg border border-zinc-850">{selectedAlert.message}</p>
+                <Label className="text-muted-foreground text-xs">{t("messageInfo")}</Label>
+                <p className="text-zinc-200 text-sm mt-1 bg-background/20 p-3 rounded-lg border border-zinc-850">{selectedAlert.message}</p>
               </div>
 
               {(selectedAlert.acknowledgedAt || selectedAlert.resolvedAt) && (
-                <div className="space-y-2 p-3 bg-zinc-950/10 border border-zinc-800/60 rounded-lg text-xs text-zinc-400">
+                <div className="space-y-2 p-3 bg-background/10 border border-border/60 rounded-lg text-xs text-muted-foreground">
                   {selectedAlert.acknowledgedAt && (
                     <div className="flex items-center gap-2">
-                      <User className="h-3.5 w-3.5 text-zinc-500" />
+                      <User className="h-3.5 w-3.5 text-muted-foreground" />
                       <span>
                         {t("acknowledgedAt", {
                           at: new Date(selectedAlert.acknowledgedAt).toLocaleString("vi-VN"),
@@ -329,7 +332,7 @@ export default function AlertCenterPage() {
                 {selectedAlert.status === "open" && (
                   <Button
                     variant="outline"
-                    className="border-zinc-800 text-amber-400 hover:bg-amber-500/5 rounded-lg"
+                    className="border-border text-amber-400 hover:bg-amber-500/5 rounded-lg"
                     onClick={() => setActionType("ack")}
                   >
                     {t("ackAlert")}
@@ -343,7 +346,7 @@ export default function AlertCenterPage() {
                     {t("resolveAlert")}
                   </Button>
                 )}
-                <Button variant="outline" className="border-zinc-800 text-zinc-300 rounded-lg" onClick={() => setSelectedAlert(null)}>
+                <Button variant="outline" className="border-border text-zinc-300 rounded-lg" onClick={() => setSelectedAlert(null)}>
                   {tc("close")}
                 </Button>
               </DialogFooter>
@@ -353,7 +356,7 @@ export default function AlertCenterPage() {
       </Dialog>
 
       <Dialog open={actionType !== null} onOpenChange={(open) => !open && setActionType(null)}>
-        <DialogContent className="max-w-md bg-[#0f0f11] border-zinc-800 text-white rounded-xl">
+        <DialogContent className="max-w-md bg-[#0f0f11] border-border text-white rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
               {actionType === "ack" ? (
@@ -372,19 +375,19 @@ export default function AlertCenterPage() {
               {actionType === "ack" ? t("ackDialogHint") : t("resolveDialogHint")}
             </p>
             <div className="space-y-1.5">
-              <Label htmlFor="action-note" className="text-zinc-400 text-xs">{t("noteLabel")}</Label>
+              <Label htmlFor="action-note" className="text-muted-foreground text-xs">{t("noteLabel")}</Label>
               <Input
                 id="action-note"
                 placeholder={t("notePlaceholder")}
                 value={actionNote}
                 onChange={(e) => setActionNote(e.target.value)}
-                className="bg-[#151518] border-zinc-800 text-white rounded-lg placeholder-zinc-600"
+                className="bg-[#151518] border-border text-white rounded-lg placeholder-zinc-600"
               />
             </div>
             <DialogFooter className="gap-2">
               <Button
                 variant="outline"
-                className="border-zinc-800 text-zinc-300 rounded-lg"
+                className="border-border text-zinc-300 rounded-lg"
                 onClick={() => { setActionType(null); setActionNote(""); }}
                 disabled={actionLoading}
               >
@@ -402,5 +405,6 @@ export default function AlertCenterPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PageShell>
   );
 }

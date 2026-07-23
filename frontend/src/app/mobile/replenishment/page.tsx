@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import MobileShell from "@/components/mobile/mobile-shell";
@@ -212,19 +214,20 @@ export default function MobileReplenishmentPage() {
   };
 
   return (
-    <MobileShell>
+    <PageShell className="gap-6">
+      <MobileShell>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
             size="icon"
-            className="text-slate-300"
+            className="text-muted-foreground"
             render={<Link href="/mobile" />}
             nativeButton={false}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <h2 className="text-lg font-bold flex items-center gap-2 text-slate-100">
+          <h2 className="text-lg font-bold flex items-center gap-2 text-foreground">
             <RefreshCw className="h-5 w-5 text-emerald-500" />
             {t("page.title")}
           </h2>
@@ -235,11 +238,11 @@ export default function MobileReplenishmentPage() {
             <div className="text-center space-y-2">
               <Box className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
               <h3 className="text-base font-semibold text-slate-200">{t("states.readyTitle")}</h3>
-              <p className="text-xs text-slate-400">{t("states.readyHint")}</p>
+              <p className="text-xs text-muted-foreground">{t("states.readyHint")}</p>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="userLoc" className="text-xs text-slate-400 block">
+              <label htmlFor="userLoc" className="text-xs text-muted-foreground block">
                 {t("fields.userLocation")}
               </label>
               <input
@@ -248,7 +251,7 @@ export default function MobileReplenishmentPage() {
                 value={userLocation}
                 onChange={(e) => setUserLocation(e.target.value.toUpperCase())}
                 placeholder={t("fields.userLocationPlaceholder")}
-                className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono text-sm text-center"
+                className="w-full bg-muted border border-border rounded p-2 text-white font-mono text-sm text-center"
               />
             </div>
 
@@ -264,12 +267,12 @@ export default function MobileReplenishmentPage() {
         )}
 
         {mobileTask && taskDetail && (
-          <Card className="border-slate-800 bg-slate-800/40">
-            <CardHeader className="pb-2 border-b border-slate-800/80">
+          <Card className="border-border bg-card/40">
+            <CardHeader className="pb-2 border-b border-border/80">
               <CardTitle className="text-xs font-semibold text-slate-200">{t("labels.detailTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
-              <div className="bg-slate-900/60 p-3 rounded text-xs space-y-1.5 border border-slate-800">
+              <div className="bg-background/60 p-3 rounded text-xs space-y-1.5 border border-border">
                 <div>
                   {t("labels.product")}{" "}
                   <span className="text-white font-bold">
@@ -279,7 +282,7 @@ export default function MobileReplenishmentPage() {
                 <div>
                   {t("labels.lot")} <span className="text-zinc-200 font-bold">{taskDetail.lotNo}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 mt-1 pt-1.5 border-t border-slate-800/60">
+                <div className="grid grid-cols-2 gap-2 mt-1 pt-1.5 border-t border-border/60">
                   <div>
                     {t("labels.sourceBulk")}{" "}
                     <span className="text-amber-500 font-bold font-mono block text-sm">
@@ -298,7 +301,7 @@ export default function MobileReplenishmentPage() {
               {currentStep === "SCAN_SOURCE_LOC" && (
                 <div className="space-y-4 pt-2">
                   <div className="bg-slate-850 p-3 rounded text-center border border-amber-500/20">
-                    <span className="text-xs text-slate-400 block">{t("labels.step1")}</span>
+                    <span className="text-xs text-muted-foreground block">{t("labels.step1")}</span>
                     <span className="text-lg font-bold font-mono text-amber-500">{taskDetail.sourceLocationCode}</span>
                   </div>
                   <ScanInput
@@ -313,7 +316,7 @@ export default function MobileReplenishmentPage() {
               {currentStep === "SCAN_LOT" && (
                 <div className="space-y-4 pt-2">
                   <div className="bg-slate-850 p-3 rounded text-center border border-amber-500/20">
-                    <span className="text-xs text-slate-400 block">{t("labels.step2")}</span>
+                    <span className="text-xs text-muted-foreground block">{t("labels.step2")}</span>
                     <span className="text-base font-bold font-mono text-white">{taskDetail.lotNo}</span>
                   </div>
                   <ScanInput
@@ -328,7 +331,7 @@ export default function MobileReplenishmentPage() {
               {currentStep === "SCAN_TARGET_LOC" && (
                 <div className="space-y-4 pt-2">
                   <div className="bg-slate-850 p-3 rounded text-center border border-emerald-500/20">
-                    <span className="text-xs text-slate-400 block">{t("labels.step3")}</span>
+                    <span className="text-xs text-muted-foreground block">{t("labels.step3")}</span>
                     <span className="text-lg font-bold font-mono text-emerald-500">{taskDetail.targetLocationCode}</span>
                   </div>
                   <ScanInput
@@ -343,30 +346,30 @@ export default function MobileReplenishmentPage() {
               {currentStep === "INPUT_QTY" && (
                 <div className="space-y-4 pt-2">
                   <div className="bg-slate-850 p-3 rounded text-center border border-emerald-500/20">
-                    <span className="text-xs text-slate-400 block">{t("labels.step4")}</span>
+                    <span className="text-xs text-muted-foreground block">{t("labels.step4")}</span>
                     <span className="text-2xl font-bold font-mono text-emerald-400">
                       {t("labels.qtyUnit", { count: taskDetail.requestedQty })}
                     </span>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs text-slate-400 block">{t("labels.actualQty")}</label>
+                    <label className="text-xs text-muted-foreground block">{t("labels.actualQty")}</label>
                     <input
                       type="number"
                       value={actualQty}
                       onChange={(e) => setActualQty(parseFloat(e.target.value) || 0)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white font-mono text-base text-center font-bold"
+                      className="w-full bg-muted border border-border rounded p-2 text-white font-mono text-base text-center font-bold"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs text-slate-400 block">{t("labels.operator")}</label>
+                    <label className="text-xs text-muted-foreground block">{t("labels.operator")}</label>
                     <input
                       type="text"
                       placeholder={t("labels.operatorPlaceholder")}
                       value={operatorName}
                       onChange={(e) => setOperatorName(e.target.value)}
-                      className="w-full bg-slate-800 border border-slate-700 rounded p-2 text-white text-sm"
+                      className="w-full bg-muted border border-border rounded p-2 text-white text-sm"
                     />
                   </div>
 
@@ -384,5 +387,6 @@ export default function MobileReplenishmentPage() {
         )}
       </div>
     </MobileShell>
+    </PageShell>
   );
 }

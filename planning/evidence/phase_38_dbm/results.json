@@ -1,0 +1,171 @@
+{
+  "phase": 38,
+  "workflow": "dbm",
+  "pass": 32,
+  "fail": 0,
+  "video": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_38_dbm\\walkthrough-ui-design.webm",
+  "consoleIssues": [],
+  "results": [
+    {
+      "id": "EVIDENCE-validation_pass.md",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_38\\validation_pass.md"
+    },
+    {
+      "id": "EVIDENCE-allowlist.md",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_38\\allowlist.md"
+    },
+    {
+      "id": "EVIDENCE-baseline_hardcode.json",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_38\\baseline_hardcode.json"
+    },
+    {
+      "id": "DISK-page-shell.tsx",
+      "status": "PASS",
+      "note": "frontend/src/components/layout/page-shell.tsx"
+    },
+    {
+      "id": "DISK-filter-bar.tsx",
+      "status": "PASS",
+      "note": "frontend/src/components/layout/filter-bar.tsx"
+    },
+    {
+      "id": "DISK-data-table-frame.tsx",
+      "status": "PASS",
+      "note": "frontend/src/components/layout/data-table-frame.tsx"
+    },
+    {
+      "id": "DISK-empty-state.tsx",
+      "status": "PASS",
+      "note": "frontend/src/components/states/empty-state.tsx"
+    },
+    {
+      "id": "DISK-globals.css",
+      "status": "PASS",
+      "note": "frontend/src/app/globals.css"
+    },
+    {
+      "id": "TOKEN-NO-PURPLE-SIDEBAR",
+      "status": "PASS",
+      "note": "sidebar-primary ops accent"
+    },
+    {
+      "id": "API-LIVE",
+      "status": "PASS",
+      "note": "GET /health/live → 200"
+    },
+    {
+      "id": "LOGIN",
+      "status": "PASS",
+      "note": "admin OK"
+    },
+    {
+      "id": "FE-QC",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/qc is404=false"
+    },
+    {
+      "id": "FE-QC-SHELL",
+      "status": "PASS",
+      "note": "page-shell count=1"
+    },
+    {
+      "id": "FE-QC-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "issueBadge=0"
+    },
+    {
+      "id": "FE-PRODUCTS",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/master-data/products is404=false"
+    },
+    {
+      "id": "FE-PRODUCTS-SHELL",
+      "status": "PASS",
+      "note": "page-shell count=1"
+    },
+    {
+      "id": "FE-PRODUCTS-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "issueBadge=0"
+    },
+    {
+      "id": "FE-INBOUND",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/inbound is404=false"
+    },
+    {
+      "id": "FE-INBOUND-SHELL",
+      "status": "PASS",
+      "note": "page-shell count=1"
+    },
+    {
+      "id": "FE-INBOUND-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "issueBadge=0"
+    },
+    {
+      "id": "FE-OUTBOUND",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/outbound is404=false"
+    },
+    {
+      "id": "FE-OUTBOUND-SHELL",
+      "status": "PASS",
+      "note": "page-shell count=1"
+    },
+    {
+      "id": "FE-OUTBOUND-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "issueBadge=0"
+    },
+    {
+      "id": "FE-CUTOVER",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/cutover is404=false"
+    },
+    {
+      "id": "FE-CUTOVER-SHELL",
+      "status": "PASS",
+      "note": "page-shell count=1"
+    },
+    {
+      "id": "FE-CUTOVER-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "issueBadge=0"
+    },
+    {
+      "id": "FE-MOBILE-MOVEMENT",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/mobile/movement is404=false"
+    },
+    {
+      "id": "FE-MOBILE-MOVEMENT-SHELL",
+      "status": "PASS",
+      "note": "page-shell count=1"
+    },
+    {
+      "id": "FE-MOBILE-MOVEMENT-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "issueBadge=0"
+    },
+    {
+      "id": "FE-NAV-LENS-PRESENT",
+      "status": "PASS",
+      "note": "lensLocators=0 (non-block if sidebar structure differs)"
+    },
+    {
+      "id": "CONSOLE-ASCHILD",
+      "status": "PASS",
+      "note": "no asChild warnings"
+    },
+    {
+      "id": "AC-EVIDENCE-MEDIA",
+      "status": "PASS",
+      "note": "shots+video"
+    }
+  ],
+  "endedAt": "2026-07-22T09:52:22.755Z"
+}

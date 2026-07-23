@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -78,11 +80,12 @@ export default function ObservabilityDashboardPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <PageShell className="gap-6">
+      <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white">{t("title")}</h1>
-          <p className="text-zinc-400 text-sm mt-1">{t("subtitle")}</p>
+          <p className="text-muted-foreground text-sm mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -129,20 +132,20 @@ export default function ObservabilityDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {loading && !summary ? (
           Array.from({ length: 8 }).map((_, idx) => (
-            <Card key={idx} className="border-zinc-800/80 bg-zinc-950/40 animate-pulse h-28" />
+            <Card key={idx} className="border-border/80 bg-background/40 animate-pulse h-28" />
           ))
         ) : (
           summary?.cards.map((card) => (
-            <Card key={card.metricKey} className="border-zinc-800/80 bg-[#0f0f11]/60 hover:bg-[#151518]/70 transition-all duration-200 group rounded-xl">
+            <Card key={card.metricKey} className="border-border/80 bg-[#0f0f11]/60 hover:bg-[#151518]/70 transition-all duration-200 group rounded-xl">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <span className="text-xs font-medium text-zinc-400 group-hover:text-zinc-300 transition-colors">
+                <span className="text-xs font-medium text-muted-foreground group-hover:text-zinc-300 transition-colors">
                   {card.label}
                 </span>
                 {getMetricIcon(card.metricKey)}
               </CardHeader>
               <CardContent>
                 {card.trend === "unavailable" ? (
-                  <span className="text-sm text-zinc-500 font-medium italic">{tc("unavailable")}</span>
+                  <span className="text-sm text-muted-foreground font-medium italic">{tc("unavailable")}</span>
                 ) : (
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold tracking-tight text-white">
@@ -155,7 +158,7 @@ export default function ObservabilityDashboardPage() {
                     )}
                   </div>
                 )}
-                <p className="text-[10px] text-zinc-500 mt-1 font-mono">{card.metricKey}</p>
+                <p className="text-[10px] text-muted-foreground mt-1 font-mono">{card.metricKey}</p>
               </CardContent>
             </Card>
           ))
@@ -163,11 +166,11 @@ export default function ObservabilityDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="border-zinc-800/80 bg-[#0f0f11]/40 rounded-xl">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-800/80 pb-4">
+        <Card className="border-border/80 bg-[#0f0f11]/40 rounded-xl">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/80 pb-4">
             <div>
               <CardTitle className="text-lg font-semibold text-white">{t("activeAlertsTitle")}</CardTitle>
-              <p className="text-xs text-zinc-400 mt-0.5">{t("activeAlertsSubtitle")}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("activeAlertsSubtitle")}</p>
             </div>
             <Link href="/admin/observability/alerts">
               <Button size="xs" variant="ghost" className="text-xs text-emerald-400 hover:text-emerald-300 gap-1 p-0 hover:bg-transparent">
@@ -177,13 +180,13 @@ export default function ObservabilityDashboardPage() {
           </CardHeader>
           <CardContent className="pt-4">
             {loading ? (
-              <p className="text-sm text-zinc-500">{tc("loading")}</p>
+              <p className="text-sm text-muted-foreground">{tc("loading")}</p>
             ) : alerts.length === 0 ? (
-              <p className="text-sm text-zinc-500 italic py-4">{t("noActiveAlerts")}</p>
+              <p className="text-sm text-muted-foreground italic py-4">{t("noActiveAlerts")}</p>
             ) : (
               <div className="space-y-3">
                 {alerts.map((a) => (
-                  <div key={a.id} className="p-3 border border-zinc-800 bg-zinc-950/20 rounded-lg flex items-start justify-between gap-3">
+                  <div key={a.id} className="p-3 border border-border bg-background/20 rounded-lg flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <Badge variant={a.severity === "critical" ? "destructive" : "secondary"}>
@@ -191,8 +194,8 @@ export default function ObservabilityDashboardPage() {
                         </Badge>
                         <span className="font-semibold text-zinc-200 text-sm">{a.title}</span>
                       </div>
-                      <p className="text-xs text-zinc-400 leading-relaxed">{a.message}</p>
-                      <div className="text-[10px] text-zinc-500 flex items-center gap-2">
+                      <p className="text-xs text-muted-foreground leading-relaxed">{a.message}</p>
+                      <div className="text-[10px] text-muted-foreground flex items-center gap-2">
                         <span>{tc("module")}: {a.sourceModule}</span>
                         <span>•</span>
                         <span>{new Date(a.createdAt).toLocaleString()}</span>
@@ -205,11 +208,11 @@ export default function ObservabilityDashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800/80 bg-[#0f0f11]/40 rounded-xl">
-          <CardHeader className="flex flex-row items-center justify-between border-b border-zinc-800/80 pb-4">
+        <Card className="border-border/80 bg-[#0f0f11]/40 rounded-xl">
+          <CardHeader className="flex flex-row items-center justify-between border-b border-border/80 pb-4">
             <div>
               <CardTitle className="text-lg font-semibold text-white">{t("recentActivityTitle")}</CardTitle>
-              <p className="text-xs text-zinc-400 mt-0.5">{t("recentActivitySubtitle")}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("recentActivitySubtitle")}</p>
             </div>
             <Link href="/admin/observability/timeline">
               <Button size="xs" variant="ghost" className="text-xs text-emerald-400 hover:text-emerald-300 gap-1 p-0 hover:bg-transparent">
@@ -219,23 +222,23 @@ export default function ObservabilityDashboardPage() {
           </CardHeader>
           <CardContent className="pt-4">
             {loading ? (
-              <p className="text-sm text-zinc-500">{tc("loading")}</p>
+              <p className="text-sm text-muted-foreground">{tc("loading")}</p>
             ) : timeline.length === 0 ? (
-              <p className="text-sm text-zinc-500 italic py-4">{t("noRecentActivity")}</p>
+              <p className="text-sm text-muted-foreground italic py-4">{t("noRecentActivity")}</p>
             ) : (
               <div className="space-y-4">
                 {timeline.map((entry) => (
-                  <div key={entry.id} className="relative pl-6 border-l-2 border-zinc-800 last:border-0 pb-2">
+                  <div key={entry.id} className="relative pl-6 border-l-2 border-border last:border-0 pb-2">
                     <div className="absolute left-[-5px] top-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500" />
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
                         <span className="font-semibold text-zinc-200 text-sm">{entry.title}</span>
-                        <span className="text-[10px] text-zinc-500">
+                        <span className="text-[10px] text-muted-foreground">
                           {new Date(entry.createdAt).toLocaleTimeString()}
                         </span>
                       </div>
-                      {entry.description && <p className="text-xs text-zinc-400">{entry.description}</p>}
-                      <div className="text-[10px] text-zinc-500 flex gap-2">
+                      {entry.description && <p className="text-xs text-muted-foreground">{entry.description}</p>}
+                      <div className="text-[10px] text-muted-foreground flex gap-2">
                         <span className="font-mono">{entry.entityType}</span>
                         <span>•</span>
                         <span className="font-mono">{t("tracePrefix")}: {entry.traceId.slice(0, 10)}...</span>
@@ -250,10 +253,11 @@ export default function ObservabilityDashboardPage() {
       </div>
 
       {summary && (
-        <div className="text-[10px] text-zinc-500 font-mono text-right">
+        <div className="text-[10px] text-muted-foreground font-mono text-right">
           {tc("traceId")}: {summary.traceId}
         </div>
       )}
     </div>
+    </PageShell>
   );
 }

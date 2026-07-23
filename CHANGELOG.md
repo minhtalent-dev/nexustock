@@ -1,9 +1,10 @@
 # Lịch sử cập nhật dự án
 
-## Phiên bản 1.5.0 - Kiểm định chất lượng, toàn vẹn tồn kho, điều hướng và cổng pilot (Phase 34–37)
-*Ngày cập nhật: 22/07/2026*
+## Phiên bản 1.5.0 - Kiểm định, tồn kho, điều hướng, pilot và giao diện thống nhất (Phase 34–38)
+*Ngày cập nhật: 23/07/2026*
 
 ### Tính năng mới
+- **Giao diện thống nhất**: Cùng khung trang, màu hệ thống và trạng thái trống/đang tải/lỗi trên quản trị và thiết bị cầm tay — dễ dùng, ít lệch giao diện giữa các màn hình.
 - **Bản đồ chuyển đổi kiểm định**: Hướng dẫn đối chiếu thao tác kiểm định cũ sang màn hình mới, kèm danh sách kiểm thử chấp nhận.
 - **Chặn di chuyển / lấy hàng khi chưa đạt**: Hệ thống chỉ cho phép dùng lô đã được giải phóng kiểm định; lô đang giữ hoặc chưa kiểm sẽ bị từ chối rõ ràng.
 - **Hàng chờ kiểm định thông minh hơn**: Lọc theo ngày, thời gian chờ; xem lịch sử kiểm định trên cùng màn hình quản trị.

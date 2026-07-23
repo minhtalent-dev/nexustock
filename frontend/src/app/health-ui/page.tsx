@@ -108,7 +108,7 @@ export default function HealthUi() {
   };
 
   return (
-    <main className="flex-1 bg-[#0a0a0a] text-zinc-100 flex flex-col items-center justify-center p-6 md:p-12 font-sans selection:bg-emerald-500 selection:text-black">
+    <main className="flex-1 bg-background text-foreground flex flex-col items-center justify-center p-6 md:p-12 font-sans selection:bg-primary selection:text-primary-foreground">
       <div className="w-full max-w-4xl flex flex-col gap-8">
         <div className="flex justify-between items-center">
           <BreadcrumbNav />

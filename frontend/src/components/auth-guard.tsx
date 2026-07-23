@@ -19,7 +19,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#0a0a0a] text-zinc-400 font-sans">
+      <div className="flex h-screen w-screen items-center justify-center bg-background text-muted-foreground font-sans">
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
           <span className="text-xs uppercase tracking-widest font-mono text-zinc-550">{t("authChecking")}</span>

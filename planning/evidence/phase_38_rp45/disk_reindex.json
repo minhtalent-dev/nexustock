@@ -1,0 +1,95 @@
+{
+  "phase": 38,
+  "workflow": "rp4_rp5",
+  "fail": 0,
+  "shell": "56/57",
+  "noShell": [
+    "frontend/src/app/mobile/tasks/next/page.tsx"
+  ],
+  "rows": [
+    {
+      "id": "FILE:frontend/src/components/layout/page-shell.tsx",
+      "status": "PASS"
+    },
+    {
+      "id": "FILE:frontend/src/components/layout/filter-bar.tsx",
+      "status": "PASS"
+    },
+    {
+      "id": "FILE:frontend/src/components/layout/data-table-frame.tsx",
+      "status": "PASS"
+    },
+    {
+      "id": "FILE:frontend/src/components/states/empty-state.tsx",
+      "status": "PASS"
+    },
+    {
+      "id": "FILE:tests/verify_ui_shell_classes.ps1",
+      "status": "PASS"
+    },
+    {
+      "id": "FILE:tests/helpers/dbm_phase38_ui_browser.mjs",
+      "status": "PASS"
+    },
+    {
+      "id": "FILE:planning/evidence/phase_38/validation_pass.md",
+      "status": "PASS"
+    },
+    {
+      "id": "FILE:planning/evidence/phase_38/allowlist.md",
+      "status": "PASS"
+    },
+    {
+      "id": "FILE:planning/evidence/phase_38_dbm/walkthrough.md",
+      "status": "PASS"
+    },
+    {
+      "id": "FILE:planning/evidence/phase_38_dbm/walkthrough-ui-design.webm",
+      "status": "PASS"
+    },
+    {
+      "id": "FILE:planning/function_index_phase38_ui_design_system.md",
+      "status": "PASS"
+    },
+    {
+      "id": "coverage",
+      "status": "PASS",
+      "note": "56/57"
+    },
+    {
+      "id": "broken",
+      "status": "PASS",
+      "note": "0"
+    },
+    {
+      "id": "allowlist_gap",
+      "status": "PASS",
+      "note": "frontend/src/app/mobile/tasks/next/page.tsx"
+    },
+    {
+      "id": "hardcode_a0",
+      "status": "PASS",
+      "note": "0"
+    },
+    {
+      "id": "hardcode_z950",
+      "status": "PASS",
+      "note": "0"
+    },
+    {
+      "id": "asChild_app",
+      "status": "PASS",
+      "note": "0"
+    },
+    {
+      "id": "token_purple",
+      "status": "PASS"
+    },
+    {
+      "id": "dbm",
+      "status": "PASS",
+      "note": "32/0"
+    }
+  ],
+  "at": "2026-07-23T01:20:34.574Z"
+}

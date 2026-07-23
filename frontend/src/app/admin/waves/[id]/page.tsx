@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -121,19 +123,19 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
   };
 
   if (loading && !wave) {
-    return <div className="text-center py-12 text-zinc-500 text-xs font-mono">{t("loading")}</div>;
+    return <div className="text-center py-12 text-muted-foreground text-xs font-mono">{t("loading")}</div>;
   }
 
   if (!wave) {
-    return <div className="text-center py-12 text-zinc-500 text-xs">{t("notFound")}</div>;
+    return <div className="text-center py-12 text-muted-foreground text-xs">{t("notFound")}</div>;
   }
 
   return (
-    <div className="flex flex-col gap-6 font-sans text-white">
+    <PageShell className="gap-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href="/admin/waves">
-            <Button variant="outline" className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-9 w-9 p-0">
+            <Button variant="outline" className="border-border hover:bg-muted text-zinc-300 h-9 w-9 p-0">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
@@ -142,7 +144,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
               <Layers className="h-6 w-6 text-indigo-400" />
               {t("waveTitle", { waveNo: wave.waveNo })}
             </h1>
-            <p className="text-xs text-zinc-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {t("createdMeta", {
                 by: wave.createdBy,
                 at: new Date(wave.createdAt).toLocaleString(),
@@ -186,7 +188,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
           <Button
             onClick={fetchWaveDetails}
             variant="outline"
-            className="border-zinc-800 hover:bg-zinc-800 text-zinc-300 h-9 px-4 flex items-center gap-2 text-xs"
+            className="border-border hover:bg-muted text-zinc-300 h-9 px-4 flex items-center gap-2 text-xs"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             {tc("refresh")}
@@ -195,21 +197,21 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-zinc-900 border-zinc-800 text-white">
-          <CardHeader className="border-b border-zinc-800 pb-3">
-            <CardTitle className="text-xs font-semibold text-zinc-400">{t("statusCardTitle")}</CardTitle>
+        <Card className="bg-card border-border text-white">
+          <CardHeader className="border-b border-border pb-3">
+            <CardTitle className="text-xs font-semibold text-muted-foreground">{t("statusCardTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 flex flex-col gap-2">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-zinc-500">{t("waveNoLabel")}</span>
+              <span className="text-muted-foreground">{t("waveNoLabel")}</span>
               <span className="font-mono font-bold">{wave.waveNo}</span>
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="text-zinc-500">{t("statusLabel")}</span>
+              <span className="text-muted-foreground">{t("statusLabel")}</span>
               <span>{getStatusBadge(wave.status)}</span>
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="text-zinc-500">{t("mergedOrdersLabel")}</span>
+              <span className="text-muted-foreground">{t("mergedOrdersLabel")}</span>
               <span className="font-bold">{Array.from(new Set(wave.items.map((i) => i.shipmentId))).length}</span>
             </div>
           </CardContent>
@@ -218,27 +220,27 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
 
       <div className="flex flex-col gap-4">
         <h2 className="text-base font-bold text-zinc-300">{t("pickTasksTitle")}</h2>
-        <Card className="bg-zinc-900 border-zinc-800 text-white">
+        <Card className="bg-card border-border text-white">
           <CardContent className="p-0">
             {wave.pickTasks.length === 0 ? (
-              <div className="text-center py-8 text-zinc-500 text-xs">{t("noPickTasks")}</div>
+              <div className="text-center py-8 text-muted-foreground text-xs">{t("noPickTasks")}</div>
             ) : (
               <Table className="text-xs">
-                <TableHeader className="border-b border-zinc-800">
-                  <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                    <TableHead className="text-zinc-400">{t("colItem")}</TableHead>
-                    <TableHead className="text-zinc-400">{t("colItemCode")}</TableHead>
-                    <TableHead className="text-zinc-400">{t("colFromLoc")}</TableHead>
-                    <TableHead className="text-zinc-400 text-right">{t("colQtyRequired")}</TableHead>
-                    <TableHead className="text-zinc-400 text-right">{t("colQtyPicked")}</TableHead>
-                    <TableHead className="text-zinc-400">{tc("status")}</TableHead>
+                <TableHeader className="border-b border-border">
+                  <TableRow className="border-b border-border hover:bg-muted/50">
+                    <TableHead className="text-muted-foreground">{t("colItem")}</TableHead>
+                    <TableHead className="text-muted-foreground">{t("colItemCode")}</TableHead>
+                    <TableHead className="text-muted-foreground">{t("colFromLoc")}</TableHead>
+                    <TableHead className="text-muted-foreground text-right">{t("colQtyRequired")}</TableHead>
+                    <TableHead className="text-muted-foreground text-right">{t("colQtyPicked")}</TableHead>
+                    <TableHead className="text-muted-foreground">{tc("status")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {wave.pickTasks.map((task) => (
-                    <TableRow key={task.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
+                    <TableRow key={task.id} className="border-b border-border/50 hover:bg-muted/20">
                       <TableCell className="text-zinc-200 font-bold">{task.itemName}</TableCell>
-                      <TableCell className="text-zinc-400 font-mono">{task.itemCode}</TableCell>
+                      <TableCell className="text-muted-foreground font-mono">{task.itemCode}</TableCell>
                       <TableCell className="text-indigo-400 font-bold font-mono">{task.locationCode}</TableCell>
                       <TableCell className="text-right text-zinc-300 font-bold">{task.qtyToPick.toLocaleString()}</TableCell>
                       <TableCell className="text-right text-zinc-300 font-bold">{task.qtyPicked.toLocaleString()}</TableCell>
@@ -261,23 +263,23 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
 
       <div className="flex flex-col gap-4">
         <h2 className="text-base font-bold text-zinc-300">{t("waveItemsTitle")}</h2>
-        <Card className="bg-zinc-900 border-zinc-800 text-white">
+        <Card className="bg-card border-border text-white">
           <CardContent className="p-0">
             <Table className="text-xs">
-              <TableHeader className="border-b border-zinc-800">
-                <TableRow className="border-b border-zinc-800 hover:bg-zinc-800/50">
-                  <TableHead className="text-zinc-400">{t("colShipment")}</TableHead>
-                  <TableHead className="text-zinc-400">{t("colPutWallSlot")}</TableHead>
-                  <TableHead className="text-zinc-400">{t("colItem")}</TableHead>
-                  <TableHead className="text-zinc-400 text-right">{t("colRequired")}</TableHead>
-                  <TableHead className="text-zinc-400 text-right">{t("colAllocated")}</TableHead>
-                  <TableHead className="text-zinc-400 text-right">{t("colPicked")}</TableHead>
-                  <TableHead className="text-zinc-400 text-right">{t("colSorted")}</TableHead>
+              <TableHeader className="border-b border-border">
+                <TableRow className="border-b border-border hover:bg-muted/50">
+                  <TableHead className="text-muted-foreground">{t("colShipment")}</TableHead>
+                  <TableHead className="text-muted-foreground">{t("colPutWallSlot")}</TableHead>
+                  <TableHead className="text-muted-foreground">{t("colItem")}</TableHead>
+                  <TableHead className="text-muted-foreground text-right">{t("colRequired")}</TableHead>
+                  <TableHead className="text-muted-foreground text-right">{t("colAllocated")}</TableHead>
+                  <TableHead className="text-muted-foreground text-right">{t("colPicked")}</TableHead>
+                  <TableHead className="text-muted-foreground text-right">{t("colSorted")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {wave.items.map((i) => (
-                  <TableRow key={i.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/20">
+                  <TableRow key={i.id} className="border-b border-border/50 hover:bg-muted/20">
                     <TableCell className="font-bold text-zinc-200 font-mono">{i.shipmentNo}</TableCell>
                     <TableCell>
                       {i.recommendedSlotNumber ? (
@@ -285,11 +287,11 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
                           {t("slotLabel", { number: i.recommendedSlotNumber })}
                         </Badge>
                       ) : (
-                        <span className="text-zinc-500 italic">{t("notAssigned")}</span>
+                        <span className="text-muted-foreground italic">{t("notAssigned")}</span>
                       )}
                     </TableCell>
                     <TableCell className="text-zinc-300">
-                      {i.itemName} <span className="text-zinc-500 text-[10px] font-mono">({i.itemCode})</span>
+                      {i.itemName} <span className="text-muted-foreground text-[10px] font-mono">({i.itemCode})</span>
                     </TableCell>
                     <TableCell className="text-right text-zinc-300">
                       {i.qtyExpected.toLocaleString()} {i.uomName}
@@ -304,6 +306,6 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageShell>
   );
 }

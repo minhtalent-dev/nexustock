@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -177,7 +179,8 @@ export default function ExceptionsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <PageShell className="gap-6">
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
@@ -443,5 +446,6 @@ export default function ExceptionsPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PageShell>
   );
 }

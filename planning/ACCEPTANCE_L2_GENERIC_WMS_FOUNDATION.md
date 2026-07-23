@@ -132,7 +132,7 @@ Evidence: `planning/evidence/phase_36/` · verify_l2_p0 **14/0**.
 |---|---|---|---|
 | **36** L2-P0 | `phases/phase_36_inventory_integrity_l2_p0.md` | **✅ ĐÓNG** `rp4`+`rp5` DoD 100% | verify 14/0 · dbm 13/0 · [walkthrough](./evidence/phase_36_dbm/walkthrough.md) |
 | **37** L3 Pilot | `phases/phase_37_golive_l3_customer_pilot.md` | **✅ Module DoD 100% · PILOT_READY_CONDITIONAL** | `rp4`+`rp5` · [rp45](./evidence/phase_37_rp45/validation_pass.md) · [dbm](./evidence/phase_37_dbm/walkthrough.md) |
-| **38** UI Option B | `phases/phase_38_ui_design_system_pass.md` | **95%** | Không block P36 |
+| **38** UI Option B | `phases/phase_38_ui_design_system_pass.md` | **✅ ĐÓNG** `rp4`+`rp5` DoD 100% | AUDIT ~8.2 · dbm 32/0 · [rp45](./evidence/phase_38_rp45/validation_pass.md) · [walkthrough](./evidence/phase_38_dbm/walkthrough.md) |
 
 Thứ tự: `P36 → P37` · `P38` song song/sau.
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState, use } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -176,7 +178,7 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
   if (!stocktake) return <div className="p-6 text-center text-red-500">{t("notFound")}</div>;
 
   return (
-    <div className="space-y-6 p-6">
+    <PageShell className="gap-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button
@@ -417,6 +419,6 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </PageShell>
   );
 }

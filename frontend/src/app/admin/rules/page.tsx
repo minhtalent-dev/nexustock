@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
@@ -208,7 +210,8 @@ export default function RulesPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <PageShell className="gap-6">
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
@@ -404,7 +407,7 @@ export default function RulesPage() {
                   {selectedRule.conditions.map((c, i) => (
                     <div key={i} className="flex items-center gap-1.5 text-xs bg-muted p-2 rounded">
                       <span className="font-mono text-blue-400">{c.field}</span>
-                      <span className="font-bold text-zinc-400">{c.operator}</span>
+                      <span className="font-bold text-muted-foreground">{c.operator}</span>
                       <span className="font-mono text-green-400">{c.value}</span>
                     </div>
                   ))}
@@ -530,5 +533,6 @@ export default function RulesPage() {
         </DialogContent>
       </Dialog>
     </div>
+    </PageShell>
   );
 }

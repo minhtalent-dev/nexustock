@@ -1,5 +1,7 @@
 "use client";
 
+import { PageShell } from "@/components/layout/page-shell";
+
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
@@ -68,7 +70,7 @@ export default function StocktakesPage() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <PageShell className="gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <ClipboardCheck className="h-6 w-6 text-primary" />
@@ -136,6 +138,6 @@ export default function StocktakesPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </PageShell>
   );
 }
