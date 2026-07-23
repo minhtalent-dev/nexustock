@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ChevronsUpDown, LogOut, Search } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { ThemeMenuSection } from "@/components/theme-switcher";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -146,17 +147,17 @@ export function SidebarUserMenu({
       <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
         <DropdownMenuTrigger
           data-testid="sidebar-user-menu-trigger"
-          className="flex h-9 w-full items-center gap-2 rounded-md px-1.5 text-left outline-none transition-colors hover:bg-zinc-900/70 focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+          className="flex h-9 w-full items-center gap-2 rounded-md px-1.5 text-left outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-sidebar-ring"
         >
-          <Avatar size="sm" className="bg-emerald-500/15 text-emerald-400">
-            <AvatarFallback className="bg-transparent text-[10px] font-semibold text-emerald-400">
+          <Avatar size="sm" className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+            <AvatarFallback className="bg-transparent text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
               {initials(user.fullName, user.email)}
             </AvatarFallback>
           </Avatar>
-          <span className="min-w-0 flex-1 truncate text-xs font-medium text-zinc-200">
+          <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
             {user.fullName}
           </span>
-          <ChevronsUpDown className="size-3.5 shrink-0 text-zinc-500" />
+          <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
@@ -184,7 +185,7 @@ export function SidebarUserMenu({
               <div className="flex items-start justify-between gap-2">
                 <span className="shrink-0 text-muted-foreground">{t("role")}</span>
                 <span
-                  className="max-w-[9.5rem] text-right font-medium text-zinc-200"
+                  className="max-w-[9.5rem] text-right font-medium text-foreground"
                   title={roleLabel}
                 >
                   {roleLabel}
@@ -193,7 +194,7 @@ export function SidebarUserMenu({
               <div className="flex items-center justify-between gap-2">
                 <span className="text-muted-foreground">{t("tenant")}</span>
                 <span
-                  className="max-w-[9rem] truncate font-mono text-zinc-300"
+                  className="max-w-[9rem] truncate font-mono text-muted-foreground"
                   title={user.tenantId || "—"}
                 >
                   {user.tenantId || "—"}
@@ -205,13 +206,15 @@ export function SidebarUserMenu({
                   type="button"
                   data-testid="sidebar-permissions-preview"
                   onClick={openPermissionsPreview}
-                  className="rounded px-1.5 py-0.5 tabular-nums text-emerald-400 underline-offset-2 hover:bg-emerald-500/10 hover:underline"
+                  className="rounded px-1.5 py-0.5 tabular-nums text-emerald-600 underline-offset-2 hover:bg-emerald-500/10 hover:underline dark:text-emerald-400"
                 >
                   {t("permissionCount", { count: permissions.length })}
                 </button>
               </div>
             </div>
           </DropdownMenuGroup>
+
+          <ThemeMenuSection />
 
           <DropdownMenuSeparator />
 
@@ -259,7 +262,7 @@ export function SidebarUserMenu({
             />
           </div>
 
-          <div className="max-h-72 overflow-y-auto rounded-md border border-border/60 bg-zinc-950/40">
+          <div className="max-h-72 overflow-y-auto rounded-md border border-border/60 bg-muted/40">
             {loadingCatalog ? (
               <p className="px-3 py-6 text-center text-xs text-muted-foreground">
                 {t("permissionsLoading")}
@@ -272,7 +275,7 @@ export function SidebarUserMenu({
               <div className="divide-y divide-border/40">
                 {filteredGroups.map((group) => (
                   <div key={group.category}>
-                    <div className="sticky top-0 z-10 bg-zinc-900/95 px-3 py-1.5 text-[10px] font-semibold tracking-wide text-emerald-400/90 uppercase">
+                    <div className="sticky top-0 z-10 bg-popover/95 px-3 py-1.5 text-[10px] font-semibold tracking-wide text-emerald-600 uppercase dark:text-emerald-400/90">
                       {group.category}
                     </div>
                     <ul>
@@ -282,10 +285,10 @@ export function SidebarUserMenu({
                           className="px-3 py-1.5"
                           title={perm.name}
                         >
-                          <p className="text-xs font-medium text-zinc-100">
+                          <p className="text-xs font-medium text-foreground">
                             {perm.displayName}
                           </p>
-                          <p className="font-mono text-[10px] text-zinc-500">
+                          <p className="font-mono text-[10px] text-muted-foreground">
                             {perm.name}
                           </p>
                         </li>

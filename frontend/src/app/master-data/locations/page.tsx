@@ -99,14 +99,14 @@ export default function LocationsPage() {
       })}
       columns={[
         { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
-        { key: "warehouse", label: t("columns.warehouse"), render: (item) => <span className="text-white/50">{item.warehouseCode}</span> },
+        { key: "warehouse", label: t("columns.warehouse"), render: (item) => <span className="text-foreground/50">{item.warehouseCode}</span> },
         { key: "zone", label: t("columns.zone"), render: (item) => `${item.zoneCode} - ${item.zoneName}` },
         { key: "coord", label: t("columns.coord"), render: (item) => <span className="font-mono text-xs">({item.xCoord}, {item.yCoord}, {item.zCoord})</span> },
         {
           key: "locked",
           label: t("columns.status"),
           render: (item) => (
-            <span className={item.isLocked ? "text-yellow-400" : "text-white/40"}>
+            <span className={item.isLocked ? "text-yellow-400" : "text-foreground/40"}>
               {item.isLocked ? ts("status.locked") : ts("status.open")}
             </span>
           ),

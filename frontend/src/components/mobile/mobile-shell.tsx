@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Signal, SignalZero } from "lucide-react";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { ThemeSwitcherInline } from "@/components/theme-switcher";
 
 export default function MobileShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("Mobile.shell");
@@ -23,30 +24,33 @@ export default function MobileShell({ children }: { children: React.ReactNode })
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground select-none max-w-md mx-auto border-x border-border">
+    <div className="mx-auto flex min-h-screen max-w-md select-none flex-col border-x border-border bg-background text-foreground">
       {!isOnline && (
-        <div className="bg-destructive text-center py-1.5 text-xs font-semibold flex items-center justify-center gap-2 animate-pulse text-white">
+        <div className="flex animate-pulse items-center justify-center gap-2 bg-destructive py-1.5 text-center text-xs font-semibold text-primary-foreground">
           <SignalZero className="h-3 w-3" />
           {t("status.offline")}
         </div>
       )}
 
       {isOnline && (
-        <div className="bg-primary text-primary-foreground text-center py-1.5 text-xs font-semibold flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2 bg-primary py-1.5 text-center text-xs font-semibold text-primary-foreground">
           <Signal className="h-3 w-3" />
           {t("status.online")}
         </div>
       )}
 
-      <header className="bg-card p-4 flex items-center justify-between gap-2 border-b border-border">
-        <h1 className="text-lg font-bold truncate">{t("header.title")}</h1>
-        <div className="flex items-center gap-2 shrink-0">
-          <LanguageSwitcher className="scale-90 origin-right" />
-          <span className="text-xs bg-muted px-2 py-1 rounded">{t("header.userLabel", { user: "NV-KHO" })}</span>
+      <header className="flex items-center justify-between gap-2 border-b border-border bg-card p-4">
+        <h1 className="truncate text-lg font-bold">{t("header.title")}</h1>
+        <div className="flex shrink-0 items-center gap-2">
+          <ThemeSwitcherInline />
+          <LanguageSwitcher className="origin-right scale-90" />
+          <span className="rounded bg-muted px-2 py-1 text-xs">
+            {t("header.userLabel", { user: "NV-KHO" })}
+          </span>
         </div>
       </header>
 
-      <main className="flex-1 p-4 overflow-y-auto space-y-4">{children}</main>
+      <main className="flex-1 space-y-4 overflow-y-auto p-4">{children}</main>
     </div>
   );
 }

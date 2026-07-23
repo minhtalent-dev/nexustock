@@ -81,13 +81,13 @@ export default function IntegrationMessagesPage() {
             placeholder={t("tracePlaceholder")}
             value={traceId}
             onChange={(e) => setTraceId(e.target.value)}
-            className="bg-card border-border text-white w-64 text-xs h-9"
+            className="bg-card border-border text-foreground w-64 text-xs h-9"
           />
           <Select value={status} onValueChange={(val) => { setStatus(val); setPage(1); }}>
-            <SelectTrigger className="bg-card border-border text-white w-40 text-xs h-9">
+            <SelectTrigger className="bg-card border-border text-foreground w-40 text-xs h-9">
               <SelectValue placeholder={t("statusPlaceholder")} />
             </SelectTrigger>
-            <SelectContent className="bg-card border-border text-white text-xs">
+            <SelectContent className="bg-card border-border text-foreground text-xs">
               <SelectItem value="all">{t("statusAll")}</SelectItem>
               <SelectItem value="accepted">{t("statusAccepted")}</SelectItem>
               <SelectItem value="failed">{t("statusFailed")}</SelectItem>
@@ -98,7 +98,7 @@ export default function IntegrationMessagesPage() {
         </form>
       </div>
 
-      <Card className="bg-card border-border text-white">
+      <Card className="bg-card border-border text-foreground">
         <CardHeader>
           <CardTitle className="text-sm font-semibold">{t("cardTitle")}</CardTitle>
         </CardHeader>
@@ -141,7 +141,7 @@ export default function IntegrationMessagesPage() {
                           size="xs"
                           variant="outline"
                           onClick={() => setSelectedMessage(m)}
-                          className="border-border text-zinc-300 hover:text-white hover:bg-muted text-[10px] h-7"
+                          className="border-border text-muted-foreground hover:text-foreground hover:bg-muted text-[10px] h-7"
                         >
                           {t("viewPayload")}
                         </Button>
@@ -160,7 +160,7 @@ export default function IntegrationMessagesPage() {
                 size="xs"
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
-                className="bg-muted border border-zinc-750 text-white text-[10px] h-7 disabled:opacity-50"
+                className="bg-muted border border-zinc-750 text-foreground text-[10px] h-7 disabled:opacity-50"
               >
                 {tc("previous")}
               </Button>
@@ -168,7 +168,7 @@ export default function IntegrationMessagesPage() {
                 size="xs"
                 disabled={page * pageSize >= total}
                 onClick={() => setPage(page + 1)}
-                className="bg-muted border border-zinc-750 text-white text-[10px] h-7 disabled:opacity-50"
+                className="bg-muted border border-zinc-750 text-foreground text-[10px] h-7 disabled:opacity-50"
               >
                 {tc("next")}
               </Button>
@@ -178,7 +178,7 @@ export default function IntegrationMessagesPage() {
       </Card>
 
       <Dialog open={selectedMessage !== null} onOpenChange={() => setSelectedMessage(null)}>
-        <DialogContent className="bg-background border-zinc-850 text-white max-w-3xl">
+        <DialogContent className="bg-background border-zinc-850 text-foreground max-w-3xl">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold">
               {t("detailTitle", { ref: selectedMessage?.externalReference ?? "" })}

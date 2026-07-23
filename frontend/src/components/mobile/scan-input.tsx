@@ -47,7 +47,7 @@ export default function ScanInput({ id, label, onScan, placeholder }: ScanInputP
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
-      <Label htmlFor={id} className="text-sm font-semibold text-slate-300">{label}</Label>
+      <Label htmlFor={id} className="text-sm font-semibold text-foreground">{label}</Label>
       <div className="flex gap-2">
         <div className="relative flex-1">
           <Input
@@ -57,12 +57,12 @@ export default function ScanInput({ id, label, onScan, placeholder }: ScanInputP
             value={value}
             onChange={(e) => setValue(e.target.value)}
             placeholder={placeholder || t("scan.defaultPlaceholder")}
-            className="bg-slate-800 border-slate-700 text-white font-mono text-lg focus-visible:ring-emerald-500 pr-10"
+            className="bg-background border-border text-foreground placeholder:text-muted-foreground font-mono text-lg focus-visible:ring-emerald-500 pr-10 dark:bg-input/30"
             autoComplete="off"
           />
-          <Scan className="absolute right-3 top-3 h-4 w-4 text-slate-400 animate-pulse" />
+          <Scan className="absolute right-3 top-3 h-4 w-4 text-muted-foreground animate-pulse" />
         </div>
-        <Button type="button" onClick={focusInput} size="icon" variant="outline" className="border-slate-700 text-slate-300">
+        <Button type="button" onClick={focusInput} size="icon" variant="outline" className="border-border text-muted-foreground">
           {t("scan.focus")}
         </Button>
       </div>

@@ -236,8 +236,8 @@ export default function MobileReplenishmentPage() {
         {currentStep === "CLAIM" && (
           <div className="space-y-4 py-8">
             <div className="text-center space-y-2">
-              <Box className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
-              <h3 className="text-base font-semibold text-slate-200">{t("states.readyTitle")}</h3>
+              <Box className="h-12 w-12 text-muted-foreground mx-auto animate-bounce" />
+              <h3 className="text-base font-semibold text-foreground">{t("states.readyTitle")}</h3>
               <p className="text-xs text-muted-foreground">{t("states.readyHint")}</p>
             </div>
 
@@ -251,14 +251,14 @@ export default function MobileReplenishmentPage() {
                 value={userLocation}
                 onChange={(e) => setUserLocation(e.target.value.toUpperCase())}
                 placeholder={t("fields.userLocationPlaceholder")}
-                className="w-full bg-muted border border-border rounded p-2 text-white font-mono text-sm text-center"
+                className="w-full bg-muted border border-border rounded p-2 text-foreground font-mono text-sm text-center"
               />
             </div>
 
             <Button
               onClick={handleClaimNextTask}
               disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-base font-bold rounded-lg shadow-lg gap-2"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-foreground py-6 text-base font-bold rounded-lg shadow-lg gap-2"
             >
               <ArrowRight className="h-5 w-5" />
               {loading ? t("actions.claiming") : t("actions.claim")}
@@ -269,18 +269,18 @@ export default function MobileReplenishmentPage() {
         {mobileTask && taskDetail && (
           <Card className="border-border bg-card/40">
             <CardHeader className="pb-2 border-b border-border/80">
-              <CardTitle className="text-xs font-semibold text-slate-200">{t("labels.detailTitle")}</CardTitle>
+              <CardTitle className="text-xs font-semibold text-foreground">{t("labels.detailTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
               <div className="bg-background/60 p-3 rounded text-xs space-y-1.5 border border-border">
                 <div>
                   {t("labels.product")}{" "}
-                  <span className="text-white font-bold">
+                  <span className="text-foreground font-bold">
                     {taskDetail.itemCode} - {taskDetail.itemName}
                   </span>
                 </div>
                 <div>
-                  {t("labels.lot")} <span className="text-zinc-200 font-bold">{taskDetail.lotNo}</span>
+                  {t("labels.lot")} <span className="text-foreground font-bold">{taskDetail.lotNo}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-1 pt-1.5 border-t border-border/60">
                   <div>
@@ -300,7 +300,7 @@ export default function MobileReplenishmentPage() {
 
               {currentStep === "SCAN_SOURCE_LOC" && (
                 <div className="space-y-4 pt-2">
-                  <div className="bg-slate-850 p-3 rounded text-center border border-amber-500/20">
+                  <div className="bg-muted p-3 rounded text-center border border-amber-500/20">
                     <span className="text-xs text-muted-foreground block">{t("labels.step1")}</span>
                     <span className="text-lg font-bold font-mono text-amber-500">{taskDetail.sourceLocationCode}</span>
                   </div>
@@ -315,9 +315,9 @@ export default function MobileReplenishmentPage() {
 
               {currentStep === "SCAN_LOT" && (
                 <div className="space-y-4 pt-2">
-                  <div className="bg-slate-850 p-3 rounded text-center border border-amber-500/20">
+                  <div className="bg-muted p-3 rounded text-center border border-amber-500/20">
                     <span className="text-xs text-muted-foreground block">{t("labels.step2")}</span>
-                    <span className="text-base font-bold font-mono text-white">{taskDetail.lotNo}</span>
+                    <span className="text-base font-bold font-mono text-foreground">{taskDetail.lotNo}</span>
                   </div>
                   <ScanInput
                     id="lotScan"
@@ -330,7 +330,7 @@ export default function MobileReplenishmentPage() {
 
               {currentStep === "SCAN_TARGET_LOC" && (
                 <div className="space-y-4 pt-2">
-                  <div className="bg-slate-850 p-3 rounded text-center border border-emerald-500/20">
+                  <div className="bg-muted p-3 rounded text-center border border-emerald-500/20">
                     <span className="text-xs text-muted-foreground block">{t("labels.step3")}</span>
                     <span className="text-lg font-bold font-mono text-emerald-500">{taskDetail.targetLocationCode}</span>
                   </div>
@@ -345,7 +345,7 @@ export default function MobileReplenishmentPage() {
 
               {currentStep === "INPUT_QTY" && (
                 <div className="space-y-4 pt-2">
-                  <div className="bg-slate-850 p-3 rounded text-center border border-emerald-500/20">
+                  <div className="bg-muted p-3 rounded text-center border border-emerald-500/20">
                     <span className="text-xs text-muted-foreground block">{t("labels.step4")}</span>
                     <span className="text-2xl font-bold font-mono text-emerald-400">
                       {t("labels.qtyUnit", { count: taskDetail.requestedQty })}
@@ -358,7 +358,7 @@ export default function MobileReplenishmentPage() {
                       type="number"
                       value={actualQty}
                       onChange={(e) => setActualQty(parseFloat(e.target.value) || 0)}
-                      className="w-full bg-muted border border-border rounded p-2 text-white font-mono text-base text-center font-bold"
+                      className="w-full bg-muted border border-border rounded p-2 text-foreground font-mono text-base text-center font-bold"
                     />
                   </div>
 
@@ -369,14 +369,14 @@ export default function MobileReplenishmentPage() {
                       placeholder={t("labels.operatorPlaceholder")}
                       value={operatorName}
                       onChange={(e) => setOperatorName(e.target.value)}
-                      className="w-full bg-muted border border-border rounded p-2 text-white text-sm"
+                      className="w-full bg-muted border border-border rounded p-2 text-foreground text-sm"
                     />
                   </div>
 
                   <Button
                     onClick={handleCompleteTask}
                     disabled={loading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-lg shadow-lg"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold py-4 rounded-lg shadow-lg"
                   >
                     {t("actions.complete")}
                   </Button>

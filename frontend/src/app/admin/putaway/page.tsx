@@ -248,7 +248,7 @@ export default function PutawayPage() {
               } else if (loc.status === "FREE") {
                 cellStyle = isSelected
                   ? "border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold cursor-pointer"
-                  : "border-border bg-muted/40 text-zinc-300 cursor-pointer hover:border-zinc-500 transition-colors";
+                  : "border-border bg-muted/40 text-muted-foreground cursor-pointer hover:border-zinc-500 transition-colors";
               }
 
               const handleCellClick = () => {
@@ -296,13 +296,13 @@ export default function PutawayPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
         <div className="xl:col-span-2 flex flex-col gap-4">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Layers className="h-4 w-4 text-emerald-500" />
                 {t("queueTitle", { count: filteredBalances.length })}
               </CardTitle>
-              <Button variant="ghost" size="icon" onClick={fetchBalances} className="h-8 w-8 text-muted-foreground hover:text-white">
+              <Button variant="ghost" size="icon" onClick={fetchBalances} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                 <RefreshCw className={`h-4 w-4 ${loadingBalances ? "animate-spin" : ""}`} />
               </Button>
             </CardHeader>
@@ -313,7 +313,7 @@ export default function PutawayPage() {
                   placeholder={t("searchPlaceholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-muted border-border text-white pl-9 h-9 text-xs"
+                  className="bg-muted border-border text-foreground pl-9 h-9 text-xs"
                 />
               </div>
 
@@ -339,20 +339,20 @@ export default function PutawayPage() {
                           className={`border-b border-border/50 hover:bg-muted/30 ${activeItem?.id === item.id ? "bg-muted/50" : ""}`}
                         >
                           <TableCell>
-                            <div className="font-semibold text-zinc-200">{item.lotNo}</div>
+                            <div className="font-semibold text-foreground">{item.lotNo}</div>
                             <div className="text-[10px] text-muted-foreground font-mono">{t("atLocation")}: {item.locationCode}</div>
                           </TableCell>
                           <TableCell>
-                            <div className="font-medium text-zinc-300 truncate max-w-[120px]">{item.itemName}</div>
+                            <div className="font-medium text-muted-foreground truncate max-w-[120px]">{item.itemName}</div>
                             <div className="text-[10px] text-muted-foreground font-mono">{item.itemCode}</div>
                           </TableCell>
-                          <TableCell className="text-right text-zinc-200 font-medium">
+                          <TableCell className="text-right text-foreground font-medium">
                             {item.qtyAvailable.toLocaleString()}
                           </TableCell>
                           <TableCell className="text-center">
                             <Button
                               onClick={() => handleFetchProposals(item)}
-                              className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 px-2.5 text-[11px] rounded"
+                              className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-7 px-2.5 text-[11px] rounded"
                             >
                               {t("proposeBtn")}
                             </Button>
@@ -368,7 +368,7 @@ export default function PutawayPage() {
         </div>
 
         <div className="xl:col-span-3 flex flex-col gap-4">
-          <Card className="bg-card border-border text-white min-h-[400px]">
+          <Card className="bg-card border-border text-foreground min-h-[400px]">
             <CardHeader className="border-b border-border pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-emerald-500" />
@@ -388,19 +388,19 @@ export default function PutawayPage() {
                   <div className="bg-muted/30 p-3 rounded-lg border border-border grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                       <span className="text-[10px] text-muted-foreground">{t("lotNo")}</span>
-                      <div className="font-semibold text-zinc-200">{proposalsData.lotNo}</div>
+                      <div className="font-semibold text-foreground">{proposalsData.lotNo}</div>
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground">{t("colItem")}</span>
-                      <div className="font-semibold text-zinc-200 truncate">{proposalsData.itemName}</div>
+                      <div className="font-semibold text-foreground truncate">{proposalsData.itemName}</div>
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground">{t("putawayQty")}</span>
-                      <div className="font-semibold text-zinc-200">{proposalsData.qty.toLocaleString()}</div>
+                      <div className="font-semibold text-foreground">{proposalsData.qty.toLocaleString()}</div>
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground">{t("currentLocation")}</span>
-                      <div className="font-semibold text-zinc-200">{activeItem.locationCode}</div>
+                      <div className="font-semibold text-foreground">{activeItem.locationCode}</div>
                     </div>
                   </div>
 
@@ -437,10 +437,10 @@ export default function PutawayPage() {
                                     className="accent-emerald-500 cursor-pointer"
                                   />
                                 </TableCell>
-                                <TableCell className="font-semibold text-zinc-200">{candidate.locationCode}</TableCell>
+                                <TableCell className="font-semibold text-foreground">{candidate.locationCode}</TableCell>
                                 <TableCell className="text-muted-foreground">{candidate.zoneCode}</TableCell>
                                 <TableCell className="text-right text-emerald-400 font-bold">{candidate.score} {t("scoreUnit")}</TableCell>
-                                <TableCell className="text-zinc-300 max-w-[200px] truncate" title={candidate.reason}>
+                                <TableCell className="text-muted-foreground max-w-[200px] truncate" title={candidate.reason}>
                                   {candidate.reason}
                                 </TableCell>
                                 <TableCell className="text-center">
@@ -463,14 +463,14 @@ export default function PutawayPage() {
 
                   {selectedCandidate && (
                     <div className="flex justify-between items-center bg-zinc-850 p-4 border border-border rounded-lg mt-4 bg-background/20">
-                      <div className="flex items-center gap-2 text-zinc-300">
+                      <div className="flex items-center gap-2 text-muted-foreground">
                         <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                         <span>{t("confirmPutaway", { location: selectedCandidate.locationCode, score: selectedCandidate.score })}</span>
                       </div>
                       <Button
                         onClick={handleConfirmPutaway}
                         disabled={submitting}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 text-xs rounded font-semibold"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-foreground px-6 py-2 text-xs rounded font-semibold"
                       >
                         {submitting ? tc("processing") : t("confirmBtn")}
                       </Button>
@@ -487,7 +487,7 @@ export default function PutawayPage() {
 
       {rejectingProposal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-card border border-border rounded-lg w-full max-w-sm p-6 text-white text-xs flex flex-col gap-4 shadow-xl">
+          <div className="bg-card border border-border rounded-lg w-full max-w-sm p-6 text-foreground text-xs flex flex-col gap-4 shadow-xl">
             <div>
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <XCircle className="h-5 w-5 text-rose-500" />
@@ -501,7 +501,7 @@ export default function PutawayPage() {
               <select
                 value={rejectReasonCode}
                 onChange={(e) => setRejectReasonCode(e.target.value)}
-                className="bg-muted border border-border text-white rounded p-2 h-9 focus:outline-none"
+                className="bg-muted border border-border text-foreground rounded p-2 h-9 focus:outline-none"
               >
                 <option value="LOC_FULL">{t("reasonLocFull")}</option>
                 <option value="LOC_DIRTY">{t("reasonLocDirty")}</option>
@@ -516,7 +516,7 @@ export default function PutawayPage() {
                 placeholder={t("rejectNotePlaceholder")}
                 value={rejectNote}
                 onChange={(e) => setRejectNote(e.target.value)}
-                className="bg-muted border-border text-white h-9 text-xs"
+                className="bg-muted border-border text-foreground h-9 text-xs"
               />
             </div>
 
@@ -524,13 +524,13 @@ export default function PutawayPage() {
               <Button
                 variant="ghost"
                 onClick={() => setRejectingProposal(null)}
-                className="text-muted-foreground hover:text-white text-xs"
+                className="text-muted-foreground hover:text-foreground text-xs"
               >
                 {tc("cancel")}
               </Button>
               <Button
                 onClick={handleRejectPutaway}
-                className="bg-rose-600 hover:bg-rose-500 text-white text-xs"
+                className="bg-rose-600 hover:bg-rose-500 text-foreground text-xs"
               >
                 {t("rejectConfirmBtn")}
               </Button>

@@ -150,13 +150,13 @@ export default function IntegrationMappingsPage() {
               placeholder={t("searchPlaceholder")}
               value={searchCode}
               onChange={(e) => setSearchCode(e.target.value)}
-              className="bg-card border-border text-white w-48 text-xs h-9"
+              className="bg-card border-border text-foreground w-48 text-xs h-9"
             />
             <Select value={mappingType} onValueChange={(val) => { setMappingType(val); setPage(1); }}>
-              <SelectTrigger className="bg-card border-border text-white w-40 text-xs h-9">
+              <SelectTrigger className="bg-card border-border text-foreground w-40 text-xs h-9">
                 <SelectValue placeholder={t("typePlaceholder")} />
               </SelectTrigger>
-              <SelectContent className="bg-card border-border text-white text-xs">
+              <SelectContent className="bg-card border-border text-foreground text-xs">
                 <SelectItem value="all">{t("typeAll")}</SelectItem>
                 <SelectItem value="item">{t("typeItem")}</SelectItem>
                 <SelectItem value="warehouse">{t("typeWarehouse")}</SelectItem>
@@ -172,7 +172,7 @@ export default function IntegrationMappingsPage() {
         </div>
       </div>
 
-      <Card className="bg-card border-border text-white">
+      <Card className="bg-card border-border text-foreground">
         <CardHeader>
           <CardTitle className="text-sm font-semibold">{t("cardTitle")}</CardTitle>
         </CardHeader>
@@ -220,7 +220,7 @@ export default function IntegrationMappingsPage() {
                             setIsEditing(m);
                             setEditForm({ internalCode: m.internalCode, status: m.status });
                           }}
-                          className="border-border text-zinc-300 hover:text-white hover:bg-muted text-[10px] h-7"
+                          className="border-border text-muted-foreground hover:text-foreground hover:bg-muted text-[10px] h-7"
                         >
                           {tc("edit")}
                         </Button>
@@ -247,7 +247,7 @@ export default function IntegrationMappingsPage() {
                 size="xs"
                 disabled={page <= 1}
                 onClick={() => setPage(page - 1)}
-                className="bg-muted border border-zinc-750 text-white text-[10px] h-7 disabled:opacity-50"
+                className="bg-muted border border-zinc-750 text-foreground text-[10px] h-7 disabled:opacity-50"
               >
                 {tc("previous")}
               </Button>
@@ -255,7 +255,7 @@ export default function IntegrationMappingsPage() {
                 size="xs"
                 disabled={page * pageSize >= total}
                 onClick={() => setPage(page + 1)}
-                className="bg-muted border border-zinc-750 text-white text-[10px] h-7 disabled:opacity-50"
+                className="bg-muted border border-zinc-750 text-foreground text-[10px] h-7 disabled:opacity-50"
               >
                 {tc("next")}
               </Button>
@@ -265,7 +265,7 @@ export default function IntegrationMappingsPage() {
       </Card>
 
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="bg-background border-zinc-850 text-white text-xs max-w-md">
+        <DialogContent className="bg-background border-zinc-850 text-foreground text-xs max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold">{t("addDialogTitle")}</DialogTitle>
           </DialogHeader>
@@ -275,7 +275,7 @@ export default function IntegrationMappingsPage() {
               <Input
                 value={newMapping.externalSystem}
                 onChange={(e) => setNewMapping({ ...newMapping, externalSystem: e.target.value })}
-                className="bg-card border-border text-white text-xs h-9"
+                className="bg-card border-border text-foreground text-xs h-9"
               />
             </div>
             <div className="space-y-2">
@@ -284,10 +284,10 @@ export default function IntegrationMappingsPage() {
                 value={newMapping.mappingType}
                 onValueChange={(val) => setNewMapping({ ...newMapping, mappingType: val })}
               >
-                <SelectTrigger className="bg-card border-border text-white text-xs h-9">
+                <SelectTrigger className="bg-card border-border text-foreground text-xs h-9">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-card border-border text-white text-xs">
+                <SelectContent className="bg-card border-border text-foreground text-xs">
                   <SelectItem value="item">{t("typeItemFull")}</SelectItem>
                   <SelectItem value="warehouse">{t("typeWarehouseFull")}</SelectItem>
                   <SelectItem value="partner">{t("typePartnerFull")}</SelectItem>
@@ -301,7 +301,7 @@ export default function IntegrationMappingsPage() {
                 placeholder={t("externalCodePlaceholder")}
                 value={newMapping.externalCode}
                 onChange={(e) => setNewMapping({ ...newMapping, externalCode: e.target.value })}
-                className="bg-card border-border text-white text-xs h-9"
+                className="bg-card border-border text-foreground text-xs h-9"
               />
             </div>
             <div className="space-y-2">
@@ -310,7 +310,7 @@ export default function IntegrationMappingsPage() {
                 placeholder={t("internalCodePlaceholder")}
                 value={newMapping.internalCode}
                 onChange={(e) => setNewMapping({ ...newMapping, internalCode: e.target.value })}
-                className="bg-card border-border text-white text-xs h-9"
+                className="bg-card border-border text-foreground text-xs h-9"
               />
             </div>
             <DialogFooter className="pt-2">
@@ -322,7 +322,7 @@ export default function IntegrationMappingsPage() {
       </Dialog>
 
       <Dialog open={isEditing !== null} onOpenChange={() => setIsEditing(null)}>
-        <DialogContent className="bg-background border-zinc-850 text-white text-xs max-w-md">
+        <DialogContent className="bg-background border-zinc-850 text-foreground text-xs max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold">{t("editDialogTitle")}</DialogTitle>
           </DialogHeader>
@@ -340,7 +340,7 @@ export default function IntegrationMappingsPage() {
               <Input
                 value={editForm.internalCode}
                 onChange={(e) => setEditForm({ ...editForm, internalCode: e.target.value })}
-                className="bg-card border-border text-white text-xs h-9"
+                className="bg-card border-border text-foreground text-xs h-9"
               />
             </div>
             <div className="space-y-2">
@@ -349,10 +349,10 @@ export default function IntegrationMappingsPage() {
                 value={editForm.status}
                 onValueChange={(val: "active" | "inactive") => setEditForm({ ...editForm, status: val })}
               >
-                <SelectTrigger className="bg-card border-border text-white text-xs h-9">
+                <SelectTrigger className="bg-card border-border text-foreground text-xs h-9">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-card border-border text-white text-xs">
+                <SelectContent className="bg-card border-border text-foreground text-xs">
                   <SelectItem value="active">{t("statusActiveFull")}</SelectItem>
                   <SelectItem value="inactive">{t("statusInactiveFull")}</SelectItem>
                 </SelectContent>

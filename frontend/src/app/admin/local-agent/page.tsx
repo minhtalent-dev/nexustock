@@ -235,12 +235,12 @@ export default function LocalAgentAdminPage() {
               setCodeExpiresAt(null);
               setShowPairingDialog(true);
             }}
-            className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium"
+            className="bg-indigo-600 hover:bg-indigo-500 text-foreground font-medium"
           >
             <Key className="h-4 w-4 mr-2" />
             {t("createPairingCode")}
           </Button>
-          <Button onClick={scanLocalAgent} variant="outline" className="border-border hover:bg-muted text-zinc-300">
+          <Button onClick={scanLocalAgent} variant="outline" className="border-border hover:bg-muted text-muted-foreground">
             <RefreshCw className={`h-4 w-4 mr-2 ${isScanning ? "animate-spin" : ""}`} />
             {t("rescanAgent")}
           </Button>
@@ -249,7 +249,7 @@ export default function LocalAgentAdminPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 flex flex-col gap-6">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="border-b border-border pb-4">
               <CardTitle className="text-lg flex items-center gap-2">
                 {getLocalAgentStatusIcon(localAgentInfo.status)}
@@ -281,23 +281,23 @@ export default function LocalAgentAdminPage() {
 
               {localAgentInfo.status === "unpaired" && (
                 <div className="flex flex-col gap-3 mt-2 border-t border-border pt-4">
-                  <span className="text-xs font-semibold text-zinc-300">{t("pairSectionTitle")}</span>
+                  <span className="text-xs font-semibold text-muted-foreground">{t("pairSectionTitle")}</span>
                   <Input
                     placeholder={t("stationCodePlaceholder")}
                     value={pairingStationCode}
                     onChange={(e) => setPairingStationCode(e.target.value)}
-                    className="bg-background border-border text-white text-xs placeholder:text-zinc-600 focus:border-indigo-500"
+                    className="bg-background border-border text-foreground text-xs placeholder:text-muted-foreground focus:border-indigo-500"
                   />
                   <Input
                     placeholder={t("pairingCodePlaceholder")}
                     value={pairingCode}
                     onChange={(e) => setPairingCode(e.target.value)}
-                    className="bg-background border-border text-white text-xs placeholder:text-zinc-600 focus:border-indigo-500"
+                    className="bg-background border-border text-foreground text-xs placeholder:text-muted-foreground focus:border-indigo-500"
                   />
                   <Button
                     onClick={handlePairAgent}
                     disabled={isPairing}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium w-full mt-1"
+                    className="bg-indigo-600 hover:bg-indigo-500 text-foreground text-xs font-medium w-full mt-1"
                   >
                     {isPairing ? t("pairing") : t("pairDevice")}
                   </Button>
@@ -322,7 +322,7 @@ export default function LocalAgentAdminPage() {
         </div>
 
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="border-b border-border pb-4 flex flex-row items-center justify-between">
               <div>
                 <CardTitle className="text-lg">{t("stationsTitle")}</CardTitle>
@@ -338,7 +338,7 @@ export default function LocalAgentAdminPage() {
                     setSearch(e.target.value);
                     setPage(1);
                   }}
-                  className="bg-background border-border text-white text-xs placeholder:text-zinc-600 focus:border-indigo-500"
+                  className="bg-background border-border text-foreground text-xs placeholder:text-muted-foreground focus:border-indigo-500"
                 />
               </div>
             </CardHeader>
@@ -403,7 +403,7 @@ export default function LocalAgentAdminPage() {
       </div>
 
       <Dialog open={showPairingDialog} onOpenChange={setShowPairingDialog}>
-        <DialogContent className="bg-card border-border text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle>{t("pairingDialogTitle")}</DialogTitle>
             <DialogDescription className="text-muted-foreground text-xs">
@@ -419,7 +419,7 @@ export default function LocalAgentAdminPage() {
                 value={dialogStationCode}
                 onChange={(e) => setDialogStationCode(e.target.value)}
                 disabled={!!generatedCode}
-                className="bg-background border-border text-white placeholder:text-zinc-700 focus:border-indigo-500"
+                className="bg-background border-border text-foreground placeholder:text-zinc-700 focus:border-indigo-500"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -429,7 +429,7 @@ export default function LocalAgentAdminPage() {
                 value={dialogStationName}
                 onChange={(e) => setDialogStationName(e.target.value)}
                 disabled={!!generatedCode}
-                className="bg-background border-border text-white placeholder:text-zinc-700 focus:border-indigo-500"
+                className="bg-background border-border text-foreground placeholder:text-zinc-700 focus:border-indigo-500"
               />
             </div>
 
@@ -448,19 +448,19 @@ export default function LocalAgentAdminPage() {
             {!generatedCode ? (
               <>
                 <Button variant="ghost" onClick={() => setShowPairingDialog(false)} className="text-muted-foreground">{tc("cancel")}</Button>
-                <Button onClick={handleCreatePairingCode} disabled={isGeneratingCode} className="bg-indigo-600 hover:bg-indigo-500 text-white">
+                <Button onClick={handleCreatePairingCode} disabled={isGeneratingCode} className="bg-indigo-600 hover:bg-indigo-500 text-foreground">
                   {isGeneratingCode ? t("generating") : t("generateCode")}
                 </Button>
               </>
             ) : (
-              <Button onClick={() => setShowPairingDialog(false)} className="bg-muted hover:bg-zinc-700 text-white w-full">{tc("close")}</Button>
+              <Button onClick={() => setShowPairingDialog(false)} className="bg-muted hover:bg-zinc-700 text-foreground w-full">{tc("close")}</Button>
             )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showRevokeDialog} onOpenChange={setShowRevokeDialog}>
-        <DialogContent className="bg-card border-border text-white">
+        <DialogContent className="bg-card border-border text-foreground">
           <DialogHeader>
             <DialogTitle className="text-rose-400">{t("revokeDialogTitle")}</DialogTitle>
             <DialogDescription className="text-muted-foreground text-xs">
@@ -474,7 +474,7 @@ export default function LocalAgentAdminPage() {
               <select
                 value={revokeReason}
                 onChange={(e) => setRevokeReason(e.target.value)}
-                className="bg-background border border-border text-white rounded px-3 py-2 text-xs focus:border-indigo-500"
+                className="bg-background border border-border text-foreground rounded px-3 py-2 text-xs focus:border-indigo-500"
               >
                 <option value="DECOMMISSIONED">{t("reasonDecommissioned")}</option>
                 <option value="SECURITY_BREACH">{t("reasonSecurityBreach")}</option>
@@ -488,14 +488,14 @@ export default function LocalAgentAdminPage() {
                 placeholder={t("revokeDescPlaceholder")}
                 value={revokeDescription}
                 onChange={(e) => setRevokeDescription(e.target.value)}
-                className="bg-background border-border text-white placeholder:text-zinc-700 focus:border-indigo-500"
+                className="bg-background border-border text-foreground placeholder:text-zinc-700 focus:border-indigo-500"
               />
             </div>
           </div>
 
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowRevokeDialog(false)} className="text-muted-foreground">{tc("cancel")}</Button>
-            <Button onClick={handleRevokeStation} disabled={isRevoking} className="bg-rose-600 hover:bg-rose-500 text-white">
+            <Button onClick={handleRevokeStation} disabled={isRevoking} className="bg-rose-600 hover:bg-rose-500 text-foreground">
               {isRevoking ? tc("processing") : t("confirmRevoke")}
             </Button>
           </DialogFooter>

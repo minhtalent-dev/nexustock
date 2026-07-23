@@ -125,21 +125,21 @@ export default function UsersPage() {
     <PageShell className="gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
             <Users className="h-6 w-6 text-emerald-500" />
             {t("title")}
           </h1>
           <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
-        <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 h-9 text-sm">
+        <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-foreground gap-2 h-9 text-sm">
           <UserPlus className="h-4 w-4" />
           {t("addUser")}
         </Button>
       </div>
 
-      <Card className="bg-[#111] border-border/80">
+      <Card className="bg-card border-border/80">
         <CardHeader className="py-4 border-b border-border/60 flex flex-row items-center justify-between">
-          <CardTitle className="text-sm font-semibold text-white">{t("listTitle")}</CardTitle>
+          <CardTitle className="text-sm font-semibold text-foreground">{t("listTitle")}</CardTitle>
           {loading && <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />}
         </CardHeader>
         <CardContent className="p-0">
@@ -163,15 +163,15 @@ export default function UsersPage() {
               ) : (
                 users.map((user) => (
                   <TableRow key={user.id} className="border-b border-border/30 hover:bg-card/10">
-                    <TableCell className="font-medium text-white h-12">{user.fullName}</TableCell>
-                    <TableCell className="text-zinc-300 font-mono text-sm h-12">{user.email}</TableCell>
+                    <TableCell className="font-medium text-foreground h-12">{user.fullName}</TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-sm h-12">{user.email}</TableCell>
                     <TableCell className="h-12">
                       <div className="flex flex-wrap gap-1">
                         {user.roles.length === 0 ? (
-                          <span className="text-xs text-zinc-600">—</span>
+                          <span className="text-xs text-muted-foreground">—</span>
                         ) : (
                           user.roles.map((r) => (
-                            <Badge key={r} variant="secondary" className="bg-muted text-zinc-300 border-border/50 hover:bg-muted">
+                            <Badge key={r} variant="secondary" className="bg-muted text-muted-foreground border-border/50 hover:bg-muted">
                               {r}
                             </Badge>
                           ))
@@ -203,9 +203,9 @@ export default function UsersPage() {
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-[#111] border border-border text-zinc-100 max-w-md">
+        <DialogContent className="bg-card border border-border text-foreground max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-base font-semibold text-white">
+            <DialogTitle className="text-base font-semibold text-foreground">
               {editingUser ? t("dialogEditTitle") : t("dialogCreateTitle")}
             </DialogTitle>
           </DialogHeader>
@@ -263,7 +263,7 @@ export default function UsersPage() {
                       onCheckedChange={() => handleRoleToggle(role.name)}
                       className="border-border data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                     />
-                    <label htmlFor={`role-${role.id}`} className="text-xs text-zinc-300 font-medium cursor-pointer select-none">
+                    <label htmlFor={`role-${role.id}`} className="text-xs text-muted-foreground font-medium cursor-pointer select-none">
                       {role.name}
                     </label>
                   </div>
@@ -278,16 +278,16 @@ export default function UsersPage() {
                 onCheckedChange={(checked) => setIsActive(!!checked)}
                 className="border-border data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
               />
-              <label htmlFor="active" className="text-xs text-zinc-300 font-medium cursor-pointer select-none">
+              <label htmlFor="active" className="text-xs text-muted-foreground font-medium cursor-pointer select-none">
                 {t("activateAccount")}
               </label>
             </div>
 
             <DialogFooter className="mt-4 gap-2">
-              <Button type="button" onClick={() => setIsOpen(false)} variant="ghost" className="text-muted-foreground hover:text-zinc-200 h-9 text-sm">
+              <Button type="button" onClick={() => setIsOpen(false)} variant="ghost" className="text-muted-foreground hover:text-foreground h-9 text-sm">
                 {tc("cancel")}
               </Button>
-              <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-sm">
+              <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-9 text-sm">
                 {saving ? tc("saving") : tc("confirm")}
               </Button>
             </DialogFooter>

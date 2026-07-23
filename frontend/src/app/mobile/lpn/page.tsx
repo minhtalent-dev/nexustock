@@ -130,7 +130,7 @@ export default function MobileLpnPage() {
       <MobileShell>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Link href="/mobile" className="text-muted-foreground hover:text-white p-2">
+          <Link href="/mobile" className="text-muted-foreground hover:text-foreground p-2">
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <h2 className="text-lg font-bold flex items-center gap-2 text-foreground">
@@ -142,8 +142,8 @@ export default function MobileLpnPage() {
         {currentStep === "SCAN_LPN" && (
           <div className="space-y-4 py-8">
             <div className="text-center space-y-2">
-              <Box className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
-              <h3 className="text-base font-semibold text-slate-200">{t("states.readyTitle")}</h3>
+              <Box className="h-12 w-12 text-muted-foreground mx-auto animate-bounce" />
+              <h3 className="text-base font-semibold text-foreground">{t("states.readyTitle")}</h3>
               <p className="text-xs text-muted-foreground">{t("states.readyHint")}</p>
             </div>
             <ScanInput
@@ -158,22 +158,22 @@ export default function MobileLpnPage() {
         {lpn && (
           <Card className="border-border bg-card/40">
             <CardHeader className="pb-2 border-b border-border/80">
-              <CardTitle className="text-xs font-semibold text-slate-200">
+              <CardTitle className="text-xs font-semibold text-foreground">
                 {t("labels.pallet", { lpn: lpn.lpnNo })}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
               <div className="bg-background/60 p-3 rounded text-xs space-y-1.5 border border-border max-h-[150px] overflow-y-auto">
-                <span className="text-[10px] text-slate-500 block border-b border-border pb-1">
+                <span className="text-[10px] text-muted-foreground block border-b border-border pb-1">
                   {t("labels.itemsOnPallet")}
                 </span>
                 {lpnItems.length === 0 ? (
                   <div className="text-muted-foreground italic text-center py-2">{t("labels.emptyPallet")}</div>
                 ) : (
                   lpnItems.map((item, idx) => (
-                    <div key={idx} className="flex justify-between text-[11px] text-slate-200">
+                    <div key={idx} className="flex justify-between text-[11px] text-foreground">
                       <span>{t("labels.itemLot", { code: item.itemCode, lot: item.lotNo })}</span>
-                      <span className="font-bold text-white">{item.qtyOnHand}</span>
+                      <span className="font-bold text-foreground">{item.qtyOnHand}</span>
                     </div>
                   ))
                 )}
@@ -181,7 +181,7 @@ export default function MobileLpnPage() {
 
               {currentStep === "SCAN_TARGET_LOC" && (
                 <div className="space-y-4 pt-2">
-                  <div className="bg-slate-850 p-3 rounded text-center border border-amber-500/20">
+                  <div className="bg-muted p-3 rounded text-center border border-amber-500/20">
                     <span className="text-xs text-muted-foreground block">{t("labels.step2")}</span>
                   </div>
                   <ScanInput
@@ -195,10 +195,10 @@ export default function MobileLpnPage() {
 
               {currentStep === "CONFIRM" && (
                 <div className="space-y-4 pt-2">
-                  <div className="bg-slate-850 p-4 rounded text-center border border-emerald-500/20 space-y-2">
+                  <div className="bg-muted p-4 rounded text-center border border-emerald-500/20 space-y-2">
                     <span className="text-xs text-muted-foreground block">{t("labels.confirmTitle")}</span>
                     <span className="text-lg font-bold font-mono text-emerald-400 block">{lpn.lpnNo}</span>
-                    <div className="flex items-center justify-center gap-3 text-xs text-white pt-1">
+                    <div className="flex items-center justify-center gap-3 text-xs text-foreground pt-1">
                       <span className="font-mono text-muted-foreground">{t("labels.oldLocation")}</span>
                       <ArrowRight className="h-3.5 w-3.5 text-emerald-500" />
                       <span className="font-mono text-emerald-400 font-bold">{targetLocationCode}</span>
@@ -208,7 +208,7 @@ export default function MobileLpnPage() {
                   <Button
                     onClick={handleConfirmMove}
                     disabled={loading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-lg shadow-lg"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold py-4 rounded-lg shadow-lg"
                   >
                     {loading ? t("actions.processing") : t("actions.confirm")}
                   </Button>

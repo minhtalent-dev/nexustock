@@ -64,7 +64,7 @@ export default function PartnersPage() {
         { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
         { key: "name", label: t("columns.name"), render: (item) => item.name },
         { key: "partnerType", label: t("columns.partnerType"), render: (item) => item.partnerType },
-        { key: "taxCode", label: t("columns.taxCode"), render: (item) => <span className="font-mono text-white/50">{item.taxCode || "-"}</span> },
+        { key: "taxCode", label: t("columns.taxCode"), render: (item) => <span className="font-mono text-foreground/50">{item.taxCode || "-"}</span> },
         {
           key: "status",
           label: t("columns.status"),

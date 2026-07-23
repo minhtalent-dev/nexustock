@@ -79,7 +79,7 @@ export default function IntegrationImportPage() {
       <h1 className="text-2xl font-bold">{t("title")}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="bg-card border-border text-white lg:col-span-1 h-fit">
+        <Card className="bg-card border-border text-foreground lg:col-span-1 h-fit">
           <CardHeader>
             <CardTitle className="text-sm font-semibold">{t("step1Title")}</CardTitle>
             <CardDescription className="text-muted-foreground text-[11px]">
@@ -102,7 +102,7 @@ export default function IntegrationImportPage() {
                 variant="outline"
                 size="xs"
                 onClick={() => document.getElementById("csv-file-input")?.click()}
-                className="border-border text-zinc-300 mt-2 text-[10px]"
+                className="border-border text-muted-foreground mt-2 text-[10px]"
               >
                 {t("chooseFile")}
               </Button>
@@ -137,7 +137,7 @@ export default function IntegrationImportPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-card border-border text-white lg:col-span-2">
+        <Card className="bg-card border-border text-foreground lg:col-span-2">
           <CardHeader className="flex flex-row justify-between items-center">
             <div>
               <CardTitle className="text-sm font-semibold">{t("step2Title")}</CardTitle>
@@ -186,7 +186,7 @@ export default function IntegrationImportPage() {
                   </div>
                   <div>
                     <span className="text-muted-foreground block mb-1">{t("totalRows")}</span>
-                    <span className="font-bold text-white">{preview.totalRows}</span>
+                    <span className="font-bold text-foreground">{preview.totalRows}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground block mb-1">{t("validRows")}</span>

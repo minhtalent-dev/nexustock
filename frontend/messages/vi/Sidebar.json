@@ -80,7 +80,11 @@
       "permissionsEmpty": "Không có quyền khớp",
       "permissionsLoading": "Đang tải…",
       "uncategorized": "Khác",
-      "language": "Ngôn ngữ"
+      "language": "Ngôn ngữ",
+      "themeLabel": "Giao diện",
+      "themeSystem": "Hệ thống",
+      "themeLight": "Sáng",
+      "themeDark": "Tối"
     }
   }
 }

@@ -122,8 +122,8 @@ export default function PickingPage() {
         {currentStep === "CLAIM" && (
           <div className="space-y-4 py-8">
             <div className="text-center space-y-2">
-              <Box className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
-              <h3 className="text-base font-semibold text-slate-200">{t("states.readyTitle")}</h3>
+              <Box className="h-12 w-12 text-muted-foreground mx-auto animate-bounce" />
+              <h3 className="text-base font-semibold text-foreground">{t("states.readyTitle")}</h3>
               <p className="text-xs text-muted-foreground">{t("states.readyHint")}</p>
             </div>
 
@@ -137,14 +137,14 @@ export default function PickingPage() {
                 value={userLocation}
                 onChange={(e) => setUserLocation(e.target.value.toUpperCase())}
                 placeholder={t("fields.userLocationPlaceholder")}
-                className="w-full bg-muted border border-border rounded p-2 text-white font-mono text-sm text-center"
+                className="w-full bg-muted border border-border rounded p-2 text-foreground font-mono text-sm text-center"
               />
             </div>
 
             <Button
               onClick={handleClaimNextTask}
               disabled={loading}
-              className="w-full bg-orange-600 hover:bg-orange-700 text-white py-6 text-base font-bold rounded-lg shadow-lg gap-2"
+              className="w-full bg-orange-600 hover:bg-orange-700 text-foreground py-6 text-base font-bold rounded-lg shadow-lg gap-2"
             >
               <ArrowRight className="h-5 w-5" />
               {loading ? t("actions.claiming") : t("actions.claim")}
@@ -155,7 +155,7 @@ export default function PickingPage() {
         {task && (
           <Card className="border-border bg-card/40">
             <CardHeader className="pb-2 border-b border-border/80">
-              <CardTitle className="text-sm font-semibold text-slate-200">{t("labels.currentTask")}</CardTitle>
+              <CardTitle className="text-sm font-semibold text-foreground">{t("labels.currentTask")}</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-2 text-xs font-mono text-muted-foreground">
@@ -164,10 +164,10 @@ export default function PickingPage() {
                 </div>
                 <div>
                   {t("labels.orderId")}{" "}
-                  <span className="text-white">{task.referenceId.substring(0, 8)}</span>
+                  <span className="text-foreground">{task.referenceId.substring(0, 8)}</span>
                 </div>
                 <div className="col-span-2">
-                  {t("labels.step")} <span className="text-white font-bold">{task.step}</span>
+                  {t("labels.step")} <span className="text-foreground font-bold">{task.step}</span>
                 </div>
               </div>
 
@@ -190,7 +190,7 @@ export default function PickingPage() {
                 <div className="space-y-4 pt-2">
                   <div className="bg-muted/80 p-3 rounded text-center border border-orange-500/25">
                     <span className="text-xs text-muted-foreground block">{t("fields.lotHint")}</span>
-                    <span className="text-base font-bold font-mono text-white">LOT-CC-1783908121977</span>
+                    <span className="text-base font-bold font-mono text-foreground">LOT-CC-1783908121977</span>
                   </div>
                   <ScanInput
                     id="lotScan"
@@ -213,7 +213,7 @@ export default function PickingPage() {
                   <Button
                     onClick={handleCompleteTask}
                     disabled={loading}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg"
+                    className="w-full bg-green-600 hover:bg-green-700 text-foreground font-bold py-4 rounded-lg"
                   >
                     {t("actions.complete")}
                   </Button>

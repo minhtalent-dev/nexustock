@@ -117,7 +117,7 @@ export default function RmaPage() {
         <Button
           onClick={fetchRmas}
           variant="outline"
-          className="border-border hover:bg-muted text-zinc-300 h-9 px-4 flex items-center gap-2"
+          className="border-border hover:bg-muted text-muted-foreground h-9 px-4 flex items-center gap-2"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           {tc("refresh")}
@@ -126,7 +126,7 @@ export default function RmaPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardContent className="p-0">
               {loading && rmas.length === 0 ? (
                 <div className="text-center py-12 text-muted-foreground text-xs font-mono">{tc("loading")}</div>
@@ -149,8 +149,8 @@ export default function RmaPage() {
                           selectedRma?.id === r.id ? "bg-muted/80" : ""
                         }`}
                       >
-                        <TableCell className="font-bold text-zinc-200 font-mono">{r.rmaNo}</TableCell>
-                        <TableCell className="text-zinc-300">{r.customerName}</TableCell>
+                        <TableCell className="font-bold text-foreground font-mono">{r.rmaNo}</TableCell>
+                        <TableCell className="text-muted-foreground">{r.customerName}</TableCell>
                         <TableCell className="text-muted-foreground">{new Date(r.createdAt).toLocaleDateString()}</TableCell>
                         <TableCell>{getStatusBadge(r.status)}</TableCell>
                       </TableRow>
@@ -164,7 +164,7 @@ export default function RmaPage() {
 
         <div className="lg:col-span-1">
           {selectedRma ? (
-            <Card className="bg-card border-border text-white sticky top-6">
+            <Card className="bg-card border-border text-foreground sticky top-6">
               <CardHeader className="border-b border-border pb-4">
                 <CardTitle className="text-sm font-semibold flex items-center justify-between">
                   {t("detailTitle", { rmaNo: selectedRma.rmaNo })}
@@ -181,11 +181,11 @@ export default function RmaPage() {
                     <div key={item.id} className="bg-muted/50 rounded p-3 border border-border/50 flex flex-col gap-2">
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="text-[11px] font-bold text-zinc-200">{item.itemCode}</p>
+                          <p className="text-[11px] font-bold text-foreground">{item.itemCode}</p>
                           <p className="text-[10px] text-muted-foreground">{item.itemName}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[10px] text-muted-foreground">{t("expected")}: <span className="text-zinc-300 font-bold">{item.qtyExpected}</span></p>
+                          <p className="text-[10px] text-muted-foreground">{t("expected")}: <span className="text-muted-foreground font-bold">{item.qtyExpected}</span></p>
                           <p className="text-[10px] text-muted-foreground">{t("received")}: <span className="text-blue-400 font-bold">{item.qtyReceived}</span></p>
                         </div>
                       </div>

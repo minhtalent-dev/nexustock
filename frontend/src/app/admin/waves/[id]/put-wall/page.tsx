@@ -178,7 +178,7 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href={`/admin/waves/${waveId}`}>
-            <Button variant="outline" className="border-border hover:bg-muted text-zinc-300 h-9 w-9 p-0">
+            <Button variant="outline" className="border-border hover:bg-muted text-muted-foreground h-9 w-9 p-0">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
@@ -194,7 +194,7 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="border-b border-border pb-3">
               <CardTitle className="text-xs font-semibold text-muted-foreground flex items-center gap-2">
                 <ScanBarcode className="h-4 w-4 text-indigo-400" />
@@ -209,9 +209,9 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
                   placeholder={t("barcodePlaceholder")}
-                  className="bg-background border-border text-zinc-200 h-10 text-xs focus-visible:ring-indigo-600 focus-visible:ring-offset-0"
+                  className="bg-background border-border text-foreground h-10 text-xs focus-visible:ring-indigo-600 focus-visible:ring-offset-0"
                 />
-                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 text-xs mt-2">
+                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-foreground h-9 text-xs mt-2">
                   {t("confirmScan")}
                 </Button>
               </form>
@@ -220,17 +220,17 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
                 <div className="border border-indigo-950/60 bg-indigo-950/10 rounded p-3 flex flex-col gap-2 text-xs">
                   <div className="font-bold text-indigo-300">{t("lastScanTitle")}</div>
                   <div>
-                    {t("productLabel")} <span className="text-zinc-200 font-bold">{lastSortedInfo.itemName}</span>
+                    {t("productLabel")} <span className="text-foreground font-bold">{lastSortedInfo.itemName}</span>
                   </div>
                   <div>
                     {t("slotHint")}{" "}
-                    <Badge className="bg-amber-600 text-white ml-1 font-mono">
+                    <Badge className="bg-amber-600 text-foreground ml-1 font-mono">
                       {t("slotLabel", { number: lastSortedInfo.recommendedSlotNumber })}
                     </Badge>
                   </div>
                   <div>
                     {t("shipmentLabel")}{" "}
-                    <span className="font-mono text-zinc-300">{lastSortedInfo.shipmentNo}</span>
+                    <span className="font-mono text-muted-foreground">{lastSortedInfo.shipmentNo}</span>
                   </div>
                   <div className="flex justify-between items-center mt-1 pt-1 border-t border-indigo-950/40">
                     <span>{t("slotProgress")}</span>
@@ -245,7 +245,7 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
         </div>
 
         <div className="lg:col-span-3">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="border-b border-border pb-3">
               <CardTitle className="text-xs font-semibold text-muted-foreground">{t("slotsTitle")}</CardTitle>
             </CardHeader>
@@ -298,7 +298,7 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
                             <CheckCircle2 className="h-3 w-3" /> {t("statusComplete")}
                           </span>
                         ) : isEmpty ? (
-                          <span className="text-[10px] uppercase tracking-widest text-zinc-600 bg-card/60 px-2 py-0.5 rounded border border-border/30">
+                          <span className="text-[10px] uppercase tracking-widest text-muted-foreground bg-card/60 px-2 py-0.5 rounded border border-border/30">
                             {t("statusEmpty")}
                           </span>
                         ) : (

@@ -77,7 +77,7 @@ export default function HealthUi() {
       case "unhealthy":
         return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
       case "disabled":
-        return <XCircle className="h-5 w-5 text-zinc-500" />;
+        return <XCircle className="h-5 w-5 text-muted-foreground" />;
       default:
         return <XCircle className="h-5 w-5 text-red-500" />;
     }
@@ -98,7 +98,7 @@ export default function HealthUi() {
         : status?.toLowerCase() === "pending"
           ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
           : status?.toLowerCase() === "disabled"
-            ? "bg-zinc-800 text-zinc-400 border-zinc-700"
+            ? "bg-zinc-800 text-muted-foreground border-zinc-700"
             : "bg-red-500/10 text-red-400 border-red-500/20";
     return (
       <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${cls}`}>
@@ -115,14 +115,14 @@ export default function HealthUi() {
           <LanguageSwitcher />
         </div>
 
-        <header className="flex justify-between items-center border-b border-zinc-800/80 pb-6">
+        <header className="flex justify-between items-center border-b border-border/80 pb-6">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center">
               <Activity className="h-5 w-5 text-emerald-500" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-white">{t("title")}</h1>
-              <p className="text-sm text-zinc-400">{t("subtitle")}</p>
+              <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("title")}</h1>
+              <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
             </div>
           </div>
           <Button onClick={handleRefresh} disabled={refreshing || loading} variant="outline">
@@ -132,7 +132,7 @@ export default function HealthUi() {
         </header>
 
         <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-[#111] border border-zinc-800/60 p-6 rounded-xl flex flex-col justify-between min-h-[140px] hover:border-zinc-700 transition-colors">
+          <div className="bg-card border border-border p-6 rounded-xl flex flex-col justify-between min-h-[140px] hover:border-zinc-700 transition-colors">
             <div className="flex justify-between items-start">
               <div className="h-10 w-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
                 <Server className="h-5 w-5 text-blue-400" />
@@ -140,12 +140,12 @@ export default function HealthUi() {
               {getStatusBadge(error ? "unhealthy" : data?.services.api || "healthy")}
             </div>
             <div className="mt-4">
-              <h3 className="text-sm font-medium text-zinc-400">{t("apiHost")}</h3>
-              <p className="text-xs text-zinc-500 mt-1">{t("apiHostDesc")}</p>
+              <h3 className="text-sm font-medium text-muted-foreground">{t("apiHost")}</h3>
+              <p className="text-xs text-muted-foreground mt-1">{t("apiHostDesc")}</p>
             </div>
           </div>
 
-          <div className="bg-[#111] border border-zinc-800/60 p-6 rounded-xl flex flex-col justify-between min-h-[140px] hover:border-zinc-700 transition-colors">
+          <div className="bg-card border border-border p-6 rounded-xl flex flex-col justify-between min-h-[140px] hover:border-zinc-700 transition-colors">
             <div className="flex justify-between items-start">
               <div className="h-10 w-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                 <Database className="h-5 w-5 text-emerald-400" />
@@ -153,12 +153,12 @@ export default function HealthUi() {
               {getStatusBadge(error ? "unhealthy" : data?.services.database || "pending")}
             </div>
             <div className="mt-4">
-              <h3 className="text-sm font-medium text-zinc-400">{t("dbTitle")}</h3>
-              <p className="text-xs text-zinc-500 mt-1">{t("dbDesc")}</p>
+              <h3 className="text-sm font-medium text-muted-foreground">{t("dbTitle")}</h3>
+              <p className="text-xs text-muted-foreground mt-1">{t("dbDesc")}</p>
             </div>
           </div>
 
-          <div className="bg-[#111] border border-zinc-800/60 p-6 rounded-xl flex flex-col justify-between min-h-[140px] hover:border-zinc-700 transition-colors">
+          <div className="bg-card border border-border p-6 rounded-xl flex flex-col justify-between min-h-[140px] hover:border-zinc-700 transition-colors">
             <div className="flex justify-between items-start">
               <div className="h-10 w-10 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center justify-center">
                 <Heart className="h-5 w-5 text-red-400" />
@@ -166,42 +166,42 @@ export default function HealthUi() {
               {getStatusBadge(error ? "unhealthy" : data?.services.redis || "disabled")}
             </div>
             <div className="mt-4">
-              <h3 className="text-sm font-medium text-zinc-400">{t("redisTitle")}</h3>
-              <p className="text-xs text-zinc-500 mt-1">{t("redisDesc")}</p>
+              <h3 className="text-sm font-medium text-muted-foreground">{t("redisTitle")}</h3>
+              <p className="text-xs text-muted-foreground mt-1">{t("redisDesc")}</p>
             </div>
           </div>
         </section>
 
-        <section className="bg-[#111] border border-zinc-800/60 rounded-xl p-6 flex flex-col gap-4">
-          <h2 className="text-lg font-semibold text-white">{t("metadata")}</h2>
+        <section className="bg-card border border-border rounded-xl p-6 flex flex-col gap-4">
+          <h2 className="text-lg font-semibold text-foreground">{t("metadata")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div className="flex justify-between py-2 border-b border-zinc-800/40">
-              <span className="text-zinc-400">{t("environment")}</span>
-              <span className="font-mono text-zinc-300 capitalize">
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-muted-foreground">{t("environment")}</span>
+              <span className="font-mono text-muted-foreground capitalize">
                 {error ? t("unknown") : data?.environment || "Development"}
               </span>
             </div>
-            <div className="flex justify-between py-2 border-b border-zinc-800/40">
-              <span className="text-zinc-400">{t("apiVersion")}</span>
-              <span className="font-mono text-zinc-300">{error ? "—" : data?.version || "0.1.0"}</span>
+            <div className="flex justify-between py-2 border-b border-border">
+              <span className="text-muted-foreground">{t("apiVersion")}</span>
+              <span className="font-mono text-muted-foreground">{error ? "—" : data?.version || "0.1.0"}</span>
             </div>
-            <div className="flex justify-between py-2 border-b border-zinc-800/40 md:border-none">
-              <span className="text-zinc-400">{t("liveness")}</span>
+            <div className="flex justify-between py-2 border-b border-border md:border-none">
+              <span className="text-muted-foreground">{t("liveness")}</span>
               <span className="font-mono text-emerald-400 flex items-center gap-1.5">
                 {getStatusIcon(error ? "unhealthy" : "healthy")} {t("alive")}
               </span>
             </div>
-            <div className="flex justify-between py-2 border-b border-zinc-800/40 md:border-none">
-              <span className="text-zinc-400">{t("readiness")}</span>
+            <div className="flex justify-between py-2 border-b border-border md:border-none">
+              <span className="text-muted-foreground">{t("readiness")}</span>
               <span className="font-mono text-yellow-400 flex items-center gap-1.5">
                 {getStatusIcon(error ? "unhealthy" : "pending")} {t("active")}
               </span>
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-zinc-800/60 flex flex-col sm:flex-row sm:justify-between gap-2 text-xs text-zinc-500">
+          <div className="mt-4 pt-4 border-t border-border flex flex-col sm:flex-row sm:justify-between gap-2 text-xs text-muted-foreground">
             <span>
-              {t("traceId")}: <span className="font-mono text-zinc-400">{error ? "N/A" : data?.traceId || "—"}</span>
+              {t("traceId")}: <span className="font-mono text-muted-foreground">{error ? "N/A" : data?.traceId || "—"}</span>
             </span>
             <span>
               {t("lastChecked")}: {mounted ? new Date().toLocaleTimeString() : "—"}

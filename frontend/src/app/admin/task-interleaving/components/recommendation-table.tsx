@@ -22,13 +22,13 @@ export function RecommendationTable({ items, onViewDetail }: TableProps) {
 
     switch (status) {
       case "Accepted":
-        return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white border-0">{label}</Badge>;
+        return <Badge className="bg-emerald-500 hover:bg-emerald-600 text-foreground border-0">{label}</Badge>;
       case "Rejected":
         return <Badge variant="destructive">{label}</Badge>;
       case "Expired":
         return <Badge variant="secondary">{label}</Badge>;
       case "Superseded":
-        return <Badge className="bg-amber-500 hover:bg-amber-600 text-white border-0">{label}</Badge>;
+        return <Badge className="bg-amber-500 hover:bg-amber-600 text-foreground border-0">{label}</Badge>;
       case "NoCandidate":
         return <Badge variant="outline">{label}</Badge>;
       default:

@@ -266,5 +266,38 @@
       "verify_ui nav i18n PASS",
       "Self-heal login race"
     ]
+  },
+  "Phase39ThemeDBM": {
+    "name": "Phase39ThemeDBM",
+    "entityType": "Validation",
+    "observations": [
+      "dbm PASS 33/0 on 2026-07-23",
+      "Evidence: planning/evidence/phase_39_dbm/walkthrough.md + walkthrough-theme.webm + 10 shots",
+      "Self-heal: Issue badge assert, Auth hydrate, AuthGate wait, bg-[#111]->bg-card (9 files), verify a111",
+      "phase_39 §26 closed; IMPLEMENTATION_PLAN synced"
+    ]
+  },
+  "Phase39ThemeClosed": {
+    "name": "Phase39ThemeClosed",
+    "entityType": "Phase",
+    "observations": [
+      "rp4+rp5 PASS 2026-07-23",
+      "disk_reindex 42/0",
+      "dbm cite 33/0",
+      "DoD section14 10/10",
+      "docs CLOSED phase_39 section27-28",
+      "AUDIT UI ~8.5"
+    ]
+  },
+  "Phase40DialogWidth": {
+    "name": "Phase40DialogWidth",
+    "entityType": "Phase",
+    "observations": [
+      "95% Ready 2026-07-23 via /30-auto-project-planner",
+      "Option B convention D1-D6",
+      "P0: inbound create, outbound create, receive dialog",
+      "Trigger: truncated UOM in Create Inbound popup",
+      "SoT: planning/phases/phase_40_crud_dialog_form_width.md"
+    ]
   }
 }

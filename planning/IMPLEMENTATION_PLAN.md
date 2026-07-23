@@ -186,7 +186,8 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 36 | [Inventory Integrity L2-P0](file:///d:/1_Project/48_Nexustock/planning/phases/phase_36_inventory_integrity_l2_p0.md) | Hợp nhất allocation · invariant tồn · DF-01. **✅ ĐÓNG** (`rp4`+`rp5` Module DoD 100% · dbm · verify 14/0). |
 | 37 | [Go-Live L3 Customer Pilot](file:///d:/1_Project/48_Nexustock/planning/phases/phase_37_golive_l3_customer_pilot.md) | UAT · cutover · hypercare. **✅ Module DoD 100%** · `PILOT_READY_CONDITIONAL` (`rp4`+`rp5`). |
 | 38 | [UI Design System Pass](file:///d:/1_Project/48_Nexustock/planning/phases/phase_38_ui_design_system_pass.md) | Option B token + PageShell. **✅ ĐÓNG** (`rp4`+`rp5` · AUDIT ~8.2 · dbm 32/0). |
-| 39 | [Theme Light / Dark + System](file:///d:/1_Project/48_Nexustock/planning/phases/phase_39_theme_light_dark_system.md) | Option B · default **system** · next-themes · migrate hardcode. **✅ 100% Ready** (`rp1`) — chờ Proceed. |
+| 39 | [Theme Light / Dark + System](file:///d:/1_Project/48_Nexustock/planning/phases/phase_39_theme_light_dark_system.md) | Option B · default **system**. **✅ ĐÓNG** (`rp4`+`rp5` · AUDIT ~8.5 · dbm 33/0). |
+| 40 | [CRUD Dialog Form Width](file:///d:/1_Project/48_Nexustock/planning/phases/phase_40_crud_dialog_form_width.md) | Option B · nới/stack input trong popup CRUD. **🟡 95% Ready** (`/30-auto-project-planner`). |
 
 ---
 
@@ -237,7 +238,8 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 36 | Inventory Integrity L2-P0 | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-22. Disk FAIL=0; verify 14/0; dbm 13/0 + video; L2-P0 CLOSED. | 2026-07-22 | [phase_36 §25–§26](file:///d:/1_Project/48_Nexustock/planning/phases/phase_36_inventory_integrity_l2_p0.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_36_dbm/walkthrough.md) |
 | 37 | Go-Live L3 Customer Pilot | ✅ Hoàn thành | **Module DoD 100%** · `PILOT_READY_CONDITIONAL` (`rp4`+`rp5` 2026-07-22). verify_l3 **12/0**; dbm **21/0**; disk FAIL=0. Chờ FOUNDER ký. | 2026-07-22 | [phase_37 §25–§26](file:///d:/1_Project/48_Nexustock/planning/phases/phase_37_golive_l3_customer_pilot.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_37_rp45/validation_pass.md) |
 | 38 | UI Design System Pass | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-23. Disk FAIL=0; PageShell **56/57** (allowlist 1); verify_ui PASS; AUDIT ~**8.2**; **dbm 32/0**. | 2026-07-23 | [phase_38 §25–§26](file:///d:/1_Project/48_Nexustock/planning/phases/phase_38_ui_design_system_pass.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_38_rp45/validation_pass.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_38_dbm/walkthrough.md) |
-| 39 | Theme Light / Dark + System | ⬜ Chưa bắt đầu | Spec **100% Ready** (`rp1` 2026-07-23). Option B · default **system** · `next-themes` đã có · baseline hardcode. Dev-days 4–6. Chờ Proceed. | — | [phase_39 §22](file:///d:/1_Project/48_Nexustock/planning/phases/phase_39_theme_light_dark_system.md) · [baseline](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_39/baseline_hardcode.json) |
+| 39 | Theme Light / Dark + System | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-23. Disk **42/0**; default **system**; ThemeProvider + switcher Admin/Mobile; verify_theme PASS; AUDIT ~**8.5**; **dbm 33/0**. | 2026-07-23 | [phase_39 §25–§28](file:///d:/1_Project/48_Nexustock/planning/phases/phase_39_theme_light_dark_system.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_39_rp45/validation_pass.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_39_dbm/walkthrough.md) |
+| 40 | CRUD Dialog Form Width | 🟡 Spec sẵn sàng | **95% Ready** 2026-07-23. Inventory P0 inbound/outbound/receive; P1 modals `max-w-sm`; convention D1–D6; chờ Proceed. | — | [phase_40](file:///d:/1_Project/48_Nexustock/planning/phases/phase_40_crud_dialog_form_width.md) · [inventory](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_40/dialog_width_inventory.json) |
 
 ### Quy ước trạng thái
 
@@ -264,7 +266,8 @@ Các deep spec dưới đây **không chặn Phase 01**. Đây là danh sách n�
 | Trước Phase 36 | L2-P0 integrity deep spec | ✅ Phase 36 **Module DoD 100%** (`rp4`+`rp5` 2026-07-22) | Allocate SoT + CHECK on_hand + DF-01; verify 14/0; dbm 13/0; L2-P0 CLOSED. |
 | Trước Phase 37 | L3 pilot UAT/cutover pack | ✅ Phase 37 **Module DoD 100%** (`rp4`+`rp5` 2026-07-22) · `PILOT_READY_CONDITIONAL` | disk FAIL=0; verify_l3 12/0; dbm 21/0; chờ FOUNDER ký. |
 | Trước Phase 38 | UI Option B design system | ✅ Phase 38 **Module DoD 100%** (`rp4`+`rp5` 2026-07-23) | disk FAIL=0; AUDIT ~8.2; dbm 32/0; PageShell 56/57 + allowlist 1. |
-| Trước Phase 39 | Theme light/dark + system default | ✅ Spec **100% Ready** (`rp1` 2026-07-23) | Option B; default system; baseline JSON; chờ FOUNDER Proceed. |
+| Trước Phase 39 | Theme light/dark + system default | ✅ Phase 39 **Module DoD 100%** (`rp4`+`rp5` ĐÓNG 2026-07-23) | default system; verify_theme PASS; dbm 33/0; AUDIT ~8.5. |
+| Trước Phase 40 | Dialog CRUD form width inventory | ✅ Spec **95% Ready** (`/30-auto-project-planner` 2026-07-23) | P0 inbound/outbound/receive; convention D1–D6; chờ Proceed. |
 
 ### Nguyên tắc dùng backlog
 

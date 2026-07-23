@@ -92,13 +92,13 @@ export default function ZonesPage() {
       columns={[
         { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
         { key: "name", label: t("columns.name"), render: (item) => item.name },
-        { key: "warehouse", label: t("columns.warehouse"), render: (item) => <span className="text-white/50">{item.warehouseCode}</span> },
+        { key: "warehouse", label: t("columns.warehouse"), render: (item) => <span className="text-foreground/50">{item.warehouseCode}</span> },
         { key: "zoneType", label: t("columns.zoneType"), render: (item) => item.zoneType },
         {
           key: "isLocked",
           label: t("columns.status"),
           render: (item) => (
-            <span className={item.isLocked ? "text-yellow-400" : "text-white/40"}>
+            <span className={item.isLocked ? "text-yellow-400" : "text-foreground/40"}>
               {item.isLocked ? ts("status.locked") : ts("status.open")}
             </span>
           ),

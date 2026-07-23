@@ -221,16 +221,16 @@ export default function MovementPage() {
             <div className="space-y-2 text-xs font-mono text-muted-foreground border-b border-border/60 pb-3">
               <div>
                 {t("labels.fromLoc")}{" "}
-                <span className="text-white font-bold">{fromLoc || dash}</span>
+                <span className="text-foreground font-bold">{fromLoc || dash}</span>
               </div>
               <div>
-                {t("labels.lotNo")} <span className="text-white font-bold">{lotNo || dash}</span>
+                {t("labels.lotNo")} <span className="text-foreground font-bold">{lotNo || dash}</span>
               </div>
               <div>
-                {t("labels.qty")} <span className="text-white font-bold">{qty || dash}</span>
+                {t("labels.qty")} <span className="text-foreground font-bold">{qty || dash}</span>
               </div>
               <div>
-                {t("labels.toLoc")} <span className="text-white font-bold">{toLoc || dash}</span>
+                {t("labels.toLoc")} <span className="text-foreground font-bold">{toLoc || dash}</span>
               </div>
             </div>
 
@@ -265,10 +265,10 @@ export default function MovementPage() {
                     value={qty}
                     onChange={(e) => setQty(e.target.value)}
                     placeholder={t("fields.qtyPlaceholder")}
-                    className="bg-muted border-border text-white font-mono text-lg"
+                    className="bg-muted border-border text-foreground font-mono text-lg"
                   />
                 </div>
-                <Button onClick={handleInputQty} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                <Button onClick={handleInputQty} className="w-full bg-blue-600 hover:bg-blue-700 text-foreground font-bold">
                   {t("actions.next")}
                 </Button>
               </div>
@@ -285,16 +285,16 @@ export default function MovementPage() {
 
             {currentStep === "CONFIRM" && (
               <div className="space-y-4 pt-2">
-                <div className="bg-slate-850 p-4 rounded text-sm space-y-2 text-slate-200 border border-border">
-                  <div className="text-center font-bold text-base text-blue-400 mb-2">{t("labels.confirmTitle")}</div>
+                <div className="bg-muted p-4 rounded text-sm space-y-2 text-foreground border border-border">
+                  <div className="text-center font-bold text-base text-blue-600 dark:text-blue-400 mb-2">{t("labels.confirmTitle")}</div>
                   <div>
-                    {t("labels.fromShelf")} <span className="font-bold text-white font-mono">{fromLoc}</span>
+                    {t("labels.fromShelf")} <span className="font-bold text-foreground font-mono">{fromLoc}</span>
                   </div>
                   <div>
-                    {t("labels.toShelf")} <span className="font-bold text-white font-mono">{toLoc}</span>
+                    {t("labels.toShelf")} <span className="font-bold text-foreground font-mono">{toLoc}</span>
                   </div>
                   <div>
-                    {t("labels.lot")} <span className="font-bold text-white font-mono">{lotNo}</span>
+                    {t("labels.lot")} <span className="font-bold text-foreground font-mono">{lotNo}</span>
                   </div>
                   <div>
                     {t("labels.quantity")} <span className="font-bold text-emerald-400 font-mono">{qty}</span>
@@ -308,7 +308,7 @@ export default function MovementPage() {
                   <Button
                     onClick={handleConfirmMovement}
                     disabled={loading}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold"
                   >
                     {loading ? t("actions.processing") : isOnline ? t("actions.confirm") : t("actions.saveOffline")}
                   </Button>

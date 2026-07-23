@@ -275,7 +275,7 @@ export default function LpnPage() {
           <Button
             onClick={fetchLpns}
             variant="outline"
-            className="border-border hover:bg-muted text-zinc-300 h-9 px-4 flex items-center gap-2"
+            className="border-border hover:bg-muted text-muted-foreground h-9 px-4 flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${loadingLpns ? "animate-spin" : ""}`} />
             {t("refresh")}
@@ -285,7 +285,7 @@ export default function LpnPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 flex flex-col gap-6">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Plus className="h-4 w-4 text-emerald-500" />
@@ -301,7 +301,7 @@ export default function LpnPage() {
                     placeholder={t("lpnNoPlaceholder")}
                     value={newLpn.lpnNo}
                     onChange={(e) => setNewLpn({ ...newLpn, lpnNo: e.target.value.toUpperCase() })}
-                    className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
+                    className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -309,7 +309,7 @@ export default function LpnPage() {
                   <select
                     value={newLpn.locationId}
                     onChange={(e) => setNewLpn({ ...newLpn, locationId: e.target.value })}
-                    className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                    className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                   >
                     <option value="">{t("selectLocation")}</option>
                     {locations.map((l) => (
@@ -319,14 +319,14 @@ export default function LpnPage() {
                     ))}
                   </select>
                 </div>
-                <Button type="submit" disabled={submittingLpn} className="bg-emerald-600 hover:bg-emerald-500 text-white w-full h-9 text-xs rounded">
+                <Button type="submit" disabled={submittingLpn} className="bg-emerald-600 hover:bg-emerald-500 text-foreground w-full h-9 text-xs rounded">
                   {submittingLpn ? t("creating") : t("createLpn")}
                 </Button>
               </form>
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader>
               <CardTitle className="text-sm font-semibold">{t("listTitle")}</CardTitle>
             </CardHeader>
@@ -346,12 +346,12 @@ export default function LpnPage() {
                       }`}
                     >
                       <div className="flex flex-col gap-1">
-                        <span className="font-bold text-zinc-200 font-mono">{lpn.lpnNo}</span>
+                        <span className="font-bold text-foreground font-mono">{lpn.lpnNo}</span>
                         <span className="text-[10px] text-muted-foreground">
                           {t("locationPrefix")} {getLocationCode(lpn.locationId)}
                         </span>
                       </div>
-                      <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] scale-90">{lpn.status}</Badge>
+                      <Badge className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-[9px] scale-90">{lpn.status}</Badge>
                     </button>
                   ))}
                 </div>
@@ -367,24 +367,24 @@ export default function LpnPage() {
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">{t("selectedLabel")}</span>
                   <h2 className="text-xl font-bold font-mono text-emerald-400">{selectedLpn.lpnNo}</h2>
-                  <span className="text-xs text-zinc-300">
+                  <span className="text-xs text-muted-foreground">
                     {t("locationPrefix")}{" "}
-                    <span className="font-mono font-bold text-white">{getLocationCode(selectedLpn.locationId)}</span>
+                    <span className="font-mono font-bold text-foreground">{getLocationCode(selectedLpn.locationId)}</span>
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Button onClick={() => setShowAttachModal(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4 flex items-center gap-2">
+                  <Button onClick={() => setShowAttachModal(true)} className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-8 px-4 flex items-center gap-2">
                     <LogIn className="h-4 w-4" />
                     {t("attachBtn")}
                   </Button>
-                  <Button onClick={() => setShowMoveModal(true)} variant="outline" className="border-border hover:bg-muted text-zinc-300 text-xs h-8 px-4 flex items-center gap-2">
+                  <Button onClick={() => setShowMoveModal(true)} variant="outline" className="border-border hover:bg-muted text-muted-foreground text-xs h-8 px-4 flex items-center gap-2">
                     <ArrowRight className="h-4 w-4 text-emerald-500" />
                     {t("moveBtn")}
                   </Button>
                 </div>
               </div>
 
-              <Card className="bg-card border-border text-white">
+              <Card className="bg-card border-border text-foreground">
                 <CardHeader>
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
                     <ClipboardList className="h-4 w-4 text-emerald-500" />
@@ -411,11 +411,11 @@ export default function LpnPage() {
                       <TableBody>
                         {lpnItems.map((item) => (
                           <TableRow key={item.id} className="border-b border-border/50 hover:bg-muted/30">
-                            <TableCell className="font-semibold text-zinc-300">
+                            <TableCell className="font-semibold text-muted-foreground">
                               {item.itemCode} - {item.itemName}
                             </TableCell>
-                            <TableCell className="text-zinc-300 font-mono">{item.lotNo}</TableCell>
-                            <TableCell className="text-right font-bold text-white">{item.qtyOnHand}</TableCell>
+                            <TableCell className="text-muted-foreground font-mono">{item.lotNo}</TableCell>
+                            <TableCell className="text-right font-bold text-foreground">{item.qtyOnHand}</TableCell>
                             <TableCell className="text-right text-amber-500">{item.qtyReserved}</TableCell>
                             <TableCell className="text-right text-emerald-400 font-bold">{item.qtyAvailable}</TableCell>
                             <TableCell className="text-center">
@@ -435,7 +435,7 @@ export default function LpnPage() {
                 </CardContent>
               </Card>
 
-              <Card className="bg-card border-border text-white">
+              <Card className="bg-card border-border text-foreground">
                 <CardHeader>
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
                     <Settings className="h-4 w-4 text-emerald-500" />
@@ -456,7 +456,7 @@ export default function LpnPage() {
                           </div>
                           <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
-                              <Badge className="bg-muted text-zinc-300 text-[9px] hover:bg-muted scale-90 px-2 py-0.5">
+                              <Badge className="bg-muted text-muted-foreground text-[9px] hover:bg-muted scale-90 px-2 py-0.5">
                                 {evt.eventType}
                               </Badge>
                               <span className="text-[10px] text-muted-foreground">
@@ -466,7 +466,7 @@ export default function LpnPage() {
                                 })}
                               </span>
                             </div>
-                            <p className="text-zinc-300">{renderEventMessage(evt)}</p>
+                            <p className="text-muted-foreground">{renderEventMessage(evt)}</p>
                           </div>
                         </div>
                       ))}
@@ -486,13 +486,13 @@ export default function LpnPage() {
 
       {showAttachModal && selectedLpn && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
+          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-foreground shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <LogIn className="h-4 w-4 text-emerald-500" />
                 {t("attachDialogTitle", { lpnNo: selectedLpn.lpnNo })}
               </h3>
-              <button onClick={() => setShowAttachModal(false)} className="text-muted-foreground hover:text-white transition-all">
+              <button onClick={() => setShowAttachModal(false)} className="text-muted-foreground hover:text-foreground transition-all">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -502,7 +502,7 @@ export default function LpnPage() {
                 <select
                   value={attachForm.itemId}
                   onChange={(e) => setAttachForm({ ...attachForm, itemId: e.target.value })}
-                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                  className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                 >
                   <option value="">{t("selectProduct")}</option>
                   {products.map((p) => (
@@ -520,7 +520,7 @@ export default function LpnPage() {
                   placeholder={t("lotNoPlaceholder")}
                   value={attachForm.lotNo}
                   onChange={(e) => setAttachForm({ ...attachForm, lotNo: e.target.value })}
-                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                  className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                 />
               </div>
 
@@ -530,15 +530,15 @@ export default function LpnPage() {
                   type="number"
                   value={attachForm.qty}
                   onChange={(e) => setAttachForm({ ...attachForm, qty: parseFloat(e.target.value) || 0 })}
-                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-bold"
+                  className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full font-bold"
                 />
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button type="button" onClick={() => setShowAttachModal(false)} variant="outline" className="border-border hover:bg-muted text-zinc-300 text-xs h-8 px-4">
+                <Button type="button" onClick={() => setShowAttachModal(false)} variant="outline" className="border-border hover:bg-muted text-muted-foreground text-xs h-8 px-4">
                   {tc("cancel")}
                 </Button>
-                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4">
+                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-8 px-4">
                   {t("attachBtn2")}
                 </Button>
               </div>
@@ -549,13 +549,13 @@ export default function LpnPage() {
 
       {showMoveModal && selectedLpn && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
+          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-foreground shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <ArrowRight className="h-4 w-4 text-emerald-500" />
                 {t("moveDialogTitle", { lpnNo: selectedLpn.lpnNo })}
               </h3>
-              <button onClick={() => setShowMoveModal(false)} className="text-muted-foreground hover:text-white transition-all">
+              <button onClick={() => setShowMoveModal(false)} className="text-muted-foreground hover:text-foreground transition-all">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -565,7 +565,7 @@ export default function LpnPage() {
                 <select
                   value={moveLocationId}
                   onChange={(e) => setMoveLocationId(e.target.value)}
-                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                  className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                 >
                   <option value="">{t("selectTargetLocation")}</option>
                   {locations
@@ -579,10 +579,10 @@ export default function LpnPage() {
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
-                <Button onClick={() => setShowMoveModal(false)} variant="outline" className="border-border hover:bg-muted text-zinc-300 text-xs h-8 px-4">
+                <Button onClick={() => setShowMoveModal(false)} variant="outline" className="border-border hover:bg-muted text-muted-foreground text-xs h-8 px-4">
                   {tc("cancel")}
                 </Button>
-                <Button onClick={handleMoveLpn} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4">
+                <Button onClick={handleMoveLpn} className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-8 px-4">
                   {tc("confirm")}
                 </Button>
               </div>

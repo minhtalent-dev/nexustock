@@ -122,7 +122,7 @@ export default function TimelinePage() {
     <PageShell className="gap-6">
       <div className="p-6 space-y-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">{t("title")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("title")}</h1>
         <p className="text-muted-foreground text-sm mt-1">{t("subtitle")}</p>
       </div>
 
@@ -132,7 +132,7 @@ export default function TimelinePage() {
             <SelectTrigger id="timeline-entity-filter" className="bg-[#0f0f11]/60 border-border">
               <SelectValue placeholder={t("entityPlaceholder")} />
             </SelectTrigger>
-            <SelectContent className="bg-[#151518] border-border text-white">
+            <SelectContent className="bg-[#151518] border-border text-foreground">
               <SelectItem value="all">{t("allEntities")}</SelectItem>
               <SelectItem value="InboundOrder">{t("entityInboundOrder")}</SelectItem>
               <SelectItem value="Shipment">{t("entityShipment")}</SelectItem>
@@ -148,7 +148,7 @@ export default function TimelinePage() {
             <SelectTrigger id="timeline-severity-filter" className="bg-[#0f0f11]/60 border-border">
               <SelectValue placeholder={t("severityPlaceholder")} />
             </SelectTrigger>
-            <SelectContent className="bg-[#151518] border-border text-white">
+            <SelectContent className="bg-[#151518] border-border text-foreground">
               <SelectItem value="all">{t("allSeverities")}</SelectItem>
               <SelectItem value="info">{t("severityInfo")}</SelectItem>
               <SelectItem value="warning">{t("severityWarning")}</SelectItem>
@@ -162,7 +162,7 @@ export default function TimelinePage() {
           placeholder={t("traceFilterPlaceholder")}
           value={traceId}
           onChange={(e) => { setTraceId(e.target.value); setPage(1); }}
-          className="w-64 bg-[#0f0f11]/60 border-border placeholder-zinc-600 rounded-lg text-white"
+          className="w-64 bg-[#0f0f11]/60 border-border placeholder-zinc-600 rounded-lg text-foreground"
         />
 
         <Button variant="outline" size="sm" onClick={handleRefresh} className="rounded-lg border-border">
@@ -186,7 +186,7 @@ export default function TimelinePage() {
                   <div className="flex-1 space-y-2">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-zinc-200 font-semibold text-sm">{item.title}</span>
+                        <span className="text-foreground font-semibold text-sm">{item.title}</span>
                         <Badge variant="outline" className={getSeverityColor(item.severity)}>
                           {item.severity}
                         </Badge>
@@ -288,7 +288,7 @@ export default function TimelinePage() {
       </Card>
 
       <Dialog open={selectedTraceId !== null} onOpenChange={(open) => !open && setSelectedTraceId(null)}>
-        <DialogContent className="max-w-4xl bg-[#0f0f11] border-border text-white rounded-xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl bg-[#0f0f11] border-border text-foreground rounded-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
               <GitFork className="h-5 w-5 text-emerald-400" /> {t("traceDialogTitle")}
@@ -303,7 +303,7 @@ export default function TimelinePage() {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-zinc-200">{t("technicalLogs")}</h3>
+                <h3 className="text-sm font-semibold text-foreground">{t("technicalLogs")}</h3>
                 {traceDetail.traceLogs.length === 0 ? (
                   <p className="text-xs text-muted-foreground italic p-3 bg-background/10 border border-zinc-850 rounded-lg">{t("noTechnicalLogs")}</p>
                 ) : (
@@ -331,7 +331,7 @@ export default function TimelinePage() {
                             <TableCell className="text-[10px] text-muted-foreground py-1.5 font-mono">
                               {l.spanName} ({l.source})
                             </TableCell>
-                            <TableCell className="text-xs text-zinc-300 py-1.5 leading-relaxed">
+                            <TableCell className="text-xs text-muted-foreground py-1.5 leading-relaxed">
                               {l.message}
                             </TableCell>
                           </TableRow>
@@ -343,7 +343,7 @@ export default function TimelinePage() {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-zinc-200">{t("businessEvents")}</h3>
+                <h3 className="text-sm font-semibold text-foreground">{t("businessEvents")}</h3>
                 {traceDetail.timelineEntries.length === 0 ? (
                   <p className="text-xs text-muted-foreground italic p-3 bg-background/10 border border-zinc-850 rounded-lg">{t("noBusinessEvents")}</p>
                 ) : (
@@ -352,7 +352,7 @@ export default function TimelinePage() {
                       <div key={e.id} className="relative pl-5 border-l border-border pb-2 text-xs">
                         <div className="absolute left-[-3.5px] top-1.5 h-1.5 w-1.5 rounded-full bg-emerald-400" />
                         <div className="flex justify-between items-center gap-2">
-                          <span className="font-semibold text-zinc-300">{e.title}</span>
+                          <span className="font-semibold text-muted-foreground">{e.title}</span>
                           <span className="text-[10px] text-muted-foreground">{new Date(e.createdAt).toLocaleString("vi-VN")}</span>
                         </div>
                         {e.description && <p className="text-muted-foreground mt-0.5 leading-relaxed">{e.description}</p>}
@@ -366,7 +366,7 @@ export default function TimelinePage() {
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-zinc-200">{t("webhookTransactions")}</h3>
+                <h3 className="text-sm font-semibold text-foreground">{t("webhookTransactions")}</h3>
                 {traceDetail.webhookDeliveries.length === 0 ? (
                   <p className="text-xs text-muted-foreground italic p-3 bg-background/10 border border-zinc-850 rounded-lg">{t("noWebhookTransactions")}</p>
                 ) : (
@@ -390,8 +390,8 @@ export default function TimelinePage() {
                                 {w.status}
                               </Badge>
                             </TableCell>
-                            <TableCell className="text-xs text-zinc-300 py-1.5">{w.retryCount}</TableCell>
-                            <TableCell className="text-xs text-zinc-300 py-1.5">{w.lastResponseCode ?? "—"}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground py-1.5">{w.retryCount}</TableCell>
+                            <TableCell className="text-xs text-muted-foreground py-1.5">{w.lastResponseCode ?? "—"}</TableCell>
                             <TableCell className="text-[10px] text-red-400 py-1.5 max-w-[200px] truncate" title={w.lastError}>
                               {w.lastError ?? "—"}
                             </TableCell>

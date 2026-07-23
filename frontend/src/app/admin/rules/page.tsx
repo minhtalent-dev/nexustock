@@ -182,9 +182,9 @@ export default function RulesPage() {
   const getActionBadge = (action: string) => {
     switch (action) {
       case "ALLOW":
-        return <Badge className="bg-green-600 hover:bg-green-700 text-white">ALLOW</Badge>;
+        return <Badge className="bg-green-600 hover:bg-green-700 text-foreground">ALLOW</Badge>;
       case "WARN":
-        return <Badge className="bg-yellow-600 hover:bg-yellow-700 text-white">WARN</Badge>;
+        return <Badge className="bg-yellow-600 hover:bg-yellow-700 text-foreground">WARN</Badge>;
       case "BLOCK":
         return <Badge variant="destructive">BLOCK</Badge>;
       default:

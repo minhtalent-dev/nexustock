@@ -1,0 +1,28 @@
+{
+  "runId": "wfr_0f8d6da49c994a99a59e",
+  "workflowId": "20-call-mcp",
+  "class": "meta",
+  "status": "completed",
+  "planRef": "planning/phases/phase_35_admin_nav_ops_modules_lens.md",
+  "planHash": "sha256:55db43a1b9be4a526c5d074d642ffe6a486705c2722a220de9d0628703a1e66d",
+  "phaseId": "phase_39",
+  "startedAt": "2026-07-23T02:26:25.809Z",
+  "finishedAt": "2026-07-23T02:32:54.771Z",
+  "steps": [
+    {
+      "name": "start",
+      "at": "2026-07-23T02:26:25.809Z"
+    },
+    {
+      "name": "completed",
+      "at": "2026-07-23T02:32:54.771Z"
+    }
+  ],
+  "evidence": [
+    "planning/evidence/phase_39_dbm/walkthrough.md",
+    "planning/evidence/phase_39_dbm/results.json",
+    "planning/phases/phase_39_theme_light_dark_system.md#26"
+  ],
+  "decidedBy": "JARVIS",
+  "uxHint": null
+}

@@ -94,7 +94,7 @@ export default function MobileMenuPage() {
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-background rounded-lg">{item.icon}</div>
                     <div className="text-left">
-                      <div className="font-semibold text-sm text-white">{item.title}</div>
+                      <div className="font-semibold text-sm text-foreground">{item.title}</div>
                       <div className="text-xs text-muted-foreground">{item.description}</div>
                     </div>
                   </div>

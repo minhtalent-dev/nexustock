@@ -80,7 +80,11 @@
       "permissionsEmpty": "No matching permissions",
       "permissionsLoading": "Loading…",
       "uncategorized": "Other",
-      "language": "Language"
+      "language": "Language",
+      "themeLabel": "Theme",
+      "themeSystem": "System",
+      "themeLight": "Light",
+      "themeDark": "Dark"
     }
   }
 }

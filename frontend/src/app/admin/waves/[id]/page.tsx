@@ -110,13 +110,13 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "DRAFT":
-        return <Badge className="bg-zinc-700 hover:bg-zinc-600 text-zinc-200">{t("statusDraft")}</Badge>;
+        return <Badge className="bg-zinc-700 hover:bg-zinc-600 text-foreground">{t("statusDraft")}</Badge>;
       case "RELEASED":
-        return <Badge className="bg-blue-600 hover:bg-blue-500 text-white">{t("statusReleased")}</Badge>;
+        return <Badge className="bg-blue-600 hover:bg-blue-500 text-foreground">{t("statusReleased")}</Badge>;
       case "SORTING":
-        return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">{t("statusSorting")}</Badge>;
+        return <Badge className="bg-amber-600 hover:bg-amber-500 text-foreground">{t("statusSorting")}</Badge>;
       case "COMPLETED":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">{t("statusCompleted")}</Badge>;
+        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-foreground">{t("statusCompleted")}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -135,7 +135,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link href="/admin/waves">
-            <Button variant="outline" className="border-border hover:bg-muted text-zinc-300 h-9 w-9 p-0">
+            <Button variant="outline" className="border-border hover:bg-muted text-muted-foreground h-9 w-9 p-0">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
@@ -158,7 +158,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
             <Button
               onClick={handleReleaseWave}
               disabled={processing}
-              className="bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 h-9 text-xs px-4"
+              className="bg-indigo-600 hover:bg-indigo-500 text-foreground flex items-center gap-2 h-9 text-xs px-4"
             >
               <Play className="h-4 w-4" />
               {t("releaseWave")}
@@ -169,7 +169,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
             <Button
               onClick={handleCompleteWave}
               disabled={processing}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 h-9 text-xs px-4"
+              className="bg-emerald-600 hover:bg-emerald-500 text-foreground flex items-center gap-2 h-9 text-xs px-4"
             >
               <CheckSquare className="h-4 w-4" />
               {t("completeSorting")}
@@ -178,7 +178,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
 
           {(wave.status === "SORTING" || wave.status === "RELEASED" || wave.status === "COMPLETED") && (
             <Link href={`/admin/waves/${wave.id}/put-wall`}>
-              <Button className="bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-2 h-9 text-xs px-4">
+              <Button className="bg-amber-600 hover:bg-amber-500 text-foreground flex items-center gap-2 h-9 text-xs px-4">
                 <LayoutGrid className="h-4 w-4" />
                 {t("putWallDynamic")}
               </Button>
@@ -188,7 +188,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
           <Button
             onClick={fetchWaveDetails}
             variant="outline"
-            className="border-border hover:bg-muted text-zinc-300 h-9 px-4 flex items-center gap-2 text-xs"
+            className="border-border hover:bg-muted text-muted-foreground h-9 px-4 flex items-center gap-2 text-xs"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             {tc("refresh")}
@@ -197,7 +197,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-card border-border text-white">
+        <Card className="bg-card border-border text-foreground">
           <CardHeader className="border-b border-border pb-3">
             <CardTitle className="text-xs font-semibold text-muted-foreground">{t("statusCardTitle")}</CardTitle>
           </CardHeader>
@@ -219,8 +219,8 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="flex flex-col gap-4">
-        <h2 className="text-base font-bold text-zinc-300">{t("pickTasksTitle")}</h2>
-        <Card className="bg-card border-border text-white">
+        <h2 className="text-base font-bold text-muted-foreground">{t("pickTasksTitle")}</h2>
+        <Card className="bg-card border-border text-foreground">
           <CardContent className="p-0">
             {wave.pickTasks.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground text-xs">{t("noPickTasks")}</div>
@@ -239,11 +239,11 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
                 <TableBody>
                   {wave.pickTasks.map((task) => (
                     <TableRow key={task.id} className="border-b border-border/50 hover:bg-muted/20">
-                      <TableCell className="text-zinc-200 font-bold">{task.itemName}</TableCell>
+                      <TableCell className="text-foreground font-bold">{task.itemName}</TableCell>
                       <TableCell className="text-muted-foreground font-mono">{task.itemCode}</TableCell>
                       <TableCell className="text-indigo-400 font-bold font-mono">{task.locationCode}</TableCell>
-                      <TableCell className="text-right text-zinc-300 font-bold">{task.qtyToPick.toLocaleString()}</TableCell>
-                      <TableCell className="text-right text-zinc-300 font-bold">{task.qtyPicked.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-muted-foreground font-bold">{task.qtyToPick.toLocaleString()}</TableCell>
+                      <TableCell className="text-right text-muted-foreground font-bold">{task.qtyPicked.toLocaleString()}</TableCell>
                       <TableCell>
                         <Badge
                           variant="outline"
@@ -262,8 +262,8 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
       </div>
 
       <div className="flex flex-col gap-4">
-        <h2 className="text-base font-bold text-zinc-300">{t("waveItemsTitle")}</h2>
-        <Card className="bg-card border-border text-white">
+        <h2 className="text-base font-bold text-muted-foreground">{t("waveItemsTitle")}</h2>
+        <Card className="bg-card border-border text-foreground">
           <CardContent className="p-0">
             <Table className="text-xs">
               <TableHeader className="border-b border-border">
@@ -280,25 +280,25 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
               <TableBody>
                 {wave.items.map((i) => (
                   <TableRow key={i.id} className="border-b border-border/50 hover:bg-muted/20">
-                    <TableCell className="font-bold text-zinc-200 font-mono">{i.shipmentNo}</TableCell>
+                    <TableCell className="font-bold text-foreground font-mono">{i.shipmentNo}</TableCell>
                     <TableCell>
                       {i.recommendedSlotNumber ? (
-                        <Badge className="bg-amber-600 text-white font-mono">
+                        <Badge className="bg-amber-600 text-foreground font-mono">
                           {t("slotLabel", { number: i.recommendedSlotNumber })}
                         </Badge>
                       ) : (
                         <span className="text-muted-foreground italic">{t("notAssigned")}</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-zinc-300">
+                    <TableCell className="text-muted-foreground">
                       {i.itemName} <span className="text-muted-foreground text-[10px] font-mono">({i.itemCode})</span>
                     </TableCell>
-                    <TableCell className="text-right text-zinc-300">
+                    <TableCell className="text-right text-muted-foreground">
                       {i.qtyExpected.toLocaleString()} {i.uomName}
                     </TableCell>
-                    <TableCell className="text-right text-zinc-300">{i.qtyAllocated.toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-zinc-300 font-bold">{i.qtyPicked.toLocaleString()}</TableCell>
-                    <TableCell className="text-right text-zinc-300 font-bold text-emerald-400">{i.qtySorted.toLocaleString()}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{i.qtyAllocated.toLocaleString()}</TableCell>
+                    <TableCell className="text-right text-muted-foreground font-bold">{i.qtyPicked.toLocaleString()}</TableCell>
+                    <TableCell className="text-right text-muted-foreground font-bold text-emerald-400">{i.qtySorted.toLocaleString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

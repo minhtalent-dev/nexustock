@@ -120,7 +120,7 @@ export default function AlertCenterPage() {
     <PageShell className="gap-6">
       <div className="p-6 space-y-4">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">{t("title")}</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("title")}</h1>
         <p className="text-muted-foreground text-sm mt-1">{t("subtitle")}</p>
       </div>
 
@@ -130,7 +130,7 @@ export default function AlertCenterPage() {
             <SelectTrigger id="alert-status-filter" className="bg-[#0f0f11]/60 border-border">
               <SelectValue placeholder={t("statusPlaceholder")} />
             </SelectTrigger>
-            <SelectContent className="bg-[#151518] border-border text-white">
+            <SelectContent className="bg-[#151518] border-border text-foreground">
               <SelectItem value="all">{t("allStatuses")}</SelectItem>
               <SelectItem value="open">{t("statusOpen")}</SelectItem>
               <SelectItem value="acknowledged">{t("statusAcknowledged")}</SelectItem>
@@ -144,7 +144,7 @@ export default function AlertCenterPage() {
             <SelectTrigger id="alert-severity-filter" className="bg-[#0f0f11]/60 border-border">
               <SelectValue placeholder={t("severityPlaceholder")} />
             </SelectTrigger>
-            <SelectContent className="bg-[#151518] border-border text-white">
+            <SelectContent className="bg-[#151518] border-border text-foreground">
               <SelectItem value="all">{t("allSeverities")}</SelectItem>
               <SelectItem value="warning">{t("severityWarning")}</SelectItem>
               <SelectItem value="critical">{t("severityCritical")}</SelectItem>
@@ -159,7 +159,7 @@ export default function AlertCenterPage() {
 
       <Card className="border-border/80 bg-[#0f0f11]/40 rounded-xl">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-white">{t("listTitle", { total })}</CardTitle>
+          <CardTitle className="text-lg font-semibold text-foreground">{t("listTitle", { total })}</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -193,10 +193,10 @@ export default function AlertCenterPage() {
                         onClick={() => setSelectedAlert(a)}
                         className="cursor-pointer border-border/60 hover:bg-muted/20 transition-colors"
                       >
-                        <TableCell className="font-semibold text-zinc-200">{a.title}</TableCell>
+                        <TableCell className="font-semibold text-foreground">{a.title}</TableCell>
                         <TableCell>{getSeverityBadge(a.severity)}</TableCell>
                         <TableCell>{getStatusBadge(a.status)}</TableCell>
-                        <TableCell className="font-mono text-zinc-300">
+                        <TableCell className="font-mono text-muted-foreground">
                           {a.metricValue !== undefined ? `${a.metricValue}/${a.thresholdValue ?? "—"}` : "—"}
                         </TableCell>
                         <TableCell className="text-muted-foreground">{a.sourceModule}</TableCell>
@@ -264,7 +264,7 @@ export default function AlertCenterPage() {
       </Card>
 
       <Dialog open={!!selectedAlert && actionType === null} onOpenChange={(open) => !open && setSelectedAlert(null)}>
-        <DialogContent className="max-w-2xl bg-[#0f0f11] border-border text-white rounded-xl">
+        <DialogContent className="max-w-2xl bg-[#0f0f11] border-border text-foreground rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-red-500" /> {t("detailTitle")}
@@ -286,7 +286,7 @@ export default function AlertCenterPage() {
                 </div>
                 <div>
                   <span className="text-muted-foreground text-xs block">{t("sourceModule")}</span>
-                  <span className="text-zinc-200 text-sm font-semibold">{selectedAlert.sourceModule}</span>
+                  <span className="text-foreground text-sm font-semibold">{selectedAlert.sourceModule}</span>
                 </div>
                 {selectedAlert.traceId && (
                   <div>
@@ -298,7 +298,7 @@ export default function AlertCenterPage() {
 
               <div>
                 <Label className="text-muted-foreground text-xs">{t("messageInfo")}</Label>
-                <p className="text-zinc-200 text-sm mt-1 bg-background/20 p-3 rounded-lg border border-zinc-850">{selectedAlert.message}</p>
+                <p className="text-foreground text-sm mt-1 bg-background/20 p-3 rounded-lg border border-zinc-850">{selectedAlert.message}</p>
               </div>
 
               {(selectedAlert.acknowledgedAt || selectedAlert.resolvedAt) && (
@@ -340,13 +340,13 @@ export default function AlertCenterPage() {
                 )}
                 {(selectedAlert.status === "open" || selectedAlert.status === "acknowledged") && (
                   <Button
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-foreground rounded-lg"
                     onClick={() => setActionType("resolve")}
                   >
                     {t("resolveAlert")}
                   </Button>
                 )}
-                <Button variant="outline" className="border-border text-zinc-300 rounded-lg" onClick={() => setSelectedAlert(null)}>
+                <Button variant="outline" className="border-border text-muted-foreground rounded-lg" onClick={() => setSelectedAlert(null)}>
                   {tc("close")}
                 </Button>
               </DialogFooter>
@@ -356,7 +356,7 @@ export default function AlertCenterPage() {
       </Dialog>
 
       <Dialog open={actionType !== null} onOpenChange={(open) => !open && setActionType(null)}>
-        <DialogContent className="max-w-md bg-[#0f0f11] border-border text-white rounded-xl">
+        <DialogContent className="max-w-md bg-[#0f0f11] border-border text-foreground rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
               {actionType === "ack" ? (
@@ -371,7 +371,7 @@ export default function AlertCenterPage() {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <p className="text-sm text-zinc-300">
+            <p className="text-sm text-muted-foreground">
               {actionType === "ack" ? t("ackDialogHint") : t("resolveDialogHint")}
             </p>
             <div className="space-y-1.5">
@@ -381,13 +381,13 @@ export default function AlertCenterPage() {
                 placeholder={t("notePlaceholder")}
                 value={actionNote}
                 onChange={(e) => setActionNote(e.target.value)}
-                className="bg-[#151518] border-border text-white rounded-lg placeholder-zinc-600"
+                className="bg-[#151518] border-border text-foreground rounded-lg placeholder-zinc-600"
               />
             </div>
             <DialogFooter className="gap-2">
               <Button
                 variant="outline"
-                className="border-border text-zinc-300 rounded-lg"
+                className="border-border text-muted-foreground rounded-lg"
                 onClick={() => { setActionType(null); setActionNote(""); }}
                 disabled={actionLoading}
               >
@@ -396,7 +396,7 @@ export default function AlertCenterPage() {
               <Button
                 onClick={handleActionSubmit}
                 disabled={actionLoading}
-                className={actionType === "ack" ? "bg-amber-600 hover:bg-amber-700 text-white rounded-lg" : "bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"}
+                className={actionType === "ack" ? "bg-amber-600 hover:bg-amber-700 text-foreground rounded-lg" : "bg-emerald-600 hover:bg-emerald-700 text-foreground rounded-lg"}
               >
                 {actionLoading ? tc("processing") : tc("confirm")}
               </Button>

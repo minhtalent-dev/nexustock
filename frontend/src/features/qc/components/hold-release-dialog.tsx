@@ -88,35 +88,35 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px] bg-zinc-900 border-zinc-800 text-white font-sans">
+      <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground font-sans">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-white">{getTitle()}</DialogTitle>
+            <DialogTitle className="text-lg font-semibold text-foreground">{getTitle()}</DialogTitle>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             {mode === "hold" && (
               <div className="grid gap-2">
-                <Label htmlFor="locationId" className="text-xs text-zinc-400">{t("holdLocationOptional")}</Label>
+                <Label htmlFor="locationId" className="text-xs text-muted-foreground">{t("holdLocationOptional")}</Label>
                 <Input
                   id="locationId"
                   placeholder={t("holdLocationPlaceholder")}
                   value={locationId}
                   onChange={(e) => setLocationId(e.target.value)}
-                  className="bg-zinc-800 border-zinc-700 text-white h-9 text-sm focus:ring-emerald-500"
+                  className="bg-zinc-800 border-zinc-700 text-foreground h-9 text-sm focus:ring-emerald-500"
                 />
               </div>
             )}
 
             <div className="grid gap-2">
-              <Label htmlFor="reasonCode" className="text-xs text-zinc-400">{t("reasonCode")}</Label>
+              <Label htmlFor="reasonCode" className="text-xs text-muted-foreground">{t("reasonCode")}</Label>
               <Input
                 id="reasonCode"
                 placeholder={mode === "hold" ? t("holdReasonPlaceholder") : t("actionReasonPlaceholder")}
                 value={reasonCode}
                 onChange={(e) => setReasonCode(e.target.value)}
                 required
-                className="bg-zinc-800 border-zinc-700 text-white h-9 text-sm focus:ring-emerald-500"
+                className="bg-zinc-800 border-zinc-700 text-foreground h-9 text-sm focus:ring-emerald-500"
               />
             </div>
           </div>
@@ -127,7 +127,7 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
               variant="outline"
               onClick={onClose}
               disabled={loading}
-              className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white h-9 text-xs"
+              className="border-zinc-700 text-muted-foreground hover:bg-zinc-800 hover:text-foreground h-9 text-xs"
             >
               {tc("cancel")}
             </Button>
@@ -140,7 +140,7 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
                   : mode === "reject"
                   ? "bg-rose-600 hover:bg-rose-500"
                   : "bg-amber-600 hover:bg-amber-500"
-              } text-white h-9 text-xs`}
+              } text-foreground h-9 text-xs`}
             >
               {loading ? t("processing") : getButtonText()}
             </Button>

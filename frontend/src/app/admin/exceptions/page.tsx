@@ -157,9 +157,9 @@ export default function ExceptionsPage() {
       case "CRITICAL":
         return <Badge variant="destructive">{t("severityCritical")}</Badge>;
       case "HIGH":
-        return <Badge className="bg-orange-500 hover:bg-orange-600 text-white">{t("severityHigh")}</Badge>;
+        return <Badge className="bg-orange-500 hover:bg-orange-600 text-foreground">{t("severityHigh")}</Badge>;
       case "MEDIUM":
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">{t("severityMedium")}</Badge>;
+        return <Badge className="bg-yellow-500 hover:bg-yellow-600 text-foreground">{t("severityMedium")}</Badge>;
       default:
         return <Badge variant="secondary">{t("severityLow")}</Badge>;
     }
@@ -168,9 +168,9 @@ export default function ExceptionsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Resolved":
-        return <Badge className="bg-green-600 text-white">{t("statusResolved")}</Badge>;
+        return <Badge className="bg-green-600 text-foreground">{t("statusResolved")}</Badge>;
       case "In_Progress":
-        return <Badge className="bg-blue-600 text-white">{t("statusInProgress")}</Badge>;
+        return <Badge className="bg-blue-600 text-foreground">{t("statusInProgress")}</Badge>;
       case "Cancelled":
         return <Badge variant="outline">{t("statusCancelled")}</Badge>;
       default:

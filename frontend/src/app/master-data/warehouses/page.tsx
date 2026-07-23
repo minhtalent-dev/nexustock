@@ -35,7 +35,7 @@ export default function WarehousesPage() {
       columns={[
         { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
         { key: "name", label: t("columns.name"), render: (item) => item.name },
-        { key: "description", label: t("columns.description"), render: (item) => <span className="text-white/50">{item.description || "-"}</span> },
+        { key: "description", label: t("columns.description"), render: (item) => <span className="text-foreground/50">{item.description || "-"}</span> },
         {
           key: "status",
           label: t("columns.status"),

@@ -40,13 +40,13 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-background text-zinc-100 font-sans">
-      <div className="w-full max-w-md p-8 bg-[#111]/60 border border-border/80 backdrop-blur-md rounded-2xl shadow-2xl flex flex-col gap-6">
+    <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground font-sans">
+      <div className="w-full max-w-md p-8 bg-card/60 border border-border/80 backdrop-blur-md rounded-2xl shadow-2xl flex flex-col gap-6">
         <div className="flex justify-end">
           <LanguageSwitcher />
         </div>
         <div className="flex flex-col gap-1 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center justify-center gap-2">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center justify-center gap-2">
             <span>Nexustock</span>
             <span className="text-xs text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">
               WMS
@@ -97,7 +97,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium h-10 transition-colors mt-2"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-foreground font-medium h-10 transition-colors mt-2"
           >
             {loading ? (
               <span className="flex items-center gap-2">

@@ -1,0 +1,169 @@
+{
+  "phase": 39,
+  "workflow": "dbm",
+  "pass": 33,
+  "fail": 0,
+  "video": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_39_dbm\\walkthrough-theme.webm",
+  "rows": [
+    {
+      "id": "EVIDENCE-validation_pass.md",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_39\\validation_pass.md"
+    },
+    {
+      "id": "EVIDENCE-allowlist.md",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_39\\allowlist.md"
+    },
+    {
+      "id": "EVIDENCE-baseline_hardcode.json",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_39\\baseline_hardcode.json"
+    },
+    {
+      "id": "DISK-theme-provider.tsx",
+      "status": "PASS",
+      "note": "frontend/src/providers/theme-provider.tsx"
+    },
+    {
+      "id": "DISK-theme-switcher.tsx",
+      "status": "PASS",
+      "note": "frontend/src/components/theme-switcher.tsx"
+    },
+    {
+      "id": "DISK-theme-aware-toaster.tsx",
+      "status": "PASS",
+      "note": "frontend/src/components/theme-aware-toaster.tsx"
+    },
+    {
+      "id": "DISK-verify_theme_classes.ps1",
+      "status": "PASS",
+      "note": "tests/verify_theme_classes.ps1"
+    },
+    {
+      "id": "LAYOUT-NO-HARD-DARK",
+      "status": "PASS"
+    },
+    {
+      "id": "LAYOUT-SUPPRESS",
+      "status": "PASS"
+    },
+    {
+      "id": "TOKEN-ROOT-COLOR-SCHEME-LIGHT",
+      "status": "PASS"
+    },
+    {
+      "id": "TOKEN-NO-CARD-BG-111",
+      "status": "PASS"
+    },
+    {
+      "id": "DISK-NO-BG-111",
+      "status": "PASS",
+      "note": "files=0"
+    },
+    {
+      "id": "LOGIN",
+      "status": "PASS",
+      "note": "http://localhost:3003/admin/qc"
+    },
+    {
+      "id": "LIGHT-QC",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/qc dark=false theme=light authGate=false"
+    },
+    {
+      "id": "LIGHT-QC-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "badge=0"
+    },
+    {
+      "id": "LIGHT-PRODUCTS",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/master-data/products dark=false theme=light authGate=false"
+    },
+    {
+      "id": "LIGHT-PRODUCTS-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "badge=0"
+    },
+    {
+      "id": "LIGHT-INBOUND",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/inbound dark=false theme=light authGate=false"
+    },
+    {
+      "id": "LIGHT-INBOUND-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "badge=0"
+    },
+    {
+      "id": "LIGHT-MOBILE",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/mobile/movement dark=false theme=light authGate=false"
+    },
+    {
+      "id": "LIGHT-MOBILE-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "badge=0"
+    },
+    {
+      "id": "DARK-QC",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/qc dark=true theme=dark authGate=false"
+    },
+    {
+      "id": "DARK-QC-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "badge=0"
+    },
+    {
+      "id": "DARK-USERS",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/admin/users dark=true theme=dark authGate=false"
+    },
+    {
+      "id": "DARK-USERS-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "badge=0"
+    },
+    {
+      "id": "DARK-MOBILE",
+      "status": "PASS",
+      "note": "url=http://localhost:3003/mobile/picking dark=true theme=dark authGate=false"
+    },
+    {
+      "id": "DARK-MOBILE-NO-ISSUE-BADGE",
+      "status": "PASS",
+      "note": "badge=0"
+    },
+    {
+      "id": "THEME-MENU-OPTIONS",
+      "status": "PASS"
+    },
+    {
+      "id": "THEME-MENU-SET-LIGHT",
+      "status": "PASS",
+      "note": "dark=false"
+    },
+    {
+      "id": "MOBILE-THEME-INLINE",
+      "status": "PASS"
+    },
+    {
+      "id": "VIDEO",
+      "status": "PASS",
+      "note": "raw webm copied (ffmpeg optional)"
+    },
+    {
+      "id": "VERIFY-THEME",
+      "status": "PASS",
+      "note": "exit=0"
+    },
+    {
+      "id": "VERIFY-SHELL",
+      "status": "PASS",
+      "note": "exit=0"
+    }
+  ],
+  "at": "2026-07-23T02:31:54.072Z"
+}

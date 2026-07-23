@@ -46,8 +46,8 @@ export default function ProductsPage() {
       columns={[
         { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono text-blue-400">{item.code}</span> },
         { key: "name", label: t("columns.name"), render: (item) => item.name },
-        { key: "barcode", label: t("columns.barcode"), render: (item) => <span className="font-mono text-sm text-white/60">{item.barcode ?? "—"}</span> },
-        { key: "baseUom", label: t("columns.baseUom"), render: (item) => <span className="text-sm text-white/50">{item.baseUomCode} ({item.baseUomName})</span> },
+        { key: "barcode", label: t("columns.barcode"), render: (item) => <span className="font-mono text-sm text-foreground/60">{item.barcode ?? "—"}</span> },
+        { key: "baseUom", label: t("columns.baseUom"), render: (item) => <span className="text-sm text-foreground/50">{item.baseUomCode} ({item.baseUomName})</span> },
         {
           key: "isActive",
           label: t("columns.status"),

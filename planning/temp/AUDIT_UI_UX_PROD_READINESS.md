@@ -29,9 +29,10 @@
 | Đẹp / brand | **8.0** |
 | UX nhất quán | **8.0** |
 | Chuẩn prod (density, states, a11y) | **8.0** |
-| **Tổng UI prod-ready** | **~8.2** |
+| **Tổng UI prod-ready** | **~8.5** |
 
-→ Sau Phase 38 Option B (`rp4`+`rp5` 2026-07-23 · ĐÓNG): token + PageShell toàn site · AUDIT ~**8.2**.
+→ Sau Phase 38 Option B (`rp4`+`rp5` 2026-07-23 · ĐÓNG): token + PageShell toàn site.  
+→ Sau Phase 39 Theme (`rp4`+`rp5` ĐÓNG 2026-07-23): light/dark/system · AUDIT ~**8.5**.
 
 ---
 

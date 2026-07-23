@@ -106,16 +106,16 @@ export default function MobileNextTaskPage() {
       <div className="flex flex-col gap-6">
         <div className="text-center">
           <h2 className="text-xl font-bold">{t("page.title")}</h2>
-          <p className="text-xs text-slate-400">{t("page.subtitle")}</p>
+          <p className="text-xs text-muted-foreground">{t("page.subtitle")}</p>
         </div>
 
         {!hasSelected ? (
-          <Card className="border-dashed border-slate-700 bg-slate-800/40">
+          <Card className="border-dashed border-border bg-muted/40">
             <CardContent className="flex flex-col items-center justify-center py-12 text-center gap-4">
-              <Ban className="size-12 text-slate-500" />
+              <Ban className="size-12 text-muted-foreground" />
               <div>
                 <p className="font-semibold text-sm">{t("states.emptyTitle")}</p>
-                <p className="text-xs text-slate-400">{t("states.emptyHint")}</p>
+                <p className="text-xs text-muted-foreground">{t("states.emptyHint")}</p>
               </div>
               <Button
                 id="task-interleaving-find-another-button"
@@ -129,7 +129,7 @@ export default function MobileNextTaskPage() {
           </Card>
         ) : (
           <div className="flex flex-col gap-4">
-            <Card className="border-2 border-cyan-600 bg-slate-800/50">
+            <Card className="border-2 border-cyan-600 bg-muted/50">
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wider text-cyan-400">
@@ -139,20 +139,20 @@ export default function MobileNextTaskPage() {
                     {t("labels.score", { score: recommendation!.selected!.score.toFixed(1) })}
                   </span>
                 </div>
-                <CardTitle className="text-lg mt-1 text-white">
+                <CardTitle className="text-lg mt-1 text-foreground">
                   {recommendation!.selected!.taskType}
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-slate-900 p-2 rounded">
-                    <span className="text-slate-400 block">{t("labels.locationId")}</span>
+                  <div className="bg-muted p-2 rounded">
+                    <span className="text-muted-foreground block">{t("labels.locationId")}</span>
                     <span className="font-mono font-medium block truncate">
                       {recommendation!.selected!.locationId?.substring(0, 8) ?? "--"}
                     </span>
                   </div>
-                  <div className="bg-slate-900 p-2 rounded">
-                    <span className="text-slate-400 block">{t("labels.zoneId")}</span>
+                  <div className="bg-muted p-2 rounded">
+                    <span className="text-muted-foreground block">{t("labels.zoneId")}</span>
                     <span className="font-mono font-medium block truncate">
                       {recommendation!.selected!.zoneId?.substring(0, 8) ?? "--"}
                     </span>
@@ -176,7 +176,7 @@ export default function MobileNextTaskPage() {
                       variant="ghost"
                       onClick={() => setShowRejectForm(true)}
                       disabled={acting}
-                      className="w-full py-6 text-xs text-slate-400"
+                      className="w-full py-6 text-xs text-muted-foreground"
                       data-icon="inline-start"
                     >
                       <SkipForward className="size-4" />
@@ -184,7 +184,7 @@ export default function MobileNextTaskPage() {
                     </Button>
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-3 mt-2 border-t border-slate-700 pt-4">
+                  <div className="flex flex-col gap-3 mt-2 border-t border-border pt-4">
                     <span className="text-xs font-semibold">{t("labels.skipReason")}</span>
                     <Select value={reasonCode} onValueChange={setReasonCode}>
                       <SelectTrigger className="w-full text-xs">
@@ -222,19 +222,19 @@ export default function MobileNextTaskPage() {
 
             {recommendation!.candidates.length > 1 && (
               <div className="flex flex-col gap-2 mt-2">
-                <span className="text-xs font-semibold text-slate-400 px-1">{t("labels.otherOptions")}</span>
+                <span className="text-xs font-semibold text-muted-foreground px-1">{t("labels.otherOptions")}</span>
                 {recommendation!.candidates.slice(1).map((c) => (
                   <div
                     key={c.taskId}
-                    className="flex items-center justify-between p-3 border border-slate-700 rounded-md text-xs bg-slate-800/30"
+                    className="flex items-center justify-between p-3 border border-border rounded-md text-xs bg-muted/30"
                   >
                     <div className="flex flex-col">
                       <span className="font-semibold">{c.operationType}</span>
-                      <span className="text-slate-500 text-[10px] font-mono">
+                      <span className="text-muted-foreground text-[10px] font-mono">
                         {c.taskId.substring(0, 8)}...
                       </span>
                     </div>
-                    <span className="font-mono text-slate-400">{c.score.toFixed(1)}</span>
+                    <span className="font-mono text-muted-foreground">{c.score.toFixed(1)}</span>
                   </div>
                 ))}
               </div>

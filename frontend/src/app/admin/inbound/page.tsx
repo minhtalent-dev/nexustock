@@ -193,13 +193,13 @@ export default function InboundPage() {
     <PageShell className="gap-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
             <ClipboardList className="h-6 w-6 text-emerald-500" />
             {t("title")}
           </h1>
           <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
-        <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 h-9 text-sm">
+        <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-foreground gap-2 h-9 text-sm">
           <Plus className="h-4 w-4" />
           {t("createOrder")}
         </Button>
@@ -209,7 +209,7 @@ export default function InboundPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="flex h-9 w-48 rounded-md border border-border bg-background px-3 py-1 text-sm shadow-sm transition-colors text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+          className="flex h-9 w-48 rounded-md border border-border bg-background px-3 py-1 text-sm shadow-sm transition-colors text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
         >
           <option value="">{t("filterAllStatuses")}</option>
           <option value="Open">{t("statusOpen")}</option>
@@ -219,9 +219,9 @@ export default function InboundPage() {
         </select>
       </div>
 
-      <Card className="bg-[#111] border-border/80">
+      <Card className="bg-card border-border/80">
         <CardHeader className="py-4 border-b border-border/60 flex flex-row items-center justify-between">
-          <CardTitle className="text-sm font-semibold text-white">{t("listTitle")}</CardTitle>
+          <CardTitle className="text-sm font-semibold text-foreground">{t("listTitle")}</CardTitle>
           {loading && <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />}
         </CardHeader>
         <CardContent className="p-0">
@@ -246,8 +246,8 @@ export default function InboundPage() {
               ) : (
                 orders.map((o) => (
                   <TableRow key={o.id} className="border-b border-border/50 hover:bg-card/20">
-                    <TableCell className="text-white font-medium">{o.orderNo}</TableCell>
-                    <TableCell className="text-zinc-300">{o.partnerName}</TableCell>
+                    <TableCell className="text-foreground font-medium">{o.orderNo}</TableCell>
+                    <TableCell className="text-muted-foreground">{o.partnerName}</TableCell>
                     <TableCell className="text-muted-foreground">{new Date(o.createdAt).toLocaleString("vi-VN")}</TableCell>
                     <TableCell className="text-muted-foreground">{o.createdBy || tc("system")}</TableCell>
                     <TableCell className="text-center">{getStatusBadge(o.status)}</TableCell>
@@ -267,9 +267,9 @@ export default function InboundPage() {
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-background border-border text-white max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-background border-border text-foreground max-w-3xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-white flex items-center gap-2">
+            <DialogTitle className="text-foreground flex items-center gap-2">
               <Plus className="h-5 w-5 text-emerald-500" />
               {t("createDialogTitle")}
             </DialogTitle>
@@ -277,22 +277,22 @@ export default function InboundPage() {
           <form onSubmit={handleSave} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="orderNo" className="text-zinc-300 text-xs">{t("orderNoLabel")}</Label>
+                <Label htmlFor="orderNo" className="text-muted-foreground text-xs">{t("orderNoLabel")}</Label>
                 <Input
                   id="orderNo"
                   placeholder={t("orderNoPlaceholder")}
                   value={orderNo}
                   onChange={(e) => setOrderNo(e.target.value)}
-                  className="bg-card border-border text-white focus-visible:ring-emerald-500"
+                  className="bg-card border-border text-foreground focus-visible:ring-emerald-500"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="partner" className="text-zinc-300 text-xs">{t("partnerLabel")}</Label>
+                <Label htmlFor="partner" className="text-muted-foreground text-xs">{t("partnerLabel")}</Label>
                 <select
                   id="partner"
                   value={partnerId}
                   onChange={(e) => setPartnerId(e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-1 text-sm shadow-sm transition-colors text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                  className="flex h-10 w-full rounded-md border border-border bg-card px-3 py-1 text-sm shadow-sm transition-colors text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
                 >
                   <option value="">{t("partnerPlaceholder")}</option>
                   {partners.map((p) => (
@@ -306,8 +306,8 @@ export default function InboundPage() {
 
             <div className="space-y-4">
               <div className="flex items-center justify-between border-b border-border pb-2">
-                <Label className="text-zinc-200 text-sm font-semibold">{t("lineItemsTitle")}</Label>
-                <Button type="button" onClick={addItemRow} size="sm" className="bg-muted hover:bg-zinc-700 text-white text-xs gap-1.5 h-8">
+                <Label className="text-foreground text-sm font-semibold">{t("lineItemsTitle")}</Label>
+                <Button type="button" onClick={addItemRow} size="sm" className="bg-muted hover:bg-zinc-700 text-foreground text-xs gap-1.5 h-8">
                   <Plus className="h-3.5 w-3.5" />
                   {t("addLine")}
                 </Button>
@@ -320,7 +320,7 @@ export default function InboundPage() {
                     <select
                       value={item.itemId}
                       onChange={(e) => updateItemRow(index, "itemId", e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-border bg-card px-2 py-1 text-xs text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                      className="flex h-9 w-full rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
                     >
                       <option value="">{t("itemPlaceholder")}</option>
                       {products.map((p) => (
@@ -335,7 +335,7 @@ export default function InboundPage() {
                     <select
                       value={item.uomId}
                       onChange={(e) => updateItemRow(index, "uomId", e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-border bg-card px-2 py-1 text-xs text-white focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                      className="flex h-9 w-full rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
                     >
                       <option value="">{t("uomPlaceholder")}</option>
                       {uoms.map((u) => (
@@ -353,7 +353,7 @@ export default function InboundPage() {
                       step="any"
                       value={item.expectedQty}
                       onChange={(e) => updateItemRow(index, "expectedQty", parseFloat(e.target.value) || 0)}
-                      className="h-9 bg-card border-border text-xs text-white focus-visible:ring-emerald-500"
+                      className="h-9 bg-card border-border text-xs text-foreground focus-visible:ring-emerald-500"
                     />
                   </div>
                   <div className="col-span-2 space-y-1">
@@ -365,7 +365,7 @@ export default function InboundPage() {
                       step={1}
                       value={item.tolerance * 100}
                       onChange={(e) => updateItemRow(index, "tolerance", (parseFloat(e.target.value) || 0) / 100)}
-                      className="h-9 bg-card border-border text-xs text-white focus-visible:ring-emerald-500"
+                      className="h-9 bg-card border-border text-xs text-foreground focus-visible:ring-emerald-500"
                     />
                   </div>
                   <div className="col-span-1 text-right">
@@ -383,10 +383,10 @@ export default function InboundPage() {
             </div>
 
             <DialogFooter className="border-t border-border pt-4 flex gap-2">
-              <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-white">
+              <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground">
                 {tc("cancel")}
               </Button>
-              <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-white min-w-24">
+              <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-foreground min-w-24">
                 {saving ? tc("saving") : tc("confirm")}
               </Button>
             </DialogFooter>

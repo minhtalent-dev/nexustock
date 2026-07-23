@@ -126,14 +126,14 @@ export default function AllocationPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Allocated":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">{t("statusAllocated")}</Badge>;
+        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-foreground">{t("statusAllocated")}</Badge>;
       case "PartiallyAllocated":
-        return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">{t("statusPartiallyAllocated")}</Badge>;
+        return <Badge className="bg-amber-600 hover:bg-amber-500 text-foreground">{t("statusPartiallyAllocated")}</Badge>;
       case "Unallocated":
       case "Open":
-        return <Badge className="bg-muted hover:bg-zinc-700 text-zinc-300">{t("statusOpen")}</Badge>;
+        return <Badge className="bg-muted hover:bg-zinc-700 text-muted-foreground">{t("statusOpen")}</Badge>;
       default:
-        return <Badge className="bg-zinc-700 text-white">{status}</Badge>;
+        return <Badge className="bg-zinc-700 text-foreground">{status}</Badge>;
     }
   };
 
@@ -149,13 +149,13 @@ export default function AllocationPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
         <div className="xl:col-span-2 flex flex-col gap-4">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <ClipboardList className="h-4 w-4 text-emerald-500" />
                 {t("shipmentListTitle", { count: shipments.length })}
               </CardTitle>
-              <Button variant="ghost" size="icon" onClick={fetchShipments} className="h-8 w-8 text-muted-foreground hover:text-white">
+              <Button variant="ghost" size="icon" onClick={fetchShipments} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                 <RefreshCw className={`h-4 w-4 ${loadingShipments ? "animate-spin" : ""}`} />
               </Button>
             </CardHeader>
@@ -181,13 +181,13 @@ export default function AllocationPage() {
                           key={s.id}
                           className={`border-b border-border/50 hover:bg-muted/30 ${activeShipment?.id === s.id ? "bg-muted/50" : ""}`}
                         >
-                          <TableCell className="font-semibold text-zinc-200">{s.shipmentNo}</TableCell>
-                          <TableCell className="text-zinc-300 truncate max-w-[120px]">{s.partnerName}</TableCell>
+                          <TableCell className="font-semibold text-foreground">{s.shipmentNo}</TableCell>
+                          <TableCell className="text-muted-foreground truncate max-w-[120px]">{s.partnerName}</TableCell>
                           <TableCell className="text-center">{getStatusBadge(s.status)}</TableCell>
                           <TableCell className="text-center">
                             <Button
                               onClick={() => fetchShipmentLines(s)}
-                              className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 px-3 text-[11px] rounded"
+                              className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-7 px-3 text-[11px] rounded"
                             >
                               {t("detailsBtn")}
                             </Button>
@@ -203,7 +203,7 @@ export default function AllocationPage() {
         </div>
 
         <div className="xl:col-span-3 flex flex-col gap-4">
-          <Card className="bg-card border-border text-white min-h-[400px]">
+          <Card className="bg-card border-border text-foreground min-h-[400px]">
             <CardHeader className="border-b border-border pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500" />
@@ -227,7 +227,7 @@ export default function AllocationPage() {
                         <select
                           value={strategy}
                           onChange={(e) => setStrategy(e.target.value)}
-                          className="bg-muted border border-border text-white rounded p-1.5 text-xs focus:outline-none h-8 w-28"
+                          className="bg-muted border border-border text-foreground rounded p-1.5 text-xs focus:outline-none h-8 w-28"
                         >
                           <option value="FEFO">{t("strategyFefo")}</option>
                           <option value="FIFO">{t("strategyFifo")}</option>
@@ -240,7 +240,7 @@ export default function AllocationPage() {
                           type="number"
                           value={ttlMinutes}
                           onChange={(e) => setTtlMinutes(parseInt(e.target.value) || 1440)}
-                          className="bg-muted border border-border text-white rounded p-1.5 text-xs focus:outline-none h-8 w-24"
+                          className="bg-muted border border-border text-foreground rounded p-1.5 text-xs focus:outline-none h-8 w-24"
                         />
                       </div>
 
@@ -262,7 +262,7 @@ export default function AllocationPage() {
                       <Button
                         onClick={handleRunAllocation}
                         disabled={submitting || activeShipment.status === "Allocated"}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 px-4 text-xs font-semibold flex items-center gap-1.5"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-9 px-4 text-xs font-semibold flex items-center gap-1.5"
                       >
                         <Play className="h-3.5 w-3.5" />
                         {t("runAllocation")}
@@ -272,7 +272,7 @@ export default function AllocationPage() {
                         onClick={handleReleaseAllocation}
                         disabled={submitting || activeShipment.status === "Open" || activeShipment.status === "Unallocated"}
                         variant="outline"
-                        className="border-rose-900 bg-rose-950/10 hover:bg-rose-900 text-rose-400 hover:text-white h-9 px-4 text-xs font-semibold flex items-center gap-1.5"
+                        className="border-rose-900 bg-rose-950/10 hover:bg-rose-900 text-rose-400 hover:text-foreground h-9 px-4 text-xs font-semibold flex items-center gap-1.5"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         {t("releaseReservation")}
@@ -283,19 +283,19 @@ export default function AllocationPage() {
                   <div className="bg-muted/30 p-3 rounded-lg border border-border grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div>
                       <span className="text-[10px] text-muted-foreground">{t("summaryShipmentNo")}</span>
-                      <div className="font-semibold text-zinc-200">{activeShipment.shipmentNo}</div>
+                      <div className="font-semibold text-foreground">{activeShipment.shipmentNo}</div>
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground">{t("summaryCustomer")}</span>
-                      <div className="font-semibold text-zinc-200 truncate">{activeShipment.partnerName}</div>
+                      <div className="font-semibold text-foreground truncate">{activeShipment.partnerName}</div>
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground">{t("summaryCreatedAt")}</span>
-                      <div className="font-semibold text-zinc-200">{new Date(activeShipment.createdAt).toLocaleDateString()}</div>
+                      <div className="font-semibold text-foreground">{new Date(activeShipment.createdAt).toLocaleDateString()}</div>
                     </div>
                     <div>
                       <span className="text-[10px] text-muted-foreground">{t("summaryCreatedBy")}</span>
-                      <div className="font-semibold text-zinc-200">{activeShipment.createdBy}</div>
+                      <div className="font-semibold text-foreground">{activeShipment.createdBy}</div>
                     </div>
                   </div>
 
@@ -316,9 +316,9 @@ export default function AllocationPage() {
                         <TableBody>
                           {shipmentLines.map((line) => (
                             <TableRow key={line.id} className="border-b border-border/50 hover:bg-muted/20">
-                              <TableCell className="font-mono text-zinc-300">{line.itemCode}</TableCell>
-                              <TableCell className="font-medium text-zinc-200">{line.itemName}</TableCell>
-                              <TableCell className="text-right text-zinc-200">{(line.requestedQty ?? 0).toLocaleString()}</TableCell>
+                              <TableCell className="font-mono text-muted-foreground">{line.itemCode}</TableCell>
+                              <TableCell className="font-medium text-foreground">{line.itemName}</TableCell>
+                              <TableCell className="text-right text-foreground">{(line.requestedQty ?? 0).toLocaleString()}</TableCell>
                               <TableCell className="text-right text-emerald-400 font-bold">{(line.allocatedQty ?? 0).toLocaleString()}</TableCell>
                               <TableCell className="text-center text-muted-foreground">{line.uomName}</TableCell>
                               <TableCell className="text-center">

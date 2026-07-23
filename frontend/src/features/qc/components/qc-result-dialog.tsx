@@ -88,17 +88,17 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px] bg-zinc-900 border-zinc-800 text-white font-sans">
+      <DialogContent className="sm:max-w-[500px] bg-card border-border text-foreground font-sans">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-white">{t("resultDialogTitle", { lotNo })}</DialogTitle>
+            <DialogTitle className="text-lg font-semibold text-foreground">{t("resultDialogTitle", { lotNo })}</DialogTitle>
           </DialogHeader>
 
           <div className="grid gap-5 py-4">
             <div className="flex items-center justify-between bg-zinc-800/50 p-3 rounded-lg border border-zinc-850">
               <div>
-                <Label className="text-sm font-medium text-white block">{t("inspectionStatus")}</Label>
-                <span className="text-xs text-zinc-400">
+                <Label className="text-sm font-medium text-foreground block">{t("inspectionStatus")}</Label>
+                <span className="text-xs text-muted-foreground">
                   {isPassed ? t("passedHint") : t("failedHint")}
                 </span>
               </div>
@@ -115,26 +115,26 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="metrics" className="text-xs text-zinc-400">{t("metrics")}</Label>
+              <Label htmlFor="metrics" className="text-xs text-muted-foreground">{t("metrics")}</Label>
               <Textarea
                 id="metrics"
                 placeholder={t("metricsPlaceholder")}
                 value={metrics}
                 onChange={(e) => setMetrics(e.target.value)}
                 rows={3}
-                className="bg-zinc-800 border-zinc-700 text-white text-sm focus:ring-emerald-500"
+                className="bg-zinc-800 border-zinc-700 text-foreground text-sm focus:ring-emerald-500"
               />
             </div>
 
             <div className="grid gap-2">
-              <Label className="text-xs text-zinc-400">{t("attachments")}</Label>
+              <Label className="text-xs text-muted-foreground">{t("attachments")}</Label>
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="border-dashed border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white h-9 text-xs gap-2 flex-1"
+                  className="border-dashed border-zinc-700 text-muted-foreground hover:bg-zinc-800 hover:text-foreground h-9 text-xs gap-2 flex-1"
                 >
                   <Upload className="h-4 w-4" />
                   {uploading ? t("uploading") : t("uploadAttachment")}
@@ -159,15 +159,15 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
                           {isImg ? (
                             <Image src={url} alt="QC preview" width={32} height={32} className="w-8 h-8 rounded object-cover flex-shrink-0" />
                           ) : (
-                            <FileText className="w-5 h-5 text-zinc-400 flex-shrink-0" />
+                            <FileText className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                           )}
-                          <span className="truncate text-zinc-300" title={filename}>{filename}</span>
+                          <span className="truncate text-muted-foreground" title={filename}>{filename}</span>
                         </div>
                         <Button
                           type="button"
                           variant="ghost"
                           onClick={() => removeAttachment(url)}
-                          className="h-6 w-6 p-0 hover:bg-zinc-700 text-zinc-400 hover:text-white rounded"
+                          className="h-6 w-6 p-0 hover:bg-zinc-700 text-muted-foreground hover:text-foreground rounded"
                         >
                           <X className="h-3.5 w-3.5" />
                         </Button>
@@ -185,14 +185,14 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
               variant="outline"
               onClick={onClose}
               disabled={loading}
-              className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white h-9 text-xs"
+              className="border-zinc-700 text-muted-foreground hover:bg-zinc-800 hover:text-foreground h-9 text-xs"
             >
               {tc("cancel")}
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-xs"
+              className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-9 text-xs"
             >
               {loading ? t("submitting") : t("submitResult")}
             </Button>

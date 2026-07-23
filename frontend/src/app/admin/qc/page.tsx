@@ -219,7 +219,7 @@ export default function QcPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="flex flex-row items-center justify-between pb-2 border-b border-border">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 {tab === "queue" ? (
@@ -234,7 +234,7 @@ export default function QcPage() {
                   </>
                 )}
               </CardTitle>
-              <Button variant="ghost" size="icon" onClick={refresh} className="h-8 w-8 text-muted-foreground hover:text-white">
+              <Button variant="ghost" size="icon" onClick={refresh} className="h-8 w-8 text-muted-foreground hover:text-foreground">
                 <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               </Button>
             </CardHeader>
@@ -247,7 +247,7 @@ export default function QcPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && refresh()}
-                    className="bg-muted border-border text-white pl-9 h-9 text-xs"
+                    className="bg-muted border-border text-foreground pl-9 h-9 text-xs"
                   />
                 </div>
                 <Input
@@ -255,14 +255,14 @@ export default function QcPage() {
                   aria-label={t("filterFrom")}
                   value={fromDate}
                   onChange={(e) => setFromDate(e.target.value)}
-                  className="bg-muted border-border text-white h-9 text-xs"
+                  className="bg-muted border-border text-foreground h-9 text-xs"
                 />
                 <Input
                   type="date"
                   aria-label={t("filterTo")}
                   value={toDate}
                   onChange={(e) => setToDate(e.target.value)}
-                  className="bg-muted border-border text-white h-9 text-xs"
+                  className="bg-muted border-border text-foreground h-9 text-xs"
                 />
                 {tab === "queue" && (
                   <Input
@@ -271,7 +271,7 @@ export default function QcPage() {
                     placeholder={t("filterAging")}
                     value={agingHours}
                     onChange={(e) => setAgingHours(e.target.value)}
-                    className="bg-muted border-border text-white h-9 text-xs md:col-span-2"
+                    className="bg-muted border-border text-foreground h-9 text-xs md:col-span-2"
                   />
                 )}
                 <Button onClick={refresh} className="bg-muted border border-border hover:bg-zinc-700 h-9 text-xs md:col-span-2">
@@ -301,19 +301,19 @@ export default function QcPage() {
                       <TableBody>
                         {queue.map((item) => (
                           <TableRow key={item.id} className="border-b border-border/50 hover:bg-muted/30">
-                            <TableCell className="font-semibold text-zinc-200">{item.lotNo}</TableCell>
+                            <TableCell className="font-semibold text-foreground">{item.lotNo}</TableCell>
                             <TableCell>
-                              <div className="font-medium text-zinc-300">{item.itemName}</div>
+                              <div className="font-medium text-muted-foreground">{item.itemName}</div>
                               <div className="text-[10px] text-muted-foreground font-mono">{item.itemCode}</div>
                             </TableCell>
                             <TableCell>{agingBadge(item.agingBucket, item.agingHours)}</TableCell>
-                            <TableCell className="text-right text-zinc-300">{item.expectedQty.toLocaleString()}</TableCell>
-                            <TableCell className="text-right text-zinc-200 font-medium">{item.receivedQty.toLocaleString()}</TableCell>
+                            <TableCell className="text-right text-muted-foreground">{item.expectedQty.toLocaleString()}</TableCell>
+                            <TableCell className="text-right text-foreground font-medium">{item.receivedQty.toLocaleString()}</TableCell>
                             <TableCell className="text-muted-foreground">{new Date(item.createdAt).toLocaleString()}</TableCell>
                             <TableCell className="text-center">
                               <Button
                                 onClick={() => openQcDialog(item)}
-                                className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 px-3 text-[11px] rounded"
+                                className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-7 px-3 text-[11px] rounded"
                               >
                                 {t("inspect")}
                               </Button>
@@ -340,8 +340,8 @@ export default function QcPage() {
                     <TableBody>
                       {history.map((item) => (
                         <TableRow key={`${item.eventType}-${item.id}`} className="border-b border-border/50 hover:bg-muted/30">
-                          <TableCell className="font-semibold text-zinc-200">{item.lotNo}</TableCell>
-                          <TableCell className="text-zinc-300">
+                          <TableCell className="font-semibold text-foreground">{item.lotNo}</TableCell>
+                          <TableCell className="text-muted-foreground">
                             {item.eventType}
                             {item.isPassed != null ? ` · ${item.isPassed ? "Pass" : "Fail"}` : ""}
                             {item.reasonCode ? ` · ${item.reasonCode}` : ""}
@@ -359,7 +359,7 @@ export default function QcPage() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="border-b border-border pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <AlertOctagon className="h-4 w-4 text-amber-500" />
@@ -372,9 +372,9 @@ export default function QcPage() {
                   placeholder={t("lookupPlaceholder")}
                   value={lookupLotNo}
                   onChange={(e) => setLookupLotNo(e.target.value)}
-                  className="bg-muted border-border text-white h-9 text-xs flex-1"
+                  className="bg-muted border-border text-foreground h-9 text-xs flex-1"
                 />
-                <Button type="submit" disabled={lookupLoading} className="bg-muted border border-border hover:bg-zinc-700 text-white h-9 px-3 text-xs">
+                <Button type="submit" disabled={lookupLoading} className="bg-muted border border-border hover:bg-zinc-700 text-foreground h-9 px-3 text-xs">
                   <Search className="h-4 w-4" />
                 </Button>
               </form>
@@ -387,7 +387,7 @@ export default function QcPage() {
                 <div key={idx} className="bg-muted/50 p-4 rounded-lg border border-border flex flex-col gap-3 text-xs">
                   <div className="flex justify-between items-start border-b border-border pb-2">
                     <div>
-                      <div className="font-semibold text-zinc-200 text-sm">{lot.lotNo}</div>
+                      <div className="font-semibold text-foreground text-sm">{lot.lotNo}</div>
                       <span className="text-[10px] text-muted-foreground font-mono">ID: {lot.id}</span>
                     </div>
                     {getQcStatusBadge(lot.qcStatus)}
@@ -395,16 +395,16 @@ export default function QcPage() {
 
                   <div className="grid grid-cols-2 gap-y-2 text-[11px]">
                     <span className="text-muted-foreground">{t("itemLabel")}:</span>
-                    <span className="text-zinc-300 text-right truncate">{lot.itemName} ({lot.itemCode})</span>
+                    <span className="text-muted-foreground text-right truncate">{lot.itemName} ({lot.itemCode})</span>
                     <span className="text-muted-foreground">{t("expiryLabel")}:</span>
-                    <span className="text-zinc-300 text-right">{lot.expiryDate ? new Date(lot.expiryDate).toLocaleDateString() : tc("notAvailable")}</span>
+                    <span className="text-muted-foreground text-right">{lot.expiryDate ? new Date(lot.expiryDate).toLocaleDateString() : tc("notAvailable")}</span>
                   </div>
 
                   <div className="flex gap-2 mt-2 border-t border-border pt-3">
                     <Button
                       onClick={() => openActionDialog(lot.id, lot.lotNo, "hold")}
                       disabled={lot.qcStatus.toUpperCase() === "HOLD"}
-                      className="bg-amber-600/10 text-amber-500 border border-amber-600/20 hover:bg-amber-600 hover:text-white h-8 px-2 flex-1 text-[11px] gap-1"
+                      className="bg-amber-600/10 text-amber-500 border border-amber-600/20 hover:bg-amber-600 hover:text-foreground h-8 px-2 flex-1 text-[11px] gap-1"
                     >
                       <Lock className="h-3.5 w-3.5" />
                       {t("hold")}
@@ -412,7 +412,7 @@ export default function QcPage() {
                     <Button
                       onClick={() => openActionDialog(lot.id, lot.lotNo, "release")}
                       disabled={lot.qcStatus.toUpperCase() === "RELEASE"}
-                      className="bg-emerald-600/10 text-emerald-500 border border-emerald-600/20 hover:bg-emerald-600 hover:text-white h-8 px-2 flex-1 text-[11px] gap-1"
+                      className="bg-emerald-600/10 text-emerald-500 border border-emerald-600/20 hover:bg-emerald-600 hover:text-foreground h-8 px-2 flex-1 text-[11px] gap-1"
                     >
                       <Unlock className="h-3.5 w-3.5" />
                       {t("release")}
@@ -420,7 +420,7 @@ export default function QcPage() {
                     <Button
                       onClick={() => openActionDialog(lot.id, lot.lotNo, "reject")}
                       disabled={lot.qcStatus.toUpperCase() === "REJECT"}
-                      className="bg-rose-600/10 text-rose-500 border border-rose-600/20 hover:bg-rose-600 hover:text-white h-8 px-2 flex-1 text-[11px] gap-1"
+                      className="bg-rose-600/10 text-rose-500 border border-rose-600/20 hover:bg-rose-600 hover:text-foreground h-8 px-2 flex-1 text-[11px] gap-1"
                     >
                       <Ban className="h-3.5 w-3.5" />
                       {t("reject")}

@@ -138,7 +138,7 @@ export default function AppSidebar() {
   return (
     <aside className="sticky top-0 flex h-svh w-60 flex-shrink-0 flex-col border-r border-border bg-sidebar p-4">
       <Link href="/" className="mb-6 flex items-center gap-2 px-1 pt-1">
-        <span className="text-lg font-bold tracking-tight text-white">Nexustock</span>
+        <span className="text-lg font-bold tracking-tight text-foreground">Nexustock</span>
         <span className="rounded bg-emerald-400/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-emerald-400 uppercase">
           WMS
         </span>
@@ -147,7 +147,7 @@ export default function AppSidebar() {
       <div
         role="group"
         aria-label={t("navMode.ariaLabel")}
-        className="mb-4 flex gap-1 rounded-lg border border-zinc-800 p-1"
+        className="mb-4 flex gap-1 rounded-lg border border-border p-1"
       >
         <button
           type="button"
@@ -157,7 +157,7 @@ export default function AppSidebar() {
             "flex-1 rounded-md px-2 py-1.5 text-xs font-semibold",
             navMode === "modules"
               ? "bg-emerald-500/15 text-emerald-400"
-              : "text-zinc-500 hover:text-zinc-300"
+              : "text-muted-foreground hover:text-muted-foreground"
           )}
         >
           {t("navMode.modules")}
@@ -170,7 +170,7 @@ export default function AppSidebar() {
             "flex-1 rounded-md px-2 py-1.5 text-xs font-semibold",
             navMode === "ops"
               ? "bg-emerald-500/15 text-emerald-400"
-              : "text-zinc-500 hover:text-zinc-300"
+              : "text-muted-foreground hover:text-muted-foreground"
           )}
         >
           {t("navMode.ops")}
@@ -191,7 +191,7 @@ export default function AppSidebar() {
                 size="sm"
                 className={clsx(
                   "w-full justify-between px-1 text-xs font-semibold uppercase tracking-wider h-8 hover:bg-transparent",
-                  active ? "text-emerald-400" : "text-zinc-500 hover:text-zinc-300"
+                  active ? "text-emerald-400" : "text-muted-foreground hover:text-muted-foreground"
                 )}
               >
                 <span>{group.title}</span>
@@ -223,8 +223,8 @@ export default function AppSidebar() {
                         className={clsx(
                           "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors",
                           isActive
-                            ? "bg-zinc-850 text-white border border-zinc-800"
-                            : "text-zinc-400 hover:text-white hover:bg-zinc-900/50"
+                            ? "bg-muted text-foreground border border-border"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted"
                         )}
                       >
                         <link.icon className="h-4 w-4 flex-shrink-0" />
@@ -239,7 +239,7 @@ export default function AppSidebar() {
         })}
       </div>
 
-      <div className="mt-auto shrink-0 border-t border-zinc-800/60 pt-3">
+      <div className="mt-auto shrink-0 border-t border-border pt-3">
         {user ? (
           <SidebarUserMenu
             user={user}

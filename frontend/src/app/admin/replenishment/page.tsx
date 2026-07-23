@@ -211,14 +211,14 @@ export default function ReplenishmentPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "COMPLETED":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">{t("statusCompleted")}</Badge>;
+        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-foreground">{t("statusCompleted")}</Badge>;
       case "CANCELLED":
-        return <Badge className="bg-rose-600 hover:bg-rose-500 text-white">{t("statusCancelled")}</Badge>;
+        return <Badge className="bg-rose-600 hover:bg-rose-500 text-foreground">{t("statusCancelled")}</Badge>;
       case "ASSIGNED":
-        return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">{t("statusAssigned")}</Badge>;
+        return <Badge className="bg-amber-600 hover:bg-amber-500 text-foreground">{t("statusAssigned")}</Badge>;
       case "PENDING":
       default:
-        return <Badge className="bg-muted hover:bg-zinc-700 text-zinc-300">{t("statusPending")}</Badge>;
+        return <Badge className="bg-muted hover:bg-zinc-700 text-muted-foreground">{t("statusPending")}</Badge>;
     }
   };
 
@@ -246,7 +246,7 @@ export default function ReplenishmentPage() {
           <Button
             onClick={handleRunEngine}
             disabled={runningEngine}
-            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9 px-4 flex items-center gap-2"
+            className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-9 px-4 flex items-center gap-2"
           >
             <Play className={`h-4 w-4 ${runningEngine ? "animate-spin" : ""}`} />
             {runningEngine ? t("runningEngine") : t("runEngine")}
@@ -257,7 +257,7 @@ export default function ReplenishmentPage() {
               fetchTasks();
             }}
             variant="outline"
-            className="border-border hover:bg-muted text-zinc-300 h-9 w-9 p-0"
+            className="border-border hover:bg-muted text-muted-foreground h-9 w-9 p-0"
           >
             <RefreshCw className="h-4 w-4" />
           </Button>
@@ -268,7 +268,7 @@ export default function ReplenishmentPage() {
         <button
           onClick={() => setActiveTab("tasks")}
           className={`py-2.5 px-4 text-xs font-semibold border-b-2 transition-all ${
-            activeTab === "tasks" ? "border-emerald-500 text-emerald-500" : "border-transparent text-muted-foreground hover:text-white"
+            activeTab === "tasks" ? "border-emerald-500 text-emerald-500" : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           {t("tabTasks")}
@@ -276,7 +276,7 @@ export default function ReplenishmentPage() {
         <button
           onClick={() => setActiveTab("rules")}
           className={`py-2.5 px-4 text-xs font-semibold border-b-2 transition-all ${
-            activeTab === "rules" ? "border-emerald-500 text-emerald-500" : "border-transparent text-muted-foreground hover:text-white"
+            activeTab === "rules" ? "border-emerald-500 text-emerald-500" : "border-transparent text-muted-foreground hover:text-foreground"
           }`}
         >
           {t("tabRules")}
@@ -284,7 +284,7 @@ export default function ReplenishmentPage() {
       </div>
 
       {activeTab === "tasks" ? (
-        <Card className="bg-card border-border text-white">
+        <Card className="bg-card border-border text-foreground">
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <ClipboardList className="h-4 w-4 text-emerald-500" />
@@ -315,10 +315,10 @@ export default function ReplenishmentPage() {
                   <TableBody>
                     {tasks.map((task) => (
                       <TableRow key={task.id} className="border-b border-border/50 hover:bg-muted/30">
-                        <TableCell className="font-medium text-zinc-300">{getProductCode(task.itemId)}</TableCell>
-                        <TableCell className="text-zinc-300 font-mono">{getLocationCode(task.sourceLocationId)}</TableCell>
+                        <TableCell className="font-medium text-muted-foreground">{getProductCode(task.itemId)}</TableCell>
+                        <TableCell className="text-muted-foreground font-mono">{getLocationCode(task.sourceLocationId)}</TableCell>
                         <TableCell className="text-emerald-400 font-mono">{getLocationCode(task.targetLocationId)}</TableCell>
-                        <TableCell className="text-zinc-300">{task.lotNo}</TableCell>
+                        <TableCell className="text-muted-foreground">{task.lotNo}</TableCell>
                         <TableCell className="text-right font-semibold">{task.requestedQty}</TableCell>
                         <TableCell className="text-right text-muted-foreground">{task.actualQty ?? "-"}</TableCell>
                         <TableCell className="text-center">{getStatusBadge(task.status)}</TableCell>
@@ -327,7 +327,7 @@ export default function ReplenishmentPage() {
                             <>
                               <Button
                                 onClick={() => handleOpenComplete(task)}
-                                className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 px-3 text-[10px] rounded"
+                                className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-7 px-3 text-[10px] rounded"
                               >
                                 {t("completeBtn")}
                               </Button>
@@ -352,7 +352,7 @@ export default function ReplenishmentPage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card className="bg-card border-border text-white">
+            <Card className="bg-card border-border text-foreground">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <Settings className="h-4 w-4 text-emerald-500" />
@@ -379,8 +379,8 @@ export default function ReplenishmentPage() {
                       <TableBody>
                         {rules.map((rule) => (
                           <TableRow key={rule.id} className="border-b border-border/50 hover:bg-muted/30">
-                            <TableCell className="font-semibold text-zinc-200">{getProductCode(rule.itemId)}</TableCell>
-                            <TableCell className="font-mono text-zinc-300">{getLocationCode(rule.locationId)}</TableCell>
+                            <TableCell className="font-semibold text-foreground">{getProductCode(rule.itemId)}</TableCell>
+                            <TableCell className="font-mono text-muted-foreground">{getLocationCode(rule.locationId)}</TableCell>
                             <TableCell className="text-right text-amber-500 font-semibold">{rule.minQty}</TableCell>
                             <TableCell className="text-right text-emerald-500 font-semibold">{rule.maxQty}</TableCell>
                             <TableCell className="text-muted-foreground">{rule.createdBy}</TableCell>
@@ -395,7 +395,7 @@ export default function ReplenishmentPage() {
           </div>
 
           <div className="lg:col-span-1">
-            <Card className="bg-card border-border text-white">
+            <Card className="bg-card border-border text-foreground">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <Plus className="h-4 w-4 text-emerald-500" />
@@ -410,7 +410,7 @@ export default function ReplenishmentPage() {
                       <select
                         value={newRule.itemId}
                         onChange={(e) => setNewRule({ ...newRule, itemId: e.target.value })}
-                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                        className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                       >
                         <option value="">{t("selectProduct")}</option>
                         {products.map((p) => (
@@ -425,7 +425,7 @@ export default function ReplenishmentPage() {
                         placeholder={t("itemIdPlaceholder")}
                         value={newRule.itemId}
                         onChange={(e) => setNewRule({ ...newRule, itemId: e.target.value })}
-                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
+                        className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
                       />
                     )}
                   </div>
@@ -436,7 +436,7 @@ export default function ReplenishmentPage() {
                       <select
                         value={newRule.locationId}
                         onChange={(e) => setNewRule({ ...newRule, locationId: e.target.value })}
-                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                        className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                       >
                         <option value="">{t("selectLocation")}</option>
                         {locations.map((l) => (
@@ -451,7 +451,7 @@ export default function ReplenishmentPage() {
                         placeholder={t("locationIdPlaceholder")}
                         value={newRule.locationId}
                         onChange={(e) => setNewRule({ ...newRule, locationId: e.target.value })}
-                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
+                        className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full font-mono"
                       />
                     )}
                   </div>
@@ -463,7 +463,7 @@ export default function ReplenishmentPage() {
                         type="number"
                         value={newRule.minQty}
                         onChange={(e) => setNewRule({ ...newRule, minQty: parseFloat(e.target.value) || 0 })}
-                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                        className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                       />
                     </div>
                     <div className="flex flex-col gap-1.5">
@@ -472,7 +472,7 @@ export default function ReplenishmentPage() {
                         type="number"
                         value={newRule.maxQty}
                         onChange={(e) => setNewRule({ ...newRule, maxQty: parseFloat(e.target.value) || 0 })}
-                        className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                        className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                       />
                     </div>
                   </div>
@@ -480,7 +480,7 @@ export default function ReplenishmentPage() {
                   <Button
                     type="submit"
                     disabled={submittingRule}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white w-full h-9 text-xs rounded mt-2"
+                    className="bg-emerald-600 hover:bg-emerald-500 text-foreground w-full h-9 text-xs rounded mt-2"
                   >
                     {submittingRule ? t("creatingRule") : t("createRule")}
                   </Button>
@@ -493,13 +493,13 @@ export default function ReplenishmentPage() {
 
       {completingTask && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
+          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-foreground shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500" />
                 {t("completeDialogTitle")}
               </h3>
-              <button onClick={() => setCompletingTask(null)} className="text-muted-foreground hover:text-white transition-all">
+              <button onClick={() => setCompletingTask(null)} className="text-muted-foreground hover:text-foreground transition-all">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -509,7 +509,7 @@ export default function ReplenishmentPage() {
                 <div>{t("completeLot", { lot: completingTask.lotNo })}</div>
                 <div>{t("completeFromBulk", { location: getLocationCode(completingTask.sourceLocationId) })}</div>
                 <div>{t("completeToPickFace", { location: getLocationCode(completingTask.targetLocationId) })}</div>
-                <div className="text-zinc-200 mt-1">
+                <div className="text-foreground mt-1">
                   {t("completeRequested", { qty: completingTask.requestedQty })}
                 </div>
               </div>
@@ -520,7 +520,7 @@ export default function ReplenishmentPage() {
                   type="number"
                   value={actualQty}
                   onChange={(e) => setActualQty(parseFloat(e.target.value) || 0)}
-                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full font-bold"
+                  className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full font-bold"
                 />
               </div>
 
@@ -531,15 +531,15 @@ export default function ReplenishmentPage() {
                   placeholder={t("operatorPlaceholder")}
                   value={operatorName}
                   onChange={(e) => setOperatorName(e.target.value)}
-                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                  className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                 />
               </div>
             </div>
             <div className="flex justify-end gap-3 p-4 border-t border-border bg-background/20">
-              <Button onClick={() => setCompletingTask(null)} variant="outline" className="border-border hover:bg-muted text-zinc-300 text-xs h-8 px-4">
+              <Button onClick={() => setCompletingTask(null)} variant="outline" className="border-border hover:bg-muted text-muted-foreground text-xs h-8 px-4">
                 {t("cancelBtn")}
               </Button>
-              <Button onClick={handleCompleteTask} disabled={submittingComplete} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4">
+              <Button onClick={handleCompleteTask} disabled={submittingComplete} className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-8 px-4">
                 {submittingComplete ? t("processing") : t("confirmComplete")}
               </Button>
             </div>

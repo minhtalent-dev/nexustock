@@ -74,23 +74,23 @@ export default function LotsPage() {
   return (
     <PageShell className="gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
           <Tag className="h-6 w-6 text-emerald-500" />
           {t("title")}
         </h1>
         <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
       </div>
 
-      <Card className="bg-[#111] border-border/80">
+      <Card className="bg-card border-border/80">
         <CardContent className="p-6">
           <form onSubmit={handleSearch} className="flex gap-3 max-w-md">
             <Input
               placeholder={t("searchPlaceholder")}
               value={searchLotNo}
               onChange={(e) => setSearchLotNo(e.target.value)}
-              className="bg-card border-border text-white focus-visible:ring-emerald-500 text-sm h-10"
+              className="bg-card border-border text-foreground focus-visible:ring-emerald-500 text-sm h-10"
             />
-            <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-500 text-white h-10 px-5 gap-2 shrink-0">
+            <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-10 px-5 gap-2 shrink-0">
               {loading ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
               ) : (
@@ -103,9 +103,9 @@ export default function LotsPage() {
       </Card>
 
       {searched && (
-        <Card className="bg-[#111] border-border/80">
+        <Card className="bg-card border-border/80">
           <CardHeader className="py-4 border-b border-border/60">
-            <CardTitle className="text-sm font-semibold text-white">{t("resultsTitle")}</CardTitle>
+            <CardTitle className="text-sm font-semibold text-foreground">{t("resultsTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <Table>
@@ -123,7 +123,7 @@ export default function LotsPage() {
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-muted-foreground py-12">
                       <div className="flex flex-col items-center gap-2">
-                        <AlertCircle className="h-8 w-8 text-zinc-600" />
+                        <AlertCircle className="h-8 w-8 text-muted-foreground" />
                         <span>{t("empty")}</span>
                       </div>
                     </TableCell>
@@ -131,12 +131,12 @@ export default function LotsPage() {
                 ) : (
                   lots.map((l) => (
                     <TableRow key={l.id} className="border-b border-border/50 hover:bg-card/20">
-                      <TableCell className="text-white font-semibold">
+                      <TableCell className="text-foreground font-semibold">
                         <Link href={`/admin/genealogy/${l.lotNo}`} className="text-indigo-400 hover:underline">
                           {l.lotNo}
                         </Link>
                       </TableCell>
-                      <TableCell className="text-zinc-300">
+                      <TableCell className="text-muted-foreground">
                         <div>
                           <p>{l.itemName}</p>
                           <p className="text-[10px] text-muted-foreground font-normal">{l.itemCode}</p>

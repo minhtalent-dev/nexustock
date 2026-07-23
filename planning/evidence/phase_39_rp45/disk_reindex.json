@@ -1,0 +1,219 @@
+﻿{
+    "at":  "2026-07-23T09:53:42.0750727+07:00",
+    "workflow":  "rp4+rp5",
+    "fail":  0,
+    "pass":  42,
+    "checks":  [
+                   {
+                       "id":  "DISK-theme-provider.tsx",
+                       "pass":  true,
+                       "note":  "frontend/src/providers/theme-provider.tsx"
+                   },
+                   {
+                       "id":  "DISK-theme-switcher.tsx",
+                       "pass":  true,
+                       "note":  "frontend/src/components/theme-switcher.tsx"
+                   },
+                   {
+                       "id":  "DISK-theme-aware-toaster.tsx",
+                       "pass":  true,
+                       "note":  "frontend/src/components/theme-aware-toaster.tsx"
+                   },
+                   {
+                       "id":  "DISK-layout.tsx",
+                       "pass":  true,
+                       "note":  "frontend/src/app/layout.tsx"
+                   },
+                   {
+                       "id":  "DISK-globals.css",
+                       "pass":  true,
+                       "note":  "frontend/src/app/globals.css"
+                   },
+                   {
+                       "id":  "DISK-sidebar-user-menu.tsx",
+                       "pass":  true,
+                       "note":  "frontend/src/components/nav/sidebar-user-menu.tsx"
+                   },
+                   {
+                       "id":  "DISK-mobile-shell.tsx",
+                       "pass":  true,
+                       "note":  "frontend/src/components/mobile/mobile-shell.tsx"
+                   },
+                   {
+                       "id":  "DISK-scan-input.tsx",
+                       "pass":  true,
+                       "note":  "frontend/src/components/mobile/scan-input.tsx"
+                   },
+                   {
+                       "id":  "DISK-verify_theme_classes.ps1",
+                       "pass":  true,
+                       "note":  "tests/verify_theme_classes.ps1"
+                   },
+                   {
+                       "id":  "DISK-dbm_phase39_theme_browser.mjs",
+                       "pass":  true,
+                       "note":  "tests/helpers/dbm_phase39_theme_browser.mjs"
+                   },
+                   {
+                       "id":  "DISK-baseline_hardcode.json",
+                       "pass":  true,
+                       "note":  "planning/evidence/phase_39/baseline_hardcode.json"
+                   },
+                   {
+                       "id":  "DISK-allowlist.md",
+                       "pass":  true,
+                       "note":  "planning/evidence/phase_39/allowlist.md"
+                   },
+                   {
+                       "id":  "DISK-validation_pass.md",
+                       "pass":  true,
+                       "note":  "planning/evidence/phase_39/validation_pass.md"
+                   },
+                   {
+                       "id":  "DISK-walkthrough.md",
+                       "pass":  true,
+                       "note":  "planning/evidence/phase_39_dbm/walkthrough.md"
+                   },
+                   {
+                       "id":  "DISK-results.json",
+                       "pass":  true,
+                       "note":  "planning/evidence/phase_39_dbm/results.json"
+                   },
+                   {
+                       "id":  "DISK-walkthrough-theme.webm",
+                       "pass":  true,
+                       "note":  "planning/evidence/phase_39_dbm/walkthrough-theme.webm"
+                   },
+                   {
+                       "id":  "DISK-function_index_phase39_theme.md",
+                       "pass":  true,
+                       "note":  "planning/function_index_phase39_theme.md"
+                   },
+                   {
+                       "id":  "DISK-Sidebar.json",
+                       "pass":  true,
+                       "note":  "frontend/messages/vi/Sidebar.json"
+                   },
+                   {
+                       "id":  "DISK-Sidebar.json",
+                       "pass":  true,
+                       "note":  "frontend/messages/en/Sidebar.json"
+                   },
+                   {
+                       "id":  "LAYOUT-NO-HARD-DARK",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "LAYOUT-SUPPRESS",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "LAYOUT-THEME-PROVIDER",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "LAYOUT-THEME-TOASTER",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "TP-DEFAULT-SYSTEM",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "TP-STORAGE-KEY",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "TP-ENABLE-SYSTEM",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "SW-THEME-OPTION-PATTERN",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "SW-HORIZONTAL",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "SW-INLINE-TESTID",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "SCAN-NO-SLATE-800",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "SCAN-BG-BACKGROUND",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "CSS-COLOR-SCHEME-LIGHT",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "CSS-NO-CARD-BG-111",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "HARDCODE-BG-111-ZERO",
+                       "pass":  true,
+                       "note":  "files=0"
+                   },
+                   {
+                       "id":  "PKG-NEXT-THEMES",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "SIDEBAR-THEME-SECTION",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "MOBILE-THEME-INLINE",
+                       "pass":  true,
+                       "note":  ""
+                   },
+                   {
+                       "id":  "DBM-FAIL-ZERO",
+                       "pass":  true,
+                       "note":  "pass=33 fail=0"
+                   },
+                   {
+                       "id":  "VERIFY-THEME",
+                       "pass":  true,
+                       "note":  "exit=0"
+                   },
+                   {
+                       "id":  "VERIFY-SHELL",
+                       "pass":  true,
+                       "note":  "exit=0"
+                   },
+                   {
+                       "id":  "VERIFY-NAV",
+                       "pass":  true,
+                       "note":  "exit=0"
+                   },
+                   {
+                       "id":  "VERIFY-I18N",
+                       "pass":  true,
+                       "note":  "exit=0"
+                   }
+               ],
+    "phase":  39
+}

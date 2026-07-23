@@ -84,7 +84,7 @@ export default function ObservabilityDashboardPage() {
       <div className="p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">{t("title")}</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t("title")}</h1>
           <p className="text-muted-foreground text-sm mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -138,7 +138,7 @@ export default function ObservabilityDashboardPage() {
           summary?.cards.map((card) => (
             <Card key={card.metricKey} className="border-border/80 bg-[#0f0f11]/60 hover:bg-[#151518]/70 transition-all duration-200 group rounded-xl">
               <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                <span className="text-xs font-medium text-muted-foreground group-hover:text-zinc-300 transition-colors">
+                <span className="text-xs font-medium text-muted-foreground group-hover:text-muted-foreground transition-colors">
                   {card.label}
                 </span>
                 {getMetricIcon(card.metricKey)}
@@ -148,7 +148,7 @@ export default function ObservabilityDashboardPage() {
                   <span className="text-sm text-muted-foreground font-medium italic">{tc("unavailable")}</span>
                 ) : (
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold tracking-tight text-white">
+                    <span className="text-2xl font-bold tracking-tight text-foreground">
                       {formatValue(card.value, card.metricKey)}
                     </span>
                     {card.trend === "stale" && (
@@ -169,7 +169,7 @@ export default function ObservabilityDashboardPage() {
         <Card className="border-border/80 bg-[#0f0f11]/40 rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between border-b border-border/80 pb-4">
             <div>
-              <CardTitle className="text-lg font-semibold text-white">{t("activeAlertsTitle")}</CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">{t("activeAlertsTitle")}</CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">{t("activeAlertsSubtitle")}</p>
             </div>
             <Link href="/admin/observability/alerts">
@@ -192,7 +192,7 @@ export default function ObservabilityDashboardPage() {
                         <Badge variant={a.severity === "critical" ? "destructive" : "secondary"}>
                           {a.severity}
                         </Badge>
-                        <span className="font-semibold text-zinc-200 text-sm">{a.title}</span>
+                        <span className="font-semibold text-foreground text-sm">{a.title}</span>
                       </div>
                       <p className="text-xs text-muted-foreground leading-relaxed">{a.message}</p>
                       <div className="text-[10px] text-muted-foreground flex items-center gap-2">
@@ -211,7 +211,7 @@ export default function ObservabilityDashboardPage() {
         <Card className="border-border/80 bg-[#0f0f11]/40 rounded-xl">
           <CardHeader className="flex flex-row items-center justify-between border-b border-border/80 pb-4">
             <div>
-              <CardTitle className="text-lg font-semibold text-white">{t("recentActivityTitle")}</CardTitle>
+              <CardTitle className="text-lg font-semibold text-foreground">{t("recentActivityTitle")}</CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">{t("recentActivitySubtitle")}</p>
             </div>
             <Link href="/admin/observability/timeline">
@@ -232,7 +232,7 @@ export default function ObservabilityDashboardPage() {
                     <div className="absolute left-[-5px] top-1.5 h-2.5 w-2.5 rounded-full bg-emerald-500" />
                     <div className="space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-zinc-200 text-sm">{entry.title}</span>
+                        <span className="font-semibold text-foreground text-sm">{entry.title}</span>
                         <span className="text-[10px] text-muted-foreground">
                           {new Date(entry.createdAt).toLocaleTimeString()}
                         </span>

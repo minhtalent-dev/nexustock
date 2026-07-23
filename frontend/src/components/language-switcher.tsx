@@ -30,7 +30,7 @@ export function LanguageSwitcher({
       data-testid="language-switcher"
       className={clsx(
         'inline-flex items-center gap-1',
-        size === 'comfortable' && 'rounded-lg border border-zinc-800/80 bg-zinc-950/40 p-1',
+        size === 'comfortable' && 'rounded-lg border border-border bg-muted/40 p-1',
         className
       )}
       role="group"

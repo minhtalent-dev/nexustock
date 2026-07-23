@@ -158,11 +158,11 @@ export default function SerialPage() {
           <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex gap-3">
-          <Button onClick={() => setShowImportModal(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9 px-4 flex items-center gap-2">
+          <Button onClick={() => setShowImportModal(true)} className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-9 px-4 flex items-center gap-2">
             <Upload className="h-4 w-4" />
             {t("importCsv")}
           </Button>
-          <Button onClick={fetchSerials} variant="outline" className="border-border hover:bg-muted text-zinc-300 h-9 px-4 flex items-center gap-2">
+          <Button onClick={fetchSerials} variant="outline" className="border-border hover:bg-muted text-muted-foreground h-9 px-4 flex items-center gap-2">
             <RefreshCw className={`h-4 w-4 ${loadingSerials ? "animate-spin" : ""}`} />
             {t("refresh")}
           </Button>
@@ -171,16 +171,16 @@ export default function SerialPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <Card className="bg-card border-border text-white">
+          <Card className="bg-card border-border text-foreground">
             <CardHeader className="p-4 flex flex-row items-center gap-4">
               <input
                 type="text"
                 placeholder={t("searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 flex-grow font-mono"
+                className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 flex-grow font-mono"
               />
-              <Button onClick={fetchSerials} className="bg-blue-600 hover:bg-blue-500 text-white text-xs h-9">
+              <Button onClick={fetchSerials} className="bg-blue-600 hover:bg-blue-500 text-foreground text-xs h-9">
                 {t("searchBtn")}
               </Button>
             </CardHeader>
@@ -208,13 +208,13 @@ export default function SerialPage() {
                           selectedSerial?.id === s.id ? "bg-muted/80" : ""
                         }`}
                       >
-                        <TableCell className="font-bold text-zinc-200 font-mono">{s.serialNo}</TableCell>
-                        <TableCell className="text-zinc-300">
+                        <TableCell className="font-bold text-foreground font-mono">{s.serialNo}</TableCell>
+                        <TableCell className="text-muted-foreground">
                           {s.itemCode} - {s.itemName}
                         </TableCell>
-                        <TableCell className="text-zinc-300 font-mono">{s.locationCode || s.locationId.substring(0, 8)}</TableCell>
+                        <TableCell className="text-muted-foreground font-mono">{s.locationCode || s.locationId.substring(0, 8)}</TableCell>
                         <TableCell>
-                          <Badge className="bg-blue-600/80 hover:bg-blue-600 text-white text-[9px] scale-90">{s.status}</Badge>
+                          <Badge className="bg-blue-600/80 hover:bg-blue-600 text-foreground text-[9px] scale-90">{s.status}</Badge>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -227,7 +227,7 @@ export default function SerialPage() {
 
         <div className="lg:col-span-1 flex flex-col gap-6">
           {selectedSerial ? (
-            <Card className="bg-card border-border text-white">
+            <Card className="bg-card border-border text-foreground">
               <CardHeader>
                 <CardTitle className="text-sm font-semibold">{t("timelineTitle", { serialNo: selectedSerial.serialNo })}</CardTitle>
               </CardHeader>
@@ -245,12 +245,12 @@ export default function SerialPage() {
                         </div>
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
-                            <Badge className="bg-muted text-zinc-300 text-[9px] px-2 py-0.5 hover:bg-muted">{evt.eventType}</Badge>
+                            <Badge className="bg-muted text-muted-foreground text-[9px] px-2 py-0.5 hover:bg-muted">{evt.eventType}</Badge>
                             <span className="text-[10px] text-muted-foreground">{new Date(evt.createdAt).toLocaleString()}</span>
                           </div>
                           <p className="text-muted-foreground text-[11px]">{t("scannedBy", { by: evt.createdBy })}</p>
                           {evt.toLocationCode && (
-                            <p className="text-zinc-300 text-[11px]">{t("locationField", { location: evt.toLocationCode })}</p>
+                            <p className="text-muted-foreground text-[11px]">{t("locationField", { location: evt.toLocationCode })}</p>
                           )}
                         </div>
                       </div>
@@ -269,13 +269,13 @@ export default function SerialPage() {
 
       {showImportModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-white shadow-xl flex flex-col">
+          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-foreground shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Upload className="h-4 w-4 text-emerald-500" />
                 {t("importDialogTitle")}
               </h3>
-              <button onClick={() => setShowImportModal(false)} className="text-muted-foreground hover:text-white">
+              <button onClick={() => setShowImportModal(false)} className="text-muted-foreground hover:text-foreground">
                 {t("close")}
               </button>
             </div>
@@ -285,7 +285,7 @@ export default function SerialPage() {
                 <select
                   value={importForm.itemId}
                   onChange={(e) => setImportForm({ ...importForm, itemId: e.target.value })}
-                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                  className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                 >
                   <option value="">{t("selectProduct")}</option>
                   {products.filter((p) => p.id).map((p) => (
@@ -301,7 +301,7 @@ export default function SerialPage() {
                 <select
                   value={importForm.locationId}
                   onChange={(e) => setImportForm({ ...importForm, locationId: e.target.value })}
-                  className="bg-muted border border-border text-white rounded p-2 text-xs focus:outline-none h-9 w-full"
+                  className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 w-full"
                 >
                   <option value="">{t("selectLocation")}</option>
                   {locations.map((l) => (

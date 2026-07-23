@@ -115,7 +115,7 @@ export default function MobileSerialPage() {
       <MobileShell>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Link href="/mobile" className="text-muted-foreground hover:text-white p-2">
+          <Link href="/mobile" className="text-muted-foreground hover:text-foreground p-2">
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <h2 className="text-lg font-bold flex items-center gap-2 text-foreground">
@@ -127,8 +127,8 @@ export default function MobileSerialPage() {
         {currentStep === "SCAN_PRODUCT" && (
           <div className="space-y-4 py-8">
             <div className="text-center space-y-2">
-              <Box className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
-              <h3 className="text-base font-semibold text-slate-200">{t("states.productTitle")}</h3>
+              <Box className="h-12 w-12 text-muted-foreground mx-auto animate-bounce" />
+              <h3 className="text-base font-semibold text-foreground">{t("states.productTitle")}</h3>
               <p className="text-xs text-muted-foreground">{t("states.productHint")}</p>
             </div>
             <ScanInput
@@ -143,8 +143,8 @@ export default function MobileSerialPage() {
         {currentStep === "SCAN_LOCATION" && selectedProduct && (
           <div className="space-y-4 py-8">
             <div className="text-center space-y-2">
-              <MapPin className="h-12 w-12 text-slate-600 mx-auto animate-bounce" />
-              <h3 className="text-base font-semibold text-slate-200">{t("states.locationTitle")}</h3>
+              <MapPin className="h-12 w-12 text-muted-foreground mx-auto animate-bounce" />
+              <h3 className="text-base font-semibold text-foreground">{t("states.locationTitle")}</h3>
               <p className="text-xs text-muted-foreground">{t("states.locationHint", { code: selectedProduct.code })}</p>
             </div>
             <ScanInput
@@ -162,11 +162,11 @@ export default function MobileSerialPage() {
               <CardContent className="p-4 space-y-2 text-xs">
                 <p className="text-muted-foreground">
                   {t("labels.product")}{" "}
-                  <span className="font-mono font-bold text-white">{selectedProduct.code}</span>
+                  <span className="font-mono font-bold text-foreground">{selectedProduct.code}</span>
                 </p>
                 <p className="text-muted-foreground">
                   {t("labels.location")}{" "}
-                  <span className="font-mono font-bold text-white">{selectedLocation.code}</span>
+                  <span className="font-mono font-bold text-foreground">{selectedLocation.code}</span>
                 </p>
                 <p className="text-muted-foreground">
                   <span className="font-mono font-bold text-emerald-400">
@@ -184,14 +184,14 @@ export default function MobileSerialPage() {
             />
 
             <div className="bg-background/60 p-3 rounded text-xs space-y-1.5 border border-border max-h-[200px] overflow-y-auto">
-              <span className="text-[10px] text-slate-500 block border-b border-border pb-1">
+              <span className="text-[10px] text-muted-foreground block border-b border-border pb-1">
                 {t("labels.serialList")}
               </span>
               {scannedSerials.length === 0 ? (
                 <div className="text-muted-foreground italic text-center py-2">{t("labels.emptySerials")}</div>
               ) : (
                 scannedSerials.map((s, idx) => (
-                  <div key={idx} className="flex justify-between text-[11px] text-slate-200">
+                  <div key={idx} className="flex justify-between text-[11px] text-foreground">
                     <span className="font-mono">{s}</span>
                     <CheckCircle className="h-3 w-3 text-emerald-500" />
                   </div>

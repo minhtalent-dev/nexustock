@@ -69,7 +69,7 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
     const isHold = node.status === "HOLD";
     return (
       <div key={node.lotId} className="flex flex-col items-center gap-2">
-        <Card className={`bg-card border-2 ${isHold ? "border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]" : "border-border"} text-white w-64`}>
+        <Card className={`bg-card border-2 ${isHold ? "border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]" : "border-border"} text-foreground w-64`}>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-bold flex justify-between items-center">
               <span>{t("lotLabel", { lotNo: node.lotNo })}</span>
@@ -81,7 +81,7 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
               {t("productLabel", { code: node.productCode, name: node.productName })}
             </div>
             <div className="text-muted-foreground">
-              {t("stockLabel")} <span className="text-zinc-200 font-bold">{node.qtyOnHand}</span>
+              {t("stockLabel")} <span className="text-foreground font-bold">{node.qtyOnHand}</span>
             </div>
           </CardContent>
         </Card>
@@ -105,7 +105,7 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <Link href="/admin/lots">
-            <Button variant="outline" className="border-border text-zinc-300 hover:bg-muted">
+            <Button variant="outline" className="border-border text-muted-foreground hover:bg-muted">
               <ArrowLeft className="h-4 w-4 mr-2" /> {t("back")}
             </Button>
           </Link>
@@ -113,7 +113,7 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
             <GitFork className="h-6 w-6 text-indigo-400" /> {t("detailTitle")}
           </h1>
         </div>
-        <Button onClick={handleHoldBranch} className="bg-red-600 hover:bg-red-500 text-white font-bold flex items-center gap-2">
+        <Button onClick={handleHoldBranch} className="bg-red-600 hover:bg-red-500 text-foreground font-bold flex items-center gap-2">
           <ShieldAlert className="h-4 w-4" /> {t("holdBranch")}
         </Button>
       </div>

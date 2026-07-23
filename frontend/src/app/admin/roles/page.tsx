@@ -172,7 +172,7 @@ export default function RolesPage() {
   return (
     <PageShell className="gap-6">
       <div>
-        <h1 className="text-2xl font-bold text-white flex items-center gap-3">
+        <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
           <ShieldCheck className="h-6 w-6 text-emerald-500" />
           {t("title")}
         </h1>
@@ -180,10 +180,10 @@ export default function RolesPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <Card className="bg-[#111] border-border/80 lg:col-span-1">
+        <Card className="bg-card border-border/80 lg:col-span-1">
           <CardHeader className="py-4 border-b border-border/60 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-sm font-semibold text-white">{t("listTitle")}</CardTitle>
+              <CardTitle className="text-sm font-semibold text-foreground">{t("listTitle")}</CardTitle>
               <CardDescription className="text-[10px] text-muted-foreground">{t("listHint")}</CardDescription>
             </div>
             <Button onClick={openCreateRole} variant="ghost" size="sm" className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 h-8 px-2 text-xs gap-1">
@@ -213,7 +213,7 @@ export default function RolesPage() {
                         }`}
                       >
                         <TableCell className="py-3 px-4 h-12 flex flex-col justify-center">
-                          <span className={`text-sm font-medium ${isSelected ? "text-emerald-400" : "text-zinc-200"}`}>
+                          <span className={`text-sm font-medium ${isSelected ? "text-emerald-400" : "text-foreground"}`}>
                             {role.name}
                           </span>
                           <span className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5">{role.description || t("noDescription")}</span>
@@ -242,12 +242,12 @@ export default function RolesPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-[#111] border-border/80 lg:col-span-2">
+        <Card className="bg-card border-border/80 lg:col-span-2">
           {selectedRole ? (
             <>
               <CardHeader className="py-4 border-b border-border/60 flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-sm font-semibold text-white">
+                  <CardTitle className="text-sm font-semibold text-foreground">
                     {t("matrixTitle")} <span className="text-emerald-400 font-mono">{selectedRole.name}</span>
                   </CardTitle>
                   <CardDescription className="text-[10px] text-zinc-550">
@@ -262,7 +262,7 @@ export default function RolesPage() {
                   <Button
                     onClick={handleSavePermissions}
                     disabled={savingPermissions}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-white h-8 text-xs gap-1.5 px-3"
+                    className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-8 text-xs gap-1.5 px-3"
                   >
                     <Save className="h-3.5 w-3.5" />
                     {savingPermissions ? tc("saving") : t("savePermissions")}
@@ -292,7 +292,7 @@ export default function RolesPage() {
                           <div className="flex flex-col">
                             <label
                               htmlFor={`perm-${perm.id}`}
-                              className="text-xs text-zinc-200 font-semibold cursor-pointer select-none"
+                              className="text-xs text-foreground font-semibold cursor-pointer select-none"
                             >
                               {perm.displayName}
                             </label>
@@ -315,9 +315,9 @@ export default function RolesPage() {
       </div>
 
       <Dialog open={isRoleOpen} onOpenChange={setIsRoleOpen}>
-        <DialogContent className="bg-[#111] border border-border text-zinc-100 max-w-sm font-sans">
+        <DialogContent className="bg-card border border-border text-foreground max-w-sm font-sans">
           <DialogHeader>
-            <DialogTitle className="text-sm font-semibold text-white">{t("createDialogTitle")}</DialogTitle>
+            <DialogTitle className="text-sm font-semibold text-foreground">{t("createDialogTitle")}</DialogTitle>
           </DialogHeader>
 
           <form onSubmit={handleCreateRole} className="flex flex-col gap-4 py-2">
@@ -345,10 +345,10 @@ export default function RolesPage() {
             </div>
 
             <DialogFooter className="mt-4 gap-2">
-              <Button type="button" onClick={() => setIsRoleOpen(false)} variant="ghost" className="text-muted-foreground hover:text-zinc-200 h-9 text-sm">
+              <Button type="button" onClick={() => setIsRoleOpen(false)} variant="ghost" className="text-muted-foreground hover:text-foreground h-9 text-sm">
                 {tc("cancel")}
               </Button>
-              <Button type="submit" disabled={savingRole} className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-sm">
+              <Button type="submit" disabled={savingRole} className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-9 text-sm">
                 {savingRole ? tc("saving") : t("createRole")}
               </Button>
             </DialogFooter>

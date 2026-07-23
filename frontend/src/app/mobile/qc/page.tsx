@@ -111,7 +111,7 @@ export default function MobileQcPage() {
   return (
     <PageShell className="gap-6">
       <MobileShell>
-      <div className="flex flex-col gap-4 p-4 text-white">
+      <div className="flex flex-col gap-4 p-4 text-foreground">
         <div className="flex items-center gap-2">
           <CheckSquare className="h-5 w-5 text-emerald-500" />
           <div>
@@ -136,7 +136,7 @@ export default function MobileQcPage() {
                 value={lotNo}
                 onChange={(e) => setLotNo(e.target.value)}
                 placeholder={t("labels.lotPlaceholder")}
-                className="bg-card border-border text-white"
+                className="bg-card border-border text-foreground"
                 onKeyDown={(e) => e.key === "Enter" && void lookup()}
               />
               <Button onClick={() => void lookup()} disabled={busy} className="bg-emerald-600 hover:bg-emerald-500">
@@ -150,9 +150,9 @@ export default function MobileQcPage() {
                   <CardTitle className="text-sm">{lot.lotNo}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3 text-xs">
-                  <div className="text-zinc-300">{lot.itemName} ({lot.itemCode})</div>
+                  <div className="text-muted-foreground">{lot.itemName} ({lot.itemCode})</div>
                   <div className="text-muted-foreground">
-                    {t("labels.status")}: <span className="text-white">{lot.qcStatus}</span>
+                    {t("labels.status")}: <span className="text-foreground">{lot.qcStatus}</span>
                   </div>
                   <div className="grid grid-cols-3 gap-2 pt-2">
                     <Button disabled={busy} onClick={() => void submitResult(true)} className="bg-emerald-600 hover:bg-emerald-500 h-9 text-xs">
