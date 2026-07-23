@@ -1,0 +1,70 @@
+{
+  "at": "2026-07-23T08:26:00+07:00",
+  "phase": 43,
+  "workflow": "rp1",
+  "verdict": "RP1_PASS_100_READY",
+  "blockersForExecute": [],
+  "upstream": {
+    "phase41ModuleDoD": true,
+    "phase42ModuleDoD": true,
+    "entityAttachmentsPanelCrud": true,
+    "filesUploadBindListDelete": true,
+    "importExportItemsLocationsPartners": true,
+    "outboundSelectedShipmentDetailPane": true,
+    "rmaSelectedRmaDetailPane": true
+  },
+  "existingOnDisk": {
+    "filesModule": true,
+    "attachmentAllowlist": ["PRODUCT", "QC_RESULT"],
+    "qcResultExistsValidation": false,
+    "entityExistenceHandler": false,
+    "opsExportPermission": false,
+    "opsExportsController": false,
+    "masterIeUomsWarehousesZonesReasons": false,
+    "fePanelsOpsCore": false,
+    "verifyOpsAttachP43": false
+  },
+  "projectReferencesLocked": {
+    "filesHasMasterData": true,
+    "filesHasInventory": true,
+    "filesMustNotReferenceInboundRmaQc": true,
+    "reason": "Qc already references Files — circular DI risk"
+  },
+  "schemaLocks": {
+    "WAREHOUSES": "code,name,description,isActive,errorMessage",
+    "ZONES": "warehouseCode,code,name,zoneType,errorMessage",
+    "UOMS": "code,name,isActive,errorMessage",
+    "REASONS": "code,reasonType,description,isActive,errorMessage",
+    "STOCKTAKES_export": "stocktakeNo,status,zoneId,totalVarianceAmount,createdAt",
+    "zoneEntity": "StorageZone / storage_zones"
+  },
+  "uiWireLocks": {
+    "outbound": "admin/outbound page selectedShipment detail pane",
+    "rma": "admin/rma page selectedRma detail pane",
+    "inbound": "admin/inbound/[id]/receive",
+    "stocktake": "admin/inventory/stocktakes/[id]",
+    "qc": "qc-result-dialog EntityAttachmentsPanel + dual-write attachmentRefs"
+  },
+  "implementationTodo": [
+    "NEW: IEntityExistenceHandler + Api handlers Inbound/Rma/Qc",
+    "UPDATE: AttachmentService allowlist 6 + existence checks",
+    "NEW: ops.export seed DatabaseSeeder ExtraPermissions",
+    "NEW: Api OpsExportsController 4 types",
+    "UPDATE: ImportService + ExportsController +4 types (schemaLocks)",
+    "UPDATE: FE export-buttons + import dropdown + 4 master ExportButtons",
+    "UPDATE: FE panels 5 screens",
+    "NEW: tests/verify_ops_attach_p43.ps1"
+  ],
+  "specGates": {
+    "hasApiContract": true,
+    "hasDiStrategy": true,
+    "hasSchemaLock": true,
+    "hasUiWirePath": true,
+    "hasTestGate": true,
+    "hasDoD": true,
+    "hasEP": true,
+    "hasCritique": true,
+    "coverageAuditPass": true
+  },
+  "note": "Spec 100% Ready. Upstream P41+P42 ĐÓNG. 0 blocker /18."
+}
