@@ -1660,6 +1660,31 @@
         "loadFailed": "Failed to load lot genealogy tree.",
         "holdFailed": "Failed to hold branch."
       }
+    },
+    "storage": {
+      "page": {
+        "title": "File storage",
+        "subtitle": "Choose active storage provider and public base URL for attachments."
+      },
+      "fields": {
+        "provider": "Active provider",
+        "publicBaseUrl": "Public base URL",
+        "publicBaseUrlHint": "CDN or custom domain. Leave empty for provider default."
+      },
+      "actions": {
+        "test": "Test connection",
+        "saveActivate": "Save & activate"
+      },
+      "banner": {
+        "testFailed": "Last connection test failed. Fix credentials before activating cloud."
+      },
+      "toast": {
+        "loadFailed": "Failed to load storage settings.",
+        "testOk": "Connection test succeeded.",
+        "testFailed": "Connection test failed.",
+        "saveOk": "Storage settings saved.",
+        "saveFailed": "Failed to save storage settings."
+      }
     }
   }
 }

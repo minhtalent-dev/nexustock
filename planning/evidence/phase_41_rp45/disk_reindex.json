@@ -1,0 +1,252 @@
+[
+    {
+        "id":  "IDX-function",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "IDX-sot",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "EV-dbm-walk",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "EV-dbm-json",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "EV-dbm-video",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-01",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-02",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-03",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-04",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-05",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-06",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-07",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-01-admin-storage-light.png",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-02-admin-storage-dark.png",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-03-products-export-light.png",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-04-product-attachments-dialog-light.png",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-05-product-attachments-dialog-dark.png",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-06-import-xlsx-light.png",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-07-locations-export-light.png",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-FilesController",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-OpenRead",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-Local",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-Aws",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-Azure",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-Gcs",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-R2",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-Fake",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-Migration",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-Exports",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-ClosedXML",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-QcDelegate",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-AddFiles",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "BE-MigrateFiles",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "FE-storage",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "FE-panel",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "FE-api",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "FE-product",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "FE-import-xlsx",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "FE-export-btn",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "FE-nav45",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "FE-nav-storage",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "I18N-admin-storage",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "I18N-sidebar",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "I18N-breadcrumb",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "TEST-verify",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "TEST-dbm",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "DOC-rp1",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "DOC-rp2",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "DOC-rp3",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "DBM-19-0",
+        "status":  "PASS",
+        "note":  "pass=19 fail=0"
+    }
+]

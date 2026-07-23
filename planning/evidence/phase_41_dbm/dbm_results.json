@@ -1,0 +1,103 @@
+{
+  "pass": 19,
+  "fail": 0,
+  "total": 19,
+  "results": [
+    {
+      "id": "DISK-files-module",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "DISK-admin-storage-page",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "DISK-attachments-panel",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "DISK-exports-controller",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "VERIFY-files-spreadsheet",
+      "status": "PASS",
+      "note": "exit=0"
+    },
+    {
+      "id": "FE-reachable",
+      "status": "PASS",
+      "note": "http://localhost:3003"
+    },
+    {
+      "id": "LOGIN",
+      "status": "PASS",
+      "note": "http://localhost:3003/"
+    },
+    {
+      "id": "STORAGE-PAGE-LIGHT",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "STORAGE-PROVIDER-SELECT",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "STORAGE-DEFAULT-LOCAL",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "STORAGE-ACTIONS",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "STORAGE-PAGE-DARK",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "PRODUCTS-EXPORT-BUTTONS",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "PRODUCT-ATTACHMENTS-PANEL",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "PRODUCT-UPLOAD-CONTROL",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "PRODUCT-ATTACHMENTS-DARK",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "IMPORT-ACCEPT-XLSX",
+      "status": "PASS",
+      "note": "accept=.csv,.xlsx"
+    },
+    {
+      "id": "LOCATIONS-EXPORT",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "VIDEO",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_41_dbm\\walkthrough-files-spreadsheet.webm"
+    }
+  ],
+  "at": "2026-07-23T06:17:17.530Z"
+}

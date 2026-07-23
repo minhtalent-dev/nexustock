@@ -61,6 +61,7 @@
       "roles": "Vai trò & Quyền",
       "rules": "Cấu hình luật",
       "audit": "Nhật ký hệ thống",
+      "fileStorage": "Lưu trữ file",
       "localAgent": "Local Agent",
       "observability": "Giám sát vận hành",
       "alerts": "Trung tâm cảnh báo",

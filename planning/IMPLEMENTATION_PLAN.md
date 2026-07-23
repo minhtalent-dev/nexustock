@@ -188,6 +188,8 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 38 | [UI Design System Pass](file:///d:/1_Project/48_Nexustock/planning/phases/phase_38_ui_design_system_pass.md) | Option B token + PageShell. **✅ ĐÓNG** (`rp4`+`rp5` · AUDIT ~8.2 · dbm 32/0). |
 | 39 | [Theme Light / Dark + System](file:///d:/1_Project/48_Nexustock/planning/phases/phase_39_theme_light_dark_system.md) | Option B · default **system**. **✅ ĐÓNG** (`rp4`+`rp5` · AUDIT ~8.5 · dbm 33/0). |
 | 40 | [CRUD Dialog Form Width](file:///d:/1_Project/48_Nexustock/planning/phases/phase_40_crud_dialog_form_width.md) | Option B · nới/stack input popup CRUD. **✅ ĐÓNG** (`rp4`+`rp5` · disk **38/0** · dbm **23/0** · AUDIT ~8.6). |
+| 41 | [Attachments + Spreadsheet Gap](file:///d:/1_Project/48_Nexustock/planning/phases/phase_41_attachments_spreadsheet_gap.md) | Option B · Files + Product · Excel/CSV · Storage Hub. **✅ ĐÓNG** (`rp4`+`rp5` · disk **50/0** · dbm **19/0** · AUDIT ~8.7). |
+| 42 | [Storage Provider Bulk Migrate](file:///d:/1_Project/48_Nexustock/planning/phases/phase_42_storage_provider_migrate.md) | Option B · Dry-run/Start/Progress/Purge Local→cloud. **95% Ready** (`/30` 2026-07-23). Phụ thuộc P41 DoD. |
 
 ---
 
@@ -240,6 +242,8 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 38 | UI Design System Pass | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-23. Disk FAIL=0; PageShell **56/57** (allowlist 1); verify_ui PASS; AUDIT ~**8.2**; **dbm 32/0**. | 2026-07-23 | [phase_38 §25–§26](file:///d:/1_Project/48_Nexustock/planning/phases/phase_38_ui_design_system_pass.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_38_rp45/validation_pass.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_38_dbm/walkthrough.md) |
 | 39 | Theme Light / Dark + System | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-23. Disk **42/0**; default **system**; ThemeProvider + switcher Admin/Mobile; verify_theme PASS; AUDIT ~**8.5**; **dbm 33/0**. | 2026-07-23 | [phase_39 §25–§28](file:///d:/1_Project/48_Nexustock/planning/phases/phase_39_theme_light_dark_system.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_39_rp45/validation_pass.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_39_dbm/walkthrough.md) |
 | 40 | CRUD Dialog Form Width | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-23. Disk **38/0**; P0+P1; bareMaxW; verify PASS; **dbm 23/0** (dialog 768 · Qty 188); AUDIT ~**8.6**. | 2026-07-23 | [phase_40 §25–§28](file:///d:/1_Project/48_Nexustock/planning/phases/phase_40_crud_dialog_form_width.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_40_rp45/validation_pass.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_40_dbm/walkthrough.md) |
+| 41 | Attachments + Spreadsheet Gap | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-23. Disk **50/0**; Files+Storage+xlsx; verify files/nav/i18n/shell PASS; **dbm 19/0**; AUDIT ~**8.7**. | 2026-07-23 | [phase_41 §25–§28](file:///d:/1_Project/48_Nexustock/planning/phases/phase_41_attachments_spreadsheet_gap.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_41_rp45/validation_pass.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_41_dbm/walkthrough.md) |
+| 42 | Storage Provider Bulk Migrate | ⏳ Spec Ready | **`/30` 95% Ready** 2026-07-23. Job migrate + Admin panel; gate Test connection; Purge opt-in. Chờ P41 DoD + Proceed. | — | [phase_42](file:///d:/1_Project/48_Nexustock/planning/phases/phase_42_storage_provider_migrate.md) |
 
 ### Quy ước trạng thái
 
@@ -268,6 +272,8 @@ Các deep spec dưới đây **không chặn Phase 01**. Đây là danh sách n�
 | Trước Phase 38 | UI Option B design system | ✅ Phase 38 **Module DoD 100%** (`rp4`+`rp5` 2026-07-23) | disk FAIL=0; AUDIT ~8.2; dbm 32/0; PageShell 56/57 + allowlist 1. |
 | Trước Phase 39 | Theme light/dark + system default | ✅ Phase 39 **Module DoD 100%** (`rp4`+`rp5` ĐÓNG 2026-07-23) | default system; verify_theme PASS; dbm 33/0; AUDIT ~8.5. |
 | Trước Phase 40 | Dialog CRUD form width inventory | ✅ Phase 40 **ĐÓNG** (`rp4`+`rp5` 2026-07-23) | disk 38/0; dbm 23/0; bareMaxW; AUDIT ~8.6. |
+| Trước Phase 41 | Attachments + Excel/CSV + Storage Hub | ✅ Phase 41 **ĐÓNG** (`rp4`+`rp5` 2026-07-23) | disk 50/0; dbm 19/0; Files+xlsx+Storage; AUDIT ~8.7. |
+| Trước Phase 42 | Storage bulk migrate | ⏳ Spec **95% Ready** (`/30` 2026-07-23) | Phụ thuộc P41 DoD; dry-run/start/purge. |
 
 ### Nguyên tắc dùng backlog
 

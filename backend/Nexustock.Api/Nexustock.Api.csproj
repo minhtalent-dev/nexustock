@@ -51,6 +51,7 @@
     <ProjectReference Include="..\modules\Nexustock.Modules.LaborTracking\Nexustock.Modules.LaborTracking.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.TaskInterleaving\Nexustock.Modules.TaskInterleaving.csproj" />
     <ProjectReference Include="..\modules\Nexustock.Modules.Readiness\Nexustock.Modules.Readiness.csproj" />
+    <ProjectReference Include="..\modules\Nexustock.Modules.Files\Nexustock.Modules.Files.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,69 @@
+﻿{
+    "at":  "2026-07-23T04:35:21.2526435Z",
+    "phase":  41,
+    "workflow":  "rp1",
+    "verdict":  "RP1_PASS_100_READY",
+    "blockersForExecute":  [
+
+                           ],
+    "existing":  {
+                     "importService":  true,
+                     "qcResultDialogUpload":  true,
+                     "attachmentUiShadcn":  true,
+                     "staticFilesProgram":  true,
+                     "verifyFilesScript":  false,
+                     "adminStoragePage":  false,
+                     "importsController":  true,
+                     "uploadSettingsAppsettings":  true,
+                     "entityAttachmentsPanel":  false,
+                     "exportsController":  false,
+                     "serialCsvImport":  true,
+                     "qcStorageController":  true,
+                     "filesModule":  false,
+                     "masterImportPage":  true,
+                     "closedXmlRef":  false
+                 },
+    "importTypes":  [
+                        "ITEMS",
+                        "LOCATIONS",
+                        "PARTNERS"
+                    ],
+    "masterDataPages":  [
+                            "frontend/src/app/master-data/import/page.tsx",
+                            "frontend/src/app/master-data/locations/page.tsx",
+                            "frontend/src/app/master-data/partners/page.tsx",
+                            "frontend/src/app/master-data/products/page.tsx",
+                            "frontend/src/app/master-data/reasons/page.tsx",
+                            "frontend/src/app/master-data/uoms/page.tsx",
+                            "frontend/src/app/master-data/warehouses/page.tsx",
+                            "frontend/src/app/master-data/zones/page.tsx"
+                        ],
+    "frontendStorageUploadRefs":  1,
+    "implementationTodo":  [
+                               "NEW: Nexustock.Modules.Files (+ providers + settings)",
+                               "NEW: ClosedXML NuGet",
+                               "NEW: ExportsController",
+                               "NEW: admin/settings/storage page + nav",
+                               "NEW: features/files EntityAttachmentsPanel",
+                               "NEW: verify_files_spreadsheet.ps1",
+                               "EXTEND: ImportService accept rows from xlsx",
+                               "EXTEND: master-data/import accept .xlsx",
+                               "EXTEND: QC StorageController delegate",
+                               "WIRE: products page attachments panel"
+                           ],
+    "specGates":  {
+                      "hasIObjectStorage":  true,
+                      "hasPseudoUpload":  true,
+                      "hasFileStorageSettings":  true,
+                      "hasMigrationSql":  true,
+                      "hasClosedXml":  true,
+                      "hasProviders":  true,
+                      "hasDoD":  true,
+                      "hasEP":  true,
+                      "hasPublicBaseUrl":  true,
+                      "hasDefaultLocal":  true,
+                      "hasAdminStorageUi":  true,
+                      "hasCritique":  true
+                  },
+    "note":  "Spec 100% Ready. implementationTodo = expected NEW/EXTEND for /18 — not blockers."
+}

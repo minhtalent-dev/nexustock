@@ -97,7 +97,12 @@ public static class DatabaseSeeder
         ("readiness.uat.write", "Ghi kết quả UAT run", "Readiness"),
         ("readiness.uat.signoff", "Ký nghiệm thu UAT", "Readiness"),
         ("readiness.cutover.freeze", "Freeze/unfreeze write API khi cutover", "Readiness"),
-        ("readiness.drill.write", "Ghi kết quả incident drill", "Readiness")
+        ("readiness.drill.write", "Ghi kết quả incident drill", "Readiness"),
+        ("files.upload", "Upload file đính kèm", "Files"),
+        ("files.read", "Xem file đính kèm", "Files"),
+        ("files.delete", "Xóa file đính kèm", "Files"),
+        ("files.storage.manage", "Quản lý cấu hình lưu trữ file", "Files"),
+        ("master_data.export", "Xuất danh mục master data", "MasterData")
     };
 
     private static readonly (string Name, string Description)[] DefaultFeatureFlags =

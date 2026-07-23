@@ -1,7 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import MasterDataCrudPage, { type CrudField } from "@/features/master-data/master-data-crud";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
+import { bindAttachment, type UploadResult } from "@/features/files/api";
+import { MasterDataExportButtons } from "@/features/master-data/export-buttons";
 import type { ProductDto } from "@/types/master-data";
 
 type ProductForm = {
@@ -18,6 +22,7 @@ const defaultForm: ProductForm = { code: "", name: "", description: "", barcode:
 export default function ProductsPage() {
   const t = useTranslations("MasterData.products");
   const ts = useTranslations("MasterData.common");
+  const [pendingUploads, setPendingUploads] = useState<UploadResult[]>([]);
 
   const fields: CrudField<ProductForm>[] = [
     { name: "code", label: t("fields.code.label"), type: "text", required: true, placeholder: t("fields.code.placeholder") },
@@ -29,7 +34,11 @@ export default function ProductsPage() {
   ];
 
   return (
-    <MasterDataCrudPage<ProductDto, ProductForm>
+    <div className="space-y-3">
+      <div className="flex justify-end px-1">
+        <MasterDataExportButtons type="ITEMS" />
+      </div>
+      <MasterDataCrudPage<ProductDto, ProductForm>
       title={t("page.title")}
       endpoint="/master-data/products"
       searchPlaceholder={t("page.searchPlaceholder")}
@@ -43,6 +52,30 @@ export default function ProductsPage() {
         baseUomId: item.baseUomId,
         isActive: item.isActive,
       })}
+      onCreated={async (item) => {
+        for (const u of pendingUploads) {
+          await bindAttachment({
+            entityType: "PRODUCT",
+            entityId: item.id,
+            url: u.url,
+            provider: u.provider,
+            storageKey: u.storageKey,
+            fileName: u.fileName,
+            contentType: u.contentType,
+            sizeBytes: u.sizeBytes,
+            kind: u.kind,
+          });
+        }
+        setPendingUploads([]);
+      }}
+      renderDialogExtra={({ editing }) => (
+        <EntityAttachmentsPanel
+          entityType="PRODUCT"
+          entityId={editing?.id ?? null}
+          pendingUploads={pendingUploads}
+          onPendingChange={setPendingUploads}
+        />
+      )}
       columns={[
         { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono text-blue-400">{item.code}</span> },
         { key: "name", label: t("columns.name"), render: (item) => item.name },
@@ -59,5 +92,6 @@ export default function ProductsPage() {
         },
       ]}
     />
+    </div>
   );
 }

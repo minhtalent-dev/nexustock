@@ -61,6 +61,7 @@
       "roles": "Roles & permissions",
       "rules": "Rule config",
       "audit": "System audit",
+      "fileStorage": "File storage",
       "localAgent": "Local Agent",
       "observability": "Operations monitoring",
       "alerts": "Alert center",

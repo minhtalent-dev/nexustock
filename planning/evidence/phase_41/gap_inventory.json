@@ -1,0 +1,22 @@
+﻿{
+  "phase": 41,
+  "at": "2026-07-23",
+  "gap": {
+    "upload": "QC StorageController only",
+    "storageBackend": "LOCAL disk only (D:\\\\NexustockUploads)",
+    "import": "CSV master ITEMS/LOCATIONS/PARTNERS",
+    "export": "CSV import errors only"
+  },
+  "target": {
+    "filesModule": true,
+    "entityAttachment": true,
+    "productUi": true,
+    "xlsxImportExport": true,
+    "storageProviders": ["LOCAL", "AWS_S3", "AZURE_BLOB", "GCS", "CLOUDFLARE_R2"],
+    "defaultProvider": "LOCAL",
+    "customPublicBaseUrl": true,
+    "adminStorageSwitch": true
+  },
+  "option": "B",
+  "updated": "up multi-provider 2026-07-23"
+}

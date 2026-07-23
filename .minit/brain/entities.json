@@ -299,5 +299,24 @@
       "Trigger: truncated UOM in Create Inbound popup",
       "SoT: planning/phases/phase_40_crud_dialog_form_width.md"
     ]
+  },
+  "Phase41_Attachments_Spreadsheet": {
+    "name": "Phase41_Attachments_Spreadsheet",
+    "entityType": "Phase",
+    "observations": [
+      "Gap 2026-07-23: upload image/doc chi QC; Excel xlsx chua co (CSV master + ERP/serial).",
+      "Phase 41 Option B: Shared File Storage + EntityAttachment + Product UI + ClosedXML xlsx import/export; migrate QC.",
+      "Target 95% Ready /30; FE :3003."
+    ]
+  },
+  "Phase42_Storage_Bulk_Migrate": {
+    "name": "Phase42_Storage_Bulk_Migrate",
+    "entityType": "Phase",
+    "observations": [
+      "2026-07-23 /30 95% Ready Option B: bulk migrate Local/old to target provider",
+      "Features: dry-run start progress cancel resume purge-opt-in; Test connection gate from P41",
+      "OOS: Inbound/Outbound attach → Phase 43",
+      "Upstream Phase 41 DoD required"
+    ]
   }
 }

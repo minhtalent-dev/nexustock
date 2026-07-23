@@ -49,6 +49,8 @@
     "lots": "Lots",
     "rma": "RMA",
     "putaway": "Putaway",
-    "allocation": "Allocation"
+    "allocation": "Allocation",
+    "settings": "Settings",
+    "storage": "File storage"
   }
 }

@@ -12,5 +12,5 @@ export const MODULES_GROUPS: NavGroupSpec[] = [
   { titleKey: "inventory", linkIds: ["inventory", "stocktakes", "exceptions", "replenishment", "lpn", "serial", "genealogy"] },
   { titleKey: "labor", linkIds: ["labor", "laborSessions", "taskInterleaving"] },
   { titleKey: "integration", linkIds: ["integrationMessages", "integrationMappings", "integrationImport", "webhookSubscriptions", "webhookDeliveries"] },
-  { titleKey: "system", linkIds: ["users", "roles", "rules", "audit", "localAgent", "observability", "alerts", "timeline", "readiness", "cutover"] },
+  { titleKey: "system", linkIds: ["users", "roles", "rules", "audit", "fileStorage", "localAgent", "observability", "alerts", "timeline", "readiness", "cutover"] },
 ];

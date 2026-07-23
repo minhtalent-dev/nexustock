@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import MasterDataCrudPage, { type CrudField } from "@/features/master-data/master-data-crud";
+import { MasterDataExportButtons } from "@/features/master-data/export-buttons";
 import type { StorageLocation, StorageZone, PagedResult } from "@/types/master-data";
 
 type LocationForm = {
@@ -76,6 +77,10 @@ export default function LocationsPage() {
   ];
 
   return (
+    <div className="space-y-3">
+      <div className="flex justify-end px-1">
+        <MasterDataExportButtons type="LOCATIONS" />
+      </div>
     <MasterDataCrudPage<StorageLocation, LocationForm>
       title={t("page.title")}
       endpoint="/master-data/storage-locations"
@@ -113,5 +118,6 @@ export default function LocationsPage() {
         },
       ]}
     />
+    </div>
   );
 }

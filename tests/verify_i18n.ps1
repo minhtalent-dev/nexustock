@@ -68,8 +68,9 @@ if ($Phase -eq "33") {
   if ($allPages.Count -ne 59) { throw "Expected 59 pages, found $($allPages.Count)" }
   Write-Host "PASS: inventory 59/59"
 } else {
-  if ($foundation -ne 44) { throw "Expected 44 P31 pages, found $foundation" }
-  Write-Host "PASS: inventory 44/44"
+  # Phase 41: +1 Admin Storage Settings page → 45 foundation pages
+  if ($foundation -ne 45) { throw "Expected 45 P31+ pages, found $foundation" }
+  Write-Host "PASS: inventory 45/45"
 }
 
 $i18nPkg = Join-Path $frontend "node_modules\next-intl\package.json"

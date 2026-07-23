@@ -4,6 +4,9 @@
 *Ngày cập nhật: 23/07/2026*
 
 ### Tính năng mới
+- **Đính kèm ảnh/tài liệu vật tư**: Trong form tạo/sửa vật tư có thể tải ảnh hoặc PDF; danh sách đính kèm xem/xóa ngay trên form.
+- **Nhập/xuất bảng Excel**: Import danh mục hỗ trợ file Excel (.xlsx) ngoài CSV; xuất danh mục vật tư/vị trí/đối tác ra CSV hoặc Excel.
+- **Cấu hình nơi lưu file**: Admin chọn lưu trên máy chủ (mặc định) hoặc dịch vụ đám mây; kiểm tra kết nối trước khi kích hoạt; đường dẫn công khai tùy chỉnh khi cần.
 - **Form tạo/sửa rõ ràng hơn**: Các cửa sổ nhập liệu (phiếu nhập, xuất hàng, …) có ô chọn và ô số đủ rộng — không còn bị cắt chữ khi thao tác.
 - **Giao diện sáng / tối**: Tự theo máy (mặc định) hoặc chọn sáng/tối trên một hàng (Hệ thống · Sáng · Tối); lựa chọn được giữ khi làm việc tiếp; ô quét trên thiết bị cầm tay cũng theo giao diện đang chọn.
 - **Giao diện thống nhất**: Cùng khung trang, màu hệ thống và trạng thái trống/đang tải/lỗi trên quản trị và thiết bị cầm tay — dễ dùng, ít lệch giao diện giữa các màn hình.

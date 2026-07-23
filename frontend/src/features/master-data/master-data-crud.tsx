@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,8 @@ interface MasterDataCrudPageProps<TItem extends { id: string; rowVersion: number
   }>;
   toForm: (item: TItem) => TForm;
   filters?: Record<string, string | number | boolean | undefined>;
+  renderDialogExtra?: (ctx: { editing: TItem | null }) => ReactNode;
+  onCreated?: (item: TItem) => void | Promise<void>;
 }
 
 export default function MasterDataCrudPage<TItem extends { id: string; rowVersion: number }, TForm extends Record<string, unknown>>({
@@ -54,6 +57,8 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
   columns,
   toForm,
   filters,
+  renderDialogExtra,
+  onCreated,
 }: MasterDataCrudPageProps<TItem, TForm>) {
   const t = useTranslations("MasterData.common");
   const confirm = useConfirmDialog();
@@ -117,8 +122,9 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
         await api.put(`${endpoint}/${editing.id}`, payload);
         showSuccess(t("toast.updateSuccess"));
       } else {
-        await api.post(endpoint, payload);
+        const res = await api.post<TItem>(endpoint, payload);
         showSuccess(t("toast.createSuccess"));
+        if (res.data) await onCreated?.(res.data);
       }
       closeDialog();
       await fetchData();
@@ -307,6 +313,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
                 <Button disabled={saving}>{saving ? t("actions.saving") : t("actions.save")}</Button>
               </div>
             </form>
+            {renderDialogExtra ? <div className="border-t border-border p-5">{renderDialogExtra({ editing })}</div> : null}
           </div>
         </div>
       )}

@@ -5,9 +5,7 @@ using Nexustock.Modules.MasterData.Services;
 
 namespace Nexustock.Modules.MasterData.Controllers;
 
-/// <summary>
-/// Controller quản lý import dữ liệu - dùng chung cho tất cả loại master data.
-/// </summary>
+/// <summary>Controller quản lý import dữ liệu master data (CSV + xlsx).</summary>
 [ApiController]
 [Route("api/imports")]
 [Produces("application/json")]
@@ -20,17 +18,23 @@ public class ImportsController : ControllerBase
         _importService = importService;
     }
 
-    /// <summary>
-    /// Tải template CSV để nhập liệu cho loại dữ liệu chỉ định.
-    /// </summary>
-    /// <param name="type">Loại master data: ITEMS, LOCATIONS, PARTNERS</param>
     [HttpGet("template")]
-    public IActionResult GetTemplate([FromQuery] string type)
+    public IActionResult GetTemplate([FromQuery] string type, [FromQuery] string format = "csv")
     {
         try
         {
             var csv = _importService.GetTemplateCsv(type);
-            return File(Encoding.UTF8.GetBytes(csv), "text/csv", $"template_{type.ToLowerInvariant()}.csv");
+            var fmt = (format ?? "csv").Trim().ToLowerInvariant();
+            if (fmt == "xlsx")
+            {
+                var rows = CsvParser.Parse(csv);
+                var bytes = SpreadsheetReader.WriteXlsx(rows);
+                return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"template_{type.ToLowerInvariant()}.xlsx");
+            }
+
+            var bom = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv)).ToArray();
+            return File(bom, "text/csv", $"template_{type.ToLowerInvariant()}.csv");
         }
         catch (ArgumentException ex)
         {
@@ -38,28 +42,39 @@ public class ImportsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Preview import: phân tích file CSV, validate dữ liệu nhưng không ghi vào DB.
-    /// </summary>
-    /// <param name="type">Loại master data: ITEMS, LOCATIONS, PARTNERS</param>
-    /// <param name="file">File CSV cần preview</param>
     [HttpPost("preview")]
-    [RequestSizeLimit(10 * 1024 * 1024)] // 10MB
+    [RequestSizeLimit(12 * 1024 * 1024)]
     public async Task<IActionResult> Preview([FromQuery] string type, IFormFile file)
     {
         if (file == null || file.Length == 0)
             return BadRequest(new { error = "Không tìm thấy file." });
 
-        using var reader = new StreamReader(file.OpenReadStream());
-        var csvContent = await reader.ReadToEndAsync();
+        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        try
+        {
+            if (ext == ".xlsx")
+            {
+                await using var stream = file.OpenReadStream();
+                var rows = SpreadsheetReader.ReadSheetRows(stream);
+                var result = await _importService.PreviewImportAsync(type, rows, HttpContext.RequestAborted);
+                if (string.Equals(result.ErrorCsvContent, "IMPORT_TOO_LARGE", StringComparison.Ordinal))
+                    return BadRequest(new { error = "IMPORT_TOO_LARGE", message = "Import exceeds 5000 data rows." });
+                return Ok(result);
+            }
 
-        var result = await _importService.PreviewImportAsync(type, csvContent, HttpContext.RequestAborted);
-        return Ok(result);
+            using var reader = new StreamReader(file.OpenReadStream());
+            var csvContent = await reader.ReadToEndAsync();
+            var csvResult = await _importService.PreviewImportAsync(type, csvContent, HttpContext.RequestAborted);
+            if (string.Equals(csvResult.ErrorCsvContent, "IMPORT_TOO_LARGE", StringComparison.Ordinal))
+                return BadRequest(new { error = "IMPORT_TOO_LARGE", message = "Import exceeds 5000 data rows." });
+            return Ok(csvResult);
+        }
+        catch (InvalidOperationException ex) when (ex.Message == "IMPORT_PARSE_FAILED")
+        {
+            return BadRequest(new { error = "IMPORT_PARSE_FAILED", message = "Unable to parse spreadsheet." });
+        }
     }
 
-    /// <summary>
-    /// Commit import: xác nhận import batch đã preview.
-    /// </summary>
     [HttpPost("commit")]
     public async Task<IActionResult> Commit([FromBody] CommitImportRequest request)
     {
@@ -67,9 +82,6 @@ public class ImportsController : ControllerBase
         return Ok(result);
     }
 
-    /// <summary>
-    /// Xuất file CSV các dòng lỗi của batch import.
-    /// </summary>
     [HttpGet("errors/{batchId}")]
     [Produces("text/csv")]
     public async Task<IActionResult> ExportErrors(Guid batchId)
@@ -78,13 +90,11 @@ public class ImportsController : ControllerBase
         if (csv == null)
             return NotFound(new { error = "Không tìm thấy batch hoặc batch không có lỗi." });
 
-        return File(Encoding.UTF8.GetBytes(csv), "text/csv", $"errors_{batchId}.csv");
+        var bom = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv)).ToArray();
+        return File(bom, "text/csv", $"errors_{batchId}.csv");
     }
 }
 
-/// <summary>
-/// Request body cho commit import.
-/// </summary>
 public class CommitImportRequest
 {
     public Guid BatchId { get; set; }

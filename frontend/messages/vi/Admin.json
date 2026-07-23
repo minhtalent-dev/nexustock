@@ -1660,6 +1660,31 @@
         "loadFailed": "Không thể tải cây phả hệ Lot.",
         "holdFailed": "Lỗi phong tỏa nhánh."
       }
+    },
+    "storage": {
+      "page": {
+        "title": "Lưu trữ file",
+        "subtitle": "Chọn nhà cung cấp lưu trữ và URL công khai cho tệp đính kèm."
+      },
+      "fields": {
+        "provider": "Nhà cung cấp đang dùng",
+        "publicBaseUrl": "URL công khai",
+        "publicBaseUrlHint": "CDN hoặc domain tùy chỉnh. Để trống dùng mặc định provider."
+      },
+      "actions": {
+        "test": "Kiểm tra kết nối",
+        "saveActivate": "Lưu & kích hoạt"
+      },
+      "banner": {
+        "testFailed": "Lần kiểm tra gần nhất thất bại. Sửa credential trước khi kích hoạt cloud."
+      },
+      "toast": {
+        "loadFailed": "Không tải được cấu hình lưu trữ.",
+        "testOk": "Kiểm tra kết nối thành công.",
+        "testFailed": "Kiểm tra kết nối thất bại.",
+        "saveOk": "Đã lưu cấu hình lưu trữ.",
+        "saveFailed": "Không lưu được cấu hình lưu trữ."
+      }
     }
   }
 }

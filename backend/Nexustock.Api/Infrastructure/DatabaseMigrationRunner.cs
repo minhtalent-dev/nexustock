@@ -53,6 +53,7 @@ public static class DatabaseMigrationRunner
         await RunAsync<Nexustock.Modules.MasterData.Contexts.MasterDataDbContext>("MasterData");
         await RunAsync<Nexustock.Modules.Inbound.Contexts.InboundDbContext>("Inbound");
         await RunAsync<Nexustock.Modules.Qc.Contexts.QcDbContext>("Qc");
+        await RunAsync<Nexustock.Modules.Files.Contexts.FilesDbContext>("Files");
         await RunAsync<LpnDbContext>("Lpn");
         await RunAsync<Nexustock.Modules.Inventory.Contexts.InventoryDbContext>("Inventory");
         await RunAsync<Nexustock.Modules.Exceptions.Contexts.ExceptionsDbContext>("Exceptions");

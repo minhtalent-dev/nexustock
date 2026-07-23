@@ -1,0 +1,9 @@
+﻿{
+  "phase": 42,
+  "at": "2026-07-23",
+  "focus": "storage_provider_bulk_migrate",
+  "upstream": 41,
+  "option": "B",
+  "maturity": "95% Ready",
+  "features": ["dryRun", "startJob", "progress", "cancelResume", "purgeSourceOptIn", "testConnectionGate"]
+}

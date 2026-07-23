@@ -10,6 +10,7 @@ namespace Nexustock.Modules.MasterData.Services;
 public interface IImportService
 {
     Task<ImportResultDto> PreviewImportAsync(string importType, string csvContent, CancellationToken cancellationToken);
+    Task<ImportResultDto> PreviewImportAsync(string importType, IReadOnlyList<string[]> rows, CancellationToken cancellationToken);
     Task<ImportResultDto> CommitImportAsync(Guid batchId, CancellationToken cancellationToken);
     Task<string?> ExportErrorCsvAsync(Guid batchId, CancellationToken cancellationToken);
     string GetTemplateCsv(string importType);
@@ -44,13 +45,25 @@ public class ImportService : IImportService
 
     public async Task<ImportResultDto> PreviewImportAsync(string importType, string csvContent, CancellationToken cancellationToken)
     {
-        var type = importType.Trim().ToUpperInvariant();
         var rawRows = CsvParser.Parse(csvContent);
-        if (rawRows.Count <= 1)
+        return await PreviewImportAsync(importType, rawRows, cancellationToken);
+    }
+
+    public async Task<ImportResultDto> PreviewImportAsync(string importType, IReadOnlyList<string[]> rows, CancellationToken cancellationToken)
+    {
+        var type = importType.Trim().ToUpperInvariant();
+        if (rows.Count <= 1)
         {
-            return new ImportResultDto(false, Guid.Empty, type, "FAILED", 0, 0, 0, new List<ImportRowErrorDto>(), "File CSV trống hoặc chỉ có header.");
+            return new ImportResultDto(false, Guid.Empty, type, "FAILED", 0, 0, 0, new List<ImportRowErrorDto>(), "File trống hoặc chỉ có header.");
         }
 
+        var dataRowCount = rows.Count - 1;
+        if (dataRowCount > SpreadsheetReader.MaxDataRows)
+        {
+            return new ImportResultDto(false, Guid.Empty, type, "FAILED", 0, 0, 0, new List<ImportRowErrorDto>(), "IMPORT_TOO_LARGE");
+        }
+
+        var rawRows = rows.ToList();
         var header = rawRows[0].Select(h => h.Trim()).ToArray();
         var dataRows = rawRows.Skip(1).ToList();
         var batchId = Guid.NewGuid();

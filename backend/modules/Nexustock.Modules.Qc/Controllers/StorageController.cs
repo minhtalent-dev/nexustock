@@ -1,52 +1,36 @@
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+using Nexustock.Modules.Files.Services;
 using Nexustock.Modules.Qc.Dtos;
 
 namespace Nexustock.Modules.Qc.Controllers;
 
+/// <summary>Compat QC upload — delegate sang Files module.</summary>
 [Authorize]
 [ApiController]
 [Route("api/storage")]
 public class StorageController : ControllerBase
 {
-    private readonly IConfiguration _configuration;
+    private readonly IFileStorageService _fileStorage;
 
-    public StorageController(IConfiguration configuration)
+    public StorageController(IFileStorageService fileStorage)
     {
-        _configuration = configuration;
+        _fileStorage = fileStorage;
     }
 
     [HttpPost("upload")]
+    [RequestSizeLimit(12 * 1024 * 1024)]
     public async Task<IActionResult> UploadFile(IFormFile file)
     {
-        if (file == null || file.Length == 0)
+        try
         {
-            return BadRequest("No file uploaded or file is empty");
+            var result = await _fileStorage.UploadAsync(file, User.Identity?.Name, HttpContext.RequestAborted);
+            return Ok(new UploadResponseDto { Url = result.Url });
         }
-
-        var uploadPath = _configuration["UploadSettings:UploadPath"] ?? "D:\\NexustockUploads";
-        var requestPath = _configuration["UploadSettings:RequestPath"] ?? "/uploads";
-
-        if (!Directory.Exists(uploadPath))
+        catch (FileDomainException ex)
         {
-            Directory.CreateDirectory(uploadPath);
+            return StatusCode(ex.StatusCode, new { error = ex.ErrorCode, message = ex.Message });
         }
-
-        var ext = Path.GetExtension(file.FileName);
-        var newFileName = $"{Guid.NewGuid()}{ext}";
-        var filePath = Path.Combine(uploadPath, newFileName);
-
-        using (var stream = new FileStream(filePath, FileMode.Create))
-        {
-            await file.CopyToAsync(stream);
-        }
-
-        var relativeUrl = $"{requestPath}/{newFileName}";
-        return Ok(new UploadResponseDto { Url = relativeUrl });
     }
 }

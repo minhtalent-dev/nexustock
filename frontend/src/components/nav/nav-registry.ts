@@ -1,4 +1,4 @@
-// @nav-registry-count 44
+// @nav-registry-count 45
 // SoT: planning/function_index_phase35_admin_nav_lens.md §A + §A2
 
 import type { LucideIcon } from "lucide-react";
@@ -33,6 +33,7 @@ import {
   FileText,
   ShieldCheck,
   GitBranch,
+  HardDrive,
 } from "lucide-react";
 
 export type NavLinkDef = {
@@ -48,8 +49,8 @@ export type NavGroupSpec = {
   linkIds: string[];
 };
 
-/** Số link cố định Phase 35 — verify_nav_lens assert. */
-export const NAV_LINK_COUNT = 44;
+/** Số link cố định — verify_nav_lens assert. */
+export const NAV_LINK_COUNT = 45;
 
 export const NAV_LINKS: NavLinkDef[] = [
   { id: "home", href: "/", labelKey: "home", icon: Home },
@@ -90,6 +91,7 @@ export const NAV_LINKS: NavLinkDef[] = [
   { id: "roles", href: "/admin/roles", labelKey: "roles", icon: Lock, permission: "Identity.Roles.View" },
   { id: "rules", href: "/admin/rules", labelKey: "rules", icon: Sliders, permission: "rule_engine_foundation.read" },
   { id: "audit", href: "/admin/audit", labelKey: "audit", icon: FileText, permission: "Identity.Audit.View" },
+  { id: "fileStorage", href: "/admin/settings/storage", labelKey: "fileStorage", icon: HardDrive, permission: "files.storage.manage" },
   { id: "localAgent", href: "/admin/local-agent", labelKey: "localAgent", icon: Monitor, permission: "local_agent.view" },
   { id: "observability", href: "/admin/observability", labelKey: "observability", icon: Activity, permission: "observability.read" },
   { id: "alerts", href: "/admin/observability/alerts", labelKey: "alerts", icon: AlertCircle, permission: "observability.read" },

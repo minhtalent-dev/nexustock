@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import MasterDataCrudPage, { type CrudField } from "@/features/master-data/master-data-crud";
+import { MasterDataExportButtons } from "@/features/master-data/export-buttons";
 import type { Partner } from "@/types/master-data";
 
 type PartnerForm = {
@@ -46,6 +47,10 @@ export default function PartnersPage() {
   ];
 
   return (
+    <div className="space-y-3">
+      <div className="flex justify-end px-1">
+        <MasterDataExportButtons type="PARTNERS" />
+      </div>
     <MasterDataCrudPage<Partner, PartnerForm>
       title={t("page.title")}
       endpoint="/master-data/partners"
@@ -76,5 +81,6 @@ export default function PartnersPage() {
         },
       ]}
     />
+    </div>
   );
 }

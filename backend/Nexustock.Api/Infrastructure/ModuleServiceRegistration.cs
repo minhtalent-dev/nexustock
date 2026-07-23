@@ -4,6 +4,7 @@ using Nexustock.Modules.Allocation;
 using Nexustock.Modules.CrossDocking;
 using Nexustock.Modules.ErpIntegration;
 using Nexustock.Modules.Exceptions;
+using Nexustock.Modules.Files;
 using Nexustock.Modules.Identity;
 using Nexustock.Modules.Inbound;
 using Nexustock.Modules.Inventory;
@@ -35,6 +36,7 @@ public static class ModuleServiceRegistration
         services.AddIdentityModule(configuration);
         services.AddInboundModule(configuration);
         services.AddQcModule(configuration);
+        services.AddFilesModule(configuration);
         services.AddInventoryModule(configuration);
         services.AddExceptionsModule(configuration);
         services.AddRulesModule(configuration);

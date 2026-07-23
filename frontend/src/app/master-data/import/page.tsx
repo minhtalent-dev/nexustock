@@ -47,7 +47,7 @@ export default function ImportPage() {
     formData.append("file", file);
     try {
       const res = await api.post<ImportResultDto>(
-        `/master-data/imports/preview?importType=${importType}`,
+        `/imports/preview?type=${importType}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
@@ -65,7 +65,7 @@ export default function ImportPage() {
     if (!result) return;
     setLoading(true);
     try {
-      await api.post("/master-data/imports/commit", { batchId: result.batchId });
+      await api.post("/imports/commit", { batchId: result.batchId });
       showSuccess(t("toast.commitOk"));
       setResult(null);
       setFile(null);
@@ -78,7 +78,7 @@ export default function ImportPage() {
 
   const handleDownloadErrors = () => {
     if (!result) return;
-    window.open(`http://localhost:5024/api/master-data/imports/${result.batchId}/errors`);
+    window.open(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5024/api"}/imports/errors/${result.batchId}`);
   };
 
   return (
@@ -121,7 +121,7 @@ export default function ImportPage() {
               </label>
               <input
                 type="file"
-                accept=".csv"
+                accept=".csv,.xlsx"
                 onChange={handleFileChange}
                 className="w-full bg-background border border-input rounded-md px-3 py-1.5 text-sm"
               />
