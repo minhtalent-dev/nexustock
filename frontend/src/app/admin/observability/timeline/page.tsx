@@ -288,7 +288,7 @@ export default function TimelinePage() {
       </Card>
 
       <Dialog open={selectedTraceId !== null} onOpenChange={(open) => !open && setSelectedTraceId(null)}>
-        <DialogContent className="max-w-4xl bg-[#0f0f11] border-border text-foreground rounded-xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-4xl bg-[#0f0f11] border-border text-foreground rounded-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
               <GitFork className="h-5 w-5 text-emerald-400" /> {t("traceDialogTitle")}

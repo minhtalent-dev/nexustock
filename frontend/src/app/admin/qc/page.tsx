@@ -313,7 +313,7 @@ export default function QcPage() {
                             <TableCell className="text-center">
                               <Button
                                 onClick={() => openQcDialog(item)}
-                                className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-7 px-3 text-[11px] rounded"
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 px-3 text-[11px] rounded"
                               >
                                 {t("inspect")}
                               </Button>
@@ -404,7 +404,7 @@ export default function QcPage() {
                     <Button
                       onClick={() => openActionDialog(lot.id, lot.lotNo, "hold")}
                       disabled={lot.qcStatus.toUpperCase() === "HOLD"}
-                      className="bg-amber-600/10 text-amber-500 border border-amber-600/20 hover:bg-amber-600 hover:text-foreground h-8 px-2 flex-1 text-[11px] gap-1"
+                      className="bg-amber-600/10 text-amber-500 border border-amber-600/20 hover:bg-amber-600 hover:text-white h-8 px-2 flex-1 text-[11px] gap-1"
                     >
                       <Lock className="h-3.5 w-3.5" />
                       {t("hold")}
@@ -412,7 +412,7 @@ export default function QcPage() {
                     <Button
                       onClick={() => openActionDialog(lot.id, lot.lotNo, "release")}
                       disabled={lot.qcStatus.toUpperCase() === "RELEASE"}
-                      className="bg-emerald-600/10 text-emerald-500 border border-emerald-600/20 hover:bg-emerald-600 hover:text-foreground h-8 px-2 flex-1 text-[11px] gap-1"
+                      className="bg-emerald-600/10 text-emerald-500 border border-emerald-600/20 hover:bg-emerald-600 hover:text-white h-8 px-2 flex-1 text-[11px] gap-1"
                     >
                       <Unlock className="h-3.5 w-3.5" />
                       {t("release")}
@@ -420,7 +420,7 @@ export default function QcPage() {
                     <Button
                       onClick={() => openActionDialog(lot.id, lot.lotNo, "reject")}
                       disabled={lot.qcStatus.toUpperCase() === "REJECT"}
-                      className="bg-rose-600/10 text-rose-500 border border-rose-600/20 hover:bg-rose-600 hover:text-foreground h-8 px-2 flex-1 text-[11px] gap-1"
+                      className="bg-rose-600/10 text-rose-500 border border-rose-600/20 hover:bg-rose-600 hover:text-white h-8 px-2 flex-1 text-[11px] gap-1"
                     >
                       <Ban className="h-3.5 w-3.5" />
                       {t("reject")}

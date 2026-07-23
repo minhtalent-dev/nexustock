@@ -240,7 +240,7 @@ export default function ReceivePage() {
                         ) : (
                           <Button
                             onClick={() => openReceiveDialog(i)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-8 px-3 py-1 gap-1.5"
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-3 py-1 gap-1.5"
                           >
                             <Plus className="h-3.5 w-3.5" />
                             {t("receiveBtn")}
@@ -257,7 +257,7 @@ export default function ReceivePage() {
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-background border-border text-foreground max-w-lg">
+        <DialogContent className="bg-background border-border text-foreground sm:max-w-2xl max-h-[85vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle className="text-foreground flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-emerald-500" />
@@ -266,11 +266,11 @@ export default function ReceivePage() {
           </DialogHeader>
           {selectedItem && (
             <form onSubmit={handleReceive} className="space-y-4">
-              <div className="bg-card/60 p-3 rounded-lg border border-zinc-850">
+              <div className="bg-card/60 p-3 rounded-lg border border-border">
                 <p className="text-xs text-muted-foreground font-semibold uppercase">{t("itemToReceive")}</p>
                 <p className="text-sm font-bold text-foreground mt-0.5">{selectedItem.itemName}</p>
                 <p className="text-[10px] text-muted-foreground font-normal">{t("itemCode")}: {selectedItem.itemCode}</p>
-                <div className="grid grid-cols-3 gap-2 mt-3 text-xs text-muted-foreground">
+                <div className="grid grid-cols-1 gap-2 mt-3 text-xs text-muted-foreground sm:grid-cols-3">
                   <div>
                     <p className="text-muted-foreground">{t("expected")}</p>
                     <p className="font-semibold text-foreground mt-0.5 font-mono">{selectedItem.expectedQty} {selectedItem.uomName}</p>
@@ -297,7 +297,7 @@ export default function ReceivePage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="qty" className="text-muted-foreground text-xs">{t("receiveQtyLabel")}</Label>
                   <Input
@@ -328,7 +328,7 @@ export default function ReceivePage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="prodDate" className="text-muted-foreground text-xs">{t("productionDateLabel")}</Label>
                   <Input
@@ -359,10 +359,10 @@ export default function ReceivePage() {
               )}
 
               <DialogFooter className="border-t border-border pt-4 flex gap-2">
-                <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground">
+                <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="text-foreground">
                   {tc("cancel")}
                 </Button>
-                <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-foreground min-w-24">
+                <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-white min-w-24">
                   {saving ? tc("processing") : tc("confirm")}
                 </Button>
               </DialogFooter>

@@ -131,7 +131,7 @@ export default function UsersPage() {
           </h1>
           <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
-        <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-foreground gap-2 h-9 text-sm">
+        <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 h-9 text-sm">
           <UserPlus className="h-4 w-4" />
           {t("addUser")}
         </Button>
@@ -203,7 +203,7 @@ export default function UsersPage() {
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-card border border-border text-foreground max-w-md">
+        <DialogContent className="bg-card border border-border text-foreground sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-foreground">
               {editingUser ? t("dialogEditTitle") : t("dialogCreateTitle")}
@@ -284,10 +284,10 @@ export default function UsersPage() {
             </div>
 
             <DialogFooter className="mt-4 gap-2">
-              <Button type="button" onClick={() => setIsOpen(false)} variant="ghost" className="text-muted-foreground hover:text-foreground h-9 text-sm">
+              <Button type="button" onClick={() => setIsOpen(false)} variant="outline" className="text-foreground h-9 text-sm">
                 {tc("cancel")}
               </Button>
-              <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-9 text-sm">
+              <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-sm">
                 {saving ? tc("saving") : tc("confirm")}
               </Button>
             </DialogFooter>

@@ -241,7 +241,7 @@ export default function TaskInterleavingPage() {
       )}
 
       <Dialog open={detailId !== null} onOpenChange={(open) => { if (!open) setDetailId(null); }}>
-        <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-4xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{t("detailTitle")}</DialogTitle>
             <DialogDescription>

@@ -215,7 +215,7 @@ export default function AuditPage() {
               <Button type="button" onClick={handleResetFilter} variant="ghost" className="text-muted-foreground hover:text-foreground h-9 text-xs">
                 {t("resetFilter")}
               </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-9 text-xs gap-1.5 px-4">
+              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-xs gap-1.5 px-4">
                 <Search className="h-3.5 w-3.5" />
                 {t("applyFilter")}
               </Button>
@@ -322,7 +322,7 @@ export default function AuditPage() {
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-card border border-border text-foreground max-w-2xl font-sans">
+        <DialogContent className="bg-card border border-border text-foreground sm:max-w-2xl font-sans">
           <DialogHeader className="border-b border-zinc-850 pb-3">
             <DialogTitle className="text-sm font-semibold text-foreground">
               {t("detailTitle")}

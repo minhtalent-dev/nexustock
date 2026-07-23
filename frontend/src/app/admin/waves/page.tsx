@@ -118,11 +118,11 @@ export default function WavesPage() {
       case "DRAFT":
         return <Badge className="bg-zinc-700 hover:bg-zinc-600 text-foreground">{t("statusDraft")}</Badge>;
       case "RELEASED":
-        return <Badge className="bg-blue-600 hover:bg-blue-500 text-foreground">{t("statusReleased")}</Badge>;
+        return <Badge className="bg-blue-600 hover:bg-blue-500 text-white">{t("statusReleased")}</Badge>;
       case "SORTING":
-        return <Badge className="bg-amber-600 hover:bg-amber-500 text-foreground">{t("statusSorting")}</Badge>;
+        return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">{t("statusSorting")}</Badge>;
       case "COMPLETED":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-foreground">{t("statusCompleted")}</Badge>;
+        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">{t("statusCompleted")}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -141,7 +141,7 @@ export default function WavesPage() {
         <div className="flex gap-2">
           <Button
             onClick={handleToggleCreateForm}
-            className="bg-indigo-600 hover:bg-indigo-500 text-foreground flex items-center gap-2 h-9 text-xs px-4"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 h-9 text-xs px-4"
           >
             <PlusCircle className="h-4 w-4" />
             {showCreateForm ? tc("cancel") : t("createWave")}
@@ -219,7 +219,7 @@ export default function WavesPage() {
               <Button
                 onClick={handleCreateWave}
                 disabled={creating || selectedShipmentIds.length === 0}
-                className="bg-indigo-600 hover:bg-indigo-500 text-foreground h-8 text-xs px-4"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white h-8 text-xs px-4"
               >
                 {creating
                   ? tc("processing")

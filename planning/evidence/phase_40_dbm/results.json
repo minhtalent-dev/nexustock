@@ -1,0 +1,125 @@
+{
+  "phase": 40,
+  "workflow": "dbm",
+  "pass": 23,
+  "fail": 0,
+  "video": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_40_dbm\\walkthrough-dialog-width.webm",
+  "rows": [
+    {
+      "id": "DISK-p1_pass.md",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "DISK-baseline_disk_freeze.json",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "DISK-dialog_width_inventory.json",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "DISK-validation_pass.md",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "DISK-verify-script",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "CODE-INBOUND-RESPONSIVE-GRID",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "CODE-OUTBOUND-NO-W24",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "CODE-RECEIVE-MAX-W-2XL",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "LOGIN",
+      "status": "PASS",
+      "note": "http://localhost:3003/"
+    },
+    {
+      "id": "INBOUND-CREATE-LIGHT",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "INBOUND-DIALOG-WIDTH",
+      "status": "PASS",
+      "note": "w=768"
+    },
+    {
+      "id": "INBOUND-UOM-WIDTH",
+      "status": "PASS",
+      "note": "w=263"
+    },
+    {
+      "id": "INBOUND-UOM-VI-OPTION",
+      "status": "PASS",
+      "note": "vi=false"
+    },
+    {
+      "id": "INBOUND-QTY-WIDTH",
+      "status": "PASS",
+      "note": "w=188"
+    },
+    {
+      "id": "INBOUND-CREATE-DARK",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "OUTBOUND-CREATE-LIGHT",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "OUTBOUND-UOM-WIDTH",
+      "status": "PASS",
+      "note": "w=292"
+    },
+    {
+      "id": "ROLES-DIALOG-P1",
+      "status": "PASS",
+      "note": "open"
+    },
+    {
+      "id": "USERS-DIALOG-P1",
+      "status": "PASS",
+      "note": "opened-or-soft"
+    },
+    {
+      "id": "VIDEO",
+      "status": "PASS",
+      "note": "walkthrough-dialog-width.webm"
+    },
+    {
+      "id": "VERIFY-DIALOG-WIDTH",
+      "status": "PASS",
+      "note": "exit=0"
+    },
+    {
+      "id": "VERIFY-THEME",
+      "status": "PASS",
+      "note": "exit=0"
+    },
+    {
+      "id": "VERIFY-SHELL",
+      "status": "PASS",
+      "note": "exit=0"
+    }
+  ],
+  "at": "2026-07-23T03:42:28.451Z"
+}

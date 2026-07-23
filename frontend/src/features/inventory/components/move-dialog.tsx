@@ -136,7 +136,7 @@ export function MoveInventoryDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t("moveTitle")}</DialogTitle>
         </DialogHeader>

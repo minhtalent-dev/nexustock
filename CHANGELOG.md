@@ -1,9 +1,10 @@
 # Lịch sử cập nhật dự án
 
-## Phiên bản 1.5.0 - Kiểm định, tồn kho, điều hướng, pilot và giao diện thống nhất (Phase 34–39)
+## Phiên bản 1.5.0 - Kiểm định, tồn kho, điều hướng, pilot và giao diện thống nhất (Phase 34–40)
 *Ngày cập nhật: 23/07/2026*
 
 ### Tính năng mới
+- **Form tạo/sửa rõ ràng hơn**: Các cửa sổ nhập liệu (phiếu nhập, xuất hàng, …) có ô chọn và ô số đủ rộng — không còn bị cắt chữ khi thao tác.
 - **Giao diện sáng / tối**: Tự theo máy (mặc định) hoặc chọn sáng/tối trên một hàng (Hệ thống · Sáng · Tối); lựa chọn được giữ khi làm việc tiếp; ô quét trên thiết bị cầm tay cũng theo giao diện đang chọn.
 - **Giao diện thống nhất**: Cùng khung trang, màu hệ thống và trạng thái trống/đang tải/lỗi trên quản trị và thiết bị cầm tay — dễ dùng, ít lệch giao diện giữa các màn hình.
 - **Bản đồ chuyển đổi kiểm định**: Hướng dẫn đối chiếu thao tác kiểm định cũ sang màn hình mới, kèm danh sách kiểm thử chấp nhận.

@@ -235,7 +235,7 @@ export default function LocalAgentAdminPage() {
               setCodeExpiresAt(null);
               setShowPairingDialog(true);
             }}
-            className="bg-indigo-600 hover:bg-indigo-500 text-foreground font-medium"
+            className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium"
           >
             <Key className="h-4 w-4 mr-2" />
             {t("createPairingCode")}
@@ -297,7 +297,7 @@ export default function LocalAgentAdminPage() {
                   <Button
                     onClick={handlePairAgent}
                     disabled={isPairing}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-foreground text-xs font-medium w-full mt-1"
+                    className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium w-full mt-1"
                   >
                     {isPairing ? t("pairing") : t("pairDevice")}
                   </Button>
@@ -447,8 +447,8 @@ export default function LocalAgentAdminPage() {
           <DialogFooter>
             {!generatedCode ? (
               <>
-                <Button variant="ghost" onClick={() => setShowPairingDialog(false)} className="text-muted-foreground">{tc("cancel")}</Button>
-                <Button onClick={handleCreatePairingCode} disabled={isGeneratingCode} className="bg-indigo-600 hover:bg-indigo-500 text-foreground">
+                <Button variant="outline" onClick={() => setShowPairingDialog(false)} className="text-foreground">{tc("cancel")}</Button>
+                <Button onClick={handleCreatePairingCode} disabled={isGeneratingCode} className="bg-indigo-600 hover:bg-indigo-500 text-white">
                   {isGeneratingCode ? t("generating") : t("generateCode")}
                 </Button>
               </>
@@ -494,8 +494,8 @@ export default function LocalAgentAdminPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setShowRevokeDialog(false)} className="text-muted-foreground">{tc("cancel")}</Button>
-            <Button onClick={handleRevokeStation} disabled={isRevoking} className="bg-rose-600 hover:bg-rose-500 text-foreground">
+            <Button variant="outline" onClick={() => setShowRevokeDialog(false)} className="text-foreground">{tc("cancel")}</Button>
+            <Button onClick={handleRevokeStation} disabled={isRevoking} className="bg-rose-600 hover:bg-rose-500 text-white">
               {isRevoking ? tc("processing") : t("confirmRevoke")}
             </Button>
           </DialogFooter>

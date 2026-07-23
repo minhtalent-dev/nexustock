@@ -199,7 +199,7 @@ export default function InboundPage() {
           </h1>
           <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
-        <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-foreground gap-2 h-9 text-sm">
+        <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 h-9 text-sm">
           <Plus className="h-4 w-4" />
           {t("createOrder")}
         </Button>
@@ -267,7 +267,7 @@ export default function InboundPage() {
       </Card>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-background border-border text-foreground max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogContent className="bg-background border-border text-foreground sm:max-w-3xl max-h-[85vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle className="text-foreground flex items-center gap-2">
               <Plus className="h-5 w-5 text-emerald-500" />
@@ -275,7 +275,7 @@ export default function InboundPage() {
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSave} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="orderNo" className="text-muted-foreground text-xs">{t("orderNoLabel")}</Label>
                 <Input
@@ -314,13 +314,16 @@ export default function InboundPage() {
               </div>
 
               {items.map((item, index) => (
-                <div key={index} className="grid grid-cols-12 gap-3 items-end bg-card/30 p-3 rounded-lg border border-zinc-850">
-                  <div className="col-span-4 space-y-1">
+                <div
+                  key={index}
+                  className="space-y-3 rounded-lg border border-border bg-card/30 p-3"
+                >
+                  <div className="min-w-0 space-y-1">
                     <Label className="text-muted-foreground text-[10px]">{t("itemLabel")}</Label>
                     <select
                       value={item.itemId}
                       onChange={(e) => updateItemRow(index, "itemId", e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                      className="flex h-9 w-full rounded-md border border-border bg-card px-2 py-1 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
                     >
                       <option value="">{t("itemPlaceholder")}</option>
                       {products.map((p) => (
@@ -330,63 +333,65 @@ export default function InboundPage() {
                       ))}
                     </select>
                   </div>
-                  <div className="col-span-3 space-y-1">
-                    <Label className="text-muted-foreground text-[10px]">{t("uomLabel")}</Label>
-                    <select
-                      value={item.uomId}
-                      onChange={(e) => updateItemRow(index, "uomId", e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-                    >
-                      <option value="">{t("uomPlaceholder")}</option>
-                      {uoms.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-span-2 space-y-1">
-                    <Label className="text-muted-foreground text-[10px]">{t("expectedQtyLabel")}</Label>
-                    <Input
-                      type="number"
-                      min={0.01}
-                      step="any"
-                      value={item.expectedQty}
-                      onChange={(e) => updateItemRow(index, "expectedQty", parseFloat(e.target.value) || 0)}
-                      className="h-9 bg-card border-border text-xs text-foreground focus-visible:ring-emerald-500"
-                    />
-                  </div>
-                  <div className="col-span-2 space-y-1">
-                    <Label className="text-muted-foreground text-[10px]">{t("toleranceLabel")}</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={item.tolerance * 100}
-                      onChange={(e) => updateItemRow(index, "tolerance", (parseFloat(e.target.value) || 0) / 100)}
-                      className="h-9 bg-card border-border text-xs text-foreground focus-visible:ring-emerald-500"
-                    />
-                  </div>
-                  <div className="col-span-1 text-right">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => removeItemRow(index)}
-                      className="h-9 w-9 p-0 text-muted-foreground hover:text-red-400 hover:bg-muted"
-                    >
-                      X
-                    </Button>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:items-end lg:grid-cols-[minmax(0,1.4fr)_minmax(9rem,1fr)_minmax(9rem,1fr)_auto]">
+                    <div className="min-w-0 space-y-1 sm:col-span-2 lg:col-span-1">
+                      <Label className="text-muted-foreground text-[10px]">{t("uomLabel")}</Label>
+                      <select
+                        value={item.uomId}
+                        onChange={(e) => updateItemRow(index, "uomId", e.target.value)}
+                        className="flex h-9 w-full min-w-[9rem] rounded-md border border-border bg-card px-2 py-1 text-sm text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                      >
+                        <option value="">{t("uomPlaceholder")}</option>
+                        {uoms.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="min-w-0 space-y-1">
+                      <Label className="text-muted-foreground text-[10px] leading-tight">{t("expectedQtyLabel")}</Label>
+                      <Input
+                        type="number"
+                        min={0.01}
+                        step="any"
+                        value={item.expectedQty}
+                        onChange={(e) => updateItemRow(index, "expectedQty", parseFloat(e.target.value) || 0)}
+                        className="h-9 w-full min-w-[9rem] bg-card border-border text-sm text-foreground focus-visible:ring-emerald-500"
+                      />
+                    </div>
+                    <div className="min-w-0 space-y-1">
+                      <Label className="text-muted-foreground text-[10px] leading-tight">{t("toleranceLabel")}</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={item.tolerance * 100}
+                        onChange={(e) => updateItemRow(index, "tolerance", (parseFloat(e.target.value) || 0) / 100)}
+                        className="h-9 w-full min-w-[9rem] bg-card border-border text-sm text-foreground focus-visible:ring-emerald-500"
+                      />
+                    </div>
+                    <div className="flex justify-end sm:col-span-2 lg:col-span-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => removeItemRow(index)}
+                        className="h-9 w-9 p-0 text-muted-foreground hover:text-red-400 hover:bg-muted"
+                      >
+                        X
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
             <DialogFooter className="border-t border-border pt-4 flex gap-2">
-              <Button type="button" variant="ghost" onClick={() => setIsOpen(false)} className="text-muted-foreground hover:text-foreground">
+              <Button type="button" variant="outline" onClick={() => setIsOpen(false)} className="text-foreground">
                 {tc("cancel")}
               </Button>
-              <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-foreground min-w-24">
+              <Button type="submit" disabled={saving} className="bg-emerald-600 hover:bg-emerald-500 text-white min-w-24">
                 {saving ? tc("saving") : tc("confirm")}
               </Button>
             </DialogFooter>

@@ -135,12 +135,12 @@ export function CreateShipmentDialog({ isOpen, onClose, onSuccess }: CreateShipm
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[85vh] flex flex-col">
+      <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col overflow-x-hidden">
         <DialogHeader>
           <DialogTitle>{t("createTitle")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 py-4 flex-1 overflow-y-auto pr-2">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="shipmentNo">{t("shipmentNo")}</Label>
               <Input
@@ -176,8 +176,8 @@ export function CreateShipmentDialog({ isOpen, onClose, onSuccess }: CreateShipm
             </div>
 
             {selectedItems.map((item, idx) => (
-              <div key={idx} className="flex gap-2 items-end border-b pb-2">
-                <div className="flex-1">
+              <div key={idx} className="flex flex-col gap-3 border-b pb-2 sm:flex-row sm:items-end">
+                <div className="min-w-0 flex-1">
                   {idx === 0 && <Label className="text-xs">{t("item")}</Label>}
                   <select
                     value={item.itemId}
@@ -191,7 +191,7 @@ export function CreateShipmentDialog({ isOpen, onClose, onSuccess }: CreateShipm
                   </select>
                 </div>
 
-                <div className="w-24">
+                <div className="w-full sm:min-w-[9rem] sm:w-40">
                   {idx === 0 && <Label className="text-xs">{t("uom")}</Label>}
                   <select
                     value={item.uomId}
@@ -205,7 +205,7 @@ export function CreateShipmentDialog({ isOpen, onClose, onSuccess }: CreateShipm
                   </select>
                 </div>
 
-                <div className="w-24">
+                <div className="w-full sm:min-w-[7rem] sm:w-28">
                   {idx === 0 && <Label className="text-xs">{t("quantity")}</Label>}
                   <Input
                     type="number"
@@ -221,7 +221,7 @@ export function CreateShipmentDialog({ isOpen, onClose, onSuccess }: CreateShipm
                   size="icon"
                   variant="ghost"
                   onClick={() => removeItemRow(idx)}
-                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
                   disabled={selectedItems.length === 1}
                 >
                   <Trash2 className="h-4 w-4" />

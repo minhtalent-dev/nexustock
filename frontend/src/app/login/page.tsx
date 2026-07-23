@@ -97,7 +97,7 @@ export default function LoginPage() {
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 text-foreground font-medium h-10 transition-colors mt-2"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium h-10 transition-colors mt-2"
           >
             {loading ? (
               <span className="flex items-center gap-2">

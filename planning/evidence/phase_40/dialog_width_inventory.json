@@ -1,82 +1,47 @@
 ﻿{
-    "at":  "2026-07-23T09:57:06.0181361+07:00",
-    "p0":  [
-               {
-                   "issue":  "grid-cols-12 line: UOM col-span-3 / qty+tol col-span-2 truncate placeholder",
-                   "dialog":  "max-w-3xl",
-                   "file":  "frontend/src/app/admin/inbound/page.tsx"
-               },
-               {
-                   "issue":  "UOM+qty fixed w-24 too narrow",
-                   "dialog":  "sm:max-w-[600px]",
-                   "file":  "frontend/src/features/outbound/components/create-dialog.tsx"
-               },
-               {
-                   "issue":  "Dialog max-w-lg + dense grids",
-                   "dialog":  "max-w-lg",
-                   "file":  "frontend/src/app/admin/inbound/[id]/receive/page.tsx"
-               }
-           ],
-    "pattern":  "Avoid fixed w-24 for labeled selects; avoid grid-cols-12 line rows without sm: stack; Dialog multi-field min sm:max-w-2xl / max-w-3xl; use min-w-0 + truncate only on display cells not inputs",
-    "founderTrigger":  "CRUD popup input width truncated (inbound create line row)",
-    "sharedOk":  [
-                     {
-                         "file":  "frontend/src/features/master-data/master-data-crud.tsx",
-                         "note":  "max-w-2xl + md:grid-cols-2 — baseline OK, smoke only"
-                     }
-                 ],
-    "p1":  [
-               {
-                   "issue":  "modal max-w-sm",
-                   "file":  "frontend/src/app/admin/lpn/page.tsx"
-               },
-               {
-                   "issue":  "modal max-w-sm",
-                   "file":  "frontend/src/app/admin/replenishment/page.tsx"
-               },
-               {
-                   "issue":  "modal max-w-sm",
-                   "file":  "frontend/src/app/admin/serial/page.tsx"
-               },
-               {
-                   "issue":  "Dialog max-w-sm",
-                   "file":  "frontend/src/app/admin/roles/page.tsx"
-               },
-               {
-                   "issue":  "modal max-w-sm",
-                   "file":  "frontend/src/app/admin/putaway/page.tsx"
-               },
-               {
-                   "issue":  "Dialog max-w-md — review fields",
-                   "file":  "frontend/src/app/admin/users/page.tsx"
-               },
-               {
-                   "issue":  "dense col-span-2 grids",
-                   "file":  "frontend/src/features/outbound/components/pick-dialog.tsx"
-               },
-               {
-                   "issue":  "review field widths",
-                   "file":  "frontend/src/features/inventory/components/move-dialog.tsx"
-               },
-               {
-                   "issue":  "review field widths",
-                   "file":  "frontend/src/features/inventory/components/lock-dialog.tsx"
-               },
-               {
-                   "issue":  "sm:max-w-[500px] review",
-                   "file":  "frontend/src/features/qc/components/qc-result-dialog.tsx"
-               },
-               {
-                   "issue":  "sm:max-w-[425px] review",
-                   "file":  "frontend/src/features/qc/components/hold-release-dialog.tsx"
-               },
-               {
-                   "issue":  "max-w-md / max-w-lg review",
-                   "file":  "frontend/src/app/admin/rules/page.tsx"
-               },
-               {
-                   "issue":  "Dialog max-w-md",
-                   "file":  "frontend/src/app/admin/integrations/mappings/page.tsx"
-               }
-           ]
+  "at": "2026-07-23T10:05:00+07:00",
+  "source": "rp1 disk freeze — supersedes planner stub priorities with verified true-positives",
+  "founderTrigger": "CRUD popup input width truncated (inbound create line row)",
+  "p0": [
+    {
+      "file": "frontend/src/app/admin/inbound/page.tsx",
+      "issue": "grid-cols-12 line row không breakpoint — UOM/Qty/Tol cắt placeholder",
+      "dialog": "max-w-3xl",
+      "verified": true
+    },
+    {
+      "file": "frontend/src/features/outbound/components/create-dialog.tsx",
+      "issue": "hai wrapper w-24 cho UOM select + Qty input",
+      "dialog": "sm:max-w-[600px]",
+      "verified": true
+    },
+    {
+      "file": "frontend/src/app/admin/inbound/[id]/receive/page.tsx",
+      "issue": "Dialog max-w-lg + grid dày",
+      "dialog": "max-w-lg",
+      "verified": true
+    }
+  ],
+  "p1": [
+    { "file": "frontend/src/app/admin/lpn/page.tsx", "issue": "modal max-w-sm x2" },
+    { "file": "frontend/src/app/admin/replenishment/page.tsx", "issue": "modal max-w-sm" },
+    { "file": "frontend/src/app/admin/serial/page.tsx", "issue": "modal max-w-sm" },
+    { "file": "frontend/src/app/admin/putaway/page.tsx", "issue": "modal max-w-sm" },
+    { "file": "frontend/src/app/admin/roles/page.tsx", "issue": "Dialog max-w-sm" },
+    { "file": "frontend/src/app/admin/users/page.tsx", "issue": "Dialog max-w-md — review" },
+    { "file": "frontend/src/features/outbound/components/pick-dialog.tsx", "issue": "sm:max-w-[400px]" },
+    { "file": "frontend/src/features/inventory/components/move-dialog.tsx", "issue": "sm:max-w-[425px]" },
+    { "file": "frontend/src/features/inventory/components/lock-dialog.tsx", "issue": "sm:max-w-[425px]" },
+    { "file": "frontend/src/features/qc/components/qc-result-dialog.tsx", "issue": "sm:max-w-[500px]" },
+    { "file": "frontend/src/features/qc/components/hold-release-dialog.tsx", "issue": "sm:max-w-[425px]" },
+    { "file": "frontend/src/app/admin/rules/page.tsx", "issue": "max-w-md / max-w-lg" },
+    { "file": "frontend/src/app/admin/integrations/mappings/page.tsx", "issue": "max-w-md" }
+  ],
+  "sharedOk": [
+    {
+      "file": "frontend/src/features/master-data/master-data-crud.tsx",
+      "note": "max-w-2xl + md:grid-cols-2 — baseline OK, smoke only"
+    }
+  ],
+  "pattern": "Avoid fixed w-24 for labeled selects; avoid grid-cols-12 line rows without sm/md/lg breakpoints; Dialog multi-field min sm:max-w-2xl / max-w-3xl; ignore TableHead w-24 and Button min-w-24"
 }

@@ -258,7 +258,7 @@ export default function MobileReplenishmentPage() {
             <Button
               onClick={handleClaimNextTask}
               disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-foreground py-6 text-base font-bold rounded-lg shadow-lg gap-2"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-6 text-base font-bold rounded-lg shadow-lg gap-2"
             >
               <ArrowRight className="h-5 w-5" />
               {loading ? t("actions.claiming") : t("actions.claim")}
@@ -376,7 +376,7 @@ export default function MobileReplenishmentPage() {
                   <Button
                     onClick={handleCompleteTask}
                     disabled={loading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold py-4 rounded-lg shadow-lg"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-lg shadow-lg"
                   >
                     {t("actions.complete")}
                   </Button>

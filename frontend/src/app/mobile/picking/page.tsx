@@ -213,7 +213,7 @@ export default function PickingPage() {
                   <Button
                     onClick={handleCompleteTask}
                     disabled={loading}
-                    className="w-full bg-green-600 hover:bg-green-700 text-foreground font-bold py-4 rounded-lg"
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-lg"
                   >
                     {t("actions.complete")}
                   </Button>

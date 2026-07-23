@@ -268,7 +268,7 @@ export default function MovementPage() {
                     className="bg-muted border-border text-foreground font-mono text-lg"
                   />
                 </div>
-                <Button onClick={handleInputQty} className="w-full bg-blue-600 hover:bg-blue-700 text-foreground font-bold">
+                <Button onClick={handleInputQty} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold">
                   {t("actions.next")}
                 </Button>
               </div>
@@ -308,7 +308,7 @@ export default function MovementPage() {
                   <Button
                     onClick={handleConfirmMovement}
                     disabled={loading}
-                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold"
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                   >
                     {loading ? t("actions.processing") : isOnline ? t("actions.confirm") : t("actions.saveOffline")}
                   </Button>

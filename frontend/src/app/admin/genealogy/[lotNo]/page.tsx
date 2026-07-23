@@ -113,7 +113,7 @@ export default function GenealogyTreePage({ params }: { params: Promise<{ lotNo:
             <GitFork className="h-6 w-6 text-indigo-400" /> {t("detailTitle")}
           </h1>
         </div>
-        <Button onClick={handleHoldBranch} className="bg-red-600 hover:bg-red-500 text-foreground font-bold flex items-center gap-2">
+        <Button onClick={handleHoldBranch} className="bg-red-600 hover:bg-red-500 text-white font-bold flex items-center gap-2">
           <ShieldAlert className="h-4 w-4" /> {t("holdBranch")}
         </Button>
       </div>

@@ -76,7 +76,7 @@ export function CompletePickDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t("pickConfirmTitle")}</DialogTitle>
         </DialogHeader>

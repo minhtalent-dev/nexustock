@@ -168,9 +168,9 @@ export default function ExceptionsPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Resolved":
-        return <Badge className="bg-green-600 text-foreground">{t("statusResolved")}</Badge>;
+        return <Badge className="bg-green-600 text-white">{t("statusResolved")}</Badge>;
       case "In_Progress":
-        return <Badge className="bg-blue-600 text-foreground">{t("statusInProgress")}</Badge>;
+        return <Badge className="bg-blue-600 text-white">{t("statusInProgress")}</Badge>;
       case "Cancelled":
         return <Badge variant="outline">{t("statusCancelled")}</Badge>;
       default:

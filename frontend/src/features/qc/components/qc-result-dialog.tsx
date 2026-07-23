@@ -88,7 +88,7 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px] bg-card border-border text-foreground font-sans">
+      <DialogContent className="sm:max-w-xl bg-card border-border text-foreground font-sans">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-foreground">{t("resultDialogTitle", { lotNo })}</DialogTitle>
@@ -134,7 +134,7 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
                   variant="outline"
                   onClick={() => fileInputRef.current?.click()}
                   disabled={uploading}
-                  className="border-dashed border-zinc-700 text-muted-foreground hover:bg-zinc-800 hover:text-foreground h-9 text-xs gap-2 flex-1"
+                  className="border-dashed border-border text-foreground hover:bg-muted h-9 text-xs gap-2 flex-1"
                 >
                   <Upload className="h-4 w-4" />
                   {uploading ? t("uploading") : t("uploadAttachment")}
@@ -185,14 +185,14 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
               variant="outline"
               onClick={onClose}
               disabled={loading}
-              className="border-zinc-700 text-muted-foreground hover:bg-zinc-800 hover:text-foreground h-9 text-xs"
+              className="border-border text-foreground hover:bg-muted h-9 text-xs"
             >
               {tc("cancel")}
             </Button>
             <Button
               type="submit"
               disabled={loading}
-              className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-9 text-xs"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-xs"
             >
               {loading ? t("submitting") : t("submitResult")}
             </Button>

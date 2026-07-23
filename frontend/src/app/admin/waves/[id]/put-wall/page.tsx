@@ -211,7 +211,7 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
                   placeholder={t("barcodePlaceholder")}
                   className="bg-background border-border text-foreground h-10 text-xs focus-visible:ring-indigo-600 focus-visible:ring-offset-0"
                 />
-                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-foreground h-9 text-xs mt-2">
+                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-500 text-white h-9 text-xs mt-2">
                   {t("confirmScan")}
                 </Button>
               </form>
@@ -224,7 +224,7 @@ export default function PutWallPage({ params }: { params: Promise<{ id: string }
                   </div>
                   <div>
                     {t("slotHint")}{" "}
-                    <Badge className="bg-amber-600 text-foreground ml-1 font-mono">
+                    <Badge className="bg-amber-600 text-white ml-1 font-mono">
                       {t("slotLabel", { number: lastSortedInfo.recommendedSlotNumber })}
                     </Badge>
                   </div>

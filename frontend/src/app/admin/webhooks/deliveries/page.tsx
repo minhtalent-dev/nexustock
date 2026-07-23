@@ -208,7 +208,7 @@ export default function WebhookDeliveriesPage() {
       </Card>
 
       <Dialog open={!!selectedDelivery} onOpenChange={(open) => !open && setSelectedDelivery(null)}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t("detailTitle")}</DialogTitle>
           </DialogHeader>

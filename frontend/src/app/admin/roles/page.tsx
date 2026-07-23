@@ -262,7 +262,7 @@ export default function RolesPage() {
                   <Button
                     onClick={handleSavePermissions}
                     disabled={savingPermissions}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-8 text-xs gap-1.5 px-3"
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white h-8 text-xs gap-1.5 px-3"
                   >
                     <Save className="h-3.5 w-3.5" />
                     {savingPermissions ? tc("saving") : t("savePermissions")}
@@ -315,7 +315,7 @@ export default function RolesPage() {
       </div>
 
       <Dialog open={isRoleOpen} onOpenChange={setIsRoleOpen}>
-        <DialogContent className="bg-card border border-border text-foreground max-w-sm font-sans">
+        <DialogContent className="bg-card border border-border text-foreground sm:max-w-lg font-sans">
           <DialogHeader>
             <DialogTitle className="text-sm font-semibold text-foreground">{t("createDialogTitle")}</DialogTitle>
           </DialogHeader>
@@ -345,10 +345,10 @@ export default function RolesPage() {
             </div>
 
             <DialogFooter className="mt-4 gap-2">
-              <Button type="button" onClick={() => setIsRoleOpen(false)} variant="ghost" className="text-muted-foreground hover:text-foreground h-9 text-sm">
+              <Button type="button" onClick={() => setIsRoleOpen(false)} variant="outline" className="text-foreground h-9 text-sm">
                 {tc("cancel")}
               </Button>
-              <Button type="submit" disabled={savingRole} className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-9 text-sm">
+              <Button type="submit" disabled={savingRole} className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 text-sm">
                 {savingRole ? tc("saving") : t("createRole")}
               </Button>
             </DialogFooter>

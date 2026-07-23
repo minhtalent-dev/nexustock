@@ -64,6 +64,7 @@ Giao diện sẽ chạy tại cổng `http://localhost:3003`.
 * **Cổng pilot (Phase 37):** bộ kiểm thử vận hành + biên bản nghiệm thu; khóa/mở ghi khi cắt chuyển; trạng thái sẵn sàng pilot có điều kiện (chờ ký chấp nhận).
 * **Giao diện thống nhất (Phase 38):** cùng khung trang, màu hệ thống và trạng thái trống/tải/lỗi trên quản trị và thiết bị cầm tay.
 * **Giao diện sáng / tối (Phase 39 — ĐÓNG):** mặc định theo máy; chọn Hệ thống / Sáng / Tối; lựa chọn được ghi nhớ trên trình duyệt.
+* **Form popup CRUD (Phase 40):** ô nhập/chọn trong cửa sổ tạo–sửa đủ rộng, không cắt chữ.
 * **Milestone 5**: **59/59** trang Web VI/EN, **0 backlog** localization product.
 
 ## 🩺 Endpoints kiểm tra sức khỏe

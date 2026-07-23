@@ -178,7 +178,7 @@ export default function IntegrationMessagesPage() {
       </Card>
 
       <Dialog open={selectedMessage !== null} onOpenChange={() => setSelectedMessage(null)}>
-        <DialogContent className="bg-background border-zinc-850 text-foreground max-w-3xl">
+        <DialogContent className="bg-background border-zinc-850 text-foreground sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold">
               {t("detailTitle", { ref: selectedMessage?.externalReference ?? "" })}

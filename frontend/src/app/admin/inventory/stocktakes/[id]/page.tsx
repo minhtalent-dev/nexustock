@@ -207,7 +207,7 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
           )}
 
           {stocktake.status.startsWith("Pending_") && (
-            <Button onClick={() => setApproveModalOpen(true)} disabled={actionLoading} className="gap-2 bg-green-600 hover:bg-green-700 text-foreground">
+            <Button onClick={() => setApproveModalOpen(true)} disabled={actionLoading} className="gap-2 bg-green-600 hover:bg-green-700 text-white">
               <Check className="h-4 w-4" />
               {t("approveAdjustment")}
             </Button>
@@ -413,7 +413,7 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
             <Button variant="outline" onClick={() => setApproveModalOpen(false)}>
               {tc("cancel")}
             </Button>
-            <Button onClick={handleSubmitApprove} disabled={actionLoading} className="bg-green-600 hover:bg-green-700 text-foreground">
+            <Button onClick={handleSubmitApprove} disabled={actionLoading} className="bg-green-600 hover:bg-green-700 text-white">
               {stocktake.status === "Counting" ? t("submitForApproval") : t("approveAndApply")}
             </Button>
           </DialogFooter>

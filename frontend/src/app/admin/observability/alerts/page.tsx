@@ -264,7 +264,7 @@ export default function AlertCenterPage() {
       </Card>
 
       <Dialog open={!!selectedAlert && actionType === null} onOpenChange={(open) => !open && setSelectedAlert(null)}>
-        <DialogContent className="max-w-2xl bg-[#0f0f11] border-border text-foreground rounded-xl">
+        <DialogContent className="sm:max-w-2xl bg-[#0f0f11] border-border text-foreground rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <AlertCircle className="h-5 w-5 text-red-500" /> {t("detailTitle")}
@@ -340,7 +340,7 @@ export default function AlertCenterPage() {
                 )}
                 {(selectedAlert.status === "open" || selectedAlert.status === "acknowledged") && (
                   <Button
-                    className="bg-emerald-600 hover:bg-emerald-700 text-foreground rounded-lg"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
                     onClick={() => setActionType("resolve")}
                   >
                     {t("resolveAlert")}
@@ -356,7 +356,7 @@ export default function AlertCenterPage() {
       </Dialog>
 
       <Dialog open={actionType !== null} onOpenChange={(open) => !open && setActionType(null)}>
-        <DialogContent className="max-w-md bg-[#0f0f11] border-border text-foreground rounded-xl">
+        <DialogContent className="sm:max-w-md bg-[#0f0f11] border-border text-foreground rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold flex items-center gap-2">
               {actionType === "ack" ? (
@@ -396,7 +396,7 @@ export default function AlertCenterPage() {
               <Button
                 onClick={handleActionSubmit}
                 disabled={actionLoading}
-                className={actionType === "ack" ? "bg-amber-600 hover:bg-amber-700 text-foreground rounded-lg" : "bg-emerald-600 hover:bg-emerald-700 text-foreground rounded-lg"}
+                className={actionType === "ack" ? "bg-amber-600 hover:bg-amber-700 text-white rounded-lg" : "bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"}
               >
                 {actionLoading ? tc("processing") : tc("confirm")}
               </Button>

@@ -1,0 +1,69 @@
+﻿{
+  "at": "2026-07-23T10:05:00+07:00",
+  "workflow": "rp1",
+  "phase": 40,
+  "dialogContentFileCount": 33,
+  "p0_files_exist": {
+    "inbound": true,
+    "outboundCreate": true,
+    "receive": true,
+    "masterDataCrud": true
+  },
+  "p0_findings": {
+    "inbound": {
+      "path": "frontend/src/app/admin/inbound/page.tsx",
+      "dialogClass": "max-w-3xl max-h-[85vh] overflow-y-auto",
+      "grid_cols_12_no_breakpoint": true,
+      "line_issue": "UOM/Qty/Tol col-span cắt placeholder",
+      "w24_false_positive": ["TableHead actions", "Button min-w-24"]
+    },
+    "outboundCreate": {
+      "path": "frontend/src/features/outbound/components/create-dialog.tsx",
+      "dialogClass": "sm:max-w-[600px]",
+      "w24_on_uom_and_qty_wrappers": 2,
+      "line_issue": "div.w-24 bọc select UOM + input Qty"
+    },
+    "receive": {
+      "path": "frontend/src/app/admin/inbound/[id]/receive/page.tsx",
+      "dialogClass": "max-w-lg",
+      "dense_grids": true,
+      "w24_false_positive": ["Button min-w-24"]
+    }
+  },
+  "verify_contract_rp1": {
+    "FAIL_grid_cols_12_without_sm_md_lg_in_Dialog_file": true,
+    "FAIL_w24_div_wrapping_select_or_input_in_dialog_form": true,
+    "IGNORE_TableHead_w24": true,
+    "IGNORE_Button_min_w_24": true,
+    "IGNORE_ui_dialog_default_max_w_sm": true
+  },
+  "risk_g12_no_bp": [
+    "frontend/src/app/admin/inbound/page.tsx"
+  ],
+  "risk_w24_form_true_positive": [
+    "frontend/src/features/outbound/components/create-dialog.tsx"
+  ],
+  "p1_narrow_dialogs": [
+    { "file": "frontend/src/app/admin/lpn/page.tsx", "note": "modal max-w-sm x2" },
+    { "file": "frontend/src/app/admin/replenishment/page.tsx", "note": "modal max-w-sm" },
+    { "file": "frontend/src/app/admin/serial/page.tsx", "note": "modal max-w-sm" },
+    { "file": "frontend/src/app/admin/putaway/page.tsx", "note": "modal max-w-sm" },
+    { "file": "frontend/src/app/admin/roles/page.tsx", "note": "DialogContent max-w-sm" },
+    { "file": "frontend/src/app/admin/users/page.tsx", "note": "DialogContent max-w-md — review field count" },
+    { "file": "frontend/src/features/outbound/components/pick-dialog.tsx", "note": "sm:max-w-[400px]" },
+    { "file": "frontend/src/features/inventory/components/move-dialog.tsx", "note": "sm:max-w-[425px]" },
+    { "file": "frontend/src/features/inventory/components/lock-dialog.tsx", "note": "sm:max-w-[425px]" },
+    { "file": "frontend/src/features/qc/components/qc-result-dialog.tsx", "note": "sm:max-w-[500px]" },
+    { "file": "frontend/src/features/qc/components/hold-release-dialog.tsx", "note": "sm:max-w-[425px]" },
+    { "file": "frontend/src/app/admin/rules/page.tsx", "note": "max-w-md / max-w-lg" },
+    { "file": "frontend/src/app/admin/integrations/mappings/page.tsx", "note": "max-w-md x2" }
+  ],
+  "smoke_ok": [
+    "frontend/src/features/master-data/master-data-crud.tsx"
+  ],
+  "oos_ignore": [
+    "frontend/src/components/ui/dialog.tsx default max-w-sm",
+    "frontend/src/components/ui/alert-dialog.tsx",
+    "TableHead className w-24 (actions column)"
+  ]
+}

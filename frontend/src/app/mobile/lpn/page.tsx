@@ -208,7 +208,7 @@ export default function MobileLpnPage() {
                   <Button
                     onClick={handleConfirmMove}
                     disabled={loading}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-foreground font-bold py-4 rounded-lg shadow-lg"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-lg shadow-lg"
                   >
                     {loading ? t("actions.processing") : t("actions.confirm")}
                   </Button>

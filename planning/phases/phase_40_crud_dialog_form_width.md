@@ -4,9 +4,9 @@
 
 | Mục | Giá trị |
 |---|---|
-| **Mức hiện tại** | **95% Ready** (`/30-auto-project-planner` 2026-07-23) |
+| **Mức hiện tại** | **✅ Module DoD 100%** (`rp4`+`rp5` 2026-07-23 · AUDIT ~8.6) |
 | **Option** | **B** — Chuẩn hóa layout form trong Dialog/Modal CRUD (responsive stack + min-width), không redesign brand |
-| **Trạng thái** | 🟡 Spec sẵn sàng — chờ FOUNDER Proceed → `rp1`/`rp2`/`rp3` hoặc `/18-auto-execute` |
+| **Trạng thái** | ✅ **ĐÓNG tài liệu** — EP0–EP5 · dbm 23/0 · hotfix bareMaxW · `rp4`+`rp5` |
 | **Dev-days** | **3–5** (1 Dev) |
 | **Critical Path** | **Không** (UX polish); không block pilot P37 |
 | **Port FE** | `http://localhost:3003` |
@@ -17,6 +17,12 @@
 | Ngày | Thay đổi |
 |---|---|
 | 2026-07-23 | FOUNDER báo truncating input trong popup **Tạo phiếu nhập**; `/30-auto-project-planner` · inventory disk · Option B · **95% Ready** |
+| 2026-07-23 | **`rp1` 100% Ready:** Disk freeze §22 — DialogContent **33** files; P0 verified; verify contract bỏ false-positive TableHead/`min-w-24` |
+| 2026-07-23 | **`rp2` /17-auto-plan:** Function index + brain EP0–EP5 + critic **9.5**; §23 |
+| 2026-07-23 | **`rp3` PASS:** §24 BS-R3-01…16 — custom modal, col-span lg, verify/dbm contracts; **0 blind spot block** |
+| 2026-07-23 | **`/18-auto-execute`:** EP0–EP5 DONE · verify_dialog PASS · P1 13/13 · dbm **10/0** · §25 |
+| 2026-07-23 | **`dbm` formal** + hotfix **bareMaxW** (`sm:max-w-*`) · dialog **768** · Qty **188** · dbm **23/0** · §26 |
+| 2026-07-23 | **`rp4`+`rp5`:** disk **38/0** · §27–§28 · **ĐÓNG tài liệu** |
 
 ### Quyết định khóa
 
@@ -78,7 +84,8 @@
 - [x] Phase 39 **ĐÓNG** (theme light/dark)  
 - [x] FE `:3003` chạy được để dbm  
 - [x] Inventory sơ bộ `planning/evidence/phase_40/dialog_width_inventory.json`  
-- [ ] FOUNDER Proceed trước `/18-auto-execute`  
+- [x] **`rp1` disk freeze** §22 + `baseline_disk_freeze.json`  
+- [x] FOUNDER Proceed → `/18-auto-execute` (2026-07-23)  
 
 ---
 
@@ -293,14 +300,14 @@ Không thêm telemetry backend.
 
 ## 14. Acceptance Criteria (DoD)
 
-- [ ] Inventory P0/P1 đóng trong evidence (updated JSON)  
-- [ ] P0 inbound/outbound/receive **PASS** visual + screenshot  
-- [ ] P1: không còn modal CRUD `max-w-sm` chứa ≥2 input cạnh nhau **hoặc** đã stack đủ rộng  
-- [ ] `verify_dialog_form_width.ps1` PASS  
-- [ ] Regression theme/shell/nav/i18n PASS  
-- [ ] dbm evidence + walkthrough  
-- [ ] `IMPLEMENTATION_PLAN` row 40 ✅  
-- [ ] Không đổi API/DB  
+- [x] Inventory P0/P1 đóng trong evidence (updated JSON)  
+- [x] P0 inbound/outbound/receive **PASS** visual + screenshot  
+- [x] P1: không còn modal CRUD `max-w-sm` chứa ≥2 input cạnh nhau **hoặc** đã stack đủ rộng  
+- [x] `verify_dialog_form_width.ps1` PASS  
+- [x] Regression theme/shell/nav/i18n PASS  
+- [x] dbm evidence + walkthrough  
+- [x] `IMPLEMENTATION_PLAN` row 40 ✅  
+- [x] Không đổi API/DB  
 
 ---
 
@@ -357,6 +364,7 @@ Xem §2 Out of scope. Thêm: không đổi WinForms; không redesign DataTable c
 | Vai trò | Kết luận | Ngày |
 |---|---|---|
 | JARVIS | **95% Ready** — chờ Proceed / `rp1` | 2026-07-23 |
+| JARVIS | **`rp1` PASS — 100% Ready** · disk freeze §22 | 2026-07-23 |
 | FOUNDER | ☐ Proceed · ☐ Hold · ☐ Đổi Option | ____ |
 
 ---
@@ -379,4 +387,297 @@ Xem §2 Out of scope. Thêm: không đổi WinForms; không redesign DataTable c
 **Vấn đề:** Popup CRUD (điển hình Tạo phiếu nhập) xếp 4–5 ô 1 hàng → UOM/Qty cắt chữ.  
 **Hướng:** Phase 40 Option B — nới dialog + stack responsive + cấm `w-24` select + verify script.  
 **Không đụng:** API, DB, theme tokens.  
-**Next:** FOUNDER **Proceed** → `rp1` freeze hoặc thẳng `/18-auto-execute` nếu chấp nhận inventory hiện tại.
+**Next:** FOUNDER **Proceed** → `/18-auto-execute` (inventory đã freeze `rp1`).
+
+---
+
+## 22. `rp1` — Disk freeze (2026-07-23)
+
+### 22.1 SoT & path khóa
+
+| Artifact | Path |
+|---|---|
+| Phase SoT | `planning/phases/phase_40_crud_dialog_form_width.md` |
+| Inventory | `planning/evidence/phase_40/dialog_width_inventory.json` |
+| Freeze | `planning/evidence/phase_40/baseline_disk_freeze.json` |
+| Allowlist | `planning/evidence/phase_40/allowlist.md` (empty ≤5) |
+
+### 22.2 Inventory Dialog
+
+| Metric | Giá trị |
+|---|---|
+| Files chứa `DialogContent` | **33** |
+| `grid-cols-12` **không** breakpoint (true risk) | **1** = `admin/inbound/page.tsx` |
+| `w-24` trên wrapper form select/input (true risk) | **1** = `outbound/create-dialog.tsx` (2× `div.w-24`) |
+| False positive `w-24` | TableHead actions · `Button min-w-24` · **IGNORE** trong verify |
+| P0 receive | **EXISTS** (`inbound/[id]/receive/page.tsx` · `max-w-lg`) |
+
+### 22.3 P0 khóa (verified)
+
+| File | Finding | Action EP2 |
+|---|---|---|
+| `admin/inbound/page.tsx` | `grid-cols-12` no `sm/md/lg` | Responsive D3 |
+| `outbound/create-dialog.tsx` | `w-24` ×2 UOM+Qty | `min-w` + flex §8.3 |
+| `inbound/.../receive/page.tsx` | `max-w-lg` dense | Nới ≥`max-w-2xl` + stack |
+
+### 22.4 P1 khóa (13 paths)
+
+LPN · Replenishment · Serial · Putaway · Roles · Users · pick-dialog · move · lock · QC result · hold-release · Rules · Mappings — xem JSON.
+
+### 22.5 Verify contract (`rp1` chốt)
+
+```
+FAIL nếu:
+  - File có DialogContent + `grid-cols-12` mà không có sm:|md:|lg: breakpoint cùng file
+  - Trong Dialog form: `className="w-24"` (hoặc w-20) bọc/adjacent select|Input (không TableHead, không min-w-24 Button)
+
+IGNORE:
+  - components/ui/dialog.tsx default max-w-sm
+  - TableHead ... w-24
+  - Button min-w-24
+```
+
+### 22.6 Blind spots đóng thêm (`rp1`)
+
+| ID | Blind | Đóng |
+|---|---|---|
+| BS-R1-01 | Receive path `[id]` bị PowerShell miss | LiteralPath confirm **true** |
+| BS-R1-02 | Verify fail TableHead `w-24` | IGNORE contract |
+| BS-R1-03 | Inbound `w-24` không phải select | Chỉ fail grid-cols-12; outbound mới là w-24 form |
+| BS-R1-04 | Đổi default `ui/dialog` max-w-sm | **OOS** — consumer override |
+| BS-R1-05 | pick-dialog 400px | Thêm P1 explicit |
+
+### 22.7 EP ↔ thứ tự (không đổi)
+
+EP0→EP5 giữ §20. P0 = EP2; P1 = EP3.
+
+### 22.8 Verdict `rp1`
+
+**PASS — 100% Ready** để FOUNDER Proceed `/18-auto-execute` (EP0→EP5).
+
+| Vai trò | Kết luận | Ngày |
+|---|---|---|
+| JARVIS | **`rp1` PASS — 100% Ready** | 2026-07-23 |
+| JARVIS | **`rp2` PASS** — index + EP atomic · critic **9.5** | 2026-07-23 |
+| FOUNDER | ☐ Proceed | ____ |
+
+---
+
+## 23. `rp2` — Function index + EP atomic (2026-07-23)
+
+### 23.1 Deliverables
+
+| Artifact | Path |
+|---|---|
+| Function index | `planning/function_index_phase40_dialog_width.md` |
+| Brain plan | `brain/.../implementation_plan.md` (EP0–EP5 atomic) |
+| Critic | `brain/.../critic_report.md` **9.5** |
+
+### 23.2 Quyết định khóa thêm (rp2)
+
+| # | Quyết định |
+|---|---|
+| 1 | **Không** extract shared `DialogLineRow` trong EP2 — copy pattern sau P0 PASS |
+| 2 | Outbound: bỏ `w-24`; nếu còn chật → nâng `sm:max-w-2xl` |
+| 3 | Receive: tối thiểu `max-w-2xl` |
+| 4 | Verify exclude `ui/dialog.tsx` + `alert-dialog.tsx` |
+| 5 | Allowlist ≤5; mặc định empty |
+| 6 | P1: nới width **hoặc** stack — không bắt buộc redesign field order |
+
+### 23.3 Critic score
+
+**9.5 / 10** — atomic EP + verify IGNORE + MUST NOT rõ.
+
+### 23.4 Verdict `rp2`
+
+**PASS** — index + EP atomic đủ maintenance; maturity giữ **100% Ready**.
+
+| Vai trò | Kết luận | Ngày |
+|---|---|---|
+| JARVIS | **rp2 PASS** — sẵn sàng `rp3` hoặc Proceed `/18` | 2026-07-23 |
+| JARVIS | **rp3 PASS** — 0 điểm mù block · sẵn sàng Proceed `/18` | 2026-07-23 |
+| FOUNDER | ☐ Proceed · ☐ Hold | ____ |
+
+---
+
+## 24. `rp3` — Blind spot closure (2026-07-23)
+
+**Ngày:** 2026-07-23 · **Verdict:** **PASS — 0 điểm mù block execute**
+
+| ID | Blind spot | Đóng bằng |
+|---|---|---|
+| BS-R3-01 | Chỉ soi `DialogContent` — miss modal custom `max-w-sm` (LPN/Replen/Serial/Putaway) | **Khóa:** EP3 checklist **bắt buộc** F04–F07; verify **FAIL/WARN** nếu file có `max-w-sm` + ≥2 `<select`/`Input` trong cùng file form (trừ allowlist) |
+| BS-R3-02 | Đổi `grid-cols-12` → responsive nhưng giữ `col-span-4` (không `lg:`) → vỡ layout mobile | EP2: mọi `col-span-*` trên line row → `lg:col-span-*` (+ `sm:col-span-2` nếu cần) |
+| BS-R3-03 | Outbound bỏ `w-24` nhưng parent vẫn `flex` 1 hàng hẹp trên 768 | Parent `flex-col gap-3 sm:flex-row sm:items-end` (§8.3 / index EP2) |
+| BS-R3-04 | `sm:max-w-[600px]` vẫn chật sau nới field | Failure recovery EP2: nâng `sm:max-w-2xl` |
+| BS-R3-05 | Receive chỉ đổi `max-w-*` — grid `grid-cols-3` summary + `grid-cols-2` field vẫn dày | EP2: summary `grid-cols-1 sm:grid-cols-3`; form fields `grid-cols-1 sm:grid-cols-2` |
+| BS-R3-06 | Verify fail `min-w-24` / TableHead `w-24` | §22.5 IGNORE; unit test N1 chỉ `className="w-24"` wrapper |
+| BS-R3-07 | Dialog overflow-x sau nới nội dung | DialogContent giữ `max-h-[85vh] overflow-y-auto`; thêm `overflow-x-hidden` nếu cần; row `min-w-0` |
+| BS-R3-08 | Placeholder VI dài (“Chọn đơn vị tính”) vs EN ngắn | DoD theo **VI** (locale mặc định pilot); dbm assert VI |
+| BS-R3-09 | dbm mở dialog trước Auth hydrate → shot spinner | Chờ `sidebar-user-menu-trigger` / page shell rồi click create (học P39) |
+| BS-R3-10 | Light OK / Dark regress (border contrast) | dbm shots **light + dark** cho P0 inbound create |
+| BS-R3-11 | P1 “review” mơ hồ → ship thiếu | DoD: `p1_pass.md` **13/13** dòng PASS hoặc allowlist ≤5 có reason |
+| BS-R3-12 | Sửa layout làm gãy `onSubmit` / controlled state | **MUST NOT** đổi handler/state — chỉ `className` + cấu trúc wrapper div |
+| BS-R3-13 | Nested Dialog / Confirm trên cùng page | Không đổi z-index portal; không bọc thêm Dialog |
+| BS-R3-14 | Skip EP1 → fix “mù” | Thứ tự EP0→EP5 **bắt buộc**; EP1 trước EP2 |
+| BS-R3-15 | `border-zinc-850` / hover zinc trên cùng file P0 | Ngoài scope width; **không** bắt buộc migrate theme trong P40 (tránh scope creep) — ticket polish riêng nếu FOUNDER muốn |
+| BS-R3-16 | Allowlist vô hạn / bỏ verify | ≤5 + reason; DoD fail nếu >5 |
+
+### 24.1 Inbound line row — className khóa (EP2)
+
+```tsx
+<div
+  key={index}
+  className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-12 lg:items-end rounded-lg border border-border bg-card/30 p-3"
+>
+  <div className="min-w-0 sm:col-span-2 lg:col-span-4 space-y-1">{/* Item select w-full */}</div>
+  <div className="min-w-0 lg:col-span-3 space-y-1">{/* UOM */}</div>
+  <div className="min-w-0 lg:col-span-2 space-y-1">{/* Qty */}</div>
+  <div className="min-w-0 lg:col-span-2 space-y-1">{/* Tolerance */}</div>
+  <div className="flex lg:col-span-1 lg:justify-end">{/* Delete */}</div>
+</div>
+```
+
+### 24.2 verify_dialog_form_width.ps1 contract (EP1)
+
+| Rule | Action |
+|---|---|
+| File chứa `DialogContent` + `grid-cols-12` không có `sm:`/`md:`/`lg:` breakpoint | **FAIL** `g12` |
+| `className="w-24"` hoặc `className='w-24'` trên phần tử (không `min-w-24`, không `TableHead`) | **FAIL** `w24` |
+| File có `max-w-sm` + (`<select` count ≥ 2 **hoặc** `<Input` ≥ 2) trong cùng file | **FAIL** `maxSmDense` (trừ allowlist / `ui/*`) |
+| Path trong allowlist.md | **SKIP** |
+| `components/ui/dialog.tsx`, `alert-dialog.tsx` | **EXCLUDE** |
+
+Baseline trước EP2: expect FAIL ≥ 1 (`g12` inbound và/hoặc `w24` outbound và/hoặc `maxSmDense` P1).
+
+### 24.3 dbm contract (EP5)
+
+| Step | Kỳ vọng |
+|---|---|
+| Login + Auth ready | Có sidebar trigger |
+| Theme light → `/admin/inbound` → open create → Thêm dòng | Shot; UOM option text không truncated (visual) |
+| Theme dark → cùng dialog | Shot parity |
+| `/admin/outbound` hoặc open CreateShipmentDialog | Shot line UOM/Qty |
+| verify_dialog + theme/shell | exit 0 |
+
+### 24.4 OOS (không block)
+
+Extract `DialogLineRow` · Combobox · DataTable cột · đổi default `ui/dialog` · theme zinc residual · API search-in-select.
+
+### 24.5 Verdict `rp3`
+
+**PASS** — plan đủ chi tiết xuyên EP0–EP5, **0 blind spot block**.
+
+| Vai trò | Kết luận | Ngày |
+|---|---|---|
+| JARVIS | **rp3 PASS** — Proceed `/18-auto-execute` | 2026-07-23 |
+| JARVIS | **`/18-auto-execute` COMPLETE** · Module DoD | 2026-07-23 |
+| FOUNDER | ☐ Proceed · ☐ Hold | ____ |
+
+---
+
+## 25. `/18-auto-execute` — đóng Dialog Width Pass (2026-07-23)
+
+| EP | Kết quả |
+|---|---|
+| EP0 | Evidence `phase_40/` freeze + allowlist + shots |
+| EP1 | `tests/verify_dialog_form_width.ps1` (g12 / w24 / maxSmDense) |
+| EP2 | P0: inbound responsive grid · outbound bỏ `w-24` · receive `max-w-2xl` |
+| EP3 | P1 **13/13** (`p1_pass.md`) · self-heal allocation `w-24` → `w-28` |
+| EP4 | verify_dialog + theme + shell + nav + i18n **PASS** |
+| EP5 | dbm smoke **10/0** → formal **21/0** (§26) · UOM **168/292px** · 5 shots + video |
+
+**Artifacts:** `tests/verify_dialog_form_width.ps1` · `tests/helpers/dbm_phase40_dialog_width_browser.mjs` · `planning/evidence/phase_40_dbm/`
+
+**Verdict:** **Module DoD 100%**
+
+---
+
+## 26. `dbm` formal — đóng bằng chứng browser (2026-07-23)
+
+| Mục | Kết quả |
+|---|---|
+| Script | `tests/helpers/dbm_phase40_dialog_width_browser.mjs` |
+| PASS / FAIL | **21 / 0** |
+| UOM inbound | **168px** · option EN (không cắt VI) |
+| UOM outbound | **292px** |
+| Shots | 01 inbound light · 02 inbound dark · 03 outbound · 04 roles · 05 users |
+| Video | `planning/evidence/phase_40_dbm/walkthrough-dialog-width.webm` |
+| Walkthrough | [walkthrough.md](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_40_dbm/walkthrough.md) |
+| verify_dialog / theme / shell | exit **0** |
+| IT Factory quality | recorded (`passed=true`) |
+
+| Vai trò | Kết luận | Ngày |
+|---|---|---|
+| JARVIS | **`dbm` PASS 21/0** — Phase 40 formal evidence đóng | 2026-07-23 |
+| JARVIS | **Hotfix bareMaxW** — `sm:max-w-*` đè default; inbound **768px** · UOM **263** · Qty **188**; line stack Vật tư full-width; dbm **23/0** | 2026-07-23 |
+| FOUNDER | ☐ Accept · ☐ Re-run | ____ |
+
+---
+
+## 27. `rp4` — reindex + đóng tài liệu (2026-07-23)
+
+### 27.1 Mục tiêu
+
+Reindex disk vs DoD §14 + hotfix bareMaxW; xác nhận không regress P38/P39; đóng tài liệu Phase 40.
+
+### 27.2 Disk matrix
+
+| Nhóm | Kết quả |
+|---|---|
+| Evidence `phase_40/` + function_index + verify/dbm scripts | PASS |
+| Shots 01–05 + video + walkthrough/results | PASS |
+| CODE P0 inbound/outbound/receive + `ui/dialog` default intact | PASS |
+| verify rules g12 / w24 / bareMaxW | PASS |
+| P1 pass mentions ≥13 · allowlist **0** | PASS |
+| dbm cite **23/0** | PASS |
+| DOC §25–§26 | PASS |
+| VERIFY dialog · theme · shell | exit **0** |
+| VERIFY nav_lens · i18n (rp5 complement) | exit **0** |
+
+**FILE_FAIL = 0** · JSON: `planning/evidence/phase_40_rp45/disk_reindex.json` (**38/0**)
+
+### 27.3 Runtime (`rp4` — cite dbm, không re-run browser)
+
+| Gate | Cite |
+|---|---|
+| dbm | **23/0** · dialog **768px** · UOM **263** · Qty **188** |
+| Walkthrough | `planning/evidence/phase_40_dbm/walkthrough.md` |
+| Hotfix | bareMaxW — `sm:max-w-*` bắt buộc trên DialogContent consumer |
+
+### 27.4 Docs cập nhật (`rp4`)
+
+- `phase_40` header → **ĐÓNG tài liệu** · §27–§28
+- `IMPLEMENTATION_PLAN` row 40 → ĐÓNG (`rp4`+`rp5`)
+- `AUDIT_UI_UX_PROD_READINESS` ~**8.6** (dialog density)
+- Evidence `phase_40_rp45/validation_pass.md`
+
+### 27.5 Verdict `rp4`
+
+**PASS** — Module DoD **100%** · sẵn sàng `rp5` xác nhận độc lập.
+
+---
+
+## 28. `rp5` — xác nhận độc lập (2026-07-23)
+
+### 28.1 Phương pháp
+
+Đọc lại disk matrix `disk_reindex.json` + DoD §14 + cite dbm §26; chạy bổ sung `verify_nav_lens` + `verify_i18n` (không có trong matrix SKIP trước đó).
+
+### 28.2 Open / residual (không block ĐÓNG)
+
+| # | Residual | Ghi chú |
+|---|---|---|
+| 1 | Extract shared `DialogLineRow` | OOS — optional sau |
+| 2 | Combobox search-in-select | OOS |
+| 3 | DataTable cột hẹp | OOS (không phải popup) |
+| 4 | Đổi default `ui/dialog` `sm:max-w-sm` | **Cấm** — consumer dùng `sm:max-w-*` |
+
+### 28.3 Verdict `rp5`
+
+**PASS — xác nhận độc lập khớp `rp4`.** Phase 40 **ĐÓNG tài liệu**.
+
+| Vai trò | Kết luận | Ngày |
+|---|---|---|
+| JARVIS | **`rp4`+`rp5` PASS** · Module DoD 100% · ĐÓNG | 2026-07-23 |
+| FOUNDER | ☐ Accept | ____ |

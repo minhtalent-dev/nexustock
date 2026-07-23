@@ -158,7 +158,7 @@ export default function SerialPage() {
           <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex gap-3">
-          <Button onClick={() => setShowImportModal(true)} className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-9 px-4 flex items-center gap-2">
+          <Button onClick={() => setShowImportModal(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9 px-4 flex items-center gap-2">
             <Upload className="h-4 w-4" />
             {t("importCsv")}
           </Button>
@@ -180,7 +180,7 @@ export default function SerialPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="bg-muted border border-border text-foreground rounded p-2 text-xs focus:outline-none h-9 flex-grow font-mono"
               />
-              <Button onClick={fetchSerials} className="bg-blue-600 hover:bg-blue-500 text-foreground text-xs h-9">
+              <Button onClick={fetchSerials} className="bg-blue-600 hover:bg-blue-500 text-white text-xs h-9">
                 {t("searchBtn")}
               </Button>
             </CardHeader>
@@ -214,7 +214,7 @@ export default function SerialPage() {
                         </TableCell>
                         <TableCell className="text-muted-foreground font-mono">{s.locationCode || s.locationId.substring(0, 8)}</TableCell>
                         <TableCell>
-                          <Badge className="bg-blue-600/80 hover:bg-blue-600 text-foreground text-[9px] scale-90">{s.status}</Badge>
+                          <Badge className="bg-blue-600/80 hover:bg-blue-600 text-white text-[9px] scale-90">{s.status}</Badge>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -269,7 +269,7 @@ export default function SerialPage() {
 
       {showImportModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-foreground shadow-xl flex flex-col">
+          <div className="bg-card border border-border rounded-lg max-w-lg w-full text-foreground shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <Upload className="h-4 w-4 text-emerald-500" />

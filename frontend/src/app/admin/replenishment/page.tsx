@@ -211,11 +211,11 @@ export default function ReplenishmentPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "COMPLETED":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-foreground">{t("statusCompleted")}</Badge>;
+        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">{t("statusCompleted")}</Badge>;
       case "CANCELLED":
-        return <Badge className="bg-rose-600 hover:bg-rose-500 text-foreground">{t("statusCancelled")}</Badge>;
+        return <Badge className="bg-rose-600 hover:bg-rose-500 text-white">{t("statusCancelled")}</Badge>;
       case "ASSIGNED":
-        return <Badge className="bg-amber-600 hover:bg-amber-500 text-foreground">{t("statusAssigned")}</Badge>;
+        return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">{t("statusAssigned")}</Badge>;
       case "PENDING":
       default:
         return <Badge className="bg-muted hover:bg-zinc-700 text-muted-foreground">{t("statusPending")}</Badge>;
@@ -246,7 +246,7 @@ export default function ReplenishmentPage() {
           <Button
             onClick={handleRunEngine}
             disabled={runningEngine}
-            className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-9 px-4 flex items-center gap-2"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9 px-4 flex items-center gap-2"
           >
             <Play className={`h-4 w-4 ${runningEngine ? "animate-spin" : ""}`} />
             {runningEngine ? t("runningEngine") : t("runEngine")}
@@ -327,7 +327,7 @@ export default function ReplenishmentPage() {
                             <>
                               <Button
                                 onClick={() => handleOpenComplete(task)}
-                                className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-7 px-3 text-[10px] rounded"
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 px-3 text-[10px] rounded"
                               >
                                 {t("completeBtn")}
                               </Button>
@@ -480,7 +480,7 @@ export default function ReplenishmentPage() {
                   <Button
                     type="submit"
                     disabled={submittingRule}
-                    className="bg-emerald-600 hover:bg-emerald-500 text-foreground w-full h-9 text-xs rounded mt-2"
+                    className="bg-emerald-600 hover:bg-emerald-500 text-white w-full h-9 text-xs rounded mt-2"
                   >
                     {submittingRule ? t("creatingRule") : t("createRule")}
                   </Button>
@@ -493,7 +493,7 @@ export default function ReplenishmentPage() {
 
       {completingTask && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-foreground shadow-xl flex flex-col">
+          <div className="bg-card border border-border rounded-lg max-w-lg w-full text-foreground shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <CheckCircle className="h-4 w-4 text-emerald-500" />
@@ -539,7 +539,7 @@ export default function ReplenishmentPage() {
               <Button onClick={() => setCompletingTask(null)} variant="outline" className="border-border hover:bg-muted text-muted-foreground text-xs h-8 px-4">
                 {t("cancelBtn")}
               </Button>
-              <Button onClick={handleCompleteTask} disabled={submittingComplete} className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-8 px-4">
+              <Button onClick={handleCompleteTask} disabled={submittingComplete} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4">
                 {submittingComplete ? t("processing") : t("confirmComplete")}
               </Button>
             </div>

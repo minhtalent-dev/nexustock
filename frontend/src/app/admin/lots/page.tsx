@@ -90,7 +90,7 @@ export default function LotsPage() {
               onChange={(e) => setSearchLotNo(e.target.value)}
               className="bg-card border-border text-foreground focus-visible:ring-emerald-500 text-sm h-10"
             />
-            <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-10 px-5 gap-2 shrink-0">
+            <Button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-500 text-white h-10 px-5 gap-2 shrink-0">
               {loading ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
               ) : (

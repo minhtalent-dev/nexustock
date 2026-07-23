@@ -36,7 +36,7 @@ export default function GenealogyIndexPage() {
           onKeyDown={(e) => e.key === "Enter" && handleSearch()}
           className="bg-card border-border text-foreground placeholder:text-muted-foreground"
         />
-        <Button onClick={handleSearch} className="bg-indigo-600 hover:bg-indigo-500 text-foreground">
+        <Button onClick={handleSearch} className="bg-indigo-600 hover:bg-indigo-500 text-white">
           <Search className="h-4 w-4 mr-2" />
           {t("searchBtn")}
         </Button>

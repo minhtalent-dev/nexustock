@@ -112,11 +112,11 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
       case "DRAFT":
         return <Badge className="bg-zinc-700 hover:bg-zinc-600 text-foreground">{t("statusDraft")}</Badge>;
       case "RELEASED":
-        return <Badge className="bg-blue-600 hover:bg-blue-500 text-foreground">{t("statusReleased")}</Badge>;
+        return <Badge className="bg-blue-600 hover:bg-blue-500 text-white">{t("statusReleased")}</Badge>;
       case "SORTING":
-        return <Badge className="bg-amber-600 hover:bg-amber-500 text-foreground">{t("statusSorting")}</Badge>;
+        return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">{t("statusSorting")}</Badge>;
       case "COMPLETED":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-foreground">{t("statusCompleted")}</Badge>;
+        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">{t("statusCompleted")}</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -158,7 +158,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
             <Button
               onClick={handleReleaseWave}
               disabled={processing}
-              className="bg-indigo-600 hover:bg-indigo-500 text-foreground flex items-center gap-2 h-9 text-xs px-4"
+              className="bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 h-9 text-xs px-4"
             >
               <Play className="h-4 w-4" />
               {t("releaseWave")}
@@ -169,7 +169,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
             <Button
               onClick={handleCompleteWave}
               disabled={processing}
-              className="bg-emerald-600 hover:bg-emerald-500 text-foreground flex items-center gap-2 h-9 text-xs px-4"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white flex items-center gap-2 h-9 text-xs px-4"
             >
               <CheckSquare className="h-4 w-4" />
               {t("completeSorting")}
@@ -178,7 +178,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
 
           {(wave.status === "SORTING" || wave.status === "RELEASED" || wave.status === "COMPLETED") && (
             <Link href={`/admin/waves/${wave.id}/put-wall`}>
-              <Button className="bg-amber-600 hover:bg-amber-500 text-foreground flex items-center gap-2 h-9 text-xs px-4">
+              <Button className="bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-2 h-9 text-xs px-4">
                 <LayoutGrid className="h-4 w-4" />
                 {t("putWallDynamic")}
               </Button>
@@ -283,7 +283,7 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
                     <TableCell className="font-bold text-foreground font-mono">{i.shipmentNo}</TableCell>
                     <TableCell>
                       {i.recommendedSlotNumber ? (
-                        <Badge className="bg-amber-600 text-foreground font-mono">
+                        <Badge className="bg-amber-600 text-white font-mono">
                           {t("slotLabel", { number: i.recommendedSlotNumber })}
                         </Badge>
                       ) : (

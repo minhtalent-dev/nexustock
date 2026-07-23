@@ -190,7 +190,7 @@ export default function CandidateDetailPage() {
 
       {isPending && (
         <div className="flex gap-3">
-          <Button onClick={() => setAcceptOpen(true)} className="bg-green-600 hover:bg-green-700 text-foreground">
+          <Button onClick={() => setAcceptOpen(true)} className="bg-green-600 hover:bg-green-700 text-white">
             <CheckCircle className="w-4 h-4 mr-1" /> {t("accept")}
           </Button>
           <Button variant="outline" onClick={() => setRejectOpen(true)} className="border-red-300 text-red-600 hover:bg-red-50">
@@ -229,7 +229,7 @@ export default function CandidateDetailPage() {
           <DialogHeader><DialogTitle>{t("acceptDialogTitle")}</DialogTitle></DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setAcceptOpen(false)}>{tc("cancel")}</Button>
-            <Button disabled={actioning} onClick={handleAccept} className="bg-green-600 hover:bg-green-700 text-foreground">
+            <Button disabled={actioning} onClick={handleAccept} className="bg-green-600 hover:bg-green-700 text-white">
               {actioning ? t("accepting") : t("confirmAccept")}
             </Button>
           </DialogFooter>

@@ -126,9 +126,9 @@ export default function AllocationPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Allocated":
-        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-foreground">{t("statusAllocated")}</Badge>;
+        return <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white">{t("statusAllocated")}</Badge>;
       case "PartiallyAllocated":
-        return <Badge className="bg-amber-600 hover:bg-amber-500 text-foreground">{t("statusPartiallyAllocated")}</Badge>;
+        return <Badge className="bg-amber-600 hover:bg-amber-500 text-white">{t("statusPartiallyAllocated")}</Badge>;
       case "Unallocated":
       case "Open":
         return <Badge className="bg-muted hover:bg-zinc-700 text-muted-foreground">{t("statusOpen")}</Badge>;
@@ -187,7 +187,7 @@ export default function AllocationPage() {
                           <TableCell className="text-center">
                             <Button
                               onClick={() => fetchShipmentLines(s)}
-                              className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-7 px-3 text-[11px] rounded"
+                              className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 px-3 text-[11px] rounded"
                             >
                               {t("detailsBtn")}
                             </Button>
@@ -240,7 +240,7 @@ export default function AllocationPage() {
                           type="number"
                           value={ttlMinutes}
                           onChange={(e) => setTtlMinutes(parseInt(e.target.value) || 1440)}
-                          className="bg-muted border border-border text-foreground rounded p-1.5 text-xs focus:outline-none h-8 w-24"
+                          className="bg-muted border border-border text-foreground rounded p-1.5 text-xs focus:outline-none h-8 min-w-[6rem] w-28"
                         />
                       </div>
 
@@ -262,7 +262,7 @@ export default function AllocationPage() {
                       <Button
                         onClick={handleRunAllocation}
                         disabled={submitting || activeShipment.status === "Allocated"}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-9 px-4 text-xs font-semibold flex items-center gap-1.5"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white h-9 px-4 text-xs font-semibold flex items-center gap-1.5"
                       >
                         <Play className="h-3.5 w-3.5" />
                         {t("runAllocation")}
@@ -272,7 +272,7 @@ export default function AllocationPage() {
                         onClick={handleReleaseAllocation}
                         disabled={submitting || activeShipment.status === "Open" || activeShipment.status === "Unallocated"}
                         variant="outline"
-                        className="border-rose-900 bg-rose-950/10 hover:bg-rose-900 text-rose-400 hover:text-foreground h-9 px-4 text-xs font-semibold flex items-center gap-1.5"
+                        className="border-rose-900 bg-rose-950/10 hover:bg-rose-900 text-rose-400 hover:text-white h-9 px-4 text-xs font-semibold flex items-center gap-1.5"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         {t("releaseReservation")}

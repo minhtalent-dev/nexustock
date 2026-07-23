@@ -182,7 +182,7 @@ export default function RulesPage() {
   const getActionBadge = (action: string) => {
     switch (action) {
       case "ALLOW":
-        return <Badge className="bg-green-600 hover:bg-green-700 text-foreground">ALLOW</Badge>;
+        return <Badge className="bg-green-600 hover:bg-green-700 text-white">ALLOW</Badge>;
       case "WARN":
         return <Badge className="bg-yellow-600 hover:bg-yellow-700 text-foreground">WARN</Badge>;
       case "BLOCK":
@@ -367,7 +367,7 @@ export default function RulesPage() {
       )}
 
       <Dialog open={selectedRule !== null} onOpenChange={(open) => !open && setSelectedRule(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{t("detailTitle")}</DialogTitle>
           </DialogHeader>
@@ -422,7 +422,7 @@ export default function RulesPage() {
       </Dialog>
 
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{t("createTitle")}</DialogTitle>
           </DialogHeader>

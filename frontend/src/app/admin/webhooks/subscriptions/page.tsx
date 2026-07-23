@@ -204,7 +204,7 @@ export default function WebhookSubscriptionsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setCreateOpen(false)}>{tc("cancel")}</Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>{tc("cancel")}</Button>
             <Button onClick={handleCreate} disabled={creating}>
               {creating ? tc("creating") : tc("create")}
             </Button>

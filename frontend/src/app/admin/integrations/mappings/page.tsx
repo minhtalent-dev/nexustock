@@ -265,7 +265,7 @@ export default function IntegrationMappingsPage() {
       </Card>
 
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="bg-background border-zinc-850 text-foreground text-xs max-w-md">
+        <DialogContent className="bg-background border-zinc-850 text-foreground text-xs sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold">{t("addDialogTitle")}</DialogTitle>
           </DialogHeader>
@@ -314,7 +314,7 @@ export default function IntegrationMappingsPage() {
               />
             </div>
             <DialogFooter className="pt-2">
-              <Button type="button" variant="ghost" onClick={() => setIsAddOpen(false)} className="text-xs">{tc("cancel")}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)} className="text-xs">{tc("cancel")}</Button>
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-xs">{tc("save")}</Button>
             </DialogFooter>
           </form>
@@ -322,7 +322,7 @@ export default function IntegrationMappingsPage() {
       </Dialog>
 
       <Dialog open={isEditing !== null} onOpenChange={() => setIsEditing(null)}>
-        <DialogContent className="bg-background border-zinc-850 text-foreground text-xs max-w-md">
+        <DialogContent className="bg-background border-zinc-850 text-foreground text-xs sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-sm font-bold">{t("editDialogTitle")}</DialogTitle>
           </DialogHeader>
@@ -359,7 +359,7 @@ export default function IntegrationMappingsPage() {
               </Select>
             </div>
             <DialogFooter className="pt-2">
-              <Button type="button" variant="ghost" onClick={() => setIsEditing(null)} className="text-xs">{tc("cancel")}</Button>
+              <Button type="button" variant="outline" onClick={() => setIsEditing(null)} className="text-xs">{tc("cancel")}</Button>
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-xs">{t("saveChanges")}</Button>
             </DialogFooter>
           </form>

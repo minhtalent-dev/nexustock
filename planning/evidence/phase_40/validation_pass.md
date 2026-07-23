@@ -1,9 +1,15 @@
-# Phase 40 — Evidence scaffold
+# Validation Pass — Phase 40 Module DoD
 
-- Inventory: `dialog_width_inventory.json`
-- Allowlist: (empty stub — max 5)
-- Shots: sau dbm
+**Date:** 2026-07-23  
+**Pipeline:** `/18-auto-execute`  
+**Verdict:** **PASS — Module DoD 100%**
 
-## Status
+| Gate | Result |
+|---|---|
+| EP0–EP5 | DONE |
+| verify_dialog_form_width | PASS |
+| P1 | 13/13 |
+| Regression theme/shell/nav/i18n | PASS |
+| dbm | **10/0** (UOM width 168px) |
 
-Spec **95% Ready** — chờ FOUNDER Proceed.
+Evidence: `phase_40_dbm/walkthrough.md` · `p1_pass.md`

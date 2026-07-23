@@ -88,7 +88,7 @@ export function LockLocationDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{t("lockTitle")}</DialogTitle>
         </DialogHeader>

@@ -319,7 +319,7 @@ export default function LpnPage() {
                     ))}
                   </select>
                 </div>
-                <Button type="submit" disabled={submittingLpn} className="bg-emerald-600 hover:bg-emerald-500 text-foreground w-full h-9 text-xs rounded">
+                <Button type="submit" disabled={submittingLpn} className="bg-emerald-600 hover:bg-emerald-500 text-white w-full h-9 text-xs rounded">
                   {submittingLpn ? t("creating") : t("createLpn")}
                 </Button>
               </form>
@@ -351,7 +351,7 @@ export default function LpnPage() {
                           {t("locationPrefix")} {getLocationCode(lpn.locationId)}
                         </span>
                       </div>
-                      <Badge className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-[9px] scale-90">{lpn.status}</Badge>
+                      <Badge className="bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] scale-90">{lpn.status}</Badge>
                     </button>
                   ))}
                 </div>
@@ -373,7 +373,7 @@ export default function LpnPage() {
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Button onClick={() => setShowAttachModal(true)} className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-8 px-4 flex items-center gap-2">
+                  <Button onClick={() => setShowAttachModal(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4 flex items-center gap-2">
                     <LogIn className="h-4 w-4" />
                     {t("attachBtn")}
                   </Button>
@@ -486,7 +486,7 @@ export default function LpnPage() {
 
       {showAttachModal && selectedLpn && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-foreground shadow-xl flex flex-col">
+          <div className="bg-card border border-border rounded-lg max-w-lg w-full text-foreground shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <LogIn className="h-4 w-4 text-emerald-500" />
@@ -538,7 +538,7 @@ export default function LpnPage() {
                 <Button type="button" onClick={() => setShowAttachModal(false)} variant="outline" className="border-border hover:bg-muted text-muted-foreground text-xs h-8 px-4">
                   {tc("cancel")}
                 </Button>
-                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-8 px-4">
+                <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4">
                   {t("attachBtn2")}
                 </Button>
               </div>
@@ -549,7 +549,7 @@ export default function LpnPage() {
 
       {showMoveModal && selectedLpn && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-card border border-border rounded-lg max-w-sm w-full text-foreground shadow-xl flex flex-col">
+          <div className="bg-card border border-border rounded-lg max-w-lg w-full text-foreground shadow-xl flex flex-col">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <ArrowRight className="h-4 w-4 text-emerald-500" />
@@ -582,7 +582,7 @@ export default function LpnPage() {
                 <Button onClick={() => setShowMoveModal(false)} variant="outline" className="border-border hover:bg-muted text-muted-foreground text-xs h-8 px-4">
                   {tc("cancel")}
                 </Button>
-                <Button onClick={handleMoveLpn} className="bg-emerald-600 hover:bg-emerald-500 text-foreground text-xs h-8 px-4">
+                <Button onClick={handleMoveLpn} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-4">
                   {tc("confirm")}
                 </Button>
               </div>

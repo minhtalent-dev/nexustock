@@ -88,7 +88,7 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[425px] bg-card border-border text-foreground font-sans">
+      <DialogContent className="sm:max-w-lg bg-card border-border text-foreground font-sans">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="text-lg font-semibold text-foreground">{getTitle()}</DialogTitle>
@@ -127,7 +127,7 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
               variant="outline"
               onClick={onClose}
               disabled={loading}
-              className="border-zinc-700 text-muted-foreground hover:bg-zinc-800 hover:text-foreground h-9 text-xs"
+              className="border-border text-foreground hover:bg-muted h-9 text-xs"
             >
               {tc("cancel")}
             </Button>
@@ -140,7 +140,7 @@ export function HoldReleaseDialog({ isOpen, onClose, lotId, lotNo, mode, onSucce
                   : mode === "reject"
                   ? "bg-rose-600 hover:bg-rose-500"
                   : "bg-amber-600 hover:bg-amber-500"
-              } text-foreground h-9 text-xs`}
+              } text-white h-9 text-xs`}
             >
               {loading ? t("processing") : getButtonText()}
             </Button>

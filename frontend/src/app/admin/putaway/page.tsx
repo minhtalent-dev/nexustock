@@ -352,7 +352,7 @@ export default function PutawayPage() {
                           <TableCell className="text-center">
                             <Button
                               onClick={() => handleFetchProposals(item)}
-                              className="bg-emerald-600 hover:bg-emerald-500 text-foreground h-7 px-2.5 text-[11px] rounded"
+                              className="bg-emerald-600 hover:bg-emerald-500 text-white h-7 px-2.5 text-[11px] rounded"
                             >
                               {t("proposeBtn")}
                             </Button>
@@ -470,7 +470,7 @@ export default function PutawayPage() {
                       <Button
                         onClick={handleConfirmPutaway}
                         disabled={submitting}
-                        className="bg-emerald-600 hover:bg-emerald-500 text-foreground px-6 py-2 text-xs rounded font-semibold"
+                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2 text-xs rounded font-semibold"
                       >
                         {submitting ? tc("processing") : t("confirmBtn")}
                       </Button>
@@ -487,7 +487,7 @@ export default function PutawayPage() {
 
       {rejectingProposal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-card border border-border rounded-lg w-full max-w-sm p-6 text-foreground text-xs flex flex-col gap-4 shadow-xl">
+          <div className="bg-card border border-border rounded-lg w-full max-w-lg p-6 text-foreground text-xs flex flex-col gap-4 shadow-xl">
             <div>
               <h3 className="text-sm font-semibold flex items-center gap-2">
                 <XCircle className="h-5 w-5 text-rose-500" />
@@ -522,15 +522,15 @@ export default function PutawayPage() {
 
             <div className="flex gap-2 justify-end border-t border-border pt-4 mt-2">
               <Button
-                variant="ghost"
+                variant="outline"
                 onClick={() => setRejectingProposal(null)}
-                className="text-muted-foreground hover:text-foreground text-xs"
+                className="text-foreground text-xs"
               >
                 {tc("cancel")}
               </Button>
               <Button
                 onClick={handleRejectPutaway}
-                className="bg-rose-600 hover:bg-rose-500 text-foreground text-xs"
+                className="bg-rose-600 hover:bg-rose-500 text-white text-xs"
               >
                 {t("rejectConfirmBtn")}
               </Button>

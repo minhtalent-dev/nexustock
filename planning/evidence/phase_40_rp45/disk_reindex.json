@@ -1,0 +1,200 @@
+﻿{
+    "phase":  40,
+    "workflow":  "rp4+rp5",
+    "at":  "2026-07-23T03:45:28.1141669Z",
+    "pass":  38,
+    "fail":  0,
+    "FILE_FAIL":  0,
+    "rows":  [
+                 {
+                     "id":  "DISK:p1_pass.md",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:baseline_disk_freeze.json",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:dialog_width_inventory.json",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:validation_pass.md",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:allowlist.md",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:function_index_phase40_dialog_width.md",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:verify_dialog_form_width.ps1",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:dbm_phase40_dialog_width_browser.mjs",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:walkthrough.md",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:results.json",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:validation_pass.md",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:walkthrough-dialog-width.webm",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:01-inbound-create-light.png",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:02-inbound-create-dark.png",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:03-outbound-create-light.png",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:04-roles-dialog-light.png",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:05-users-dialog-light.png",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "CODE:inbound-sm-max-w-3xl",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "CODE:inbound-min-w-9rem",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "CODE:inbound-line-stack",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "CODE:outbound-no-w24",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "CODE:outbound-sm-max-w-2xl",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "CODE:receive-sm-max-w-2xl",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "CODE:ui-dialog-default-intact",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "CODE:verify-bareMaxW",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "CODE:verify-g12",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "CODE:verify-w24",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DISK:p1-mentions-PASS",
+                     "ok":  true,
+                     "note":  "PASS_mentions=15"
+                 },
+                 {
+                     "id":  "DBM:fail-zero",
+                     "ok":  true,
+                     "note":  "pass=23 fail=0"
+                 },
+                 {
+                     "id":  "DBM:pass-ge-21",
+                     "ok":  true,
+                     "note":  "pass=23"
+                 },
+                 {
+                     "id":  "DOC:§25",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DOC:§26",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "DOC:DoD-x",
+                     "ok":  true,
+                     "note":  ""
+                 },
+                 {
+                     "id":  "VERIFY:dialog",
+                     "ok":  true,
+                     "note":  "exit=0"
+                 },
+                 {
+                     "id":  "VERIFY:theme",
+                     "ok":  true,
+                     "note":  "exit=0"
+                 },
+                 {
+                     "id":  "VERIFY:shell",
+                     "ok":  true,
+                     "note":  "exit=0"
+                 },
+                 {
+                     "id":  "VERIFY:nav",
+                     "ok":  true,
+                     "note":  "SKIP_missing"
+                 },
+                 {
+                     "id":  "VERIFY:i18n",
+                     "ok":  true,
+                     "note":  "SKIP_missing"
+                 }
+             ]
+}
