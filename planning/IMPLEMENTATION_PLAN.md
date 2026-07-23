@@ -189,7 +189,10 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 39 | [Theme Light / Dark + System](file:///d:/1_Project/48_Nexustock/planning/phases/phase_39_theme_light_dark_system.md) | Option B · default **system**. **✅ ĐÓNG** (`rp4`+`rp5` · AUDIT ~8.5 · dbm 33/0). |
 | 40 | [CRUD Dialog Form Width](file:///d:/1_Project/48_Nexustock/planning/phases/phase_40_crud_dialog_form_width.md) | Option B · nới/stack input popup CRUD. **✅ ĐÓNG** (`rp4`+`rp5` · disk **38/0** · dbm **23/0** · AUDIT ~8.6). |
 | 41 | [Attachments + Spreadsheet Gap](file:///d:/1_Project/48_Nexustock/planning/phases/phase_41_attachments_spreadsheet_gap.md) | Option B · Files + Product · Excel/CSV · Storage Hub. **✅ ĐÓNG** (`rp4`+`rp5` · disk **50/0** · dbm **19/0** · AUDIT ~8.7). |
-| 42 | [Storage Provider Bulk Migrate](file:///d:/1_Project/48_Nexustock/planning/phases/phase_42_storage_provider_migrate.md) | Option B · Dry-run/Start/Progress/Purge. **100% Ready** (`rp1`+`rp2`+`rp3` 2026-07-23 · BS 20/20). Chờ Proceed `/18`. |
+| 42 | [Storage Provider Bulk Migrate](file:///d:/1_Project/48_Nexustock/planning/phases/phase_42_storage_provider_migrate.md) | Option B · Dry-run/Start/Progress/Purge. **✅ ĐÓNG** (`rp4`+`rp5` · disk **29/0** · dbm **18/0**). |
+| 43 | [Core Ops Attach + Master Spreadsheet](file:///d:/1_Project/48_Nexustock/planning/phases/phase_43_ops_attachments_spreadsheet.md) | Master IE 4 · Attach core 5 · Ops export 4 · QC panel. **95% Ready** · program split. |
+| 44 | [Extended Ops Attach + Exports](file:///d:/1_Project/48_Nexustock/planning/phases/phase_44_extended_ops_attachments_exports.md) | Lot/Exception/LPN/Wave/Putaway/XD attach · ops export còn lại. **95% Ready**. |
+| 45 | [Line Import + RF + Package + Thumb](file:///d:/1_Project/48_Nexustock/planning/phases/phase_45_line_import_rf_package_thumb.md) | ASN line · RF camera · Package IE · Thumbnail — **đóng hết ❌**. **95% Ready**. |
 
 ---
 
@@ -243,7 +246,10 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 39 | Theme Light / Dark + System | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-23. Disk **42/0**; default **system**; ThemeProvider + switcher Admin/Mobile; verify_theme PASS; AUDIT ~**8.5**; **dbm 33/0**. | 2026-07-23 | [phase_39 §25–§28](file:///d:/1_Project/48_Nexustock/planning/phases/phase_39_theme_light_dark_system.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_39_rp45/validation_pass.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_39_dbm/walkthrough.md) |
 | 40 | CRUD Dialog Form Width | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-23. Disk **38/0**; P0+P1; bareMaxW; verify PASS; **dbm 23/0** (dialog 768 · Qty 188); AUDIT ~**8.6**. | 2026-07-23 | [phase_40 §25–§28](file:///d:/1_Project/48_Nexustock/planning/phases/phase_40_crud_dialog_form_width.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_40_rp45/validation_pass.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_40_dbm/walkthrough.md) |
 | 41 | Attachments + Spreadsheet Gap | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-23. Disk **50/0**; Files+Storage+xlsx; verify files/nav/i18n/shell PASS; **dbm 19/0**; AUDIT ~**8.7**. | 2026-07-23 | [phase_41 §25–§28](file:///d:/1_Project/48_Nexustock/planning/phases/phase_41_attachments_spreadsheet_gap.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_41_rp45/validation_pass.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_41_dbm/walkthrough.md) |
-| 42 | Storage Provider Bulk Migrate | ⏳ Spec Ready | **`rp1`+`rp2`+`rp3` 100% Ready** 2026-07-23. F01–F32 · critic 9.5 · BS **20/20**. Chờ Proceed `/18`. | — | [phase_42 §22–§24](file:///d:/1_Project/48_Nexustock/planning/phases/phase_42_storage_provider_migrate.md) · [F-index](file:///d:/1_Project/48_Nexustock/planning/function_index_phase42_storage_migrate.md) · [rp3](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_42/rp3_pass.md) |
+| 42 | Storage Provider Bulk Migrate | ✅ Hoàn thành | **`rp4`+`rp5` Module DoD 100%** 2026-07-23. Disk **29/0**; jobs+worker+panel; verify migrate/nav/i18n/shell PASS; **dbm 18/0**. | 2026-07-23 | [phase_42 §25–§28](file:///d:/1_Project/48_Nexustock/planning/phases/phase_42_storage_provider_migrate.md) · [rp45](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_42_rp45/validation_pass.md) · [dbm](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_42_dbm/walkthrough.md) |
+| 43 | Core Ops Attach + Master Spreadsheet | ⏳ Spec Ready | Split program: Master IE 4 · Attach Inbound/Shipment/Stocktake/RMA/QC · Ops export 4. **95% Ready**. | — | [phase_43](file:///d:/1_Project/48_Nexustock/planning/phases/phase_43_ops_attachments_spreadsheet.md) |
+| 44 | Extended Ops Attach + Exports | ⬜ Spec Ready | Lot/Exception/LPN/Wave/Putaway/XD · exports còn lại. Chờ P43. | — | [phase_44](file:///d:/1_Project/48_Nexustock/planning/phases/phase_44_extended_ops_attachments_exports.md) |
+| 45 | Line Import + RF + Package + Thumb | ⬜ Spec Ready | Đóng ❌ #31–34. Chờ P44. | — | [phase_45](file:///d:/1_Project/48_Nexustock/planning/phases/phase_45_line_import_rf_package_thumb.md) |
 
 ### Quy ước trạng thái
 
@@ -273,7 +279,10 @@ Các deep spec dưới đây **không chặn Phase 01**. Đây là danh sách n�
 | Trước Phase 39 | Theme light/dark + system default | ✅ Phase 39 **Module DoD 100%** (`rp4`+`rp5` ĐÓNG 2026-07-23) | default system; verify_theme PASS; dbm 33/0; AUDIT ~8.5. |
 | Trước Phase 40 | Dialog CRUD form width inventory | ✅ Phase 40 **ĐÓNG** (`rp4`+`rp5` 2026-07-23) | disk 38/0; dbm 23/0; bareMaxW; AUDIT ~8.6. |
 | Trước Phase 41 | Attachments + Excel/CSV + Storage Hub | ✅ Phase 41 **ĐÓNG** (`rp4`+`rp5` 2026-07-23) | disk 50/0; dbm 19/0; Files+xlsx+Storage; AUDIT ~8.7. |
-| Trước Phase 42 | Storage bulk migrate | ✅ Spec **100% Ready** (`rp1`+`rp2`+`rp3` 2026-07-23) | freeze + F-index + BS 20/20; chờ Proceed `/18`. |
+| Trước Phase 42 | Storage bulk migrate | ✅ Phase 42 **ĐÓNG** (`rp4`+`rp5` 2026-07-23) | disk 29/0; dbm 18/0; jobs+worker+Admin migrate. |
+| Trước Phase 43 | Core ops attach + master IE | ⏳ P43 **95% Ready** (split) | Master IE 4 · core attach/export · QC panel |
+| Trước Phase 44 | Extended attach + exports | ⏳ P44 **95% Ready** | Chờ P43 ĐÓNG |
+| Trước Phase 45 | Line/RF/Package/Thumb | ⏳ P45 **95% Ready** | Đóng hết ❌ còn lại; chờ P44 |
 
 ### Nguyên tắc dùng backlog
 

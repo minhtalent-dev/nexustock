@@ -1,0 +1,147 @@
+﻿[
+    {
+        "id":  "IDX-sot",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "IDX-function",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "EV-dbm-walk",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "EV-dbm-json",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "EV-dbm-video",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-01",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-02",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "SHOT-03",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "CODE-job-entity",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "CODE-worker",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "CODE-service",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "CODE-controller",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "CODE-panel",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "CODE-api-fe",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "CODE-storage-page",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "CODE-openread",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "MIG-ef",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "VERIFY-script",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "DBM-script",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "EV-rp1",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "EV-rp2",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "EV-rp3",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "DOC-s25",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "DOC-s26",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "LOCK-target-active",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "LOCK-cap-2000",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "LOCK-purge-perm",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "LOCK-start-disable-same",
+        "status":  "PASS",
+        "note":  ""
+    },
+    {
+        "id":  "MUSTNOT-p43",
+        "status":  "PASS",
+        "note":  ""
+    }
+]

@@ -4,6 +4,7 @@
 *Ngày cập nhật: 23/07/2026*
 
 ### Tính năng mới
+- **Chuyển file lưu trữ hàng loạt**: Trên cấu hình lưu file, có thể xem trước số lượng, chạy chuyển từ ổ đĩa/local sang nơi lưu đang dùng, theo dõi tiến độ, hủy/tiếp tục; xóa bản nguồn chỉ khi xác nhận riêng (quyền quản trị).
 - **Đính kèm ảnh/tài liệu vật tư**: Trong form tạo/sửa vật tư có thể tải ảnh hoặc PDF; danh sách đính kèm xem/xóa ngay trên form.
 - **Nhập/xuất bảng Excel**: Import danh mục hỗ trợ file Excel (.xlsx) ngoài CSV; xuất danh mục vật tư/vị trí/đối tác ra CSV hoặc Excel.
 - **Cấu hình nơi lưu file**: Admin chọn lưu trên máy chủ (mặc định) hoặc dịch vụ đám mây; kiểm tra kết nối trước khi kích hoạt; đường dẫn công khai tùy chỉnh khi cần.

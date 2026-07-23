@@ -318,5 +318,17 @@
       "OOS: Inbound/Outbound attach → Phase 43",
       "Upstream Phase 41 DoD required"
     ]
+  },
+  "Phase43OpsAttachmentsSpreadsheet": {
+    "name": "Phase43OpsAttachmentsSpreadsheet",
+    "entityType": "Phase",
+    "observations": [
+      "2026-07-23: rp coverage 100% nav45+modules — Spec 95% Ready Option B",
+      "P0 Attach: INBOUND_ORDER SHIPMENT STOCKTAKE RMA_REQUEST LOT EXCEPTION LPN QC_RESULT (+PRODUCT)",
+      "P0 Master IE: UOMS WAREHOUSES ZONES REASONS",
+      "P0 Ops export 12 types incl inventory/waves/putaway/xd/replenishment",
+      "OOS P44: ASN line import RF camera attach Wave/Putaway/XD thumbnail Package IE",
+      "SoT: planning/phases/phase_43_ops_attachments_spreadsheet.md"
+    ]
   }
 }

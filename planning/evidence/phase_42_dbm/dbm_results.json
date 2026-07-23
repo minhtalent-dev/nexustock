@@ -1,0 +1,98 @@
+{
+  "pass": 18,
+  "fail": 0,
+  "total": 18,
+  "results": [
+    {
+      "id": "DISK-migrate-job-entity",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "DISK-migrate-worker",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "DISK-migrate-panel",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "VERIFY-storage-migrate",
+      "status": "PASS",
+      "note": "exit=0"
+    },
+    {
+      "id": "API-reachable",
+      "status": "PASS",
+      "note": "http://localhost:5024"
+    },
+    {
+      "id": "FE-reachable",
+      "status": "PASS",
+      "note": "http://localhost:3003"
+    },
+    {
+      "id": "LOGIN",
+      "status": "PASS",
+      "note": "http://localhost:3003/"
+    },
+    {
+      "id": "STORAGE-PAGE-LIGHT",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "MIGRATE-PANEL-LIGHT",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "MIGRATE-TITLE",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "MIGRATE-ACTIONS",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "MIGRATE-SOURCE-SELECT",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "MIGRATE-TARGET-ACTIVE",
+      "status": "PASS",
+      "note": "Migrate file hiện cóSao chép đính kèm từ provider nguồn sang đích đang active. O"
+    },
+    {
+      "id": "MIGRATE-DRY-RUN",
+      "status": "PASS",
+      "note": "dry-run result banner"
+    },
+    {
+      "id": "MIGRATE-PANEL-DARK",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "MIGRATE-PURGE-GATE-UI",
+      "status": "PASS",
+      "note": "purge button optional until COMPLETED"
+    },
+    {
+      "id": "STORAGE-TEST-SAVE-REGRESSION",
+      "status": "PASS",
+      "note": ""
+    },
+    {
+      "id": "VIDEO",
+      "status": "PASS",
+      "note": "D:\\1_Project\\48_Nexustock\\planning\\evidence\\phase_42_dbm\\walkthrough-storage-migrate.webm"
+    }
+  ],
+  "at": "2026-07-23T07:12:37.273Z"
+}

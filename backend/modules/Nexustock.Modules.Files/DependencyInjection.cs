@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Nexustock.Modules.Files.Contexts;
 using Nexustock.Modules.Files.Providers;
 using Nexustock.Modules.Files.Services;
+using Nexustock.Modules.Files.Workers;
 
 namespace Nexustock.Modules.Files;
 
@@ -24,6 +25,8 @@ public static class DependencyInjection
         services.AddScoped<IFileStorageService>(sp => sp.GetRequiredService<FileStorageService>());
         services.AddScoped<IAttachmentService, AttachmentService>();
         services.AddScoped<IFileStorageSettingsService, FileStorageSettingsService>();
+        services.AddScoped<IStorageMigrateService, StorageMigrateService>();
+        services.AddHostedService<StorageMigrateWorker>();
 
         services.Configure<FormOptions>(o =>
         {

@@ -1684,6 +1684,46 @@
         "testFailed": "Kiểm tra kết nối thất bại.",
         "saveOk": "Đã lưu cấu hình lưu trữ.",
         "saveFailed": "Không lưu được cấu hình lưu trữ."
+      },
+      "migrate": {
+        "title": "Migrate file hiện có",
+        "subtitle": "Sao chép đính kèm từ provider nguồn sang đích đang active. Object nguồn giữ đến khi Purge.",
+        "fields": {
+          "source": "Provider nguồn",
+          "sourceAll": "Tất cả trừ đích",
+          "target": "Đích (active)"
+        },
+        "actions": {
+          "dryRun": "Dry run",
+          "start": "Bắt đầu migrate",
+          "cancel": "Hủy",
+          "resume": "Tiếp tục",
+          "purge": "Xóa object nguồn"
+        },
+        "confirmStart": "Sao chép tối đa {count} file sang {target}. File nguồn giữ đến khi Purge.",
+        "dryRunResult": "Đủ điều kiện {eligible} · job này {jobTotal} · đã ở đích {already} · cắt {truncated} · test {testOk}",
+        "truncatedYes": "có",
+        "truncatedNo": "không",
+        "testOk": "OK",
+        "testStale": "hết hạn/cần test",
+        "status": "Trạng thái",
+        "errorsTitle": "Lỗi gần đây",
+        "purge": {
+          "hint": "Gõ DELETE để xóa vĩnh viễn object nguồn của các file migrate thành công.",
+          "typeDelete": "Gõ DELETE để xác nhận purge"
+        },
+        "toast": {
+          "dryRunOk": "Dry run sẵn sàng ({count} trong job tiếp theo).",
+          "dryRunFailed": "Dry run thất bại.",
+          "startOk": "Đã tạo job migrate.",
+          "startFailed": "Không start được migrate.",
+          "cancelOk": "Đã gửi yêu cầu hủy.",
+          "cancelFailed": "Hủy thất bại.",
+          "resumeOk": "Đã resume job.",
+          "resumeFailed": "Resume thất bại.",
+          "purgeOk": "Đã purge object nguồn.",
+          "purgeFailed": "Purge thất bại."
+        }
       }
     }
   }

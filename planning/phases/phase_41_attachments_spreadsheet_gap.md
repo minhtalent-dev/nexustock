@@ -778,9 +778,13 @@ SoT: [`phase_42_storage_provider_migrate.md`](file:///d:/1_Project/48_Nexustock/
 - Gate: **Test connection** target PASS (P41).  
 - Inbound/Outbound attach → **Phase 43** (không nằm P42).
 
-### Phase 43 (đề xuất — chưa mở)
+### Phase 43–45 (program đóng gap ❌)
 
-**Inbound / Outbound / Stocktake Attachments Pass** — reuse `EntityAttachmentsPanel`.
+| Phase | SoT | Scope |
+|---|---|---|
+| 43 | [`phase_43_...`](file:///d:/1_Project/48_Nexustock/planning/phases/phase_43_ops_attachments_spreadsheet.md) | Core attach + Master IE |
+| 44 | [`phase_44_...`](file:///d:/1_Project/48_Nexustock/planning/phases/phase_44_extended_ops_attachments_exports.md) | Extended attach + exports |
+| 45 | [`phase_45_...`](file:///d:/1_Project/48_Nexustock/planning/phases/phase_45_line_import_rf_package_thumb.md) | Line import · RF · Package · Thumb |
 
 ---
 

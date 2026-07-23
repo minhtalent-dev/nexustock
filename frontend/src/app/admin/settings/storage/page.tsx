@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { showError, showSuccess, showWarning } from "@/lib/toast";
 import { getHttpErrorMessage } from "@/lib/http-error";
+import { StorageMigratePanel } from "@/features/files/storage-migrate-panel";
 import { getStorageSettings, saveStorageSettings, testStorageSettings, type StorageSettings } from "@/features/files/api";
 
 export default function StorageSettingsPage() {
@@ -144,6 +145,8 @@ export default function StorageSettingsPage() {
           </Button>
         </div>
       </div>
+
+      <StorageMigratePanel activeProvider={settings?.activeProvider ?? provider} />
     </PageShell>
   );
 }

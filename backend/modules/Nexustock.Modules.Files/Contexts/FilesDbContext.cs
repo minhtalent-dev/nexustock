@@ -24,6 +24,8 @@ public class FilesDbContext : DbContext
 
     public DbSet<FileAttachment> FileAttachments => Set<FileAttachment>();
     public DbSet<FileStorageSettings> FileStorageSettings => Set<FileStorageSettings>();
+    public DbSet<FileStorageMigrateJob> FileStorageMigrateJobs => Set<FileStorageMigrateJob>();
+    public DbSet<FileStorageMigrateJobError> FileStorageMigrateJobErrors => Set<FileStorageMigrateJobError>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -32,6 +34,7 @@ public class FilesDbContext : DbContext
 
         modelBuilder.Entity<FileAttachment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<FileStorageSettings>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<FileStorageMigrateJob>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
 
         modelBuilder.Entity<FileAttachment>(entity =>
         {
@@ -60,6 +63,28 @@ public class FilesDbContext : DbContext
             entity.Property(e => e.LocalPathOverride).HasMaxLength(1024);
             entity.Property(e => e.UpdatedBy).HasMaxLength(128);
             entity.Property(e => e.LastTestMessage).HasMaxLength(512);
+        });
+
+        modelBuilder.Entity<FileStorageMigrateJob>(entity =>
+        {
+            entity.ToTable("file_storage_migrate_jobs");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.SourceProvider).HasMaxLength(32);
+            entity.Property(e => e.TargetProvider).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.Mode).HasMaxLength(16).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.ErrorSummary).HasMaxLength(2000);
+            entity.Property(e => e.CreatedBy).HasMaxLength(128);
+            entity.Property(e => e.EligibleIdsJson).HasColumnType("jsonb");
+            entity.HasIndex(e => new { e.TenantId, e.Status }).HasDatabaseName("ix_migrate_jobs_tenant_status");
+        });
+
+        modelBuilder.Entity<FileStorageMigrateJobError>(entity =>
+        {
+            entity.ToTable("file_storage_migrate_job_errors");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Message).HasMaxLength(1000).IsRequired();
+            entity.HasIndex(e => e.JobId).HasDatabaseName("ix_migrate_job_errors_job");
         });
     }
 }

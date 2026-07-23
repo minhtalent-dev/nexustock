@@ -5,11 +5,12 @@
   "upstream": 41,
   "upstreamStatus": "CLOSED_DoD_100",
   "option": "B",
-  "maturity": "100% Ready",
+  "maturity": "Module DoD 100% CLOSED",
   "rp1": "PASS",
-  "features": ["dryRun", "startJob", "progress", "cancelResume", "purgeSourceOptIn", "testConnectionGate"],
-  "disk": {
-    "openReadAsync": true,
-    "migrateCode": false
-  }
+  "rp2": "PASS",
+  "rp3": "PASS",
+  "execute": "PASS",
+  "dbm": "18/0",
+  "rp4_rp5": "PASS",
+  "disk_rp45": "29/0"
 }

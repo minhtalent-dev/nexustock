@@ -1,0 +1,32 @@
+{
+  "program": "ops-attach-spreadsheet-gap-closure",
+  "at": "2026-07-23",
+  "decision": "split-3-phases",
+  "maturity": "95% Ready each",
+  "phases": {
+    "43": {
+      "title": "Core Ops Attach + Master Spreadsheet",
+      "devDays": "5-6",
+      "closesGaps": [2, 3, 4, 7, 8, 9, 11, 13, 17, 19],
+      "attach": ["PRODUCT", "QC_RESULT", "INBOUND_ORDER", "SHIPMENT", "STOCKTAKE", "RMA_REQUEST"],
+      "masterIe": ["UOMS", "WAREHOUSES", "ZONES", "REASONS"],
+      "opsExport": ["INBOUND_ORDERS", "SHIPMENTS", "STOCKTAKES", "RMA"]
+    },
+    "44": {
+      "title": "Extended Ops Attach + Exports",
+      "devDays": "5-6",
+      "closesGaps": [10, 12, 15, 16, 18, 20, 21, 22],
+      "attach": ["LOT", "EXCEPTION", "LPN", "WAVE", "PUTAWAY_PROPOSAL", "CROSS_DOCK_CANDIDATE"],
+      "opsExport": ["LOTS", "EXCEPTIONS", "LPNS", "INVENTORY_BALANCES", "WAVES", "PUTAWAY_PROPOSALS", "CROSS_DOCK_CANDIDATES", "REPLENISHMENT_TASKS"]
+    },
+    "45": {
+      "title": "Line Import + RF + Package + Thumb",
+      "devDays": "5-7",
+      "closesGaps": [31, 32, 33, 34],
+      "deliverables": ["PACKAGES_IE", "ASN_LINE_IMPORT", "RF_CAMERA", "THUMBNAIL"]
+    }
+  },
+  "naGaps": [14],
+  "doneElsewhere": [1, 5, 6, 23, 24, 25, 26, 27, 28, 29, 30],
+  "afterP45": "zero open ❌ except N/A"
+}

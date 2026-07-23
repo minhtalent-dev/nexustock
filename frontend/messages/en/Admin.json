@@ -1684,6 +1684,46 @@
         "testFailed": "Connection test failed.",
         "saveOk": "Storage settings saved.",
         "saveFailed": "Failed to save storage settings."
+      },
+      "migrate": {
+        "title": "Migrate existing files",
+        "subtitle": "Copy attachments from a source provider to the active target. Source objects are kept until you purge.",
+        "fields": {
+          "source": "Source provider",
+          "sourceAll": "All except target",
+          "target": "Target (active)"
+        },
+        "actions": {
+          "dryRun": "Dry run",
+          "start": "Start migrate",
+          "cancel": "Cancel",
+          "resume": "Resume",
+          "purge": "Purge source objects"
+        },
+        "confirmStart": "Copy up to {count} files to {target}. Source files stay until Purge.",
+        "dryRunResult": "Eligible {eligible} · this job {jobTotal} · already on target {already} · truncated {truncated} · test {testOk}",
+        "truncatedYes": "yes",
+        "truncatedNo": "no",
+        "testOk": "OK",
+        "testStale": "stale/required",
+        "status": "Status",
+        "errorsTitle": "Recent errors",
+        "purge": {
+          "hint": "Type DELETE to permanently remove source objects for successfully migrated files.",
+          "typeDelete": "Type DELETE to confirm purge"
+        },
+        "toast": {
+          "dryRunOk": "Dry run ready ({count} in next job).",
+          "dryRunFailed": "Dry run failed.",
+          "startOk": "Migrate job started.",
+          "startFailed": "Failed to start migrate.",
+          "cancelOk": "Cancel requested.",
+          "cancelFailed": "Cancel failed.",
+          "resumeOk": "Job resumed.",
+          "resumeFailed": "Resume failed.",
+          "purgeOk": "Source purge completed.",
+          "purgeFailed": "Purge failed."
+        }
       }
     }
   }
