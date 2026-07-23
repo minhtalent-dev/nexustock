@@ -4,19 +4,22 @@
 
 | Mục | Giá trị |
 |---|---|
-| **Mức hiện tại** | **95% Ready** (`/30-auto-project-planner` 2026-07-23) |
+| **Mức hiện tại** | **100% Ready** (`rp1`+`rp2`+`rp3` · critic **9.5** · 2026-07-23) |
 | **Option** | **B** — Background migrate job + Admin UX trên Storage Settings (không A script tay; không C dual-write realtime toàn hệ) |
-| **Trạng thái** | ⏳ Chờ Phase **41 DoD** + FOUNDER **Proceed** |
+| **Trạng thái** | ⏳ Spec **100% Ready** · Upstream P41 **ĐÓNG** · chờ FOUNDER **Proceed** `/18` |
 | **Dev-days** | **4–6** (1 Dev) |
-| **Critical Path** | **Không** — phụ thuộc P41; không block P37 |
+| **Critical Path** | **Không** — phụ thuộc P41 (đã ĐÓNG); không block P37 |
 | **Port FE** | `http://localhost:3003` |
-| **Upstream** | Phase **41** Files module · providers · `file_attachments` · Admin Storage + **Test connection** |
+| **Upstream** | Phase **41** Files module · providers · `file_attachments` · Admin Storage + **Test connection** · **ĐÓNG** |
 
 ### Changelog plan
 
 | Ngày | Thay đổi |
 |---|---|
 | 2026-07-23 | FOUNDER khóa **bulk migrate** (Local/provider cũ → mới) vào P42; `/30` Option B · **95% Ready** |
+| 2026-07-23 | **`rp1` 100% Ready:** Disk freeze §22 — baseline JSON; P41 ĐÓNG unlock; OpenRead đã có; khóa credential/snapshot/24h test; **0 blocker** execute |
+| 2026-07-23 | **`rp2` /17-auto-plan:** Function index F01–F32 + brain EP0–EP4 atomic + critic **9.5**; §23 |
+| 2026-07-23 | **`rp3` PASS:** §24 BS-R3-01…20 — worker tenant · cancel flag · stream · stuck recovery · target=active; **0 blind spot block** |
 
 ### Quyết định khóa
 
@@ -31,7 +34,8 @@
 | Idempotent | Skip nếu `attachment.provider == target` và Exists trên target |
 | Dry-run | Preview count + sample 20 keys — không ghi |
 | Limit / lần | Cap **2 000** files / job (lớn hơn → chạy nhiều job hoặc tiếp tục “Resume”) |
-| P41 Test connection | **Reuse** — migrate **bắt buộc** `lastTestOk=true` cho target trong ≤24h (hoặc re-test inline) |
+| P41 Test connection | **Reuse** — migrate **bắt buộc** `lastTestOk=true` cho target trong ≤**24h** (hoặc re-test inline) — khóa `rp1` |
+| Snapshot | **`eligible_ids` jsonb** ≤2000 Guid lúc Start — khóa `rp1` |
 | Inbound/Outbound attach | **OOS P42** → đề xuất **Phase 43** (reuse panel) |
 
 ---
@@ -79,13 +83,12 @@ Cho phép khách hàng **chuyển nhanh** toàn bộ (hoặc theo filter) file �
 
 ## 3. Điều kiện đầu vào (Readiness Checklist)
 
-- [ ] Phase **41** Module DoD 100% (`file_attachments` · providers · Admin Storage · Test connection)  
+- [x] Phase **41** Module DoD 100% (`file_attachments` · providers · Admin Storage · Test connection) — **ĐÓNG** `rp4`+`rp5` 2026-07-23  
 - [x] Phase 38–40 UI ĐÓNG  
-- [ ] FOUNDER Proceed Phase 42  
-- [ ] `rp1` disk freeze P42 (sau Proceed khuyến nghị)
-
+- [x] `IObjectStorageProvider.OpenReadAsync` + `ExistsAsync` trên **tất cả** providers (P41 disk)  
+- [x] **`rp1` disk freeze** §22 + `baseline_disk_freeze.json`  
+- [ ] FOUNDER Proceed Phase 42 → `/18` EP0–EP4  
 ---
-
 ## 4. Thiết lập cấu trúc (Setup)
 
 ### Thư mục / file chạm
@@ -109,6 +112,8 @@ Task<Stream> OpenReadAsync(string key, CancellationToken ct);
 ```
 
 Local: `File.OpenRead`. Cloud: GetObject stream.
+
+> **`rp1` 2026-07-23:** Contract **đã có trên disk P41** (mọi provider). EP0 **không** cần hotfix OpenRead — chỉ entities/job/worker.
 
 ### Quy chuẩn mã
 
@@ -151,6 +156,12 @@ WarehouseManager: **không** purge; chỉ Admin.
 | `created_at` | timestamptz NOT NULL | |
 | `created_by` | varchar(128) NULL | |
 | `cursor_attachment_id` | uuid NULL | resume checkpoint |
+| `eligible_ids` | jsonb NULL | **`rp1`:** snapshot ≤2000 Guid lúc Start |
+| `cancel_requested` | bool NOT NULL DEFAULT false | **`rp3`:** Cancel set flag; worker đọc trong loop |
+| `updated_at` | timestamptz NULL | **`rp3`:** heartbeat progress / stuck detect |
+
+> **`rp1`:** Bảng `file_storage_migrate_job_items` **không bắt buộc** MVP — dùng `eligible_ids` jsonb + `file_storage_migrate_job_errors`.  
+> **`rp3`:** Worker **bắt buộc** `IgnoreQueryFilters` + filter `TenantId` tường minh (không dựa HTTP `ITenantProvider`).
 
 ### 6.2 `file_storage_migrate_job_errors` (optional nhưng khuyến nghị)
 
@@ -183,7 +194,10 @@ CREATE TABLE file_storage_migrate_jobs (
   finished_at timestamptz NULL,
   created_at timestamptz NOT NULL,
   created_by varchar(128) NULL,
-  cursor_attachment_id uuid NULL
+  cursor_attachment_id uuid NULL,
+  eligible_ids jsonb NULL,
+  cancel_requested boolean NOT NULL DEFAULT false,
+  updated_at timestamptz NULL
 );
 CREATE INDEX ix_migrate_jobs_tenant_status ON file_storage_migrate_jobs (tenant_id, status);
 
@@ -242,11 +256,12 @@ Permission: `files.storage.manage`
 
 **Response 201:** `{ "jobId": "...", "status": "PENDING", "totalCount": 128 }`
 
-### 7.3 Status / Cancel / Resume
+### 7.3 Status / Cancel / Resume / Active
 
 `GET /api/files/storage-migrate/jobs/{id}`  
-`POST /api/files/storage-migrate/jobs/{id}/cancel`  
-`POST /api/files/storage-migrate/jobs/{id}/resume` — chỉ `PAUSED`/`FAILED` partial
+`GET /api/files/storage-migrate/jobs/active` — **`rp3`:** latest PENDING/RUNNING/PAUSED của tenant (FE hydrate)  
+`POST /api/files/storage-migrate/jobs/{id}/cancel` — set `cancel_requested=true`  
+`POST /api/files/storage-migrate/jobs/{id}/resume` — `PAUSED` / `FAILED` / `CANCELLED` partial
 
 ### 7.4 Purge source (sau COMPLETED)
 
@@ -365,6 +380,9 @@ public async Task MigrateOneAsync(FileAttachment att, string targetId, IObjectSt
 | Code | HTTP | UI |
 |---|---|---|
 | `MIGRATE_TARGET_TEST_REQUIRED` | 400 | Bắt Test connection |
+| `MIGRATE_TARGET_NOT_ACTIVE` | 400 | target ≠ ActiveProvider (`rp3`) |
+| `MIGRATE_FAKE_FORBIDDEN` | 400 | FAKE ngoài Development (`rp3`) |
+| `MIGRATE_SOURCE_CONFIG_INVALID` | 400 | Credential source thiếu trong ConfigJson (`rp1`) |
 | `MIGRATE_JOB_IN_PROGRESS` | 409 | Hiện job đang chạy |
 | `MIGRATE_SOURCE_EQUALS_TARGET` | 400 | |
 | `MIGRATE_VERIFY_FAILED` | — item fail | errors list |
@@ -477,14 +495,15 @@ DROP TABLE IF EXISTS file_storage_migrate_jobs;
 | 5 | Purge nhầm? | Permission riêng + double confirm |
 | 6 | Job treo? | Heartbeat `updated` optional; cancel manual |
 | 7 | Large 10k files? | Cap 2000/job + resume nhiều lần |
-| 8 | Blind: thiếu OpenRead P41? | §4 extend contract — P41 hotfix hoặc P42 EP0 |
+| 8 | Blind: thiếu OpenRead P41? | ~~§4 extend~~ → **RESOLVED P41** (`OpenReadAsync` disk) |
 
-**Maturity:** **95% Ready** — 1 Dev đọc §6–§9 + pseudo là code được (sau P41 DoD).
+**Maturity:** **95% Ready** (`/30`) → nâng **100% Ready** sau `rp1` §22.
 
 | Vai trò | Kết luận | Ngày |
 |---|---|---|
 | JARVIS | `/30` PASS · Option B · 95% Ready · migrate khóa P42 | 2026-07-23 |
-| FOUNDER | ☐ Proceed (sau P41) · ☐ Hold · ☐ `rp1` P42 | ____ |
+| JARVIS | **`rp1` PASS — 100% Ready** · disk freeze §22 · P41 ĐÓNG unlock | 2026-07-23 |
+| FOUNDER | ☐ Proceed `/18` · ☐ Hold | ____ |
 
 ---
 
@@ -492,14 +511,223 @@ DROP TABLE IF EXISTS file_storage_migrate_jobs;
 
 | EP | Goal | Validation |
 |---|---|---|
-| EP0 | Evidence + OpenRead trên providers + job entities | build |
+| EP0 | Evidence + job entities/migration (+ OpenRead **đã có** — skip) | build |
 | EP1 | Migrate service + worker + API dry-run/start/status | Fake integration |
-| EP2 | Cancel/resume/purge + errors | tests |
-| EP3 | Admin Migrate panel + poll | dbm |
+| EP2 | Cancel/resume/purge + errors + purge permission | tests |
+| EP3 | Admin Migrate panel + poll + i18n | dbm |
 | EP4 | verify script + docs + plan row | DoD |
+
+> **`rp1`:** EP0 rút gọn — không implement lại OpenRead.
 
 ---
 
 ## 21. Phase 43 (đề xuất — chưa mở)
 
 **Inbound / Outbound / Stocktake Attachments** — reuse `EntityAttachmentsPanel`; không đụng migrate.
+
+---
+
+## 22. `rp1` — Disk freeze (2026-07-23)
+
+### 22.1 SoT & path khóa
+
+| Mục | Path |
+|---|---|
+| SoT | `planning/phases/phase_42_storage_provider_migrate.md` |
+| Disk freeze | `planning/evidence/phase_42/baseline_disk_freeze.json` |
+| Gap inventory | `planning/evidence/phase_42/gap_inventory.json` |
+| Master plan | `planning/IMPLEMENTATION_PLAN.md` row 42 |
+| Upstream | Phase 41 **ĐÓNG** · `phase_41_rp45/validation_pass.md` |
+
+### 22.2 Inventory disk (verified)
+
+| Artifact | Status |
+|---|---|
+| `Nexustock.Modules.Files` | **Có** (P41) |
+| `IObjectStorageProvider.OpenReadAsync` / `ExistsAsync` | **Có** — LOCAL · S3 · Azure · GCS · R2 · FAKE |
+| `FileStorageSettings.LastTestOk` / `LastTestAt` | **Có** |
+| Permission `files.storage.manage` | **Có** (seeder) |
+| Admin `/admin/settings/storage` | **Có** |
+| Pattern `BackgroundService` | **Có** (vd. `WebhookOutboxWorker`) |
+| `FileStorageMigrateJob*` / Migrate API / panel / verify | **Chưa** → `/18` NEW |
+| Permission `files.storage.migrate.purge` | **Chưa** → EP2 seed |
+
+### 22.3 P0 wire paths (khóa execute)
+
+| Flow | Path |
+|---|---|
+| Dry-run | `POST /api/files/storage-migrate/dry-run` → count eligible |
+| Start | `POST /api/files/storage-migrate/jobs` → PENDING → Worker claim |
+| Copy item | `src.OpenRead` → `dst.Put` → `dst.Exists` → update `file_attachments.provider` + `public_url` |
+| Progress UI | Admin Storage → Migrate panel poll `GET jobs/{id}` 2s |
+| Purge | `POST .../purge-source` + `files.storage.migrate.purge` |
+
+### 22.4 Blind spots đóng thêm (`rp1`)
+
+| # | Blind | Khóa |
+|---|---|---|
+| 1 | OpenRead thiếu? | **Không** — P41 đủ |
+| 2 | Source cloud sau khi Active=LOCAL? | Resolve source bằng `ResolveByProviderId(source)` + **ConfigJson hiện có**. Thiếu credential → item/`400` `MIGRATE_SOURCE_CONFIG_INVALID`. **Happy path khóa:** LOCAL → cloud (target active vừa Test). Cloud→cloud: giữ key source trong ConfigJson đến khi migrate xong |
+| 3 | Snapshot vs live query? | Lúc Start: materialize tối đa **2 000** `attachment_id` vào cột `eligible_ids` **jsonb** trên job (không bắt buộc bảng items). Cursor theo index trong mảng / `cursor_attachment_id` |
+| 4 | Test freshness? | Target: `LastTestOk==true` **và** `LastTestAt >= UtcNow-24h` **hoặc** inline Test trong Start. Quá hạn → `MIGRATE_TARGET_TEST_REQUIRED` |
+| 5 | COMPLETED vs errors? | `COMPLETED_WITH_ERRORS` khi `fail_count>0` và hết snapshot |
+| 6 | Multi-instance worker? | Claim atomic: `UPDATE ... SET status=RUNNING WHERE status=PENDING AND id=@id` (rows affected=1) |
+| 7 | Parallelism? | Config `Migrate:MaxParallel` default **1** (EP1); cho phép 2–4 sau |
+| 8 | Schema DB? | Schema **`files`** (cùng FilesDbContext) |
+| 9 | Soft-delete? | Bỏ qua `deleted_at IS NOT NULL` |
+| 10 | storage_key đổi? | **Giữ nguyên** Guid.ext |
+| 11 | Cap vượt? | Start cắt 2000; phần còn lại job mới / Resume không auto vượt cap |
+| 12 | Inbound attach? | **OOS → P43** |
+
+### 22.5 Verify contract (`rp1` chốt)
+
+Script `tests/verify_storage_migrate.ps1` (EP4) tối thiểu:
+
+| Rule id | Assert |
+|---|---|
+| `migrateJobEntity` | `FileStorageMigrateJob` + migration |
+| `openReadReuse` | Interface vẫn có `OpenReadAsync` |
+| `migrateApi` | Controller dry-run/jobs |
+| `workerHosted` | `StorageMigrateWorker` : BackgroundService |
+| `purgePermission` | seed `files.storage.migrate.purge` |
+| `adminPanel` | `storage-migrate-panel` + Storage page |
+| `filesRegression` | `verify_files_spreadsheet.ps1` vẫn PASS |
+
+### 22.6 EP ↔ thứ tự
+
+EP0 → EP1 → EP2 → EP3 → EP4 (không song song worker trước API contract).
+
+### 22.7 Verdict `rp1`
+
+**PASS — 100% Ready** để FOUNDER Proceed `/18-auto-execute` (EP0→EP4).
+
+| Vai trò | Kết luận | Ngày |
+|---|---|---|
+| JARVIS | **`rp1` PASS — 100% Ready** | 2026-07-23 |
+| FOUNDER | ☐ Proceed `/18` · ☐ Hold | ____ |
+
+---
+
+## 23. `rp2` — Function index + EP atomic (2026-07-23)
+
+### 23.1 Deliverables
+
+| Artifact | Path |
+|---|---|
+| Function index | `planning/function_index_phase42_storage_migrate.md` (F01–F32 · EP0–EP4) |
+| Brain plan | `brain/.../implementation_plan.md` (EP0–EP4 atomic) |
+| Critic | `brain/.../critic_report.md` **9.5** |
+| Evidence | `planning/evidence/phase_42/rp2_pass.md` |
+
+### 23.2 Quyết định khóa thêm (`rp2`)
+
+| # | Quyết định |
+|---|---|
+| 1 | **REUSE** `OpenReadAsync`/`ExistsAsync` P41 — **MUST NOT** đổi interface (F32) |
+| 2 | Worker = `BackgroundService` mirror `WebhookOutboxWorker` · claim atomic PENDING→RUNNING |
+| 3 | Snapshot **`eligible_ids` jsonb** ≤2000 — không bắt buộc bảng items MVP |
+| 4 | Happy path **LOCAL → cloud**; source config missing → `MIGRATE_SOURCE_CONFIG_INVALID` |
+| 5 | Purge: permission `files.storage.migrate.purge` · default **không** xóa source |
+| 6 | CI: Fake/Local temp — không bắt credential cloud thật |
+| 7 | EP4 bắt buộc `verify_files_spreadsheet` regression |
+| 8 | Thứ tự EP0→EP4 **bắt buộc**; **MUST NOT** P43 attach trong P42 |
+
+### 23.3 Critic score
+
+**9.5 / 10** — atomic EP + F-map + MUST NOT + P41 reuse; −0.5 single ConfigJson multi-cloud (happy path + error code).
+
+### 23.4 Trace EP ↔ F (rút gọn)
+
+| EP | F-ids | Validation gate |
+|---|---|---|
+| EP0 | F01–F04 | Migration jobs schema |
+| EP1 | F06–F09, F14–F18, F20–F21 | Fake/Local migrate copy |
+| EP2 | F05, F10–F13, F19, F22 | Cancel/resume/purge + 403 |
+| EP3 | F23–F27 | Admin panel + poll |
+| EP4 | F28–F31 | verify + DoD docs |
+
+### 23.5 Verdict `rp2`
+
+**PASS** — index + EP atomic đủ maintenance; maturity giữ **100% Ready**.
+
+| Vai trò | Kết luận | Ngày |
+|---|---|---|
+| JARVIS | **`rp2` PASS** — sẵn sàng `rp3` hoặc Proceed `/18` | 2026-07-23 |
+| FOUNDER | ☐ Proceed `/18` · ☐ Hold · ☐ `rp3` trước | ____ |
+
+---
+
+## 24. `rp3` — Blind spot closure (2026-07-23)
+
+**Ngày:** 2026-07-23 · **Verdict:** **PASS — 0 điểm mù block execute**
+
+| ID | Blind spot | Đóng bằng |
+|---|---|---|
+| BS-R3-01 | Worker **không có HTTP** → `TenantProvider` fallback tenant mặc định → leak/sai filter | Worker: `IgnoreQueryFilters()` + mọi query `.Where(x => x.TenantId == job.TenantId)`. Optional AsyncLocal `ITenantAmbient` set trước Resolve settings — **không** tin HttpContext |
+| BS-R3-02 | Claim job thiếu atomic → 2 instance double-process | `UPDATE ... SET status='RUNNING', updated_at=now() WHERE id=@id AND status='PENDING'`; rows≠1 → skip |
+| BS-R3-03 | Cancel chỉ đổi status → worker không thấy giữa item | Cột **`cancel_requested`**; Cancel API set `true`; loop check sau mỗi item → `CANCELLED` |
+| BS-R3-04 | Process crash khi RUNNING → job treo mãi | Startup recovery: `RUNNING` và `updated_at < UtcNow-15m` (hoặc null) → `PAUSED` + giữ cursor (mirror Webhook stuck) |
+| BS-R3-05 | Target ≠ ActiveProvider → Put dùng config sai | **Hard:** `targetProvider` **phải** `== settings.ActiveProvider` (case-insensitive); else `400 MIGRATE_TARGET_NOT_ACTIVE` |
+| BS-R3-06 | Stream cloud không seekable / Put cần length | Attachment ≤10MB: nếu `!CanSeek` → buffer `MemoryStream`; không stream unbounded |
+| BS-R3-07 | Put OK nhưng UPDATE DB fail → orphan target | Idempotent: retry Exists→skip Put hoặc overwrite Put; DB update sau Exists; orphan target chấp nhận đến retry |
+| BS-R3-08 | `deleteSourceAfter=true` auto xóa không confirm | **Không auto-purge**. Flag chỉ UI hint; Purge **chỉ** qua API + confirm `DELETE` |
+| BS-R3-09 | Purge khi `COMPLETED_WITH_ERRORS` | Cho phép; **chỉ** attachment success (`provider==target` và id trong snapshot đã success) |
+| BS-R3-10 | Source=target khi sourceProvider set | `400 MIGRATE_SOURCE_EQUALS_TARGET`; source null (=all except target) OK |
+| BS-R3-11 | Race Start 2 Admin cùng lúc | Transaction: check no RUNNING/PENDING same tenant rồi INSERT; unique partial index optional `(tenant_id) WHERE status IN ('PENDING','RUNNING')` — khuyến nghị EP1 |
+| BS-R3-12 | FAKE activate/migrate production | `FAKE` chỉ khi `env=Development` **hoặc** `Migrate:AllowFake=true`; else `400 MIGRATE_FAKE_FORBIDDEN` |
+| BS-R3-13 | Test stale: LastTestOk true nhưng LastTestAt cũ | Gate: `LastTestOk==true && LastTestAt >= UtcNow-24h` **hoặc** Start gọi inline `TestAsync` trước claim |
+| BS-R3-14 | eligible_ids > 2000 / thiếu ORDER | `ORDER BY id` lấy Take(2000); dry-run trả `truncated:true` + `eligibleCount` full vs `jobTotal` |
+| BS-R3-15 | Resume từ CANCELLED / cursor lệch | Resume: status ∈ `PAUSED`\|`FAILED`\|`CANCELLED` có cursor/eligible còn; set PENDING + `cancel_requested=false` |
+| BS-R3-16 | Soft-delete / đã target vẫn trong snapshot | Start filter: `DeletedAt==null` và `Provider != target` (hoặc source filter). Skip runtime nếu đã target+Exists |
+| BS-R3-17 | PublicUrl sai sau migrate | `att.PublicUrl = dst.BuildPublicUrl(key, settings.PublicBaseUrl)` trim slash P41 |
+| BS-R3-18 | FE refresh mất job đang chạy | `GET /api/files/storage-migrate/jobs/active` (latest PENDING/RUNNING/PAUSED tenant) — EP3 panel hydrate |
+| BS-R3-19 | WarehouseManager gọi Purge | Seed: purge **chỉ Admin**; manage cho Admin (+ optional WM dry-run/start); 403 `MIGRATE_PURGE_FORBIDDEN` |
+| BS-R3-20 | dbm / i18n confirm `{target}` / Auth | ICU placeholder OK; dbm chờ sidebar auth (P39/P40); confirm Start + Purge type `DELETE` |
+
+### 24.1 Error codes bổ sung (`rp3`)
+
+| Code | HTTP | Khi nào |
+|---|---|---|
+| `MIGRATE_TARGET_NOT_ACTIVE` | 400 | target ≠ ActiveProvider |
+| `MIGRATE_FAKE_FORBIDDEN` | 400 | FAKE ngoài Dev |
+| `MIGRATE_SOURCE_CONFIG_INVALID` | 400 | Resolve source fail (đã khóa rp1) |
+| `MIGRATE_TARGET_TEST_REQUIRED` | 400 | Test stale/fail |
+| `MIGRATE_CANCELLED` | — | status sau cancel (không HTTP error Start) |
+
+### 24.2 Worker tenant contract (khóa)
+
+```text
+Claim jobs: IgnoreQueryFilters + status PENDING
+FOR job IN claimed:
+  tenantId = job.TenantId
+  Load settings/attachments: IgnoreQueryFilters + TenantId == tenantId
+  Resolve providers với settings của tenant đó
+  NEVER rely on HttpContext.User tenant claim
+```
+
+### 24.3 Cancel / stuck (khóa)
+
+```text
+Cancel API → cancel_requested=true (status vẫn RUNNING đến hết item)
+Worker loop → if cancel_requested → status=CANCELLED; break
+Startup → RUNNING && updated_at < now-15m → PAUSED
+```
+
+### 24.4 EP checklist bổ sung (`rp3`)
+
+| EP | Thêm gate |
+|---|---|
+| EP0 | Cột `cancel_requested` · `updated_at` · `eligible_ids` |
+| EP1 | IgnoreQueryFilters worker · target==active · Fake gate · partial unique optional · stream buffer |
+| EP2 | Cancel flag · stuck recovery · purge no-auto · active job GET |
+| EP3 | Hydrate active job · Purge type DELETE · i18n |
+| EP4 | verify rules + files regression · assert worker tenant comment/test |
+
+### 24.5 Verdict `rp3`
+
+**PASS — 0 điểm mù block.** Maturity giữ **100% Ready**. Sẵn sàng Proceed `/18`.
+
+| Vai trò | Kết luận | Ngày |
+|---|---|---|
+| JARVIS | **`rp3` PASS** — 20/20 BS đóng · sẵn sàng Proceed `/18` | 2026-07-23 |
+| FOUNDER | ☐ Proceed `/18` · ☐ Hold | ____ |

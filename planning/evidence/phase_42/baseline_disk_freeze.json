@@ -1,0 +1,61 @@
+{
+  "at": "2026-07-23T06:34:00Z",
+  "phase": 42,
+  "workflow": "rp1",
+  "verdict": "RP1_PASS_100_READY",
+  "blockersForExecute": [],
+  "upstream": {
+    "phase41ModuleDoD": true,
+    "phase41Rp45": true,
+    "openReadAsyncAllProviders": true,
+    "existsAsyncAllProviders": true,
+    "lastTestOkField": true,
+    "adminStoragePage": true,
+    "filesStorageManagePermission": true,
+    "backgroundServicePattern": "WebhookOutboxWorker"
+  },
+  "existingOnDisk": {
+    "filesModule": true,
+    "migrateJobEntity": false,
+    "migrateService": false,
+    "migrateWorker": false,
+    "migrateController": false,
+    "migratePanel": false,
+    "verifyStorageMigrate": false,
+    "purgePermission": false
+  },
+  "providersWithOpenRead": [
+    "LOCAL",
+    "AWS_S3",
+    "AZURE_BLOB",
+    "GCS",
+    "CLOUDFLARE_R2",
+    "FAKE"
+  ],
+  "implementationTodo": [
+    "NEW: FileStorageMigrateJob + JobError entities + EF migration (schema files)",
+    "NEW: StorageMigrateService (dry-run/start/cancel/resume/purge)",
+    "NEW: StorageMigrateWorker BackgroundService (claim PENDING→RUNNING)",
+    "NEW: FileStorageMigrateController API",
+    "NEW: permission files.storage.migrate.purge + seed Admin",
+    "NEW: storage-migrate-panel.tsx + wire Admin Storage page",
+    "NEW: i18n Admin.storage.migrate.* EN+VI",
+    "NEW: tests/verify_storage_migrate.ps1",
+    "CONFIG: Migrate:MaxParallel default 1 · Cap 2000/job"
+  ],
+  "specGates": {
+    "hasJobTables": true,
+    "hasApiContract": true,
+    "hasWorkerPseudo": true,
+    "hasTestGate": true,
+    "hasPurgeOptIn": true,
+    "hasDoD": true,
+    "hasEP": true,
+    "hasCritique": true,
+    "openReadResolvedByP41": true,
+    "sourceCredentialRuleLocked": true,
+    "snapshotStrategyLocked": true,
+    "testFreshness24hLocked": true
+  },
+  "note": "Spec 100% Ready. Upstream P41 ĐÓNG. OpenRead/Exists không còn blocker. implementationTodo = NEW cho /18."
+}

@@ -651,7 +651,7 @@
       "actionAllow": "ALLOW (Cho phép vượt qua)",
       "actionProposeLocation": "PROPOSE_LOCATION (Đề xuất vị trí kệ)",
       "labelActionParams": "Tham số hành động (JSON - Optional)",
-      "actionParamsPlaceholder": "VD: {\"locationId\": \"0000-...\"}",
+      "actionParamsPlaceholder": "VD: '{'\"locationId\": \"0000-...\"'}'",
       "confirmCreate": "Xác nhận tạo",
       "toastCreateSuccess": "Tạo mới luật động thành công.",
       "errors": {

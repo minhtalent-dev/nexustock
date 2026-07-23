@@ -651,7 +651,7 @@
       "actionAllow": "ALLOW (Allow override)",
       "actionProposeLocation": "PROPOSE_LOCATION (Suggest location)",
       "labelActionParams": "Action Parameters (JSON - Optional)",
-      "actionParamsPlaceholder": "e.g. {\"locationId\": \"0000-...\"}",
+      "actionParamsPlaceholder": "e.g. '{'\"locationId\": \"0000-...\"'}'",
       "confirmCreate": "Confirm Create",
       "toastCreateSuccess": "Rule created successfully.",
       "errors": {

@@ -772,7 +772,7 @@ DROP TABLE IF EXISTS file_attachments;
 
 ## 21. Phase 42 — Storage Provider Bulk Migrate (**đã khóa SoT**)
 
-SoT: [`phase_42_storage_provider_migrate.md`](file:///d:/1_Project/48_Nexustock/planning/phases/phase_42_storage_provider_migrate.md) · **95% Ready** (`/30` 2026-07-23).
+SoT: [`phase_42_storage_provider_migrate.md`](file:///d:/1_Project/48_Nexustock/planning/phases/phase_42_storage_provider_migrate.md) · **100% Ready** (`rp1` 2026-07-23).
 
 - Dry-run · Start · Progress · Cancel/Resume · Purge source (opt-in).  
 - Gate: **Test connection** target PASS (P41).  

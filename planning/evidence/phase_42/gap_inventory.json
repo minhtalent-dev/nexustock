@@ -3,7 +3,13 @@
   "at": "2026-07-23",
   "focus": "storage_provider_bulk_migrate",
   "upstream": 41,
+  "upstreamStatus": "CLOSED_DoD_100",
   "option": "B",
-  "maturity": "95% Ready",
-  "features": ["dryRun", "startJob", "progress", "cancelResume", "purgeSourceOptIn", "testConnectionGate"]
+  "maturity": "100% Ready",
+  "rp1": "PASS",
+  "features": ["dryRun", "startJob", "progress", "cancelResume", "purgeSourceOptIn", "testConnectionGate"],
+  "disk": {
+    "openReadAsync": true,
+    "migrateCode": false
+  }
 }
