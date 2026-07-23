@@ -14,6 +14,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   permissions: string[];
+  roles: string[];
   isAuthenticated: boolean;
   loading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
@@ -26,6 +27,7 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
+  const [roles, setRoles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -51,8 +53,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       );
       const parsed = JSON.parse(jsonPayload);
       return {
-        email: parsed.email || parsed.sub || "",
-        fullName: parsed.fullName || parsed.unique_name || "User",
+        email:
+          parsed.email ||
+          parsed[
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+          ] ||
+          parsed.sub ||
+          "",
+        fullName:
+          parsed.fullName ||
+          parsed.unique_name ||
+          parsed[
+            "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+          ] ||
+          "User",
         tenantId: parsed.tenantId || "",
       };
     } catch {
@@ -60,12 +74,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const fetchPermissions = useCallback(async () => {
+  const fetchAccessProfile = useCallback(async () => {
     try {
-      const res = await api.get<string[]>("/me/permissions");
-      setPermissions(res.data);
+      const [permRes, rolesRes] = await Promise.all([
+        api.get<string[]>("/me/permissions"),
+        api.get<string[]>("/me/roles"),
+      ]);
+      setPermissions(permRes.data ?? []);
+      setRoles(rolesRes.data ?? []);
     } catch {
       setPermissions([]);
+      setRoles([]);
     }
   }, []);
 
@@ -75,14 +94,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const parsedUser = parseJwt(token);
       if (parsedUser) {
         setUser(parsedUser);
-        await fetchPermissions();
+        await fetchAccessProfile();
       } else {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
       }
     }
     setLoading(false);
-  }, [fetchPermissions]);
+  }, [fetchAccessProfile]);
 
   useEffect(() => {
     queueMicrotask(() => void restoreSession());
@@ -99,13 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const parsedUser = parseJwt(token);
       setUser(parsedUser);
 
-      // Fetch permissions ngay sau khi login
-      try {
-        const permRes = await api.get<string[]>("/me/permissions");
-        setPermissions(permRes.data);
-      } catch {
-        setPermissions([]);
-      }
+      await fetchAccessProfile();
 
       showSuccess("Đăng nhập thành công!");
       router.push("/");
@@ -130,6 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("refreshToken");
     setUser(null);
     setPermissions([]);
+    setRoles([]);
     showSuccess("Đã đăng xuất.");
     router.push("/login");
   };
@@ -141,6 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value: AuthContextType = {
     user,
     permissions,
+    roles,
     isAuthenticated: !!user,
     loading,
     login,

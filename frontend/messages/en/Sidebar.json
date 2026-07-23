@@ -67,6 +67,20 @@
       "timeline": "Activity timeline",
       "readiness": "Readiness",
       "cutover": "Cutover"
+    },
+    "account": {
+      "role": "Role",
+      "noRoles": "No role",
+      "tenant": "Tenant",
+      "permissions": "Permissions",
+      "permissionCount": "{count}",
+      "permissionsPreviewTitle": "Permissions preview",
+      "permissionsPreviewDesc": "{count} permissions on this account",
+      "permissionsSearch": "Filter by name…",
+      "permissionsEmpty": "No matching permissions",
+      "permissionsLoading": "Loading…",
+      "uncategorized": "Other",
+      "language": "Language"
     }
   }
 }

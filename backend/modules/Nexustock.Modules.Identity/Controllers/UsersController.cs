@@ -89,6 +89,18 @@ public class UsersController : ControllerBase
         return Ok(permissions);
     }
 
+    [HttpGet("/api/me/roles")]
+    public async Task<IActionResult> GetMyRoles()
+    {
+        var userId = GetUserId();
+        if (userId == Guid.Empty) return Unauthorized();
+
+        var user = await _userService.GetByIdAsync(userId);
+        if (user == null) return Unauthorized();
+
+        return Ok(user.Roles);
+    }
+
     [HttpGet("{id}/permissions")]
     public async Task<IActionResult> GetPermissions(Guid id)
     {

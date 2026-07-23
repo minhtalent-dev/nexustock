@@ -1,0 +1,256 @@
+{
+  "at": "2026-07-23T02:02:05.010Z",
+  "scopes": {
+    "app": {
+      "files": 67,
+      "bg-zinc-950": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "bg-zinc-900": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "bg-[#0a0a0a]": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "text-white": {
+        "fileCount": 46,
+        "sample": [
+          "frontend/src/app/admin/allocation/page.tsx",
+          "frontend/src/app/admin/audit/page.tsx",
+          "frontend/src/app/admin/cross-docking/[id]/page.tsx",
+          "frontend/src/app/admin/exceptions/page.tsx",
+          "frontend/src/app/admin/genealogy/page.tsx",
+          "frontend/src/app/admin/genealogy/[lotNo]/page.tsx",
+          "frontend/src/app/admin/inbound/page.tsx",
+          "frontend/src/app/admin/inbound/[id]/receive/page.tsx",
+          "frontend/src/app/admin/integrations/import/page.tsx",
+          "frontend/src/app/admin/integrations/mappings/page.tsx"
+        ]
+      },
+      "text-zinc-": {
+        "fileCount": 29,
+        "sample": [
+          "frontend/src/app/admin/allocation/page.tsx",
+          "frontend/src/app/admin/audit/page.tsx",
+          "frontend/src/app/admin/genealogy/[lotNo]/page.tsx",
+          "frontend/src/app/admin/inbound/page.tsx",
+          "frontend/src/app/admin/inbound/[id]/receive/page.tsx",
+          "frontend/src/app/admin/integrations/import/page.tsx",
+          "frontend/src/app/admin/integrations/mappings/page.tsx",
+          "frontend/src/app/admin/integrations/messages/page.tsx",
+          "frontend/src/app/admin/local-agent/page.tsx",
+          "frontend/src/app/admin/lots/page.tsx"
+        ]
+      },
+      "bg-zinc-": {
+        "fileCount": 16,
+        "sample": [
+          "frontend/src/app/admin/allocation/page.tsx",
+          "frontend/src/app/admin/genealogy/[lotNo]/page.tsx",
+          "frontend/src/app/admin/inbound/page.tsx",
+          "frontend/src/app/admin/inbound/[id]/receive/page.tsx",
+          "frontend/src/app/admin/integrations/mappings/page.tsx",
+          "frontend/src/app/admin/local-agent/page.tsx",
+          "frontend/src/app/admin/lots/page.tsx",
+          "frontend/src/app/admin/putaway/page.tsx",
+          "frontend/src/app/admin/qc/page.tsx",
+          "frontend/src/app/admin/replenishment/page.tsx"
+        ]
+      }
+    },
+    "nav": {
+      "files": 5,
+      "bg-zinc-950": {
+        "fileCount": 1,
+        "sample": [
+          "frontend/src/components/nav/sidebar-user-menu.tsx"
+        ]
+      },
+      "bg-zinc-900": {
+        "fileCount": 1,
+        "sample": [
+          "frontend/src/components/nav/sidebar-user-menu.tsx"
+        ]
+      },
+      "bg-[#0a0a0a]": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "text-white": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "text-zinc-": {
+        "fileCount": 1,
+        "sample": [
+          "frontend/src/components/nav/sidebar-user-menu.tsx"
+        ]
+      },
+      "bg-zinc-": {
+        "fileCount": 1,
+        "sample": [
+          "frontend/src/components/nav/sidebar-user-menu.tsx"
+        ]
+      }
+    },
+    "mobileComp": {
+      "files": 2,
+      "bg-zinc-950": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "bg-zinc-900": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "bg-[#0a0a0a]": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "text-white": {
+        "fileCount": 2,
+        "sample": [
+          "frontend/src/components/mobile/mobile-shell.tsx",
+          "frontend/src/components/mobile/scan-input.tsx"
+        ]
+      },
+      "text-zinc-": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "bg-zinc-": {
+        "fileCount": 0,
+        "sample": []
+      }
+    },
+    "features": {
+      "files": 21,
+      "bg-zinc-950": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "bg-zinc-900": {
+        "fileCount": 2,
+        "sample": [
+          "frontend/src/features/qc/components/hold-release-dialog.tsx",
+          "frontend/src/features/qc/components/qc-result-dialog.tsx"
+        ]
+      },
+      "bg-[#0a0a0a]": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "text-white": {
+        "fileCount": 2,
+        "sample": [
+          "frontend/src/features/qc/components/hold-release-dialog.tsx",
+          "frontend/src/features/qc/components/qc-result-dialog.tsx"
+        ]
+      },
+      "text-zinc-": {
+        "fileCount": 2,
+        "sample": [
+          "frontend/src/features/qc/components/hold-release-dialog.tsx",
+          "frontend/src/features/qc/components/qc-result-dialog.tsx"
+        ]
+      },
+      "bg-zinc-": {
+        "fileCount": 2,
+        "sample": [
+          "frontend/src/features/qc/components/hold-release-dialog.tsx",
+          "frontend/src/features/qc/components/qc-result-dialog.tsx"
+        ]
+      }
+    },
+    "layout": {
+      "files": 4,
+      "bg-zinc-950": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "bg-zinc-900": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "bg-[#0a0a0a]": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "text-white": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "text-zinc-": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "bg-zinc-": {
+        "fileCount": 0,
+        "sample": []
+      }
+    },
+    "sidebar": {
+      "files": 1,
+      "bg-zinc-950": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "bg-zinc-900": {
+        "fileCount": 1,
+        "sample": [
+          "frontend/src/components/app-sidebar.tsx"
+        ]
+      },
+      "bg-[#0a0a0a]": {
+        "fileCount": 0,
+        "sample": []
+      },
+      "text-white": {
+        "fileCount": 1,
+        "sample": [
+          "frontend/src/components/app-sidebar.tsx"
+        ]
+      },
+      "text-zinc-": {
+        "fileCount": 1,
+        "sample": [
+          "frontend/src/components/app-sidebar.tsx"
+        ]
+      },
+      "bg-zinc-": {
+        "fileCount": 1,
+        "sample": [
+          "frontend/src/components/app-sidebar.tsx"
+        ]
+      }
+    }
+  },
+  "layout": {
+    "hardDarkClass": true,
+    "toasterDark": true,
+    "suppressHydrationWarning": false
+  },
+  "tokens": {
+    "hasRoot": true,
+    "hasDarkBlock": true,
+    "hasScrollbarDark": true,
+    "sidebarPrimaryPurple": false,
+    "rootPrimaryNearBlack": true
+  },
+  "deps": {
+    "nextThemes": "^0.4.6",
+    "themeProviderExists": false,
+    "themeSwitcherExists": false,
+    "pageShellExists": true,
+    "sidebarUserMenuExists": true,
+    "dropdownRadioGroup": true
+  },
+  "pages": {
+    "admin": 41,
+    "masterData": 8,
+    "mobile": 8
+  }
+}

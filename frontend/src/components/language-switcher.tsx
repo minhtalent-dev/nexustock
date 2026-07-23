@@ -6,7 +6,14 @@ import { LOCALE_COOKIE, type AppLocale } from '@/i18n/config';
 import { Button } from '@/components/ui/button';
 import clsx from 'clsx';
 
-export function LanguageSwitcher({ className }: { className?: string }) {
+export function LanguageSwitcher({
+  className,
+  size = 'compact',
+}: {
+  className?: string;
+  /** compact = toolbar; comfortable = sidebar footer hit-target */
+  size?: 'compact' | 'comfortable';
+}) {
   const locale = useLocale();
   const router = useRouter();
 
@@ -15,10 +22,17 @@ export function LanguageSwitcher({ className }: { className?: string }) {
     router.refresh();
   }
 
+  const btnClass =
+    size === 'comfortable' ? 'h-9 min-w-10 flex-1 px-3 text-xs' : 'h-7 px-2 text-xs';
+
   return (
     <div
       data-testid="language-switcher"
-      className={clsx('inline-flex items-center gap-1', className)}
+      className={clsx(
+        'inline-flex items-center gap-1',
+        size === 'comfortable' && 'rounded-lg border border-zinc-800/80 bg-zinc-950/40 p-1',
+        className
+      )}
       role="group"
       aria-label="Language"
     >
@@ -28,7 +42,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         size="sm"
         variant={locale === 'vi' ? 'default' : 'ghost'}
         aria-pressed={locale === 'vi'}
-        className="h-7 px-2 text-xs"
+        className={btnClass}
         onClick={() => setLocale('vi')}
       >
         VI
@@ -39,7 +53,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
         size="sm"
         variant={locale === 'en' ? 'default' : 'ghost'}
         aria-pressed={locale === 'en'}
-        className="h-7 px-2 text-xs"
+        className={btnClass}
         onClick={() => setLocale('en')}
       >
         EN

@@ -67,6 +67,20 @@
       "timeline": "Dòng thời gian hoạt động",
       "readiness": "Readiness",
       "cutover": "Cutover"
+    },
+    "account": {
+      "role": "Vai trò",
+      "noRoles": "Chưa có vai trò",
+      "tenant": "Tenant",
+      "permissions": "Quyền",
+      "permissionCount": "{count}",
+      "permissionsPreviewTitle": "Danh sách quyền",
+      "permissionsPreviewDesc": "{count} quyền trên tài khoản này",
+      "permissionsSearch": "Lọc theo tên…",
+      "permissionsEmpty": "Không có quyền khớp",
+      "permissionsLoading": "Đang tải…",
+      "uncategorized": "Khác",
+      "language": "Ngôn ngữ"
     }
   }
 }

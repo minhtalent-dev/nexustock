@@ -6,9 +6,10 @@ import clsx from "clsx";
 import { useState, useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/hooks/use-auth";
-import { ChevronDown, LogOut } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { SidebarUserMenu } from "@/components/nav/sidebar-user-menu";
 import { MODULES_GROUPS } from "@/components/nav/nav-groups-modules";
 import { OPS_GROUPS } from "@/components/nav/nav-groups-ops";
 import {
@@ -54,9 +55,8 @@ function saveCollapsed(state: Record<string, boolean>) {
 
 export default function AppSidebar() {
   const pathname = usePathname();
-  const { permissions, logout, user } = useAuth();
   const t = useTranslations("Sidebar");
-  const tc = useTranslations("Common.actions");
+  const { permissions, roles, logout, user } = useAuth();
 
   const [navMode, setNavMode] = useState<NavMode>("modules");
 
@@ -136,10 +136,10 @@ export default function AppSidebar() {
     .filter((group) => group.links.length > 0);
 
   return (
-    <aside className="w-60 border-r border-border bg-sidebar p-4 flex-shrink-0 flex flex-col min-h-screen">
-      <Link href="/" className="flex items-center gap-2 mb-6 px-1 pt-1">
-        <span className="text-lg font-bold text-white tracking-tight">Nexustock</span>
-        <span className="text-[10px] text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">
+    <aside className="sticky top-0 flex h-svh w-60 flex-shrink-0 flex-col border-r border-border bg-sidebar p-4">
+      <Link href="/" className="mb-6 flex items-center gap-2 px-1 pt-1">
+        <span className="text-lg font-bold tracking-tight text-white">Nexustock</span>
+        <span className="rounded bg-emerald-400/10 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-emerald-400 uppercase">
           WMS
         </span>
       </Link>
@@ -177,7 +177,7 @@ export default function AppSidebar() {
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col gap-1 overflow-y-auto pr-1">
+      <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto pr-1">
         {filteredGroups.map((group) => {
           const active = isGroupActive(group, pathname, permissions);
           const ck = collapseKey(navMode, group.titleKey);
@@ -239,33 +239,19 @@ export default function AppSidebar() {
         })}
       </div>
 
-      {user && (
-        <div className="mt-auto pt-4 border-t border-zinc-800/60 flex flex-col gap-2">
-          <div className="flex flex-col px-2">
-            <span className="text-sm font-medium text-white truncate">{user.fullName}</span>
-            <span className="text-[10px] text-zinc-500 truncate font-mono">{user.email}</span>
+      <div className="mt-auto shrink-0 border-t border-zinc-800/60 pt-3">
+        {user ? (
+          <SidebarUserMenu
+            user={user}
+            roles={roles}
+            permissions={permissions}
+            onLogout={logout}
+          />
+        ) : (
+          <div className="flex justify-center px-1">
+            <LanguageSwitcher size="compact" />
           </div>
-          <LanguageSwitcher className="px-1" />
-          <Button
-            onClick={logout}
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 gap-3 px-2 h-9"
-          >
-            <LogOut className="h-4 w-4 flex-shrink-0" />
-            {tc("logout")}
-          </Button>
-        </div>
-      )}
-
-      {!user && (
-        <div className="mt-auto pt-4 border-t border-zinc-800/60">
-          <LanguageSwitcher className="justify-center w-full" />
-        </div>
-      )}
-
-      <div className="mt-2 text-[10px] text-zinc-600 font-mono text-center">
-        <span>Nexustock</span>
+        )}
       </div>
     </aside>
   );
