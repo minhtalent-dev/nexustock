@@ -152,7 +152,7 @@ export default function IntegrationMappingsPage() {
               onChange={(e) => setSearchCode(e.target.value)}
               className="bg-card border-border text-foreground w-48 text-xs h-9"
             />
-            <Select value={mappingType} onValueChange={(val) => { setMappingType(val); setPage(1); }}>
+            <Select value={mappingType} onValueChange={(val) => { setMappingType(val ?? "all"); setPage(1); }}>
               <SelectTrigger className="bg-card border-border text-foreground w-40 text-xs h-9">
                 <SelectValue placeholder={t("typePlaceholder")} />
               </SelectTrigger>
@@ -282,7 +282,7 @@ export default function IntegrationMappingsPage() {
               <Label className="text-muted-foreground">{t("mappingTypeLabel")}</Label>
               <Select
                 value={newMapping.mappingType}
-                onValueChange={(val) => setNewMapping({ ...newMapping, mappingType: val })}
+                onValueChange={(val) => setNewMapping({ ...newMapping, mappingType: val ?? "item" })}
               >
                 <SelectTrigger className="bg-card border-border text-foreground text-xs h-9">
                   <SelectValue />
@@ -347,7 +347,7 @@ export default function IntegrationMappingsPage() {
               <Label className="text-muted-foreground">{t("colStatus")}</Label>
               <Select
                 value={editForm.status}
-                onValueChange={(val: "active" | "inactive") => setEditForm({ ...editForm, status: val })}
+                onValueChange={(val) => { if (val === "active" || val === "inactive") setEditForm({ ...editForm, status: val }); }}
               >
                 <SelectTrigger className="bg-card border-border text-foreground text-xs h-9">
                   <SelectValue />

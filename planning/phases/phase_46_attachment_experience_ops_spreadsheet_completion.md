@@ -45,7 +45,7 @@
 
 | Phase | Phạm vi | Gate |
 |---|---|---|
-| [P46A](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) | Secure content API, preview/download, pending cleanup, QC compatibility | Lỗi `/uploads` biến mất; 6 P43 types pass |
+| [P46A](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) | Auth content API · sửa `/uploads` 404 · preview/download · pending cleanup · QC compat. **In Progress**. | ✅ Done — Lỗi `/uploads` biến mất; 6 P43 types pass |
 | [P46B](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46b_thumbnail_full_attachment_coverage.md) | Thumbnail lifecycle + 6 extended handlers/UI | 12/12 attachment types pass |
 | [P46C](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46c_master_spreadsheet_full_ops_exports.md) | Master IE 4 regression + Ops export 12 | 4/4 IE và 12/12 exports pass CSV/XLSX |
 | [P46D](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46d_package_operational_line_imports.md) | Package IE + Inbound/Stocktake line imports | Batch ownership/TTL/concurrency/idempotency pass |

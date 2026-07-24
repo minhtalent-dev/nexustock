@@ -22,6 +22,15 @@ public sealed class LocalObjectStorageProvider : IObjectStorageProvider
     private string ResolvePath(string key)
     {
         var safe = key.Replace('\\', '/').TrimStart('/');
+        if (safe.StartsWith("uploads/", StringComparison.OrdinalIgnoreCase))
+        {
+            safe = safe.Substring(8);
+        }
+        else if (!string.IsNullOrWhiteSpace(_requestPath) && safe.StartsWith(_requestPath.TrimStart('/') + "/", StringComparison.OrdinalIgnoreCase))
+        {
+            safe = safe.Substring(_requestPath.TrimStart('/').Length + 1);
+        }
+
         if (safe.Contains("..", StringComparison.Ordinal))
             throw new InvalidOperationException("Invalid storage key");
         var full = Path.GetFullPath(Path.Combine(_rootPath, safe.Replace('/', Path.DirectorySeparatorChar)));

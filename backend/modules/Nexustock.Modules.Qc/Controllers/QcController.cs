@@ -15,6 +15,7 @@ using Nexustock.Modules.Qc.Contexts;
 using Nexustock.Modules.Qc.Dtos;
 using Nexustock.Modules.Qc.Entities;
 using QcTenantProvider = Nexustock.Modules.Qc.Services.ITenantProvider;
+using Nexustock.Modules.Qc.Services;
 
 namespace Nexustock.Modules.Qc.Controllers;
 
@@ -28,19 +29,22 @@ public class QcController : ControllerBase
     private readonly MasterDataDbContext _masterContext;
     private readonly QcTenantProvider _tenantProvider;
     private readonly IUserPermissionService _permissionService;
+    private readonly IQcAttachmentReadService _qcAttachmentReadService;
 
     public QcController(
         QcDbContext qcContext,
         InboundDbContext inboundContext,
         MasterDataDbContext masterContext,
         QcTenantProvider tenantProvider,
-        IUserPermissionService permissionService)
+        IUserPermissionService permissionService,
+        IQcAttachmentReadService qcAttachmentReadService)
     {
         _qcContext = qcContext;
         _inboundContext = inboundContext;
         _masterContext = masterContext;
         _tenantProvider = tenantProvider;
         _permissionService = permissionService;
+        _qcAttachmentReadService = qcAttachmentReadService;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -235,9 +239,24 @@ public class QcController : ControllerBase
             .Where(l => l.TenantId == tenantId && allLotIds.Contains(l.Id))
             .ToDictionaryAsync(l => l.Id);
 
+        var activeAttachmentsDict = await _qcAttachmentReadService.GetAttachmentsByEntityIdsAsync(
+            results.Select(r => r.Id), HttpContext.RequestAborted);
+
         foreach (var r in results)
         {
             if (r.QcRequest == null || !lots.TryGetValue(r.QcRequest.LotId, out var lot)) continue;
+            
+            // SoT attachment rows trước
+            string? refs = null;
+            if (activeAttachmentsDict.TryGetValue(r.Id, out var list) && list.Count > 0)
+            {
+                refs = string.Join(",", list.Select(a => a.ContentUrl));
+            }
+            else
+            {
+                refs = r.AttachmentRefs; // Fallback legacy refs
+            }
+
             items.Add(new QcHistoryItemDto
             {
                 Id = r.Id,
@@ -247,6 +266,7 @@ public class QcController : ControllerBase
                 Inspector = r.Inspector,
                 IsPassed = r.IsPassed,
                 Metrics = r.Metrics,
+                AttachmentRefs = refs, // Trả về snapshot sạch
                 CreatedAt = r.CreatedAt
             });
         }
@@ -318,15 +338,29 @@ public class QcController : ControllerBase
         var results = await _qcContext.QcResults
             .Where(r => r.TenantId == tenantId && requestIds.Contains(r.QcRequestId))
             .ToListAsync();
+
+        var activeAttachmentsTimelineDict = await _qcAttachmentReadService.GetAttachmentsByEntityIdsAsync(
+            results.Select(r => r.Id), HttpContext.RequestAborted);
+
         foreach (var r in results)
         {
+            string? refs = null;
+            if (activeAttachmentsTimelineDict.TryGetValue(r.Id, out var list) && list.Count > 0)
+            {
+                refs = string.Join(",", list.Select(a => a.ContentUrl));
+            }
+            else
+            {
+                refs = r.AttachmentRefs;
+            }
+
             events.Add(new QcTimelineEventDto
             {
                 EventType = "RESULT",
                 Summary = r.IsPassed ? "Pass → Release" : "Fail → Reject",
                 Actor = r.Inspector,
                 At = r.CreatedAt,
-                Details = new Dictionary<string, string?> { ["metrics"] = r.Metrics, ["attachments"] = r.AttachmentRefs }
+                Details = new Dictionary<string, string?> { ["metrics"] = r.Metrics, ["attachments"] = refs }
             });
         }
 

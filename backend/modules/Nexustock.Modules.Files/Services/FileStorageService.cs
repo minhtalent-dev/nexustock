@@ -87,7 +87,24 @@ public sealed class FileStorageService : IFileStorageService
         try
         {
             await using var stream = file.OpenReadStream();
+            
+            // Magic byte validation tối thiểu cho an toàn upload
+            var header = new byte[8];
+            var bytesRead = await stream.ReadAsync(header.AsMemory(0, 8), ct);
+            stream.Position = 0; // Rewind stream sau khi đọc magic-bytes
+            
+            if (bytesRead >= 3 && ext == ".jpg" && (header[0] != 0xFF || header[1] != 0xD8 || header[2] != 0xFF))
+                throw new FileDomainException("FILE_CONTENT_MISMATCH", "JPG header mismatch");
+            if (bytesRead >= 4 && ext == ".png" && (header[0] != 0x89 || header[1] != 0x50 || header[2] != 0x4E || header[3] != 0x47))
+                throw new FileDomainException("FILE_CONTENT_MISMATCH", "PNG header mismatch");
+            if (bytesRead >= 4 && ext == ".pdf" && (header[0] != 0x25 || header[1] != 0x50 || header[2] != 0x44 || header[3] != 0x46)) // %PDF
+                throw new FileDomainException("FILE_CONTENT_MISMATCH", "PDF header mismatch");
+
             await provider.PutAsync(key, stream, contentType, ct);
+        }
+        catch (FileDomainException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -96,7 +113,47 @@ public sealed class FileStorageService : IFileStorageService
         }
 
         var url = provider.BuildPublicUrl(key, settings.PublicBaseUrl);
-        return new UploadResultDto(name, contentType, file.Length, kind, provider.ProviderId, key, url);
+        var uploadId = Guid.NewGuid();
+        var expiresAt = DateTimeOffset.UtcNow.AddHours(24);
+
+        var pending = new FilePendingUpload
+        {
+            Id = uploadId,
+            TenantId = _db.CurrentTenantId,
+            FileName = name,
+            ContentType = contentType,
+            SizeBytes = file.Length,
+            Kind = kind,
+            Provider = provider.ProviderId,
+            StorageKey = key,
+            LegacyUrl = url,
+            Status = "PENDING",
+            CreatedAt = DateTimeOffset.UtcNow,
+            CreatedBy = user,
+            ExpiresAt = expiresAt
+        };
+
+        _db.FilePendingUploads.Add(pending);
+        try
+        {
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            var detail = ex.InnerException?.Message ?? ex.Message;
+            _logger.LogError(ex, "Failed to persist pending upload record: {Detail}", detail);
+            try
+            {
+                await provider.DeleteAsync(key, ct);
+            }
+            catch (Exception deleteEx)
+            {
+                _logger.LogWarning(deleteEx, "Storage delete cleanup failed after db error");
+            }
+            throw new FileDomainException("STORAGE_PROVIDER_ERROR", "Storage persistence error", 503);
+        }
+
+        return new UploadResultDto(uploadId, name, contentType, file.Length, kind, provider.ProviderId, url, expiresAt);
     }
 }
 

@@ -33,6 +33,7 @@ export interface WebhookDelivery {
   traceId: string;
   lastResponseCode: number | null;
   lastError: string | null;
+  payload?: string | null;
   createdAt: string;
   updatedAt: string;
 }

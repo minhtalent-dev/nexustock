@@ -128,7 +128,7 @@ export default function TimelinePage() {
 
       <div className="flex flex-wrap gap-3 items-center">
         <div className="w-44">
-          <Select value={entityType} onValueChange={(v) => { setEntityType(v); setPage(1); }}>
+          <Select value={entityType} onValueChange={(v) => { setEntityType(v ?? "all"); setPage(1); }}>
             <SelectTrigger id="timeline-entity-filter" className="bg-[#0f0f11]/60 border-border">
               <SelectValue placeholder={t("entityPlaceholder")} />
             </SelectTrigger>
@@ -144,7 +144,7 @@ export default function TimelinePage() {
         </div>
 
         <div className="w-44">
-          <Select value={severity} onValueChange={(v) => { setSeverity(v); setPage(1); }}>
+          <Select value={severity} onValueChange={(v) => { setSeverity(v ?? "all"); setPage(1); }}>
             <SelectTrigger id="timeline-severity-filter" className="bg-[#0f0f11]/60 border-border">
               <SelectValue placeholder={t("severityPlaceholder")} />
             </SelectTrigger>
@@ -392,7 +392,7 @@ export default function TimelinePage() {
                             </TableCell>
                             <TableCell className="text-xs text-muted-foreground py-1.5">{w.retryCount}</TableCell>
                             <TableCell className="text-xs text-muted-foreground py-1.5">{w.lastResponseCode ?? "—"}</TableCell>
-                            <TableCell className="text-[10px] text-red-400 py-1.5 max-w-[200px] truncate" title={w.lastError}>
+                            <TableCell className="text-[10px] text-red-400 py-1.5 max-w-[200px] truncate" title={w.lastError ?? undefined}>
                               {w.lastError ?? "—"}
                             </TableCell>
                           </TableRow>

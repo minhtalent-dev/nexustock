@@ -251,11 +251,11 @@ export default function LpnPage() {
       case "CREATE":
         return t("eventCreate");
       case "ATTACH":
-        return t("eventAttach", { qty: evt.qty, itemCode: evt.itemCode, lotNo: evt.lotNo });
+        return t("eventAttach", { qty: evt.qty?.toString() ?? "0", itemCode: evt.itemCode ?? "", lotNo: evt.lotNo ?? "" });
       case "DETACH":
-        return t("eventDetach", { qty: evt.qty, itemCode: evt.itemCode, lotNo: evt.lotNo });
+        return t("eventDetach", { qty: evt.qty?.toString() ?? "0", itemCode: evt.itemCode ?? "", lotNo: evt.lotNo ?? "" });
       case "MOVE":
-        return t("eventMove", { from: evt.fromLocationCode, to: evt.toLocationCode });
+        return t("eventMove", { from: evt.fromLocationCode ?? "", to: evt.toLocationCode ?? "" });
       default:
         return evt.eventType;
     }

@@ -102,7 +102,7 @@ export function ReprintLabelDialog({ isOpen, onClose, sourceJob, onReprinted }: 
                 <PrintJobStatusBadge status={reprintResult.status} />
               </AlertTitle>
               <AlertDescription>
-                {t("reprintJobSummary", { id: reprintResult.id, reason: reprintResult.reasonCode })}
+                {t("reprintJobSummary", { id: reprintResult.id, reason: reprintResult.reasonCode ?? "" })}
               </AlertDescription>
             </Alert>
           ) : null}

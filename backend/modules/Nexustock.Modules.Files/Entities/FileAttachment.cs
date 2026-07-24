@@ -15,6 +15,7 @@ public class FileAttachment
     public string PublicUrl { get; set; } = "";
     public DateTimeOffset CreatedAt { get; set; }
     public string? CreatedBy { get; set; }
+    public Guid? PendingUploadId { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
 }
 

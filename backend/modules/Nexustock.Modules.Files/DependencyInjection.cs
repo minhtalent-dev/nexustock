@@ -24,9 +24,12 @@ public static class DependencyInjection
         services.AddScoped<FileStorageService>();
         services.AddScoped<IFileStorageService>(sp => sp.GetRequiredService<FileStorageService>());
         services.AddScoped<IAttachmentService, AttachmentService>();
+        // Đăng ký lifecycle observers cho module khác implementation
         services.AddScoped<IFileStorageSettingsService, FileStorageSettingsService>();
         services.AddScoped<IStorageMigrateService, StorageMigrateService>();
+        services.AddScoped<IPendingUploadCleanupService, PendingUploadCleanupService>();
         services.AddHostedService<StorageMigrateWorker>();
+        services.AddHostedService<PendingUploadCleanupWorker>();
 
         services.Configure<FormOptions>(o =>
         {

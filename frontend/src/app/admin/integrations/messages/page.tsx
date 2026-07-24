@@ -83,7 +83,7 @@ export default function IntegrationMessagesPage() {
             onChange={(e) => setTraceId(e.target.value)}
             className="bg-card border-border text-foreground w-64 text-xs h-9"
           />
-          <Select value={status} onValueChange={(val) => { setStatus(val); setPage(1); }}>
+          <Select value={status} onValueChange={(val) => { setStatus(val ?? "all"); setPage(1); }}>
             <SelectTrigger className="bg-card border-border text-foreground w-40 text-xs h-9">
               <SelectValue placeholder={t("statusPlaceholder")} />
             </SelectTrigger>

@@ -246,7 +246,7 @@ export default function LaborSessionsPage() {
       <Card>
         <CardHeader className="py-3 flex flex-row items-center justify-between border-b bg-muted/20">
           <CardTitle className="text-sm font-semibold">{t("logTitle")}</CardTitle>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val ?? "all")}>
             <SelectTrigger className="w-[150px] h-8">
               <SelectValue placeholder={t("filterStatus")} />
             </SelectTrigger>
@@ -350,7 +350,7 @@ export default function LaborSessionsPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-semibold">{t("sourceTaskType")}</label>
-              <Select value={sourceTaskType} onValueChange={setSourceTaskType}>
+              <Select value={sourceTaskType} onValueChange={(val) => setSourceTaskType(val ?? "RECEIVE")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -375,7 +375,7 @@ export default function LaborSessionsPage() {
             </div>
             <div className="space-y-2">
               <label className="text-sm font-semibold">{t("operationType")}</label>
-              <Select value={operationType} onValueChange={setOperationType}>
+              <Select value={operationType} onValueChange={(val) => setOperationType(val ?? "RECEIVE")}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

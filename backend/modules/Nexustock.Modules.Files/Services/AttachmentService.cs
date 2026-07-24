@@ -13,6 +13,7 @@ public interface IAttachmentService
     Task<AttachmentDto> BindAsync(BindAttachmentRequest request, string? user, CancellationToken ct);
     Task<IReadOnlyList<AttachmentDto>> ListAsync(string entityType, Guid entityId, CancellationToken ct);
     Task DeleteAsync(Guid id, CancellationToken ct);
+    Task<AttachmentContent> OpenContentAsync(Guid id, string disposition, CancellationToken ct);
 }
 
 public sealed class AttachmentService : IAttachmentService
@@ -28,6 +29,7 @@ public sealed class AttachmentService : IAttachmentService
     private readonly IObjectStorageResolver _resolver;
     private readonly FileStorageService _storage;
     private readonly IEnumerable<IEntityExistenceHandler> _existenceHandlers;
+    private readonly IEnumerable<IAttachmentLifecycleObserver> _observers;
     private readonly ILogger<AttachmentService> _logger;
 
     public AttachmentService(
@@ -37,6 +39,7 @@ public sealed class AttachmentService : IAttachmentService
         IObjectStorageResolver resolver,
         FileStorageService storage,
         IEnumerable<IEntityExistenceHandler> existenceHandlers,
+        IEnumerable<IAttachmentLifecycleObserver> observers,
         ILogger<AttachmentService> logger)
     {
         _db = db;
@@ -45,6 +48,7 @@ public sealed class AttachmentService : IAttachmentService
         _resolver = resolver;
         _storage = storage;
         _existenceHandlers = existenceHandlers;
+        _observers = observers;
         _logger = logger;
     }
 
@@ -53,6 +57,25 @@ public sealed class AttachmentService : IAttachmentService
         var entityType = request.EntityType.Trim().ToUpperInvariant();
         if (!AllowedEntityTypes.Contains(entityType))
             throw new FileDomainException("ENTITY_TYPE_NOT_ALLOWED", "Entity type is not allowed");
+
+        FilePendingUpload? pending = null;
+        if (request.UploadId.HasValue)
+        {
+            // Check if already bound idempotently
+            var existing = await _db.FileAttachments
+                .FirstOrDefaultAsync(a => a.PendingUploadId == request.UploadId.Value && a.DeletedAt == null, ct);
+            if (existing != null)
+                return ToDto(existing);
+
+            pending = await _db.FilePendingUploads
+                .FirstOrDefaultAsync(p => p.Id == request.UploadId.Value, ct);
+            if (pending == null)
+                throw new FileDomainException("UPLOAD_NOT_FOUND", "Pending upload not found", 404);
+            if (pending.Status == "PURGED")
+                throw new FileDomainException("UPLOAD_ALREADY_PURGED", "Upload object has been purged", 409);
+            if (pending.ExpiresAt <= DateTimeOffset.UtcNow)
+                throw new FileDomainException("UPLOAD_EXPIRED", "Pending upload has expired", 409);
+        }
 
         bool exists = false;
         if (entityType == "PRODUCT")
@@ -79,24 +102,68 @@ public sealed class AttachmentService : IAttachmentService
         if (!exists)
             throw new FileDomainException("ATTACHMENT_ENTITY_NOT_FOUND", $"{entityType} not found", 404);
 
+        var attachmentId = Guid.NewGuid();
         var row = new FileAttachment
         {
-            Id = Guid.NewGuid(),
+            Id = attachmentId,
             TenantId = _db.CurrentTenantId,
             EntityType = entityType,
             EntityId = request.EntityId,
-            FileName = request.FileName,
-            ContentType = request.ContentType,
-            SizeBytes = request.SizeBytes,
-            Kind = request.Kind,
-            Provider = request.Provider,
-            StorageKey = request.StorageKey,
-            PublicUrl = request.Url,
+            FileName = pending?.FileName ?? "unnamed",
+            ContentType = pending?.ContentType ?? "application/octet-stream",
+            SizeBytes = pending?.SizeBytes ?? 0,
+            Kind = pending?.Kind ?? "DOCUMENT",
+            Provider = pending?.Provider ?? "LOCAL",
+            StorageKey = pending?.StorageKey ?? "",
+            PublicUrl = pending?.LegacyUrl ?? "",
+            PendingUploadId = request.UploadId,
             CreatedAt = DateTimeOffset.UtcNow,
             CreatedBy = user
         };
+
+        if (pending != null)
+        {
+            pending.Status = "BOUND";
+            pending.BoundAt = DateTimeOffset.UtcNow;
+            pending.AttachmentId = attachmentId;
+        }
+
         _db.FileAttachments.Add(row);
-        await _db.SaveChangesAsync(ct);
+        
+        try
+        {
+            await _db.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException ex)
+        {
+            // Tránh race condition khi 2 bind đồng thời gửi cùng uploadId
+            _logger.LogWarning(ex, "DbUpdateException on binding upload {UploadId}. Checking for duplicate bind.", request.UploadId);
+            if (request.UploadId.HasValue)
+            {
+                var concurrentBound = await _db.FileAttachments
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(a => a.PendingUploadId == request.UploadId.Value && a.DeletedAt == null, ct);
+                if (concurrentBound != null)
+                {
+                    return ToDto(concurrentBound);
+                }
+            }
+            throw;
+        }
+
+        // Gọi observers sau khi commit thành công
+        foreach (var observer in _observers)
+        {
+            try
+            {
+                await observer.OnBoundAsync(_db.CurrentTenantId, entityType, request.EntityId, attachmentId, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Attachment observer {Observer} failed during OnBound", observer.GetType().Name);
+            }
+        }
+
         return ToDto(row);
     }
 
@@ -119,6 +186,19 @@ public sealed class AttachmentService : IAttachmentService
         row.DeletedAt = DateTimeOffset.UtcNow;
         await _db.SaveChangesAsync(ct);
 
+        // Gọi observers thông báo delete
+        foreach (var observer in _observers)
+        {
+            try
+            {
+                await observer.OnDeletedAsync(_db.CurrentTenantId, row.EntityType, row.EntityId, row.Id, ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Attachment observer {Observer} failed during OnDeleted", observer.GetType().Name);
+            }
+        }
+
         try
         {
             var settings = await _storage.GetOrCreateSettingsAsync(ct);
@@ -131,7 +211,52 @@ public sealed class AttachmentService : IAttachmentService
         }
     }
 
-    private static AttachmentDto ToDto(FileAttachment a) => new(
-        a.Id, a.EntityType, a.EntityId, a.FileName, a.ContentType, a.SizeBytes,
-        a.Kind, a.Provider, a.StorageKey, a.PublicUrl, a.CreatedAt);
+    public async Task<AttachmentContent> OpenContentAsync(Guid id, string disposition, CancellationToken ct)
+    {
+        var row = await _db.FileAttachments.FirstOrDefaultAsync(a => a.Id == id && a.DeletedAt == null, ct);
+        if (row == null)
+            throw new FileDomainException("ATTACHMENT_NOT_FOUND", "Attachment not found", 404);
+
+        var settings = await _storage.GetOrCreateSettingsAsync(ct);
+        var provider = _resolver.ResolveByProviderId(row.Provider, settings);
+
+        try
+        {
+            var stream = await provider.OpenReadAsync(row.StorageKey, ct);
+            return new AttachmentContent(stream, row.ContentType, row.FileName);
+        }
+        catch (FileNotFoundException)
+        {
+            throw new FileDomainException("ATTACHMENT_CONTENT_NOT_FOUND", "Attachment file missing from storage provider", 404);
+        }
+        catch (Exception ex) when (ex is not FileDomainException)
+        {
+            _logger.LogError(ex, "Failed to open read stream for attachment {Id}", id);
+            throw new FileDomainException("STORAGE_PROVIDER_ERROR", "Storage provider read error", 503);
+        }
+    }
+
+    private static AttachmentDto ToDto(FileAttachment a)
+    {
+        var contentUrl = $"/api/files/attachments/{a.Id}/content";
+        var downloadUrl = $"/api/files/attachments/{a.Id}/content?disposition=attachment";
+        
+        string? previewKind = null;
+        if (a.Kind == "IMAGE" || a.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+        {
+            previewKind = "image";
+        }
+        else if (a.ContentType == "application/pdf" || a.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            previewKind = "pdf";
+        }
+        else
+        {
+            previewKind = "download";
+        }
+
+        return new AttachmentDto(
+            a.Id, a.EntityType, a.EntityId, a.FileName, a.ContentType, a.SizeBytes,
+            a.Kind, a.Provider, previewKind, contentUrl, downloadUrl, null, a.CreatedAt);
+    }
 }

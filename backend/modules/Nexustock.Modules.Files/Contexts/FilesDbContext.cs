@@ -23,6 +23,7 @@ public class FilesDbContext : DbContext
     public Guid CurrentTenantId => _currentTenantId;
 
     public DbSet<FileAttachment> FileAttachments => Set<FileAttachment>();
+    public DbSet<FilePendingUpload> FilePendingUploads => Set<FilePendingUpload>();
     public DbSet<FileStorageSettings> FileStorageSettings => Set<FileStorageSettings>();
     public DbSet<FileStorageMigrateJob> FileStorageMigrateJobs => Set<FileStorageMigrateJob>();
     public DbSet<FileStorageMigrateJobError> FileStorageMigrateJobErrors => Set<FileStorageMigrateJobError>();
@@ -33,6 +34,7 @@ public class FilesDbContext : DbContext
         modelBuilder.HasDefaultSchema("files");
 
         modelBuilder.Entity<FileAttachment>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
+        modelBuilder.Entity<FilePendingUpload>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<FileStorageSettings>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
         modelBuilder.Entity<FileStorageMigrateJob>().HasQueryFilter(e => e.TenantId == CurrentTenantId);
 
@@ -51,6 +53,23 @@ public class FilesDbContext : DbContext
             entity.HasIndex(e => new { e.TenantId, e.EntityType, e.EntityId })
                 .HasDatabaseName("ix_file_attachments_entity")
                 .HasFilter("\"DeletedAt\" IS NULL");
+        });
+
+        modelBuilder.Entity<FilePendingUpload>(entity =>
+        {
+            entity.ToTable("file_pending_uploads");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.FileName).HasMaxLength(255).IsRequired();
+            entity.Property(e => e.ContentType).HasMaxLength(128).IsRequired();
+            entity.Property(e => e.Kind).HasMaxLength(16).IsRequired();
+            entity.Property(e => e.Provider).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.StorageKey).HasMaxLength(512).IsRequired();
+            entity.Property(e => e.LegacyUrl).HasMaxLength(1024).IsRequired();
+            entity.Property(e => e.Status).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.CreatedBy).HasMaxLength(128);
+            entity.HasIndex(e => new { e.TenantId, e.Status, e.ExpiresAt }).HasDatabaseName("ix_file_pending_uploads_tenant_status_exp");
+            entity.HasIndex(e => new { e.TenantId, e.StorageKey }).IsUnique().HasDatabaseName("ix_file_pending_uploads_tenant_key");
+            entity.HasIndex(e => e.AttachmentId).IsUnique().HasFilter("\"AttachmentId\" IS NOT NULL").HasDatabaseName("ix_file_pending_uploads_attachment");
         });
 
         modelBuilder.Entity<FileStorageSettings>(entity =>

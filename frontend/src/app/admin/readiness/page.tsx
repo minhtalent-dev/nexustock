@@ -162,7 +162,7 @@ export default function ReadinessPage() {
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">{t("scenario")}</label>
-            <Select value={scenario} onValueChange={setScenario}>
+            <Select value={scenario} onValueChange={(val) => setScenario(val ?? "INBOUND")}>
               <SelectTrigger className="w-44">
                 <SelectValue />
               </SelectTrigger>
@@ -176,7 +176,7 @@ export default function ReadinessPage() {
           </div>
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">{t("status")}</label>
-            <Select value={uatStatus} onValueChange={setUatStatus}>
+            <Select value={uatStatus} onValueChange={(val) => setUatStatus(val ?? "Draft")}>
               <SelectTrigger className="w-36">
                 <SelectValue />
               </SelectTrigger>
@@ -235,7 +235,7 @@ export default function ReadinessPage() {
         <div className="flex flex-wrap items-end gap-3">
           <div className="space-y-1">
             <label className="text-xs text-muted-foreground">{t("scenario")}</label>
-            <Select value={drillScenario} onValueChange={setDrillScenario}>
+            <Select value={drillScenario} onValueChange={(val) => setDrillScenario(val ?? "DB_DOWN")}>
               <SelectTrigger className="w-44">
                 <SelectValue />
               </SelectTrigger>

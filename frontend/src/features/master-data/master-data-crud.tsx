@@ -46,6 +46,7 @@ interface MasterDataCrudPageProps<TItem extends { id: string; rowVersion: number
   filters?: Record<string, string | number | boolean | undefined>;
   renderDialogExtra?: (ctx: { editing: TItem | null }) => ReactNode;
   onCreated?: (item: TItem) => void | Promise<void>;
+  transformPayload?: (form: TForm) => Record<string, unknown>;
 }
 
 export default function MasterDataCrudPage<TItem extends { id: string; rowVersion: number }, TForm extends Record<string, unknown>>({
@@ -59,6 +60,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
   filters,
   renderDialogExtra,
   onCreated,
+  transformPayload,
 }: MasterDataCrudPageProps<TItem, TForm>) {
   const t = useTranslations("MasterData.common");
   const confirm = useConfirmDialog();
@@ -91,7 +93,13 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ ...defaultForm });
+    const initialForm = { ...defaultForm };
+    fields.forEach((field) => {
+      if (field.type === "select" && field.required && !initialForm[field.name] && field.options && field.options.length > 0) {
+        initialForm[field.name] = field.options[0].value as TForm[keyof TForm & string];
+      }
+    });
+    setForm(initialForm);
     setIsDialogOpen(true);
   };
 
@@ -115,7 +123,8 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
     e.preventDefault();
     setSaving(true);
 
-    const payload = editing ? { ...form, rowVersion: editing.rowVersion } : form;
+    const basePayload = transformPayload ? transformPayload(form) : form;
+    const payload = editing ? { ...basePayload, rowVersion: editing.rowVersion } : basePayload;
 
     try {
       if (editing) {
@@ -310,7 +319,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
                 <Button type="button" onClick={closeDialog} variant="outline">
                   {t("actions.cancel")}
                 </Button>
-                <Button disabled={saving}>{saving ? t("actions.saving") : t("actions.save")}</Button>
+                <Button type="submit" disabled={saving}>{saving ? t("actions.saving") : t("actions.save")}</Button>
               </div>
             </form>
             {renderDialogExtra ? <div className="border-t border-border p-5">{renderDialogExtra({ editing })}</div> : null}

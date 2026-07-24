@@ -12,6 +12,11 @@ namespace Nexustock.Modules.Files.Controllers;
 [Route("api/files")]
 public class FilesController : ControllerBase
 {
+    private static readonly HashSet<string> AllowedInlineMime = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"
+    };
+
     private readonly IFileStorageService _storage;
     private readonly IAttachmentService _attachments;
     private readonly IUserPermissionService _permissions;
@@ -70,6 +75,64 @@ public class FilesController : ControllerBase
         if (!await HasAsync("files.read")) return Forbid();
         var items = await _attachments.ListAsync(entityType, entityId, HttpContext.RequestAborted);
         return Ok(new { items });
+    }
+
+    [HttpGet("attachments/{id:guid}/content")]
+    public async Task<IActionResult> GetContent(Guid id, [FromQuery] string disposition = "inline")
+    {
+        if (!await HasAsync("files.read")) return Forbid();
+
+        var mode = (disposition ?? "inline").Trim().ToLowerInvariant();
+        if (mode is not ("inline" or "attachment"))
+        {
+            return BadRequest(new { error = "ATTACHMENT_DISPOSITION_INVALID", message = "Disposition must be inline or attachment" });
+        }
+
+        try
+        {
+            var content = await _attachments.OpenContentAsync(id, mode, HttpContext.RequestAborted);
+            Response.Headers["X-Content-Type-Options"] = "nosniff";
+            Response.Headers["Cache-Control"] = "private, no-store"; // Chặn lưu cache file nhạy cảm
+
+            // If non-previewable file requested as inline, force attachment mode
+            if (mode == "inline" && !AllowedInlineMime.Contains(content.ContentType))
+            {
+                mode = "attachment";
+            }
+
+            // Sanitize filename triệt để chống Header Injection và path traversal
+            var safeName = content.FileName
+                .Replace("\r", "")
+                .Replace("\n", "")
+                .Replace("\"", "")
+                .Replace("'", "")
+                .Replace("/", "_")
+                .Replace("\\", "_");
+
+            if (string.IsNullOrWhiteSpace(safeName))
+            {
+                safeName = "attachment";
+            }
+
+            var result = new FileStreamResult(content.Stream, content.ContentType)
+            {
+                EnableRangeProcessing = content.Stream.CanSeek
+            };
+
+            // Set Content-Disposition tường minh
+            var contentDisposition = new System.Net.Mime.ContentDisposition
+            {
+                FileName = safeName,
+                Inline = (mode == "inline")
+            };
+            Response.Headers["Content-Disposition"] = contentDisposition.ToString();
+
+            return result;
+        }
+        catch (FileDomainException ex)
+        {
+            return StatusCode(ex.StatusCode, new { error = ex.ErrorCode, message = ex.Message });
+        }
     }
 
     [HttpDelete("attachments/{id:guid}")]

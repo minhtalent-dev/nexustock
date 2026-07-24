@@ -136,7 +136,7 @@ export default function CrossDockingPage() {
       </div>
 
       <div className="flex gap-3 items-center">
-        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setPage(1); }}>
+        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v ?? "all"); setPage(1); }}>
           <SelectTrigger className="w-40">
             <SelectValue placeholder={t("statusPlaceholder")} />
           </SelectTrigger>

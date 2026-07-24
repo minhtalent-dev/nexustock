@@ -1,24 +1,19 @@
 namespace Nexustock.Modules.Files.Dtos;
 
 public record UploadResultDto(
+    Guid UploadId,
     string FileName,
     string ContentType,
     long SizeBytes,
     string Kind,
     string Provider,
-    string StorageKey,
-    string Url);
+    string Url,
+    DateTimeOffset ExpiresAt);
 
 public record BindAttachmentRequest(
+    Guid? UploadId,
     string EntityType,
-    Guid EntityId,
-    string Url,
-    string Provider,
-    string StorageKey,
-    string FileName,
-    string ContentType,
-    long SizeBytes,
-    string Kind);
+    Guid EntityId);
 
 public record AttachmentDto(
     Guid Id,
@@ -29,9 +24,16 @@ public record AttachmentDto(
     long SizeBytes,
     string Kind,
     string Provider,
-    string StorageKey,
-    string Url,
+    string? PreviewKind,
+    string ContentUrl,
+    string DownloadUrl,
+    string? ThumbnailUrl,
     DateTimeOffset CreatedAt);
+
+public record AttachmentContent(
+    Stream Stream,
+    string ContentType,
+    string FileName);
 
 public record ProviderStatusDto(string Id, string Label, bool Configured);
 

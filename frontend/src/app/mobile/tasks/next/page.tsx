@@ -186,7 +186,7 @@ export default function MobileNextTaskPage() {
                 ) : (
                   <div className="flex flex-col gap-3 mt-2 border-t border-border pt-4">
                     <span className="text-xs font-semibold">{t("labels.skipReason")}</span>
-                    <Select value={reasonCode} onValueChange={setReasonCode}>
+                    <Select value={reasonCode} onValueChange={(val) => setReasonCode(val ?? "")}>
                       <SelectTrigger className="w-full text-xs">
                         <SelectValue placeholder={t("labels.reasonPlaceholder")} />
                       </SelectTrigger>

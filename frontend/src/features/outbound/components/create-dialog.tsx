@@ -95,8 +95,7 @@ export function CreateShipmentDialog({ isOpen, onClose, onSuccess }: CreateShipm
   const updateItemRow = (index: number, field: keyof SelectedItem, value: string | number) => {
     setSelectedItems(prev => {
       const copy = [...prev];
-      // @ts-expect-error type override
-      copy[index] = { ...copy[index], [field]: value };
+      copy[index] = { ...copy[index], [field]: value } as SelectedItem;
       return copy;
     });
   };

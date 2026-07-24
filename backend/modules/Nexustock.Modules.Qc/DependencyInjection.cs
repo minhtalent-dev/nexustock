@@ -46,6 +46,8 @@ public static class DependencyInjection
         // Register QC Services
         services.AddScoped<ITenantProvider, TenantProvider>();
         services.AddScoped<IQcGateService, QcGateService>();
+        services.AddScoped<IQcAttachmentReadService, QcAttachmentReadService>();
+        services.AddScoped<Files.Services.IAttachmentLifecycleObserver, QcAttachmentCompatibilityObserver>();
 
         return services;
     }

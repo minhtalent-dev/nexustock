@@ -147,15 +147,12 @@ try
     }
 
     var uploadPath = app.Configuration["UploadSettings:UploadPath"] ?? "D:\\NexustockUploads";
-    var requestPath = app.Configuration["UploadSettings:RequestPath"] ?? "/uploads";
     if (!Directory.Exists(uploadPath))
         Directory.CreateDirectory(uploadPath);
 
-    app.UseStaticFiles(new StaticFileOptions
-    {
-        FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadPath),
-        RequestPath = requestPath
-    });
+    // Không mount uploadPath làm static files công khai để bảo vệ JWT.
+    // Nếu ứng dụng cần static files cho assets wwwroot mặc định thì chỉ dùng:
+    app.UseStaticFiles();
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseCors("AllowFrontendDev");
@@ -245,3 +242,5 @@ static string ToServiceStatus(HealthStatus status) => status switch
 };
 
 internal partial class Program { }
+// Reload trigger for Phase 46A secure content API
+

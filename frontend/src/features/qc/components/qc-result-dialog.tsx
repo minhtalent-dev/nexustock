@@ -36,13 +36,11 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
     e.preventDefault();
     setLoading(true);
     try {
-      const attachmentRefsStr = pendingUploads.map(p => p.url).join(",");
-
       const res = await api.post<{ id: string; message: string }>(`/qc/${lotId}/result`, {
         qcRequestId,
         isPassed,
         metrics: metrics.trim() || undefined,
-        attachmentRefs: attachmentRefsStr || undefined
+        attachmentRefs: undefined // Không gửi snapshot url thô từ client nữa
       });
 
       const resultId = res.data.id;
@@ -50,15 +48,9 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
         await Promise.all(
           pendingUploads.map(uploaded =>
             bindAttachment({
+              uploadId: uploaded.uploadId,
               entityType: "QC_RESULT",
               entityId: resultId,
-              url: uploaded.url,
-              provider: uploaded.provider,
-              storageKey: uploaded.storageKey,
-              fileName: uploaded.fileName,
-              contentType: uploaded.contentType,
-              sizeBytes: uploaded.sizeBytes,
-              kind: uploaded.kind,
             })
           )
         );

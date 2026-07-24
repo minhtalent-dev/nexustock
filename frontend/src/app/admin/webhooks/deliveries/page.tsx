@@ -114,7 +114,7 @@ export default function WebhookDeliveriesPage() {
       </div>
 
       <div className="flex gap-3 items-center flex-wrap">
-        <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
+        <Select value={status} onValueChange={(v) => { setStatus(v ?? "all"); setPage(1); }}>
           <SelectTrigger className="w-44" id="delivery-status-filter">
             <SelectValue placeholder={t("statusPlaceholder")} />
           </SelectTrigger>

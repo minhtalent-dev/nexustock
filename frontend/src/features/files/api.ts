@@ -1,13 +1,14 @@
 import api from "@/lib/api";
 
 export type UploadResult = {
+  uploadId: string;
   fileName: string;
   contentType: string;
   sizeBytes: number;
   kind: string;
   provider: string;
-  storageKey: string;
-  url: string;
+  urlForLegacyCompat?: string;
+  expiresAt: string;
 };
 
 export type AttachmentItem = {
@@ -19,8 +20,10 @@ export type AttachmentItem = {
   sizeBytes: number;
   kind: string;
   provider: string;
-  storageKey: string;
-  url: string;
+  previewKind?: "image" | "pdf" | "download";
+  contentUrl: string;
+  downloadUrl: string;
+  thumbnailUrl?: string | null;
   createdAt: string;
 };
 
@@ -44,15 +47,9 @@ export async function uploadFile(file: File): Promise<UploadResult> {
 }
 
 export async function bindAttachment(payload: {
+  uploadId: string;
   entityType: string;
   entityId: string;
-  url: string;
-  provider: string;
-  storageKey: string;
-  fileName: string;
-  contentType: string;
-  sizeBytes: number;
-  kind: string;
 }): Promise<AttachmentItem> {
   const res = await api.post<AttachmentItem>("/files/attachments", payload);
   return res.data;
@@ -67,6 +64,40 @@ export async function listAttachments(entityType: string, entityId: string): Pro
 
 export async function deleteAttachment(id: string): Promise<void> {
   await api.delete(`/files/attachments/${id}`);
+}
+
+export async function fetchAttachmentBlob(contentUrl: string): Promise<Blob> {
+  let path = contentUrl;
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    try {
+      const u = new URL(path);
+      path = u.pathname + u.search;
+    } catch {
+      // ignore
+    }
+  }
+  if (path.startsWith("/api/")) {
+    path = path.substring(5);
+  } else if (path.startsWith("api/")) {
+    path = path.substring(4);
+  } else if (path.startsWith("/")) {
+    path = path.substring(1);
+  }
+
+  const res = await api.get<Blob>(path, { responseType: "blob" });
+  return res.data;
+}
+
+export async function downloadAttachmentBlob(downloadUrl: string, fileName: string): Promise<void> {
+  const blob = await fetchAttachmentBlob(downloadUrl);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 export async function getStorageSettings(): Promise<StorageSettings> {

@@ -126,7 +126,7 @@ export default function AlertCenterPage() {
 
       <div className="flex flex-wrap gap-3 items-center">
         <div className="w-44">
-          <Select value={status} onValueChange={(v) => { setStatus(v); setPage(1); }}>
+          <Select value={status} onValueChange={(v) => { setStatus(v ?? "all"); setPage(1); }}>
             <SelectTrigger id="alert-status-filter" className="bg-[#0f0f11]/60 border-border">
               <SelectValue placeholder={t("statusPlaceholder")} />
             </SelectTrigger>
@@ -140,7 +140,7 @@ export default function AlertCenterPage() {
         </div>
 
         <div className="w-44">
-          <Select value={severity} onValueChange={(v) => { setSeverity(v); setPage(1); }}>
+          <Select value={severity} onValueChange={(v) => { setSeverity(v ?? "all"); setPage(1); }}>
             <SelectTrigger id="alert-severity-filter" className="bg-[#0f0f11]/60 border-border">
               <SelectValue placeholder={t("severityPlaceholder")} />
             </SelectTrigger>

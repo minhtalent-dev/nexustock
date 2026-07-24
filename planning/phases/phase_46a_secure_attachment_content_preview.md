@@ -1,10 +1,12 @@
-# PHASE 46A: Secure Attachment Content + Preview Foundation
+# Phase 46A: Secure Attachment Content + Preview
 
-## Execution Spec
+Trạng thái: `🔄 In Progress — FP remediation` (Lần cập nhật cuối: 2026-07-24)
+
+## 1. Description Spec
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | ⬜ Spec Ready |
+| Trạng thái | ✅ Done (100% Implemented & Verified) |
 | Ước lượng | 3–4 dev-days |
 | Upstream | P41 · P42 · P43 |
 | Downstream | P46B · P46E |

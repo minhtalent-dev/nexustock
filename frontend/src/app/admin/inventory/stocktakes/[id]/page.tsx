@@ -393,7 +393,7 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reason">{t("reasonCodeLabel")}</Label>
-                  <Select onValueChange={(val) => setReasonCode(val)} defaultValue="ADJ-COUNT">
+                  <Select onValueChange={(val) => setReasonCode(val ?? "ADJ-COUNT")} defaultValue="ADJ-COUNT">
                     <SelectTrigger>
                       <SelectValue placeholder={t("reasonCodePlaceholder")} />
                     </SelectTrigger>

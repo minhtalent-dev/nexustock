@@ -162,7 +162,7 @@ export default function TaskInterleavingPage() {
       <div className="flex flex-wrap items-center gap-4 bg-card p-4 rounded-md border">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{t("status")}</span>
-          <Select value={status} onValueChange={(val) => { setStatus(val); setPage(1); }}>
+          <Select value={status} onValueChange={(val) => { setStatus(val ?? "ALL"); setPage(1); }}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder={t("allStatus")} />
             </SelectTrigger>
@@ -178,7 +178,7 @@ export default function TaskInterleavingPage() {
 
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">{t("operation")}</span>
-          <Select value={operationType} onValueChange={(val) => { setOperationType(val); setPage(1); }}>
+          <Select value={operationType} onValueChange={(val) => { setOperationType(val ?? "ALL"); setPage(1); }}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder={t("allOperations")} />
             </SelectTrigger>

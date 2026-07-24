@@ -142,7 +142,7 @@ export default function LaborDashboardPage() {
           </div>
           <div className="space-y-2">
             <label className="text-xs font-semibold text-muted-foreground">{t("operation")}</label>
-            <Select value={operationType} onValueChange={setOperationType}>
+            <Select value={operationType} onValueChange={(val) => setOperationType(val ?? "all")}>
               <SelectTrigger className="h-9">
                 <SelectValue placeholder={t("allOperations")} />
               </SelectTrigger>

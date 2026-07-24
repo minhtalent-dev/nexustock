@@ -57,6 +57,7 @@ public class QcHistoryItemDto
     public bool? IsPassed { get; set; }
     public string? ReasonCode { get; set; }
     public string? Metrics { get; set; }
+    public string? AttachmentRefs { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 
