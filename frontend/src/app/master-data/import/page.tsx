@@ -83,7 +83,7 @@ export default function ImportPage() {
 
   return (
     <PageShell title={t("page.title")} description={t("page.subtitle")} className="max-w-4xl gap-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-card border border-border p-4 rounded-lg text-xs text-muted-foreground">
           <span className="font-semibold text-foreground block mb-1">{t("help.itemsTitle")}</span>
           <code>code, name, baseUomCode, shelfLifeDays, minStock</code>
@@ -95,6 +95,22 @@ export default function ImportPage() {
         <div className="bg-card border border-border p-4 rounded-lg text-xs text-muted-foreground">
           <span className="font-semibold text-foreground block mb-1">{t("help.partnersTitle")}</span>
           <code>code, name, partnerType, address, taxCode</code>
+        </div>
+        <div className="bg-card border border-border p-4 rounded-lg text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground block mb-1">{t("help.uomsTitle")}</span>
+          <code>code, name, isActive</code>
+        </div>
+        <div className="bg-card border border-border p-4 rounded-lg text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground block mb-1">{t("help.warehousesTitle")}</span>
+          <code>code, name, description, isActive</code>
+        </div>
+        <div className="bg-card border border-border p-4 rounded-lg text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground block mb-1">{t("help.zonesTitle")}</span>
+          <code>warehouseCode, code, name, zoneType</code>
+        </div>
+        <div className="bg-card border border-border p-4 rounded-lg text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground block mb-1">{t("help.reasonsTitle")}</span>
+          <code>code, reasonType, description, isActive</code>
         </div>
       </div>
 
@@ -113,6 +129,10 @@ export default function ImportPage() {
                 <option value="ITEMS">{t("options.items")}</option>
                 <option value="LOCATIONS">{t("options.locations")}</option>
                 <option value="PARTNERS">{t("options.partners")}</option>
+                <option value="UOMS">{t("options.uoms")}</option>
+                <option value="WAREHOUSES">{t("options.warehouses")}</option>
+                <option value="ZONES">{t("options.zones")}</option>
+                <option value="REASONS">{t("options.reasons")}</option>
               </select>
             </div>
             <div className="flex-1">

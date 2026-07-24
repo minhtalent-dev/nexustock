@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Nexustock.Modules.Files.Contexts;
 using Nexustock.Modules.Files.Dtos;
 using Nexustock.Modules.Files.Entities;
+using Nexustock.Modules.Inventory.Contexts;
 using Nexustock.Modules.MasterData.Contexts;
 
 namespace Nexustock.Modules.Files.Services;
@@ -18,26 +19,32 @@ public sealed class AttachmentService : IAttachmentService
 {
     private static readonly HashSet<string> AllowedEntityTypes = new(StringComparer.OrdinalIgnoreCase)
     {
-        "PRODUCT", "QC_RESULT"
+        "PRODUCT", "QC_RESULT", "INBOUND_ORDER", "SHIPMENT", "STOCKTAKE", "RMA_REQUEST"
     };
 
     private readonly FilesDbContext _db;
     private readonly MasterDataDbContext _masterData;
+    private readonly InventoryDbContext _inventory;
     private readonly IObjectStorageResolver _resolver;
     private readonly FileStorageService _storage;
+    private readonly IEnumerable<IEntityExistenceHandler> _existenceHandlers;
     private readonly ILogger<AttachmentService> _logger;
 
     public AttachmentService(
         FilesDbContext db,
         MasterDataDbContext masterData,
+        InventoryDbContext inventory,
         IObjectStorageResolver resolver,
         FileStorageService storage,
+        IEnumerable<IEntityExistenceHandler> existenceHandlers,
         ILogger<AttachmentService> logger)
     {
         _db = db;
         _masterData = masterData;
+        _inventory = inventory;
         _resolver = resolver;
         _storage = storage;
+        _existenceHandlers = existenceHandlers;
         _logger = logger;
     }
 
@@ -47,12 +54,30 @@ public sealed class AttachmentService : IAttachmentService
         if (!AllowedEntityTypes.Contains(entityType))
             throw new FileDomainException("ENTITY_TYPE_NOT_ALLOWED", "Entity type is not allowed");
 
+        bool exists = false;
         if (entityType == "PRODUCT")
         {
-            var exists = await _masterData.Products.AnyAsync(p => p.Id == request.EntityId, ct);
-            if (!exists)
-                throw new FileDomainException("ATTACHMENT_ENTITY_NOT_FOUND", "Product not found", 404);
+            exists = await _masterData.Products.AnyAsync(p => p.Id == request.EntityId, ct);
         }
+        else if (entityType == "SHIPMENT")
+        {
+            exists = await _inventory.Shipments.AnyAsync(s => s.Id == request.EntityId, ct);
+        }
+        else if (entityType == "STOCKTAKE")
+        {
+            exists = await _inventory.Stocktakes.AnyAsync(s => s.Id == request.EntityId, ct);
+        }
+        else
+        {
+            var handler = _existenceHandlers.FirstOrDefault(h => h.CanHandle(entityType));
+            if (handler != null)
+            {
+                exists = await handler.ExistsAsync(request.EntityId, ct);
+            }
+        }
+
+        if (!exists)
+            throw new FileDomainException("ATTACHMENT_ENTITY_NOT_FOUND", $"{entityType} not found", 404);
 
         var row = new FileAttachment
         {

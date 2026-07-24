@@ -17,6 +17,8 @@ import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { ArrowLeft, CheckCircle2, AlertTriangle, Plus, ShieldAlert } from "lucide-react";
 
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
+
 interface InboundOrderResponseDto {
   id: string;
   orderNo: string;
@@ -188,72 +190,77 @@ export default function ReceivePage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
-        <Card className="bg-card border-border/80 col-span-3">
-          <CardHeader className="py-4 border-b border-border/60">
-            <CardTitle className="text-sm font-semibold text-foreground">{t("receiveLinesTitle")}</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader className="bg-card/30 border-b border-border/60">
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="text-muted-foreground font-semibold h-11">{t("colItem")}</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold h-11">{t("colUom")}</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colExpectedQty")}</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colReceivedQty")}</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colTolerance")}</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colProgress")}</TableHead>
-                  <TableHead className="text-muted-foreground font-semibold h-11 text-right w-32 pr-6">{t("colActions")}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {order.items.map((i) => {
-                  const progressPercent = Math.min(100, Math.round((i.receivedQty / i.expectedQty) * 100)) || 0;
-                  const isCompleted = i.receivedQty >= i.expectedQty;
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <Card className="bg-card border-border/80">
+            <CardHeader className="py-4 border-b border-border/60">
+              <CardTitle className="text-sm font-semibold text-foreground">{t("receiveLinesTitle")}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader className="bg-card/30 border-b border-border/60">
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="text-muted-foreground font-semibold h-11">{t("colItem")}</TableHead>
+                    <TableHead className="text-muted-foreground font-semibold h-11">{t("colUom")}</TableHead>
+                    <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colExpectedQty")}</TableHead>
+                    <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colReceivedQty")}</TableHead>
+                    <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colTolerance")}</TableHead>
+                    <TableHead className="text-muted-foreground font-semibold h-11 text-right">{t("colProgress")}</TableHead>
+                    <TableHead className="text-muted-foreground font-semibold h-11 text-right w-32 pr-6">{t("colActions")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {order.items.map((i) => {
+                    const progressPercent = Math.min(100, Math.round((i.receivedQty / i.expectedQty) * 100)) || 0;
+                    const isCompleted = i.receivedQty >= i.expectedQty;
 
-                  return (
-                    <TableRow key={i.id} className="border-b border-border/50 hover:bg-card/20">
-                      <TableCell className="text-foreground font-medium">
-                        <div>
-                          <p>{i.itemName}</p>
-                          <p className="text-[10px] text-muted-foreground font-normal">{i.itemCode}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">{i.uomName}</TableCell>
-                      <TableCell className="text-right text-muted-foreground font-mono">{i.expectedQty}</TableCell>
-                      <TableCell className="text-right text-emerald-400 font-mono font-semibold">{i.receivedQty}</TableCell>
-                      <TableCell className="text-right text-muted-foreground font-mono">{(i.tolerance * 100).toFixed(0)}%</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <div className="w-16 bg-muted rounded-full h-1.5 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full ${isCompleted ? "bg-emerald-500" : "bg-amber-500"}`}
-                              style={{ width: `${progressPercent}%` }}
-                            />
+                    return (
+                      <TableRow key={i.id} className="border-b border-border/50 hover:bg-card/20">
+                        <TableCell className="text-foreground font-medium">
+                          <div>
+                            <p>{i.itemName}</p>
+                            <p className="text-[10px] text-muted-foreground font-normal">{i.itemCode}</p>
                           </div>
-                          <span className="text-xs font-mono text-muted-foreground">{progressPercent}%</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right pr-6">
-                        {order.status === "Completed" || order.status === "Cancelled" ? (
-                          <span className="text-xs text-muted-foreground">{tc("notAvailable")}</span>
-                        ) : (
-                          <Button
-                            onClick={() => openReceiveDialog(i)}
-                            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-3 py-1 gap-1.5"
-                          >
-                            <Plus className="h-3.5 w-3.5" />
-                            {t("receiveBtn")}
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{i.uomName}</TableCell>
+                        <TableCell className="text-right text-muted-foreground font-mono">{i.expectedQty}</TableCell>
+                        <TableCell className="text-right text-emerald-400 font-mono font-semibold">{i.receivedQty}</TableCell>
+                        <TableCell className="text-right text-muted-foreground font-mono">{(i.tolerance * 100).toFixed(0)}%</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="w-16 bg-muted rounded-full h-1.5 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full ${isCompleted ? "bg-emerald-500" : "bg-amber-500"}`}
+                                style={{ width: `${progressPercent}%` }}
+                              />
+                            </div>
+                            <span className="text-xs font-mono text-muted-foreground">{progressPercent}%</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right pr-6">
+                          {order.status === "Completed" || order.status === "Cancelled" ? (
+                            <span className="text-xs text-muted-foreground">{tc("notAvailable")}</span>
+                          ) : (
+                            <Button
+                              onClick={() => openReceiveDialog(i)}
+                              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-3 py-1 gap-1.5"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                              {t("receiveBtn")}
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+        <div className="lg:col-span-1">
+          <EntityAttachmentsPanel entityType="INBOUND_ORDER" entityId={orderId} />
+        </div>
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>

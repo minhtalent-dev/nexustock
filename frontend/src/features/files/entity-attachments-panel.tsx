@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { showError, showSuccess } from "@/lib/toast";
 import { getHttpErrorMessage } from "@/lib/http-error";
@@ -21,6 +22,10 @@ type Props = {
 };
 
 export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = [], onPendingChange }: Props) {
+  const t = useTranslations("Common.files");
+  const tc = useTranslations("Common.actions");
+  const ts = useTranslations("Common.states");
+
   const [items, setItems] = useState<AttachmentItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -34,14 +39,17 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
     try {
       setItems(await listAttachments(entityType, entityId));
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Failed to load attachments"));
+      showError(getHttpErrorMessage(err, t("loadFailed")));
     } finally {
       setLoading(false);
     }
-  }, [entityId, entityType]);
+  }, [entityId, entityType, t]);
 
   useEffect(() => {
-    void refresh();
+    const timer = setTimeout(() => {
+      void refresh();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [refresh]);
 
   const onFile = async (file: File | null) => {
@@ -51,7 +59,7 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
       const uploaded = await uploadFile(file);
       if (!entityId) {
         onPendingChange?.([...pendingUploads, uploaded]);
-        showSuccess("File uploaded — will bind after save");
+        showSuccess(t("toastUploaded"));
         return;
       }
       await bindAttachment({
@@ -65,10 +73,10 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
         sizeBytes: uploaded.sizeBytes,
         kind: uploaded.kind,
       });
-      showSuccess("Attachment saved");
+      showSuccess(t("toastSaved"));
       await refresh();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Upload failed"));
+      showError(getHttpErrorMessage(err, t("uploadFailed")));
     } finally {
       setUploading(false);
     }
@@ -77,10 +85,10 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
   const onDelete = async (id: string) => {
     try {
       await deleteAttachment(id);
-      showSuccess("Attachment removed");
+      showSuccess(t("toastRemoved"));
       await refresh();
     } catch (err: unknown) {
-      showError(getHttpErrorMessage(err, "Delete failed"));
+      showError(getHttpErrorMessage(err, t("deleteFailed")));
     }
   };
 
@@ -90,8 +98,8 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
     <div className="space-y-3 rounded-lg border border-border bg-card/40 p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-foreground">Attachments</h3>
-          <p className="text-xs text-muted-foreground">Images (jpeg/png/webp) and PDF up to 10 MB</p>
+          <h3 className="text-sm font-semibold text-foreground">{t("attachments")}</h3>
+          <p className="text-xs text-muted-foreground">{t("hint")}</p>
         </div>
         <label className="inline-flex cursor-pointer">
           <input
@@ -102,12 +110,12 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
             onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
           />
           <span className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground">
-            {uploading ? "Uploading…" : "Upload"}
+            {uploading ? t("uploading") : t("uploadBtn")}
           </span>
         </label>
       </div>
 
-      {loading ? <p className="text-xs text-muted-foreground">Loading…</p> : null}
+      {loading ? <p className="text-xs text-muted-foreground">{ts("loading")}</p> : null}
 
       <ul className="space-y-2">
         {items.map((item) => (
@@ -121,17 +129,17 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
               </div>
             </div>
             <Button type="button" variant="destructive" size="xs" onClick={() => void onDelete(item.id)}>
-              Delete
+              {tc("delete")}
             </Button>
           </li>
         ))}
         {displayPending.map((item) => (
           <li key={item.storageKey} className="rounded-md border border-dashed border-border px-3 py-2 text-sm text-muted-foreground">
-            Pending: {item.fileName}
+            {t("pendingUploads")}: {item.fileName}
           </li>
         ))}
         {!loading && items.length === 0 && displayPending.length === 0 ? (
-          <li className="text-xs text-muted-foreground">No attachments yet</li>
+          <li className="text-xs text-muted-foreground">{t("noAttachments")}</li>
         ) : null}
       </ul>
     </div>

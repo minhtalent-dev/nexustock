@@ -1,7 +1,5 @@
 "use client";
 
-import { PageShell } from "@/components/layout/page-shell";
-
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";

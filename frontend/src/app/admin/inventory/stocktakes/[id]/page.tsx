@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { AlertCircle, ArrowLeft, Check, Lock, Play, Send } from "lucide-react";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface StocktakeItem {
   id: string;
@@ -316,6 +317,10 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
             )}
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-6">
+        <EntityAttachmentsPanel entityType="STOCKTAKE" entityId={id} />
       </div>
 
       <Dialog open={countingModalOpen} onOpenChange={setCountingModalOpen}>

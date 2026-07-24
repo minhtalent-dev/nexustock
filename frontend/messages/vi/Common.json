@@ -27,6 +27,20 @@
       "success": "Thành công",
       "online": "ONLINE",
       "offline": "OFFLINE"
+    },
+    "files": {
+      "attachments": "Tài liệu đính kèm",
+      "hint": "Ảnh (jpeg/png/webp) và PDF tối đa 10 MB",
+      "pendingUploads": "Tệp đang chờ lưu",
+      "noAttachments": "Chưa có tài liệu nào",
+      "uploading": "Đang tải lên...",
+      "uploadBtn": "Tải tệp lên",
+      "toastUploaded": "Tải tệp thành công — sẽ lưu sau khi bấm lưu chính",
+      "toastSaved": "Đã lưu tài liệu đính kèm",
+      "toastRemoved": "Đã xóa tài liệu đính kèm",
+      "loadFailed": "Không thể tải danh sách tài liệu",
+      "uploadFailed": "Tải tệp lên thất bại",
+      "deleteFailed": "Xóa tệp thất bại"
     }
   }
 }

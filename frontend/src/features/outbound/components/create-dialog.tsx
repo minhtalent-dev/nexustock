@@ -80,6 +80,7 @@ export function CreateShipmentDialog({ isOpen, onClose, onSuccess }: CreateShipm
         setSelectedItems([{ itemId: "", uomId: "", requestedQty: 1 }]);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const addItemRow = () => {

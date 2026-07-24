@@ -27,6 +27,20 @@
       "success": "Success",
       "online": "ONLINE",
       "offline": "OFFLINE"
+    },
+    "files": {
+      "attachments": "Attachments",
+      "hint": "Images (jpeg/png/webp) and PDF up to 10 MB",
+      "pendingUploads": "Pending uploads",
+      "noAttachments": "No attachments yet",
+      "uploading": "Uploading...",
+      "uploadBtn": "Upload file",
+      "toastUploaded": "File uploaded — will bind after save",
+      "toastSaved": "Attachment saved",
+      "toastRemoved": "Attachment removed",
+      "loadFailed": "Failed to load attachments",
+      "uploadFailed": "Upload failed",
+      "deleteFailed": "Delete failed"
     }
   }
 }

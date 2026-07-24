@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast } from "@/lib/toast";
 import { ClipboardCheck, Plus, RefreshCw } from "lucide-react";
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 
 interface Stocktake {
   id: string;
@@ -76,7 +77,8 @@ export default function StocktakesPage() {
           <ClipboardCheck className="h-6 w-6 text-primary" />
           {t("title")}
         </h1>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <OpsExportButtons type="STOCKTAKES" />
           <Button render={<Link href="/admin/inventory/stocktakes/new" />} nativeButton={false} className="gap-2">
             <Plus className="h-4 w-4" />
             {t("createButton")}

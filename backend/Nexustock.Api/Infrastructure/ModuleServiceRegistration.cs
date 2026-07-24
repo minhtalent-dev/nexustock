@@ -57,6 +57,12 @@ public static class ModuleServiceRegistration
         services.AddLaborTrackingModule(configuration);
         services.AddTaskInterleavingModule(configuration);
         services.AddReadinessModule(configuration);
+
+        // Register Entity Existence Handlers for Files Module
+        services.AddScoped<Nexustock.Modules.Files.Services.IEntityExistenceHandler, Nexustock.Api.ExistenceHandlers.InboundOrderExistenceHandler>();
+        services.AddScoped<Nexustock.Modules.Files.Services.IEntityExistenceHandler, Nexustock.Api.ExistenceHandlers.RmaRequestExistenceHandler>();
+        services.AddScoped<Nexustock.Modules.Files.Services.IEntityExistenceHandler, Nexustock.Api.ExistenceHandlers.QcResultExistenceHandler>();
+
         return services;
     }
 }

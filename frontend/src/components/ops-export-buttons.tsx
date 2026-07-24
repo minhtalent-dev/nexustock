@@ -5,12 +5,12 @@ import api from "@/lib/api";
 import { showError } from "@/lib/toast";
 import { getHttpErrorMessage } from "@/lib/http-error";
 
-type ExportType = "ITEMS" | "LOCATIONS" | "PARTNERS" | "UOMS" | "WAREHOUSES" | "ZONES" | "REASONS";
+type OpsExportType = "INBOUND_ORDERS" | "SHIPMENTS" | "STOCKTAKES" | "RMA";
 
-export function MasterDataExportButtons({ type }: { type: ExportType }) {
+export function OpsExportButtons({ type }: { type: OpsExportType }) {
   const download = async (format: "csv" | "xlsx") => {
     try {
-      const res = await api.get(`/exports`, {
+      const res = await api.get(`/ops/exports`, {
         params: { type, format },
         responseType: "blob",
       });

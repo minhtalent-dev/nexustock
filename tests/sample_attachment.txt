@@ -1,0 +1,2 @@
+This is a sample attachment file for testing operational attachments in Nexustock.
+Recorded during Phase 43 verification.

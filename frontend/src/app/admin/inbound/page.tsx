@@ -17,6 +17,8 @@ import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { Plus, ClipboardList, Eye } from "lucide-react";
 
+import { OpsExportButtons } from "@/components/ops-export-buttons";
+
 interface InboundOrderResponseDto {
   id: string;
   orderNo: string;
@@ -199,10 +201,13 @@ export default function InboundPage() {
           </h1>
           <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
-        <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 h-9 text-sm">
-          <Plus className="h-4 w-4" />
-          {t("createOrder")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <OpsExportButtons type="INBOUND_ORDERS" />
+          <Button onClick={openCreate} className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 h-9 text-sm">
+            <Plus className="h-4 w-4" />
+            {t("createOrder")}
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-4">

@@ -37,6 +37,10 @@ public class ExportsController : ControllerBase
                 "ITEMS" => (await BuildItemsAsync(), "items"),
                 "LOCATIONS" => (await BuildLocationsAsync(), "locations"),
                 "PARTNERS" => (await BuildPartnersAsync(), "partners"),
+                "UOMS" => (await BuildUomsAsync(), "uoms"),
+                "WAREHOUSES" => (await BuildWarehousesAsync(), "warehouses"),
+                "ZONES" => (await BuildZonesAsync(), "zones"),
+                "REASONS" => (await BuildReasonsAsync(), "reasons"),
                 _ => throw new ArgumentException("EXPORT_TYPE_INVALID")
             };
         }
@@ -101,6 +105,50 @@ public class ExportsController : ControllerBase
         rows.AddRange(items.Select(p => new[]
         {
             p.Code, p.Name, p.PartnerType, p.Address ?? "", p.TaxCode ?? ""
+        }));
+        return rows;
+    }
+
+    private async Task<List<string[]>> BuildUomsAsync()
+    {
+        var items = await _db.Uoms.OrderBy(u => u.Code).Take(MaxRows + 1).ToListAsync();
+        var rows = new List<string[]> { new[] { "code", "name", "isActive" } };
+        rows.AddRange(items.Select(u => new[]
+        {
+            u.Code, u.Name, u.IsActive ? "true" : "false"
+        }));
+        return rows;
+    }
+
+    private async Task<List<string[]>> BuildWarehousesAsync()
+    {
+        var items = await _db.Warehouses.OrderBy(w => w.Code).Take(MaxRows + 1).ToListAsync();
+        var rows = new List<string[]> { new[] { "code", "name", "description", "isActive" } };
+        rows.AddRange(items.Select(w => new[]
+        {
+            w.Code, w.Name, w.Description ?? "", w.IsActive ? "true" : "false"
+        }));
+        return rows;
+    }
+
+    private async Task<List<string[]>> BuildZonesAsync()
+    {
+        var items = await _db.StorageZones.Include(z => z.Warehouse).OrderBy(z => z.Code).Take(MaxRows + 1).ToListAsync();
+        var rows = new List<string[]> { new[] { "warehouseCode", "code", "name", "zoneType" } };
+        rows.AddRange(items.Select(z => new[]
+        {
+            z.Warehouse?.Code ?? "", z.Code, z.Name, z.ZoneType
+        }));
+        return rows;
+    }
+
+    private async Task<List<string[]>> BuildReasonsAsync()
+    {
+        var items = await _db.ReasonCodes.OrderBy(r => r.Code).Take(MaxRows + 1).ToListAsync();
+        var rows = new List<string[]> { new[] { "code", "reasonType", "description", "isActive" } };
+        rows.AddRange(items.Select(r => new[]
+        {
+            r.Code, r.ReasonType, r.Description, r.IsActive ? "true" : "false"
         }));
         return rows;
     }

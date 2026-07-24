@@ -387,6 +387,7 @@ public class QcController : ControllerBase
         if (request.TenantId != tenantId) return Forbid();
         if (request.Status != QcRequestStatus.Pending) return BadRequest("QC Request is not pending");
 
+        QcResult result;
         if (_inboundContext.Database.IsRelational())
         {
             var connection = _inboundContext.Database.GetDbConnection();
@@ -396,7 +397,7 @@ public class QcController : ControllerBase
             await _qcContext.Database.UseTransactionAsync(transaction.GetDbTransaction());
             try
             {
-                var result = new QcResult
+                result = new QcResult
                 {
                     Id = Guid.NewGuid(),
                     TenantId = tenantId,
@@ -433,7 +434,7 @@ public class QcController : ControllerBase
         }
         else
         {
-            var result = new QcResult
+            result = new QcResult
             {
                 Id = Guid.NewGuid(),
                 TenantId = tenantId,
@@ -452,7 +453,7 @@ public class QcController : ControllerBase
             await _inboundContext.SaveChangesAsync();
         }
 
-        return Ok(new { message = "Recorded QC result successfully" });
+        return Ok(new { id = result.Id, message = "Recorded QC result successfully" });
     }
 
     [HttpPost("{lotId:guid}/hold")]

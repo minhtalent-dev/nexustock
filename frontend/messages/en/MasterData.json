@@ -199,7 +199,11 @@
       "help": {
         "itemsTitle": "ITEMS file structure (Products):",
         "locationsTitle": "LOCATIONS file structure (Shelf locations):",
-        "partnersTitle": "PARTNERS file structure (Partners):"
+        "partnersTitle": "PARTNERS file structure (Partners):",
+        "uomsTitle": "UOMS file structure (UOMs):",
+        "warehousesTitle": "WAREHOUSES file structure (Warehouses):",
+        "zonesTitle": "ZONES file structure (Zones):",
+        "reasonsTitle": "REASONS file structure (Reasons):"
       },
       "fields": {
         "importType": "Master data type",
@@ -208,7 +212,11 @@
       "options": {
         "items": "Products (ITEMS)",
         "locations": "Locations (LOCATIONS)",
-        "partners": "Partners (PARTNERS)"
+        "partners": "Partners (PARTNERS)",
+        "uoms": "Unit of measures (UOMS)",
+        "warehouses": "Warehouses (WAREHOUSES)",
+        "zones": "Zones (ZONES)",
+        "reasons": "Reason codes (REASONS)"
       },
       "actions": {
         "preview": "Upload for check (Preview)",

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
 import MasterDataCrudPage, { type CrudField } from "@/features/master-data/master-data-crud";
+import { MasterDataExportButtons } from "@/features/master-data/export-buttons";
 import type { StorageZone, Warehouse, PagedResult } from "@/types/master-data";
 
 type ZoneForm = {
@@ -75,35 +76,40 @@ export default function ZonesPage() {
   ];
 
   return (
-    <MasterDataCrudPage<StorageZone, ZoneForm>
-      title={t("page.title")}
-      endpoint="/master-data/storage-zones"
-      searchPlaceholder={t("page.searchPlaceholder")}
-      defaultForm={defaultForm}
-      fields={fields}
-      toForm={(item) => ({
-        warehouseId: item.warehouseId,
-        code: item.code,
-        name: item.name,
-        zoneType: item.zoneType,
-        temperatureLimit: item.temperatureLimit ?? 25,
-        isLocked: item.isLocked,
-      })}
-      columns={[
-        { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
-        { key: "name", label: t("columns.name"), render: (item) => item.name },
-        { key: "warehouse", label: t("columns.warehouse"), render: (item) => <span className="text-foreground/50">{item.warehouseCode}</span> },
-        { key: "zoneType", label: t("columns.zoneType"), render: (item) => item.zoneType },
-        {
-          key: "isLocked",
-          label: t("columns.status"),
-          render: (item) => (
-            <span className={item.isLocked ? "text-yellow-400" : "text-foreground/40"}>
-              {item.isLocked ? ts("status.locked") : ts("status.open")}
-            </span>
-          ),
-        },
-      ]}
-    />
+    <div className="space-y-3">
+      <div className="flex justify-end px-1">
+        <MasterDataExportButtons type="ZONES" />
+      </div>
+      <MasterDataCrudPage<StorageZone, ZoneForm>
+        title={t("page.title")}
+        endpoint="/master-data/storage-zones"
+        searchPlaceholder={t("page.searchPlaceholder")}
+        defaultForm={defaultForm}
+        fields={fields}
+        toForm={(item) => ({
+          warehouseId: item.warehouseId,
+          code: item.code,
+          name: item.name,
+          zoneType: item.zoneType,
+          temperatureLimit: item.temperatureLimit ?? 25,
+          isLocked: item.isLocked,
+        })}
+        columns={[
+          { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
+          { key: "name", label: t("columns.name"), render: (item) => item.name },
+          { key: "warehouse", label: t("columns.warehouse"), render: (item) => <span className="text-foreground/50">{item.warehouseCode}</span> },
+          { key: "zoneType", label: t("columns.zoneType"), render: (item) => item.zoneType },
+          {
+            key: "isLocked",
+            label: t("columns.status"),
+            render: (item) => (
+              <span className={item.isLocked ? "text-yellow-400" : "text-foreground/40"}>
+                {item.isLocked ? ts("status.locked") : ts("status.open")}
+              </span>
+            ),
+          },
+        ]}
+      />
+    </div>
   );
 }

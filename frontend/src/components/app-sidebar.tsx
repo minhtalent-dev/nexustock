@@ -76,7 +76,8 @@ export default function AppSidebar() {
 
   // Hydrate navMode từ localStorage (SSR-safe)
   useEffect(() => {
-    setNavMode(loadNavMode());
+    const timer = setTimeout(() => setNavMode(loadNavMode()), 0);
+    return () => clearTimeout(timer);
   }, []);
 
   // Effect A: đổi mode → seed collapsed theo prefix mới
@@ -88,28 +89,34 @@ export default function AppSidebar() {
       if (k in saved) next[k] = saved[k];
       else next[k] = !isGroupActive(g, pathname, permissions);
     }
-    setCollapsed((prev) => ({ ...prev, ...next }));
+    const timer = setTimeout(() => {
+      setCollapsed((prev) => ({ ...prev, ...next }));
+    }, 0);
     saveCollapsed({ ...saved, ...next });
+    return () => clearTimeout(timer);
     // Chỉ re-seed khi đổi mode / danh sách group theo mode
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [navMode, navGroups]);
 
   // Effect B: pathname/permissions — chỉ bổ sung key thiếu
   useEffect(() => {
-    setCollapsed((prev) => {
-      const saved = loadCollapsed();
-      let changed = false;
-      const next = { ...prev };
-      for (const g of navGroups) {
-        const k = collapseKey(navMode, g.titleKey);
-        if (!(k in next)) {
-          next[k] = k in saved ? saved[k] : !isGroupActive(g, pathname, permissions);
-          changed = true;
+    const timer = setTimeout(() => {
+      setCollapsed((prev) => {
+        const saved = loadCollapsed();
+        let changed = false;
+        const next = { ...prev };
+        for (const g of navGroups) {
+          const k = collapseKey(navMode, g.titleKey);
+          if (!(k in next)) {
+            next[k] = k in saved ? saved[k] : !isGroupActive(g, pathname, permissions);
+            changed = true;
+          }
         }
-      }
-      if (changed) saveCollapsed({ ...saved, ...next });
-      return changed ? next : prev;
-    });
+        if (changed) saveCollapsed({ ...saved, ...next });
+        return changed ? next : prev;
+      });
+    }, 0);
+    return () => clearTimeout(timer);
   }, [pathname, permissions, navGroups, navMode]);
 
   const onSelectMode = (next: NavMode) => {

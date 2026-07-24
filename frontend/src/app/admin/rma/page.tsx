@@ -11,7 +11,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 import { RefreshCw, Undo2, CheckCircle2, FlaskConical, AlertTriangle, PackageSearch } from "lucide-react";
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 
 interface RmaItem {
   id: string;
@@ -114,14 +116,17 @@ export default function RmaPage() {
             {t("subtitle")}
           </p>
         </div>
-        <Button
-          onClick={fetchRmas}
-          variant="outline"
-          className="border-border hover:bg-muted text-muted-foreground h-9 px-4 flex items-center gap-2"
-        >
-          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          {tc("refresh")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <OpsExportButtons type="RMA" />
+          <Button
+            onClick={fetchRmas}
+            variant="outline"
+            className="border-border hover:bg-muted text-muted-foreground h-9 px-4 flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            {tc("refresh")}
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -218,6 +223,10 @@ export default function RmaPage() {
                     <p className="text-xs text-emerald-200">{t("qcCompleted")}</p>
                   </div>
                 )}
+
+                <div className="border-t border-border pt-4">
+                  <EntityAttachmentsPanel entityType="RMA_REQUEST" entityId={selectedRma.id} />
+                </div>
               </CardContent>
             </Card>
           ) : (

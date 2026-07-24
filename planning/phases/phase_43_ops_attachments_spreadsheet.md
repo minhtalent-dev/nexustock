@@ -295,12 +295,12 @@ Regression: `verify_files_spreadsheet` · `verify_storage_migrate`.
 
 ## 14. Acceptance Criteria (DoD)
 
-- [ ] Allowlist 6 + handlers PASS  
-- [ ] Panels Inbound·Outbound·Stocktake·RMA·QC  
-- [ ] Master IE 4 types csv\|xlsx  
-- [ ] Ops export 4 types  
-- [ ] verify_ops_attach_p43 PASS · dbm · plan row ✅  
-- [ ] ❌ owner=P43 trong inventory = **0 còn thiếu**  
+- [x] Allowlist 6 + handlers PASS  
+- [x] Panels Inbound·Outbound·Stocktake·RMA·QC  
+- [x] Master IE 4 types csv\|xlsx  
+- [x] Ops export 4 types  
+- [x] verify_ops_attach_p43 PASS · dbm · plan row ✅  
+- [x] ❌ owner=P43 trong inventory = **0 còn thiếu**  
 
 ---
 
@@ -345,7 +345,8 @@ Thêm entity = handler + allowlist + panel (P44 pattern).
 |---|---|---|
 | JARVIS | **`rp1` PASS — 100% Ready** · disk freeze · 0 blocker | 2026-07-23 |
 | JARVIS | **`rp2` PASS** — F01–F36 · critic **9.5** · sẵn sàng `rp3` / Proceed `/18` | 2026-07-23 |
-| FOUNDER | ☐ Proceed `/18` · ☐ `rp3` · ☐ Hold | ____ |
+| FOUNDER | Proceed `dbm` (Chạy browser debug kiểm thử thành công) | 2026-07-24 |
+| JARVIS | **`rp4`+`rp5` PASS — Hoàn thành** · verify 100% · dbm pass | 2026-07-24 |
 
 ---
 

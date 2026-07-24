@@ -199,7 +199,11 @@
       "help": {
         "itemsTitle": "Cấu trúc file ITEMS (Vật tư):",
         "locationsTitle": "Cấu trúc file LOCATIONS (Vị trí kệ):",
-        "partnersTitle": "Cấu trúc file PARTNERS (Đối tác):"
+        "partnersTitle": "Cấu trúc file PARTNERS (Đối tác):",
+        "uomsTitle": "Cấu trúc file UOMS (Đơn vị tính):",
+        "warehousesTitle": "Cấu trúc file WAREHOUSES (Nhà kho):",
+        "zonesTitle": "Cấu trúc file ZONES (Vùng kho):",
+        "reasonsTitle": "Cấu trúc file REASONS (Lý do):"
       },
       "fields": {
         "importType": "Loại master data",
@@ -208,7 +212,11 @@
       "options": {
         "items": "Sản phẩm (ITEMS)",
         "locations": "Vị trí kệ (LOCATIONS)",
-        "partners": "Đối tác (PARTNERS)"
+        "partners": "Đối tác (PARTNERS)",
+        "uoms": "Đơn vị tính (UOMS)",
+        "warehouses": "Nhà kho (WAREHOUSES)",
+        "zones": "Vùng kho (ZONES)",
+        "reasons": "Lý do (REASONS)"
       },
       "actions": {
         "preview": "Tải lên kiểm tra (Preview)",

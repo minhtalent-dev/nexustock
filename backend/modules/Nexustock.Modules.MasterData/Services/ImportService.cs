@@ -39,6 +39,18 @@ public class ImportService : IImportService
             "PARTNERS" => "code,name,partnerType,address,taxCode,errorMessage\n" +
                           "NCC01,Nhà cung cấp mẫu,VENDOR,123 Đường A,0102030405,\n" +
                           "KH01,Khách hàng mẫu,CUSTOMER,456 Đường B,0908070605,",
+            "UOMS" => "code,name,isActive,errorMessage\n" +
+                      "PCS,Cái,TRUE,\n" +
+                      "BOX,Hộp,TRUE,",
+            "WAREHOUSES" => "code,name,description,isActive,errorMessage\n" +
+                            "K01,Kho chính,Kho trung tâm của hệ thống,TRUE,\n" +
+                            "K02,Kho phụ,Kho lưu trữ hàng dự phòng,TRUE,",
+            "ZONES" => "warehouseCode,code,name,zoneType,errorMessage\n" +
+                       "K01,Z01,Vùng lưu trữ thường,STORAGE,\n" +
+                       "K01,Z02,Vùng nhập hàng,RECEIVING,",
+            "REASONS" => "code,reasonType,description,isActive,errorMessage\n" +
+                         "ADJ-COUNT,ADJUSTMENT,Điều chỉnh sau kiểm kê,TRUE,\n" +
+                         "RMA-DEFECT,RMA,Hàng trả lại bị lỗi,TRUE,",
             _ => throw new ArgumentException("Loại import không hợp lệ.")
         };
     }
@@ -90,6 +102,7 @@ public class ImportService : IImportService
         var existingProductCodes = await _db.Products.Select(x => x.Code).ToListAsync(cancellationToken);
         var existingLocationCodes = await _db.StorageLocations.Select(x => x.Code).ToListAsync(cancellationToken);
         var existingPartnerCodes = await _db.Partners.Select(x => x.Code).ToListAsync(cancellationToken);
+        var existingReasonCodes = await _db.ReasonCodes.Select(x => x.Code).ToListAsync(cancellationToken);
 
         // Keep track of codes within the file to check for duplicates
         var seenCodes = new HashSet<string>();
@@ -233,6 +246,135 @@ public class ImportService : IImportService
                 {
                     isValid = false;
                     errorMsg.Append("Loại đối tác phải là VENDOR, CUSTOMER hoặc CARRIER. ");
+                }
+            }
+            else if (type == "UOMS")
+            {
+                var code = GetVal(row, header, "code")?.ToUpperInvariant();
+                var name = GetVal(row, header, "name");
+
+                if (string.IsNullOrWhiteSpace(code) || code.Length > 20)
+                {
+                    isValid = false;
+                    errorMsg.Append("Mã đơn vị tính không được để trống và tối đa 20 ký tự. ");
+                }
+                else if (existingUomCodes.Contains(code) || seenCodes.Contains(code))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Mã đơn vị tính '{code}' đã tồn tại hoặc bị trùng trong file. ");
+                }
+                else
+                {
+                    seenCodes.Add(code);
+                }
+
+                if (string.IsNullOrWhiteSpace(name) || name.Length > 100)
+                {
+                    isValid = false;
+                    errorMsg.Append("Tên đơn vị tính không được để trống và tối đa 100 ký tự. ");
+                }
+            }
+            else if (type == "WAREHOUSES")
+            {
+                var code = GetVal(row, header, "code")?.ToUpperInvariant();
+                var name = GetVal(row, header, "name");
+
+                if (string.IsNullOrWhiteSpace(code) || code.Length > 50)
+                {
+                    isValid = false;
+                    errorMsg.Append("Mã kho không được để trống và tối đa 50 ký tự. ");
+                }
+                else if (existingWarehouseCodes.Contains(code) || seenCodes.Contains(code))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Mã kho '{code}' đã tồn tại hoặc bị trùng trong file. ");
+                }
+                else
+                {
+                    seenCodes.Add(code);
+                }
+
+                if (string.IsNullOrWhiteSpace(name) || name.Length > 150)
+                {
+                    isValid = false;
+                    errorMsg.Append("Tên kho không được để trống và tối đa 150 ký tự. ");
+                }
+            }
+            else if (type == "ZONES")
+            {
+                var whCode = GetVal(row, header, "warehouseCode")?.ToUpperInvariant();
+                var code = GetVal(row, header, "code")?.ToUpperInvariant();
+                var name = GetVal(row, header, "name");
+                var zoneType = GetVal(row, header, "zoneType")?.ToUpperInvariant();
+
+                if (string.IsNullOrWhiteSpace(whCode) || !existingWarehouseCodes.Contains(whCode))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Mã kho '{whCode}' không tồn tại. ");
+                }
+
+                if (string.IsNullOrWhiteSpace(code) || code.Length > 50)
+                {
+                    isValid = false;
+                    errorMsg.Append("Mã vùng không được để trống và tối đa 50 ký tự. ");
+                }
+                else
+                {
+                    var zoneKey = $"{whCode}_{code}";
+                    if (existingZoneCodes.Any(z => z.Code == code && z.WhCode == whCode) || seenCodes.Contains(zoneKey))
+                    {
+                        isValid = false;
+                        errorMsg.Append($"Vùng '{code}' đã tồn tại trong kho '{whCode}' hoặc bị trùng trong file. ");
+                    }
+                    else
+                    {
+                        seenCodes.Add(zoneKey);
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(name) || name.Length > 150)
+                {
+                    isValid = false;
+                    errorMsg.Append("Tên vùng không được để trống và tối đa 150 ký tự. ");
+                }
+
+                if (string.IsNullOrWhiteSpace(zoneType) || (zoneType != "STORAGE" && zoneType != "RECEIVING" && zoneType != "SHIPPING" && zoneType != "QC" && zoneType != "STAGE"))
+                {
+                    isValid = false;
+                    errorMsg.Append("Loại vùng phải là STORAGE, RECEIVING, SHIPPING, QC hoặc STAGE. ");
+                }
+            }
+            else if (type == "REASONS")
+            {
+                var code = GetVal(row, header, "code")?.ToUpperInvariant();
+                var reasonType = GetVal(row, header, "reasonType")?.ToUpperInvariant();
+                var desc = GetVal(row, header, "description");
+
+                if (string.IsNullOrWhiteSpace(code) || code.Length > 50)
+                {
+                    isValid = false;
+                    errorMsg.Append("Mã lý do không được để trống và tối đa 50 ký tự. ");
+                }
+                else if (existingReasonCodes.Contains(code) || seenCodes.Contains(code))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Mã lý do '{code}' đã tồn tại hoặc bị trùng trong file. ");
+                }
+                else
+                {
+                    seenCodes.Add(code);
+                }
+
+                if (string.IsNullOrWhiteSpace(reasonType) || (reasonType != "ADJUSTMENT" && reasonType != "RMA" && reasonType != "QC" && reasonType != "RETURN" && reasonType != "SCRAP"))
+                {
+                    isValid = false;
+                    errorMsg.Append("Loại lý do phải là ADJUSTMENT, RMA, QC, RETURN hoặc SCRAP. ");
+                }
+
+                if (string.IsNullOrWhiteSpace(desc) || desc.Length > 255)
+                {
+                    isValid = false;
+                    errorMsg.Append("Mô tả lý do không được để trống và tối đa 255 ký tự. ");
                 }
             }
             else
@@ -406,6 +548,97 @@ public class ImportService : IImportService
                     };
 
                     await _db.Partners.AddAsync(partner, cancellationToken);
+                }
+            }
+            else if (batch.ImportType == "UOMS")
+            {
+                foreach (var row in rows)
+                {
+                    var map = JsonSerializer.Deserialize<Dictionary<string, string>>(row.RawData!)!;
+                    var code = map["code"].Trim().ToUpperInvariant();
+                    var name = map["name"].Trim();
+                    var isActiveVal = !map.TryGetValue("isActive", out var ia) || !bool.TryParse(ia, out var active) || active;
+
+                    var uom = new Uom
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = batch.TenantId,
+                        Code = code,
+                        Name = name,
+                        IsActive = isActiveVal,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    await _db.Uoms.AddAsync(uom, cancellationToken);
+                }
+            }
+            else if (batch.ImportType == "WAREHOUSES")
+            {
+                foreach (var row in rows)
+                {
+                    var map = JsonSerializer.Deserialize<Dictionary<string, string>>(row.RawData!)!;
+                    var code = map["code"].Trim().ToUpperInvariant();
+                    var name = map["name"].Trim();
+                    var desc = map.TryGetValue("description", out var d) ? d.Trim() : null;
+                    var isActiveVal = !map.TryGetValue("isActive", out var ia) || !bool.TryParse(ia, out var active) || active;
+
+                    var warehouse = new Warehouse
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = batch.TenantId,
+                        Code = code,
+                        Name = name,
+                        Description = string.IsNullOrEmpty(desc) ? null : desc,
+                        IsActive = isActiveVal,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    await _db.Warehouses.AddAsync(warehouse, cancellationToken);
+                }
+            }
+            else if (batch.ImportType == "ZONES")
+            {
+                var warehouses = await _db.Warehouses.ToDictionaryAsync(x => x.Code, x => x.Id, cancellationToken);
+                foreach (var row in rows)
+                {
+                    var map = JsonSerializer.Deserialize<Dictionary<string, string>>(row.RawData!)!;
+                    var whCode = map["warehouseCode"].Trim().ToUpperInvariant();
+                    var code = map["code"].Trim().ToUpperInvariant();
+                    var name = map["name"].Trim();
+                    var zoneType = map.TryGetValue("zoneType", out var zt) ? zt.Trim().ToUpperInvariant() : "STORAGE";
+
+                    var zone = new StorageZone
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = batch.TenantId,
+                        WarehouseId = warehouses[whCode],
+                        Code = code,
+                        Name = name,
+                        ZoneType = zoneType,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    await _db.StorageZones.AddAsync(zone, cancellationToken);
+                }
+            }
+            else if (batch.ImportType == "REASONS")
+            {
+                foreach (var row in rows)
+                {
+                    var map = JsonSerializer.Deserialize<Dictionary<string, string>>(row.RawData!)!;
+                    var code = map["code"].Trim().ToUpperInvariant();
+                    var reasonType = map["reasonType"].Trim().ToUpperInvariant();
+                    var desc = map["description"].Trim();
+                    var isActiveVal = !map.TryGetValue("isActive", out var ia) || !bool.TryParse(ia, out var active) || active;
+
+                    var reason = new ReasonCode
+                    {
+                        Id = Guid.NewGuid(),
+                        TenantId = batch.TenantId,
+                        Code = code,
+                        ReasonType = reasonType,
+                        Description = desc,
+                        IsActive = isActiveVal,
+                        CreatedAt = DateTimeOffset.UtcNow
+                    };
+                    await _db.ReasonCodes.AddAsync(reason, cancellationToken);
                 }
             }
 

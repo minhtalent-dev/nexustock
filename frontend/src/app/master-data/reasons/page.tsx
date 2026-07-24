@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import MasterDataCrudPage, { type CrudField } from "@/features/master-data/master-data-crud";
+import { MasterDataExportButtons } from "@/features/master-data/export-buttons";
 import type { ReasonCode } from "@/types/master-data";
 
 type ReasonForm = {
@@ -30,32 +31,37 @@ export default function ReasonsPage() {
   ];
 
   return (
-    <MasterDataCrudPage<ReasonCode, ReasonForm>
-      title={t("page.title")}
-      endpoint="/master-data/reason-codes"
-      searchPlaceholder={t("page.searchPlaceholder")}
-      defaultForm={defaultForm}
-      fields={fields}
-      toForm={(item) => ({
-        code: item.code,
-        reasonType: item.reasonType,
-        description: item.description,
-        isActive: item.isActive,
-      })}
-      columns={[
-        { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
-        { key: "reasonType", label: t("columns.reasonType"), render: (item) => item.reasonType },
-        { key: "description", label: t("columns.description"), render: (item) => item.description },
-        {
-          key: "status",
-          label: t("columns.status"),
-          render: (item) => (
-            <span className={item.isActive ? "text-green-400" : "text-red-400"}>
-              {item.isActive ? ts("status.active") : ts("status.inactive")}
-            </span>
-          ),
-        },
-      ]}
-    />
+    <div className="space-y-3">
+      <div className="flex justify-end px-1">
+        <MasterDataExportButtons type="REASONS" />
+      </div>
+      <MasterDataCrudPage<ReasonCode, ReasonForm>
+        title={t("page.title")}
+        endpoint="/master-data/reason-codes"
+        searchPlaceholder={t("page.searchPlaceholder")}
+        defaultForm={defaultForm}
+        fields={fields}
+        toForm={(item) => ({
+          code: item.code,
+          reasonType: item.reasonType,
+          description: item.description,
+          isActive: item.isActive,
+        })}
+        columns={[
+          { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
+          { key: "reasonType", label: t("columns.reasonType"), render: (item) => item.reasonType },
+          { key: "description", label: t("columns.description"), render: (item) => item.description },
+          {
+            key: "status",
+            label: t("columns.status"),
+            render: (item) => (
+              <span className={item.isActive ? "text-green-400" : "text-red-400"}>
+                {item.isActive ? ts("status.active") : ts("status.inactive")}
+              </span>
+            ),
+          },
+        ]}
+      />
+    </div>
   );
 }

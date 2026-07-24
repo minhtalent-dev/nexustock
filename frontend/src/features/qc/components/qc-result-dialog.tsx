@@ -1,7 +1,6 @@
 "use client";
 
-import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -11,7 +10,8 @@ import { Switch } from "@/components/ui/switch";
 import api from "@/lib/api";
 import { showSuccess, showApiErrorToast } from "@/lib/toast";
 import { resolveApiError } from "@/lib/api-error-i18n";
-import { Upload, FileText, X } from "lucide-react";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
+import { bindAttachment, type UploadResult } from "@/features/files/api";
 
 interface QcResultDialogProps {
   isOpen: boolean;
@@ -29,50 +29,41 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
 
   const [isPassed, setIsPassed] = useState(true);
   const [metrics, setMetrics] = useState("");
-  const [attachmentRefs, setAttachmentRefs] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [pendingUploads, setPendingUploads] = useState<UploadResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    setUploading(true);
-    try {
-      const res = await api.post<{ url: string }>("/storage/upload", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-      const uploadedUrl = res.data.url;
-      setAttachmentRefs((prev) => (prev ? `${prev},${uploadedUrl}` : uploadedUrl));
-      showSuccess(t("toastUploadSuccess"));
-    } catch (err: unknown) {
-      const { codeLabel, message } = resolveApiError(err, tErrors);
-      showApiErrorToast(codeLabel, message || t("errors.uploadFailed"));
-    } finally {
-      setUploading(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
-    }
-  };
-
-  const removeAttachment = (urlToRemove: string) => {
-    const refs = attachmentRefs.split(",").filter((url) => url !== urlToRemove).join(",");
-    setAttachmentRefs(refs);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post(`/qc/${lotId}/result`, {
+      const attachmentRefsStr = pendingUploads.map(p => p.url).join(",");
+
+      const res = await api.post<{ id: string; message: string }>(`/qc/${lotId}/result`, {
         qcRequestId,
         isPassed,
         metrics: metrics.trim() || undefined,
-        attachmentRefs: attachmentRefs || undefined
+        attachmentRefs: attachmentRefsStr || undefined
       });
+
+      const resultId = res.data.id;
+      if (resultId && pendingUploads.length > 0) {
+        await Promise.all(
+          pendingUploads.map(uploaded =>
+            bindAttachment({
+              entityType: "QC_RESULT",
+              entityId: resultId,
+              url: uploaded.url,
+              provider: uploaded.provider,
+              storageKey: uploaded.storageKey,
+              fileName: uploaded.fileName,
+              contentType: uploaded.contentType,
+              sizeBytes: uploaded.sizeBytes,
+              kind: uploaded.kind,
+            })
+          )
+        );
+      }
+
       showSuccess(t("toastResultSuccess"));
       onSuccess();
       onClose();
@@ -83,8 +74,6 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
       setLoading(false);
     }
   };
-
-  const attachmentsList = attachmentRefs ? attachmentRefs.split(",").filter(Boolean) : [];
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -128,54 +117,12 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
 
             <div className="grid gap-2">
               <Label className="text-xs text-muted-foreground">{t("attachments")}</Label>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="border-dashed border-border text-foreground hover:bg-muted h-9 text-xs gap-2 flex-1"
-                >
-                  <Upload className="h-4 w-4" />
-                  {uploading ? t("uploading") : t("uploadAttachment")}
-                </Button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileChange}
-                  className="hidden"
-                  accept="image/*,application/pdf"
-                />
-              </div>
-
-              {attachmentsList.length > 0 && (
-                <div className="grid grid-cols-2 gap-2 mt-2">
-                  {attachmentsList.map((url, i) => {
-                    const isImg = /\.(jpg|jpeg|png|webp|gif)$/i.test(url);
-                    const filename = url.split("/").pop() || "File";
-                    return (
-                      <div key={i} className="flex items-center justify-between p-2 bg-zinc-800 rounded border border-zinc-750 text-xs">
-                        <div className="flex items-center gap-2 overflow-hidden truncate">
-                          {isImg ? (
-                            <Image src={url} alt="QC preview" width={32} height={32} className="w-8 h-8 rounded object-cover flex-shrink-0" />
-                          ) : (
-                            <FileText className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                          )}
-                          <span className="truncate text-muted-foreground" title={filename}>{filename}</span>
-                        </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => removeAttachment(url)}
-                          className="h-6 w-6 p-0 hover:bg-zinc-700 text-muted-foreground hover:text-foreground rounded"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <EntityAttachmentsPanel
+                entityType="QC_RESULT"
+                entityId={null}
+                pendingUploads={pendingUploads}
+                onPendingChange={setPendingUploads}
+              />
             </div>
           </div>
 

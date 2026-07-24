@@ -11,12 +11,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { CreateShipmentDialog } from "@/features/outbound/components/create-dialog";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 import { CompletePickDialog } from "@/features/outbound/components/pick-dialog";
 import { CompletePackingDialog } from "@/features/outbound/components/pack-dialog";
 import {
   Truck, Plus, ArrowRightLeft,
   RefreshCw, ClipboardCheck, ArrowUpRight
 } from "lucide-react";
+
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 
 interface ShipmentItem {
   id: string;
@@ -175,7 +178,8 @@ export default function OutboundPage() {
           <Truck className="h-6 w-6 text-primary" />
           {t("title")}
         </h1>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <OpsExportButtons type="SHIPMENTS" />
           <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
             <Plus className="h-4 w-4" />
             {t("createShipment")}
@@ -365,6 +369,10 @@ export default function OutboundPage() {
                     </Table>
                   </div>
                 )}
+
+                <div className="border-t border-border pt-4">
+                  <EntityAttachmentsPanel entityType="SHIPMENT" entityId={selectedShipment.id} />
+                </div>
               </div>
             )}
           </CardContent>

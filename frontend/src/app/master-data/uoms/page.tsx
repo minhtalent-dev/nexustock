@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import MasterDataCrudPage, { type CrudField } from "@/features/master-data/master-data-crud";
+import { MasterDataExportButtons } from "@/features/master-data/export-buttons";
 import type { Uom } from "@/types/master-data";
 
 type UomForm = {
@@ -23,26 +24,31 @@ export default function UomsPage() {
   ];
 
   return (
-    <MasterDataCrudPage<Uom, UomForm>
-      title={t("page.title")}
-      endpoint="/master-data/uoms"
-      searchPlaceholder={t("page.searchPlaceholder")}
-      defaultForm={defaultForm}
-      fields={fields}
-      toForm={(item) => ({ code: item.code, name: item.name, isActive: item.isActive })}
-      columns={[
-        { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
-        { key: "name", label: t("columns.name"), render: (item) => item.name },
-        {
-          key: "status",
-          label: t("columns.status"),
-          render: (item) => (
-            <span className={item.isActive ? "text-green-400" : "text-red-400"}>
-              {item.isActive ? ts("status.active") : ts("status.inactive")}
-            </span>
-          ),
-        },
-      ]}
-    />
+    <div className="space-y-3">
+      <div className="flex justify-end px-1">
+        <MasterDataExportButtons type="UOMS" />
+      </div>
+      <MasterDataCrudPage<Uom, UomForm>
+        title={t("page.title")}
+        endpoint="/master-data/uoms"
+        searchPlaceholder={t("page.searchPlaceholder")}
+        defaultForm={defaultForm}
+        fields={fields}
+        toForm={(item) => ({ code: item.code, name: item.name, isActive: item.isActive })}
+        columns={[
+          { key: "code", label: t("columns.code"), render: (item) => <span className="font-mono">{item.code}</span> },
+          { key: "name", label: t("columns.name"), render: (item) => item.name },
+          {
+            key: "status",
+            label: t("columns.status"),
+            render: (item) => (
+              <span className={item.isActive ? "text-green-400" : "text-red-400"}>
+                {item.isActive ? ts("status.active") : ts("status.inactive")}
+              </span>
+            ),
+          },
+        ]}
+      />
+    </div>
   );
 }

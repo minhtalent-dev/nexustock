@@ -22,11 +22,15 @@ export default function BreadcrumbNav() {
     const segmentToKey = (seg: string) =>
       seg.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
     const labelFor = (seg: string) => {
-      try {
-        return t(segmentToKey(seg) as never);
-      } catch {
-        return seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      const key = segmentToKey(seg);
+      if (t.has(key)) {
+        return t(key as never);
       }
+      const isId = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(seg) || /^\d+$/.test(seg);
+      if (isId) {
+        return `#${seg.slice(0, 8)}`;
+      }
+      return seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
     };
 
     if (segments.length === 0) {

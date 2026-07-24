@@ -109,8 +109,7 @@ export default function MobileQcPage() {
   };
 
   return (
-    <PageShell className="gap-6">
-      <MobileShell>
+    <MobileShell>
       <div className="flex flex-col gap-4 p-4 text-foreground">
         <div className="flex items-center gap-2">
           <CheckSquare className="h-5 w-5 text-emerald-500" />
@@ -172,6 +171,5 @@ export default function MobileQcPage() {
         )}
       </div>
     </MobileShell>
-    </PageShell>
   );
 }
