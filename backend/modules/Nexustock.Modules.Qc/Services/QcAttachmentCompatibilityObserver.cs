@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Nexustock.Modules.Files.Services;
 using Nexustock.Modules.Qc.Contexts;
 
@@ -12,16 +13,16 @@ namespace Nexustock.Modules.Qc.Services;
 public sealed class QcAttachmentCompatibilityObserver : IAttachmentLifecycleObserver
 {
     private readonly QcDbContext _qcContext;
-    private readonly IAttachmentService _attachmentService;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<QcAttachmentCompatibilityObserver> _logger;
 
     public QcAttachmentCompatibilityObserver(
         QcDbContext qcContext,
-        IAttachmentService attachmentService,
+        IServiceProvider serviceProvider,
         ILogger<QcAttachmentCompatibilityObserver> logger)
     {
         _qcContext = qcContext;
-        _attachmentService = attachmentService;
+        _serviceProvider = serviceProvider;
         _logger = logger;
     }
 
@@ -45,7 +46,8 @@ public sealed class QcAttachmentCompatibilityObserver : IAttachmentLifecycleObse
                 .FirstOrDefaultAsync(r => r.Id == entityId && r.TenantId == tenantId, ct);
             if (result == null) return;
 
-            var attachments = await _attachmentService.ListAsync("QC_RESULT", entityId, ct);
+            var attachmentService = _serviceProvider.GetRequiredService<IAttachmentService>();
+            var attachments = await attachmentService.ListAsync("QC_RESULT", entityId, ct);
             var refs = string.Join(",", attachments.Select(a => a.ContentUrl));
             
             result.AttachmentRefs = string.IsNullOrWhiteSpace(refs) ? null : refs;

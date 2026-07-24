@@ -1,5 +1,14 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 1.5.1 - Bảo mật và nâng cao trải nghiệm đính kèm tài liệu (Phase 46 & Phase 46A)
+*Ngày cập nhật: 24/07/2026*
+
+### Tính năng mới
+- **Xem trước tài liệu đính kèm an toàn**: Cho phép xem trực tiếp hình ảnh và tài liệu PDF trên giao diện mà không để lộ liên kết tải trực tiếp; cơ chế token xác thực tạm thời bảo vệ tệp tin khỏi việc truy cập trái phép.
+- **Tự động dọn dẹp tệp tin rác**: Tự động phát hiện và dọn dẹp định kỳ các tệp tải lên bị treo hoặc không được liên kết thực tế để tối ưu hóa không gian lưu trữ.
+- **Tích hợp xem tài liệu kiểm định chất lượng (QC)**: Xem nhanh các ảnh chụp, báo cáo PDF kiểm định chất lượng trực tiếp trên giao diện quản lý và thiết bị cầm tay.
+- **Tối ưu hóa giao diện đính kèm**: Cải thiện trải nghiệm tải tệp, hiển thị hàng chờ tải lên trực quan và đồng bộ trạng thái thực tế.
+
 ## Phiên bản 1.5.0 - Kiểm định, tồn kho, điều hướng, pilot và giao diện thống nhất (Phase 34–40)
 *Ngày cập nhật: 23/07/2026*
 
