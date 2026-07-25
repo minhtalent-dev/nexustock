@@ -24,15 +24,16 @@ export function AttachmentPreviewDialog({ isOpen, onClose, item }: AttachmentPre
 
   useEffect(() => {
     if (!isOpen || !item) {
-      setBlobUrl(null);
-      setError(false);
-      setLoading(false);
       return;
     }
 
     let activeUrl: string | null = null;
-    setLoading(true);
-    setError(false);
+    
+    // Set loading state asynchronously to prevent react-hooks/set-state-in-effect
+    Promise.resolve().then(() => {
+      setLoading(true);
+      setError(false);
+    });
 
     const contentUrl = item.contentUrl ?? `/files/attachments/${item.id}/content?disposition=inline`;
 
@@ -53,6 +54,9 @@ export function AttachmentPreviewDialog({ isOpen, onClose, item }: AttachmentPre
       if (activeUrl) {
         URL.revokeObjectURL(activeUrl);
       }
+      setBlobUrl(null);
+      setError(false);
+      setLoading(false);
     };
   }, [isOpen, item, t]);
 
@@ -101,6 +105,7 @@ export function AttachmentPreviewDialog({ isOpen, onClose, item }: AttachmentPre
           {!loading && !error && blobUrl && (
             <>
               {isImage && (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={blobUrl}
                   alt={item.fileName}

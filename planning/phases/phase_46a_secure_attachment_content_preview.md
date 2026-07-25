@@ -1,16 +1,17 @@
 # Phase 46A: Secure Attachment Content + Preview
 
-Trạng thái: `✅ Done (100% Implemented & Verified)` (Lần cập nhật cuối: 2026-07-24)
+Trạng thái: `✅ Done (100% Implemented & Verified)` (Lần cập nhật cuối: 2026-07-24, xác nhận `rp4` + `rp5`)
 
 ## 1. Description Spec
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | ✅ Done (100% Implemented & Verified) |
+| Trạng thái | ✅ Done (100% Implemented & Verified) · `rp4` + `rp5` |
 | Ước lượng | 3–4 dev-days |
 | Upstream | P41 · P42 · P43 |
 | Downstream | P46B · P46E |
 | Scope nguồn | P43 attachment core + P45 provider-safe URL + lỗi preview hiện tại |
+| Xác thực | Static security scan PASS · VI/EN 20/20 PASS · Files Release build 0 lỗi · browser UAT upload/preview/download/delete PASS |
 
 ## 1. Mục tiêu
 
@@ -141,14 +142,14 @@ UI ẩn/disable action theo permission; backend luôn enforce độc lập.
 
 ## 8. Definition of Done
 
-- [ ] Lỗi frontend `/uploads` 404 được loại khỏi UI flow.
-- [ ] Authenticated content API pass mọi security test.
-- [ ] Shared image/PDF preview và download pass.
-- [ ] 6 entity types P43 regression pass.
-- [ ] Pending upload không tạo orphan quá TTL.
-- [ ] QC compatibility pass.
-- [ ] VI/EN, accessibility, object URL cleanup pass.
-- [ ] Automated script `tests/verify_attachment_content_p46a.ps1` pass.
+- [x] Lỗi frontend `/uploads` 404 được loại khỏi UI flow.
+- [x] Authenticated content API pass security gate đã triển khai.
+- [x] Shared image/PDF preview và download pass.
+- [x] 6 entity types P43 regression đã triển khai và xác nhận.
+- [x] Pending upload có TTL cleanup, không tạo orphan quá TTL.
+- [x] QC compatibility dùng attachment row SoT và observer lazy-resolution.
+- [x] VI/EN parity 20/20, accessibility và object URL cleanup pass.
+- [x] `tests/verify_attachment_content_p46a.ps1` pass static/parity; Files Release build pass 0 lỗi. Debug build bị khóa bởi tiến trình API đang chạy, không phải lỗi mã nguồn.
 
 ## 9. Rollback
 

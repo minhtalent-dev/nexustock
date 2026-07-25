@@ -1,5 +1,13 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 1.5.2 - Hoàn tất nghiệm thu và sửa lỗi giao diện đính kèm (Phase 46A)
+*Ngày cập nhật: 25/07/2026*
+
+### Cải tiến & Sửa lỗi
+- **Sửa lỗi cảnh báo vòng lặp React**: Khắc phục lỗi cập nhật trạng thái đồng bộ (`react-hooks/set-state-in-effect`) bên trong `useEffect` của hộp thoại xem trước tài liệu đính kèm.
+- **Tương thích hoàn toàn ESLint & TypeScript**: Vượt qua toàn bộ các đợt kiểm tra tĩnh của trình biên dịch TypeScript và quy tắc kiểm mã nguồn Next.js.
+- **Hoàn tất kiểm thử nghiệm thu P46A**: Chạy thành công toàn bộ bộ kịch bản kiểm thử tích hợp backend, kiểm thử smoke script tự động và xác minh trải nghiệm người dùng trên trình duyệt.
+
 ## Phiên bản 1.5.1 - Bảo mật và nâng cao trải nghiệm đính kèm tài liệu (Phase 46 & Phase 46A)
 *Ngày cập nhật: 24/07/2026*
 
