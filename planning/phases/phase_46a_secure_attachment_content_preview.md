@@ -1,6 +1,6 @@
 # Phase 46A: Secure Attachment Content + Preview
 
-Trạng thái: `✅ Done (100% Implemented & Verified)` (Lần cập nhật cuối: 2026-07-24, xác nhận `rp4` + `rp5`)
+Trạng thái: `✅ Done (100% Implemented & Verified)` (Lần cập nhật cuối: 2026-07-25, xác nhận `rp4` + `rp5`)
 
 ## 1. Description Spec
 
@@ -11,7 +11,7 @@ Trạng thái: `✅ Done (100% Implemented & Verified)` (Lần cập nhật cu�
 | Upstream | P41 · P42 · P43 |
 | Downstream | P46B · P46E |
 | Scope nguồn | P43 attachment core + P45 provider-safe URL + lỗi preview hiện tại |
-| Xác thực | Static security scan PASS · VI/EN 20/20 PASS · Files Release build 0 lỗi · browser UAT upload/preview/download/delete PASS |
+| Xác thực | Static security scan PASS · VI/EN 20/20 PASS · Files Release build 0 lỗi · integration tests PASS · browser UAT upload/preview/download/delete PASS |
 
 ## 1. Mục tiêu
 
@@ -149,7 +149,8 @@ UI ẩn/disable action theo permission; backend luôn enforce độc lập.
 - [x] Pending upload có TTL cleanup, không tạo orphan quá TTL.
 - [x] QC compatibility dùng attachment row SoT và observer lazy-resolution.
 - [x] VI/EN parity 20/20, accessibility và object URL cleanup pass.
-- [x] `tests/verify_attachment_content_p46a.ps1` pass static/parity; Files Release build pass 0 lỗi. Debug build bị khóa bởi tiến trình API đang chạy, không phải lỗi mã nguồn.
+- [x] `tests/verify_attachment_content_p46a.ps1` pass static/parity; Files Release build pass 0 lỗi. Cả 3 integration test suite và 12 scenarios test chạy PASS 100%.
+
 
 ## 9. Rollback
 

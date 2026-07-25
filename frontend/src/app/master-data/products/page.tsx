@@ -6,6 +6,8 @@ import MasterDataCrudPage, { type CrudField, type CrudOption } from "@/features/
 import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 import { bindAttachment, type UploadResult } from "@/features/files/api";
 import { MasterDataExportButtons } from "@/features/master-data/export-buttons";
+import { bindPendingAttachments } from "@/features/files/bind-pending-attachments";
+import { showWarning } from "@/lib/toast";
 import api from "@/lib/api";
 import type { PagedResult, ProductDto, Uom } from "@/types/master-data";
 
@@ -23,7 +25,9 @@ const defaultForm: ProductForm = { code: "", name: "", description: "", barcode:
 export default function ProductsPage() {
   const t = useTranslations("MasterData.products");
   const ts = useTranslations("MasterData.common");
+  const tf = useTranslations("Common.files");
   const [pendingUploads, setPendingUploads] = useState<UploadResult[]>([]);
+  const [pendingOwnerEntityId, setPendingOwnerEntityId] = useState<string | null>(null);
   const [uomOptions, setUomOptions] = useState<CrudOption[]>([]);
 
   useEffect(() => {
@@ -103,21 +107,38 @@ export default function ProductsPage() {
           packages: [],
         })}
         onCreated={async (item) => {
-          for (const u of pendingUploads) {
-            await bindAttachment({
+          setPendingOwnerEntityId(item.id);
+          const res = await bindPendingAttachments(pendingUploads, (u) =>
+            bindAttachment({
               uploadId: u.uploadId,
               entityType: "PRODUCT",
               entityId: item.id,
-            });
+            })
+          );
+          
+          const failedItems = res.failed.map(f => f.item);
+          setPendingUploads(failedItems);
+
+          if (res.failed.length > 0) {
+            showWarning(tf("bindFailed"));
+            return { keepOpen: true };
           }
-          setPendingUploads([]);
+
+          setPendingOwnerEntityId(null);
+          return { keepOpen: false };
         }}
-        renderDialogExtra={({ editing }) => (
+        renderDialogExtra={({ editing, createdItem }) => (
           <EntityAttachmentsPanel
             entityType="PRODUCT"
-            entityId={editing?.id ?? null}
+            entityId={editing?.id ?? createdItem?.id ?? null}
             pendingUploads={pendingUploads}
-            onPendingChange={setPendingUploads}
+            onPendingChange={(items) => {
+              // Chỉ cho phép thay đổi pendingUploads khi chưa tạo item hoặc tạo đúng item đó
+              const ownerId = editing?.id ?? createdItem?.id ?? null;
+              if (!ownerId || ownerId === pendingOwnerEntityId) {
+                setPendingUploads(items);
+              }
+            }}
           />
         )}
         columns={[

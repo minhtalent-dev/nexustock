@@ -48,7 +48,15 @@
       "toastRemoved": "Đã xóa tài liệu đính kèm",
       "loadFailed": "Không thể tải danh sách tài liệu",
       "uploadFailed": "Tải tệp lên thất bại",
-      "deleteFailed": "Xóa tệp thất bại"
+      "deleteFailed": "Xóa tệp thất bại",
+      "confirmDeleteTitle": "Xác nhận xóa tài liệu",
+      "confirmDeleteDescription": "Bạn có chắc chắn muốn xóa tài liệu này? Thao tác này không thể hoàn tác.",
+      "noPermissionRead": "Bạn không có quyền xem tài liệu đính kèm.",
+      "noPermissionUpload": "Quyền tải lên bị hạn chế.",
+      "noPermissionDelete": "Quyền xóa bị hạn chế.",
+      "removePendingBtn": "Gỡ bỏ",
+      "retryBtn": "Thử lại",
+      "bindFailed": "Một số tài liệu chưa được liên kết thành công. Vui lòng bấm lưu để thử lại."
     }
   }
 }

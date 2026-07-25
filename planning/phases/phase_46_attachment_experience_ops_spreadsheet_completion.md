@@ -20,7 +20,8 @@
 | 2026-07-24 | Tạo Phase 46 hợp nhất toàn bộ phạm vi P43–P45 và sửa trải nghiệm attachment |
 | 2026-07-24 | Xác minh root cause URL `/uploads` mở trên frontend origin gây 404 |
 | 2026-07-24 | Tách execution thành P46A–P46E; bổ sung pending cleanup, QC compatibility, permission/column/batch contracts và zero-gap acceptance |
-| 2026-07-24 | `rp4` + `rp5`: xác nhận P46A hoàn thành; static/parity/build Release/browser UAT pass; umbrella P46 tiếp tục mở cho P46B–P46E |
+| 2026-07-25 | `rp4` + `rp5`: xác nhận P46A hoàn thành; static/parity/build Release/browser UAT pass; umbrella P46 tiếp tục mở cho P46B–P46E |
+
 
 ### Quyết định khóa
 
@@ -46,7 +47,8 @@
 
 | Phase | Phạm vi | Gate |
 |---|---|---|
-| [P46A](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) | Auth content API · sửa `/uploads` 404 · preview/download · pending cleanup · QC compat. | ✅ Done — `rp4` + `rp5` xác nhận 2026-07-24; 6 P43 types và browser UAT pass |
+| [P46A](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) | Auth content API · sửa `/uploads` 404 · preview/download · pending cleanup · QC compat. | ✅ Done — `rp4` + `rp5` xác nhận 2026-07-25; 6 P43 types và browser UAT pass |
+
 | [P46B](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46b_thumbnail_full_attachment_coverage.md) | Thumbnail lifecycle + 6 extended handlers/UI | 12/12 attachment types pass |
 | [P46C](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46c_master_spreadsheet_full_ops_exports.md) | Master IE 4 regression + Ops export 12 | 4/4 IE và 12/12 exports pass CSV/XLSX |
 | [P46D](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46d_package_operational_line_imports.md) | Package IE + Inbound/Stocktake line imports | Batch ownership/TTL/concurrency/idempotency pass |

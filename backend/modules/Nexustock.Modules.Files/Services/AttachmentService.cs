@@ -223,6 +223,19 @@ public sealed class AttachmentService : IAttachmentService
         try
         {
             var stream = await provider.OpenReadAsync(row.StorageKey, ct);
+            
+            // Structured event logs cho view/download
+            if (disposition.Equals("inline", StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogInformation("files.attachment.view id={Id} entityType={EntityType} provider={Provider} disposition={Disposition}", 
+                    row.Id, row.EntityType, row.Provider, disposition);
+            }
+            else
+            {
+                _logger.LogInformation("files.attachment.download id={Id} entityType={EntityType} provider={Provider} disposition={Disposition}", 
+                    row.Id, row.EntityType, row.Provider, disposition);
+            }
+
             return new AttachmentContent(stream, row.ContentType, row.FileName);
         }
         catch (FileNotFoundException)
@@ -235,6 +248,7 @@ public sealed class AttachmentService : IAttachmentService
             throw new FileDomainException("STORAGE_PROVIDER_ERROR", "Storage provider read error", 503);
         }
     }
+
 
     private static AttachmentDto ToDto(FileAttachment a)
     {

@@ -27,30 +27,37 @@ export function AttachmentPreviewDialog({ isOpen, onClose, item }: AttachmentPre
       return;
     }
 
+    const controller = new AbortController();
     let activeUrl: string | null = null;
     
     // Set loading state asynchronously to prevent react-hooks/set-state-in-effect
     Promise.resolve().then(() => {
+      if (controller.signal.aborted) return;
       setLoading(true);
       setError(false);
     });
 
     const contentUrl = item.contentUrl ?? `/files/attachments/${item.id}/content?disposition=inline`;
 
-    fetchAttachmentBlob(contentUrl)
+    fetchAttachmentBlob(contentUrl, controller.signal)
       .then((blob) => {
+        if (controller.signal.aborted) return;
         activeUrl = URL.createObjectURL(blob);
         setBlobUrl(activeUrl);
       })
-      .catch(() => {
+      .catch((err) => {
+        // Axios cancellation error has name 'CanceledError' or isCancel
+        if (controller.signal.aborted || (err && err.name === "CanceledError")) return;
         setError(true);
         showError(t("loadContentFailed"));
       })
       .finally(() => {
+        if (controller.signal.aborted) return;
         setLoading(false);
       });
 
     return () => {
+      controller.abort();
       if (activeUrl) {
         URL.revokeObjectURL(activeUrl);
       }

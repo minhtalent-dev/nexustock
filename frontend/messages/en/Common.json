@@ -48,7 +48,15 @@
       "toastRemoved": "Attachment removed",
       "loadFailed": "Failed to load attachments",
       "uploadFailed": "Upload failed",
-      "deleteFailed": "Delete failed"
+      "deleteFailed": "Delete failed",
+      "confirmDeleteTitle": "Confirm document deletion",
+      "confirmDeleteDescription": "Are you sure you want to delete this document? This action cannot be undone.",
+      "noPermissionRead": "You do not have permission to view attachments.",
+      "noPermissionUpload": "Upload permission is restricted.",
+      "noPermissionDelete": "Delete permission is restricted.",
+      "removePendingBtn": "Remove",
+      "retryBtn": "Retry",
+      "bindFailed": "Some documents could not be linked successfully. Please save again to retry."
     }
   }
 }

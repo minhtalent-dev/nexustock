@@ -66,7 +66,7 @@ export async function deleteAttachment(id: string): Promise<void> {
   await api.delete(`/files/attachments/${id}`);
 }
 
-export async function fetchAttachmentBlob(contentUrl: string): Promise<Blob> {
+export async function fetchAttachmentBlob(contentUrl: string, signal?: AbortSignal): Promise<Blob> {
   let path = contentUrl;
   if (path.startsWith("http://") || path.startsWith("https://")) {
     try {
@@ -84,7 +84,7 @@ export async function fetchAttachmentBlob(contentUrl: string): Promise<Blob> {
     path = path.substring(1);
   }
 
-  const res = await api.get<Blob>(path, { responseType: "blob" });
+  const res = await api.get<Blob>(path, { responseType: "blob", signal });
   return res.data;
 }
 

@@ -77,3 +77,11 @@ Sau khi khởi chạy Backend lần đầu, cơ sở dữ liệu sẽ tự độ
 * **Email**: `admin@nexustock.com`
 * **Mật khẩu**: `AdminSecret123!`
 Tài khoản này được gán vai trò `Admin` và sở hữu đầy đủ quyền truy cập hệ thống.
+ 
+## 🧪 Xác thực Phase 46A (Secure Content Preview)
+Để chạy toàn bộ cổng xác thực tự động (Static code inspection, Translation keys parity, Backend integration tests compilation & execution, Frontend lint & typecheck):
+```powershell
+powershell -ExecutionPolicy Bypass -File .\tests\verify_attachment_content_p46a.ps1
+```
+Kết quả kiểm thử cùng log chi tiết sẽ được tự động xuất ra thư mục `planning/evidence/phase_46a_rp45`.
+

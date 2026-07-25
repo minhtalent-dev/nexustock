@@ -44,8 +44,8 @@ interface MasterDataCrudPageProps<TItem extends { id: string; rowVersion: number
   }>;
   toForm: (item: TItem) => TForm;
   filters?: Record<string, string | number | boolean | undefined>;
-  renderDialogExtra?: (ctx: { editing: TItem | null }) => ReactNode;
-  onCreated?: (item: TItem) => void | Promise<void>;
+  renderDialogExtra?: (ctx: { editing: TItem | null; createdItem: TItem | null }) => ReactNode;
+  onCreated?: (item: TItem) => void | Promise<void | { keepOpen?: boolean }>;
   transformPayload?: (form: TForm) => Record<string, unknown>;
 }
 
@@ -70,6 +70,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editing, setEditing] = useState<TItem | null>(null);
+  const [createdItem, setCreatedItem] = useState<TItem | null>(null);
   const [form, setForm] = useState<TForm>(defaultForm);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -93,6 +94,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
 
   const openCreate = () => {
     setEditing(null);
+    setCreatedItem(null);
     const initialForm = { ...defaultForm };
     fields.forEach((field) => {
       if (field.type === "select" && field.required && !initialForm[field.name] && field.options && field.options.length > 0) {
@@ -105,6 +107,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
 
   const openEdit = (item: TItem) => {
     setEditing(item);
+    setCreatedItem(null);
     setForm(toForm(item));
     setIsDialogOpen(true);
   };
@@ -112,6 +115,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
   const closeDialog = () => {
     setIsDialogOpen(false);
     setEditing(null);
+    setCreatedItem(null);
     setForm({ ...defaultForm });
   };
 
@@ -130,13 +134,35 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
       if (editing) {
         await api.put(`${endpoint}/${editing.id}`, payload);
         showSuccess(t("toast.updateSuccess"));
+        closeDialog();
+        await fetchData();
+      } else if (createdItem) {
+        // Retry bind cho item đã tạo trước đó
+        const res = await onCreated?.(createdItem);
+        if (res && res.keepOpen) {
+          // Vẫn giữ dialog mở
+          await fetchData();
+        } else {
+          showSuccess(t("toast.createSuccess"));
+          closeDialog();
+          await fetchData();
+        }
       } else {
         const res = await api.post<TItem>(endpoint, payload);
-        showSuccess(t("toast.createSuccess"));
-        if (res.data) await onCreated?.(res.data);
+        const created = res.data;
+        let bindResult: void | { keepOpen?: boolean } = undefined;
+        if (created) {
+          bindResult = await onCreated?.(created);
+        }
+        if (bindResult && bindResult.keepOpen) {
+          setCreatedItem(created);
+          await fetchData(); // Refresh list phía sau dialog
+        } else {
+          showSuccess(t("toast.createSuccess"));
+          closeDialog();
+          await fetchData();
+        }
       }
-      closeDialog();
-      await fetchData();
     } catch (err: unknown) {
       showError(getHttpErrorMessage(err, t("toast.saveFailed")));
     } finally {
@@ -322,7 +348,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
                 <Button type="submit" disabled={saving}>{saving ? t("actions.saving") : t("actions.save")}</Button>
               </div>
             </form>
-            {renderDialogExtra ? <div className="border-t border-border p-5">{renderDialogExtra({ editing })}</div> : null}
+            {renderDialogExtra ? <div className="border-t border-border p-5">{renderDialogExtra({ editing, createdItem })}</div> : null}
           </div>
         </div>
       )}

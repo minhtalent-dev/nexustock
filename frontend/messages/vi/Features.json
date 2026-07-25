@@ -175,6 +175,8 @@
       "toastHoldSuccess": "Khóa lô hàng thành công.",
       "toastReleaseSuccess": "Giải phóng lô hàng thành công.",
       "toastRejectSuccess": "Từ chối lô hàng thành công.",
+      "bindPartialFailure": "Ghi nhận kết quả QC thành công nhưng một số tệp đính kèm chưa được liên kết. Vui lòng thử lại.",
+      "confirmCloseWithErrors": "Một số tệp đính kèm chưa được lưu. Đóng dialog sẽ hủy liên kết các tệp này (QC result vẫn được giữ). Bạn có muốn đóng?",
       "errors": {
         "uploadFailed": "Lỗi tải tệp lên.",
         "resultFailed": "Lỗi gửi kết quả QC.",

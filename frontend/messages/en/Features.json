@@ -175,6 +175,8 @@
       "toastHoldSuccess": "Lot held successfully.",
       "toastReleaseSuccess": "Lot released successfully.",
       "toastRejectSuccess": "Lot rejected successfully.",
+      "bindPartialFailure": "QC result recorded successfully, but some attachments could not be linked. Please try again.",
+      "confirmCloseWithErrors": "Some attachments are not saved. Closing the dialog will discard these links (QC result is preserved). Do you want to close?",
       "errors": {
         "uploadFailed": "File upload failed.",
         "resultFailed": "Failed to submit QC result.",

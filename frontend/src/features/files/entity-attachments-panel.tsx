@@ -1,10 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+
+
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { showError, showSuccess } from "@/lib/toast";
 import { getHttpErrorMessage } from "@/lib/http-error";
+import { useAuth } from "@/hooks/use-auth";
+import { useConfirmDialog } from "@/lib/confirm-dialog";
 import {
   bindAttachment,
   deleteAttachment,
@@ -28,6 +32,14 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
   const tc = useTranslations("Common.actions");
   const ts = useTranslations("Common.states");
 
+  const { hasPermission } = useAuth();
+  const confirm = useConfirmDialog();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const canRead = hasPermission("files.read");
+  const canUpload = hasPermission("files.upload");
+  const canDelete = hasPermission("files.delete");
+
   const [items, setItems] = useState<AttachmentItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -35,7 +47,7 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    if (!entityId) {
+    if (!entityId || !canRead) {
       setItems([]);
       return;
     }
@@ -47,7 +59,7 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
     } finally {
       setLoading(false);
     }
-  }, [entityId, entityType, t]);
+  }, [entityId, entityType, canRead, t]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -57,7 +69,7 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
   }, [refresh]);
 
   const onFile = async (file: File | null) => {
-    if (!file) return;
+    if (!file || !canUpload) return;
     setUploading(true);
     try {
       const uploaded = await uploadFile(file);
@@ -77,10 +89,23 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
       showError(getHttpErrorMessage(err, t("uploadFailed")));
     } finally {
       setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
   const onDelete = async (id: string) => {
+    if (!canDelete) return;
+    const ok = await confirm({
+      title: t("confirmDeleteTitle"),
+      description: t("confirmDeleteDescription"),
+      confirmText: tc("delete"),
+      cancelText: tc("cancel"),
+      tone: "danger",
+    });
+    if (!ok) return;
+
     try {
       await deleteAttachment(id);
       showSuccess(t("toastRemoved"));
@@ -91,6 +116,7 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
   };
 
   const onDownload = async (item: AttachmentItem) => {
+    if (!canRead) return;
     setDownloadingId(item.id);
     try {
       const downloadUrl = item.downloadUrl ?? `/files/attachments/${item.id}/content?disposition=attachment`;
@@ -102,7 +128,13 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
     }
   };
 
-  const displayPending = !entityId ? pendingUploads : [];
+  if (!canRead) {
+    return (
+      <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive font-sans">
+        {t("noPermissionRead")}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3 rounded-lg border border-border bg-card/40 p-4 font-sans">
@@ -111,18 +143,21 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
           <h3 className="text-sm font-semibold text-foreground">{t("attachments")}</h3>
           <p className="text-xs text-muted-foreground">{t("hint")}</p>
         </div>
-        <label className="inline-flex cursor-pointer">
-          <input
-            type="file"
-            className="hidden"
-            accept=".jpg,.jpeg,.png,.webp,.pdf"
-            disabled={uploading}
-            onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
-          />
-          <span className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
-            {uploading ? t("uploading") : t("uploadBtn")}
-          </span>
-        </label>
+        {canUpload && (
+          <label className="inline-flex cursor-pointer">
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept=".jpg,.jpeg,.png,.webp,.pdf"
+              disabled={uploading}
+              onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
+            />
+            <span className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
+              {uploading ? t("uploading") : t("uploadBtn")}
+            </span>
+          </label>
+        )}
       </div>
 
       {loading ? <p className="text-xs text-muted-foreground">{ts("loading")}</p> : null}
@@ -140,8 +175,14 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
                 >
                   {item.fileName}
                 </button>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {item.kind} · {(item.sizeBytes / 1024).toFixed(1)} KB
+                <div className="text-[10px] text-muted-foreground mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
+                  <span>{item.contentType}</span>
+                  <span>•</span>
+                  <span>{(item.sizeBytes / 1024).toFixed(1)} KB</span>
+                  <span>•</span>
+                  <span>{item.provider}</span>
+                  <span>•</span>
+                  <span>{new Date(item.createdAt).toLocaleString()}</span>
                 </div>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">
@@ -160,19 +201,34 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
                 >
                   {downloadingId === item.id ? t("downloading") : t("downloadBtn")}
                 </Button>
-                <Button type="button" variant="destructive" size="xs" onClick={() => void onDelete(item.id)} className="h-7 text-xs px-2">
-                  {tc("delete")}
-                </Button>
+                {canDelete && (
+                  <Button type="button" variant="destructive" size="xs" onClick={() => void onDelete(item.id)} className="h-7 text-xs px-2">
+                    {tc("delete")}
+                  </Button>
+                )}
               </div>
             </li>
           );
         })}
-        {displayPending.map((item) => (
-          <li key={item.uploadId} className="rounded-md border border-dashed border-border px-3 py-2 text-sm text-muted-foreground">
-            {t("pendingUploads")}: {item.fileName}
+        {pendingUploads.map((item) => (
+          <li key={item.uploadId} className="flex items-center justify-between gap-2 rounded-md border border-dashed border-border px-3 py-2 text-sm bg-card/10 text-muted-foreground">
+            <div className="min-w-0 flex-1 truncate">
+              {t("pendingUploads")}: <span className="font-medium text-foreground">{item.fileName}</span>
+            </div>
+            {canUpload && (
+              <Button
+                type="button"
+                variant="outline"
+                size="xs"
+                onClick={() => onPendingChange?.(pendingUploads.filter(p => p.uploadId !== item.uploadId))}
+                className="h-7 text-xs px-2"
+              >
+                {t("removePendingBtn")}
+              </Button>
+            )}
           </li>
         ))}
-        {!loading && items.length === 0 && displayPending.length === 0 ? (
+        {!loading && items.length === 0 && pendingUploads.length === 0 ? (
           <li className="text-xs text-muted-foreground">{t("noAttachments")}</li>
         ) : null}
       </ul>

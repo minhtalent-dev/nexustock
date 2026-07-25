@@ -8,10 +8,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import api from "@/lib/api";
-import { showSuccess, showApiErrorToast } from "@/lib/toast";
+import { showSuccess, showApiErrorToast, showWarning } from "@/lib/toast";
 import { resolveApiError } from "@/lib/api-error-i18n";
+import { useConfirmDialog } from "@/lib/confirm-dialog";
 import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 import { bindAttachment, type UploadResult } from "@/features/files/api";
+import { bindPendingAttachments } from "@/features/files/bind-pending-attachments";
 
 interface QcResultDialogProps {
   isOpen: boolean;
@@ -26,37 +28,64 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
   const t = useTranslations("Features.qc");
   const tc = useTranslations("Common.actions");
   const tErrors = useTranslations("Errors");
+  const confirm = useConfirmDialog();
 
   const [isPassed, setIsPassed] = useState(true);
   const [metrics, setMetrics] = useState("");
   const [pendingUploads, setPendingUploads] = useState<UploadResult[]>([]);
+  const [createdResultId, setCreatedResultId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const handleClose = async () => {
+    if (createdResultId && pendingUploads.length > 0) {
+      const ok = await confirm({
+        title: t("confirmCloseWithErrors"),
+        description: "",
+        confirmText: tc("confirm"),
+        cancelText: tc("cancel"),
+        tone: "danger",
+      });
+      if (!ok) return;
+    }
+    setCreatedResultId(null);
+    onClose();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await api.post<{ id: string; message: string }>(`/qc/${lotId}/result`, {
-        qcRequestId,
-        isPassed,
-        metrics: metrics.trim() || undefined,
-        attachmentRefs: undefined // Không gửi snapshot url thô từ client nữa
-      });
+      let targetId = createdResultId;
+      if (!targetId) {
+        const res = await api.post<{ id: string; message: string }>(`/qc/${lotId}/result`, {
+          qcRequestId,
+          isPassed,
+          metrics: metrics.trim() || undefined,
+          attachmentRefs: undefined
+        });
+        targetId = res.data.id;
+        setCreatedResultId(targetId);
+      }
 
-      const resultId = res.data.id;
-      if (resultId && pendingUploads.length > 0) {
-        await Promise.all(
-          pendingUploads.map(uploaded =>
-            bindAttachment({
-              uploadId: uploaded.uploadId,
-              entityType: "QC_RESULT",
-              entityId: resultId,
-            })
-          )
+      if (targetId && pendingUploads.length > 0) {
+        const bindRes = await bindPendingAttachments(pendingUploads, (u) =>
+          bindAttachment({
+            uploadId: u.uploadId,
+            entityType: "QC_RESULT",
+            entityId: targetId!,
+          })
         );
+        const failedItems = bindRes.failed.map(f => f.item);
+        setPendingUploads(failedItems);
+
+        if (bindRes.failed.length > 0) {
+          showWarning(t("bindPartialFailure"));
+          return;
+        }
       }
 
       showSuccess(t("toastResultSuccess"));
+      setCreatedResultId(null);
       onSuccess();
       onClose();
     } catch (err: unknown) {
@@ -68,7 +97,7 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-xl bg-card border-border text-foreground font-sans">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
@@ -122,7 +151,7 @@ export function QcResultDialog({ isOpen, onClose, lotId, lotNo, qcRequestId, onS
             <Button
               type="button"
               variant="outline"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={loading}
               className="border-border text-foreground hover:bg-muted h-9 text-xs"
             >
