@@ -194,9 +194,9 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 44 | [Extended Ops Attach + Exports](file:///d:/1_Project/48_Nexustock/planning/phases/phase_44_extended_ops_attachments_exports.md) | Lot/Exception/LPN/Wave/Putaway/XD attach · ops export còn lại. **95% Ready**. |
 | 45 | [Line Import + RF + Package + Thumb](file:///d:/1_Project/48_Nexustock/planning/phases/phase_45_line_import_rf_package_thumb.md) | ASN line · RF camera · Package IE · Thumbnail — **scope chuyển sang P46**. **Superseded**. |
 | 46 | [Attachment Experience + Ops Spreadsheet Completion](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46_attachment_experience_ops_spreadsheet_completion.md) | Umbrella P43–P45 · **100% Scope Mapped** · thực thi qua P46A–P46E. |
-| 46A | [Secure Attachment Content + Preview](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) | Auth content API · sửa `/uploads` 404 · preview/download · pending cleanup · QC compat. **✅ Done (`rp4` + `rp5`, 2026-07-25)**. |
+| 46A | [Secure Attachment Content + Preview](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) | Auth content API · sửa `/uploads` 404 · preview/download · pending cleanup · QC compat. **✅ Done (`rp4` + `rp5`, tái xác nhận 2026-07-27)**. |
 
-| 46B | [Thumbnail + Full Attachment Coverage](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46b_thumbnail_full_attachment_coverage.md) | Thumbnail lifecycle · đủ 12 attachment types · 6 extended UI contexts. **Spec Ready**. |
+| 46B | [Thumbnail + Full Attachment Coverage](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46b_thumbnail_full_attachment_coverage.md) | Thumbnail lifecycle · đủ 12 attachment types · 6 extended UI contexts. **✅ 100% Execution Ready** (`rp3` 2026-07-27; chờ thực thi). |
 | 46C | [Master Spreadsheet + Full Ops Exports](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46c_master_spreadsheet_full_ops_exports.md) | Master IE 4 regression · đủ 12 Ops exports CSV/XLSX. **Spec Ready**. |
 | 46D | [Package + Operational Line Imports](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46d_package_operational_line_imports.md) | Package IE · Inbound ASN · Stocktake count · idempotent batch. **Spec Ready**. |
 | 46E | [RF Camera + Full Acceptance](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46e_rf_full_acceptance.md) | RF camera/file fallback · DBM · evidence · zero-gap P43–P45 close. **Spec Ready**. |
@@ -258,8 +258,8 @@ Dựa trên cấu hình team **1 Developer chính**, áp dụng chính sách buf
 | 44 | Extended Ops Attach + Exports | ↪️ Superseded by P46 | Scope chưa triển khai được hợp nhất vào Phase 46; giữ tài liệu P44 làm lịch sử và traceability. | — | [phase_46](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46_attachment_experience_ops_spreadsheet_completion.md) |
 | 45 | Line Import + RF + Package + Thumb | ↪️ Superseded by P46 | Scope chưa triển khai được hợp nhất vào Phase 46; giữ tài liệu P45 làm lịch sử và traceability. | — | [phase_46](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46_attachment_experience_ops_spreadsheet_completion.md) |
 | 46 | Attachment Experience + Ops Spreadsheet Completion | ⬜ Umbrella | 100% scope P43–P45 được map vào P46A–P46E; chỉ đóng sau P46E evidence gate. | — | [phase_46](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46_attachment_experience_ops_spreadsheet_completion.md) |
-| 46A | Secure Attachment Content + Preview | ✅ Hoàn thành | Content API bảo mật · preview/download · pending cleanup · QC compatibility; static/parity/build Release/browser UAT pass. | 2026-07-24 | [phase_46a](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) · commit `2f99713` |
-| 46B | Thumbnail + Full Attachment Coverage | ⬜ Spec Ready | Thumbnail lifecycle · 12 entity types · 6 extended UI contexts. | — | [phase_46b](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46b_thumbnail_full_attachment_coverage.md) |
+| 46A | Secure Attachment Content + Preview | ✅ Hoàn thành | Content API bảo mật · preview/download · pending cleanup · QC compatibility; strict gate **21/21 PASS**, Release build **0 lỗi/0 cảnh báo**, browser UAT + video pass. | 2026-07-27 | [phase_46a](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) · [evidence](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_46a_rp45) |
+| 46B | Thumbnail + Full Attachment Coverage | ⬜ 100% Ready | `rp3` khóa JPEG 82/256, 3 cột lifecycle, purge retry bền vững, 12 entity types và 6 extended UI contexts; chờ execution/verification. | — | [phase_46b](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46b_thumbnail_full_attachment_coverage.md) |
 | 46C | Master Spreadsheet + Full Ops Exports | ⬜ Spec Ready | Master IE 4 · Ops exports 12 · CSV/XLSX contracts. | — | [phase_46c](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46c_master_spreadsheet_full_ops_exports.md) |
 | 46D | Package + Operational Line Imports | ⬜ Spec Ready | Package IE · Inbound ASN · Stocktake count · idempotency/concurrency. | — | [phase_46d](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46d_package_operational_line_imports.md) |
 | 46E | RF Camera + Full Acceptance | ⬜ Spec Ready | RF camera · automated/browser DBM · zero-gap evidence gate. | — | [phase_46e](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46e_rf_full_acceptance.md) |
@@ -295,7 +295,7 @@ Các deep spec dưới đây **không chặn Phase 01**. Đây là danh sách n�
 | Trước Phase 42 | Storage bulk migrate | ✅ Phase 42 **ĐÓNG** (`rp4`+`rp5` 2026-07-23) | disk 29/0; dbm 18/0; jobs+worker+Admin migrate. |
 | Trước Phase 43 | Core ops attach + master IE | ✅ P43 **100% Ready** (`rp1`+`rp2` 2026-07-23) | F01–F36 · critic 9.5 · 0 blocker · chờ Proceed `/18` |
 | Trước Phase 44 | Extended attach + exports | ⏳ P44 **95% Ready** | Chờ P43 ĐÓNG |
-| Trước Phase 45 | Line/RF/Package/Thumb | ⏳ P45 **95% Ready** | Đóng hết ❌ còn lại; chờ P44 |
+| Trước Phase 45 | Line/RF/Package/Thumb | Scope P45 đã superseded bởi P46; phần thumbnail tại P46B **100% Execution Ready** (`rp3` 2026-07-27) | P46B đã khóa contract; line/RF/Package theo P46D/P46E |
 
 ### Nguyên tắc dùng backlog
 

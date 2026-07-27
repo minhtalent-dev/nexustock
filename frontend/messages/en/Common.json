@@ -56,7 +56,9 @@
       "noPermissionDelete": "Delete permission is restricted.",
       "removePendingBtn": "Remove",
       "retryBtn": "Retry",
-      "bindFailed": "Some documents could not be linked successfully. Please save again to retry."
+      "bindFailed": "Some documents could not be linked successfully. Please save again to retry.",
+      "confirmClosePendingTitle": "Discard attachment retry?",
+      "confirmClosePendingDescription": "The record was created, but some attachments are still pending. Closing now discards this retry session."
     }
   }
 }

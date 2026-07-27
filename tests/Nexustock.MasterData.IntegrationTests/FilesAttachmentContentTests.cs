@@ -185,8 +185,8 @@ public class FilesAttachmentContentTests : IntegrationTestBase
         var response = await Client.GetAsync($"/api/files/attachments/{attachmentId}/content?disposition=inline");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("image/png", response.Content.Headers.ContentType?.ToString());
-        Assert.True(response.Headers.Contains("X-Content-Type-Options"));
-        Assert.Equal("nosniff", response.Headers.GetValues("X-Content-Type-Options").ToString() == "nosniff" ? "nosniff" : "nosniff");
+        Assert.Equal("nosniff", Assert.Single(response.Headers.GetValues("X-Content-Type-Options")));
+        Assert.Contains("private", Assert.Single(response.Headers.GetValues("Cache-Control")), StringComparison.OrdinalIgnoreCase);
         Assert.Equal("inline; filename=test.png", response.Content.Headers.ContentDisposition?.ToString());
     }
 
@@ -344,6 +344,12 @@ public class FilesAttachmentContentTests : IntegrationTestBase
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("image/png", response.Content.Headers.ContentType?.ToString());
         Assert.Equal("inline; filename=test.png", response.Content.Headers.ContentDisposition?.ToString());
+        Assert.Equal(fileBytes, await response.Content.ReadAsByteArrayAsync());
+
+        response = await Client.GetAsync($"/api/files/attachments/{attachmentId}/content?disposition=attachment");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("attachment; filename=test.png", response.Content.Headers.ContentDisposition?.ToString());
+        Assert.Equal(fileBytes, await response.Content.ReadAsByteArrayAsync());
 
         // 5. Delete attachment
         PermissionService.AllowedPermissions.Clear();

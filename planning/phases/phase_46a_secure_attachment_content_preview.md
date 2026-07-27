@@ -1,6 +1,6 @@
 # Phase 46A: Secure Attachment Content + Preview
 
-Trạng thái: `✅ Done (100% Implemented & Verified)` (Lần cập nhật cuối: 2026-07-25, xác nhận `rp4` + `rp5`)
+Trạng thái: `✅ Done (100% Implemented & Verified)` (Lần cập nhật cuối: 2026-07-27, tái xác nhận `rp4` + `rp5`)
 
 ## 1. Description Spec
 
@@ -11,7 +11,7 @@ Trạng thái: `✅ Done (100% Implemented & Verified)` (Lần cập nhật cu�
 | Upstream | P41 · P42 · P43 |
 | Downstream | P46B · P46E |
 | Scope nguồn | P43 attachment core + P45 provider-safe URL + lỗi preview hiện tại |
-| Xác thực | Static security scan PASS · VI/EN 20/20 PASS · Files Release build 0 lỗi · integration tests PASS · browser UAT upload/preview/download/delete PASS |
+| Xác thực | Static security scan PASS · VI/EN parity PASS · frontend lint/TypeScript PASS · Release build 0 lỗi/0 cảnh báo · integration **21/21 PASS** · browser UAT upload/preview/download/delete PASS |
 
 ## 1. Mục tiêu
 
@@ -148,8 +148,16 @@ UI ẩn/disable action theo permission; backend luôn enforce độc lập.
 - [x] 6 entity types P43 regression đã triển khai và xác nhận.
 - [x] Pending upload có TTL cleanup, không tạo orphan quá TTL.
 - [x] QC compatibility dùng attachment row SoT và observer lazy-resolution.
-- [x] VI/EN parity 20/20, accessibility và object URL cleanup pass.
-- [x] `tests/verify_attachment_content_p46a.ps1` pass static/parity; Files Release build pass 0 lỗi. Cả 3 integration test suite và 12 scenarios test chạy PASS 100%.
+- [x] VI/EN parity, accessibility và object URL cleanup pass.
+- [x] `tests/verify_attachment_content_p46a.ps1` strict gate pass: static inspection, hai catalog parity, partial-bind self-test, ESLint, TypeScript, Release build **0 lỗi/0 cảnh báo**, integration **21/21 PASS, 0 skip**.
+- [x] Browser UAT pass luồng Product upload → bind → metadata → preview → download → xác nhận delete → delete; console không có page error/MISSING_MESSAGE trong flow đã ghi nhận.
+
+### Evidence nghiệm thu
+
+- [strict-gate.log](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_46a_rp45/strict-gate.log)
+- [phase46a-tests.trx](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_46a_rp45/phase46a-tests.trx)
+- [phase46a-rp45-uat.webp](file:///d:/1_Project/48_Nexustock/planning/evidence/phase_46a_rp45/phase46a-rp45-uat.webp)
+- Ảnh UAT: `uat_1_login_success.png` → `uat_6_deleted_success.png`.
 
 
 ## 9. Rollback

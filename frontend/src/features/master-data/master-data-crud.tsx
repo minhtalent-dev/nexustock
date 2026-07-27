@@ -63,6 +63,8 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
   transformPayload,
 }: MasterDataCrudPageProps<TItem, TForm>) {
   const t = useTranslations("MasterData.common");
+  const tf = useTranslations("Common.files");
+  const tc = useTranslations("Common.actions");
   const confirm = useConfirmDialog();
   const [data, setData] = useState<PagedResult<TItem> | null>(null);
   const [search, setSearch] = useState("");
@@ -112,11 +114,25 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
     setIsDialogOpen(true);
   };
 
-  const closeDialog = () => {
+  const resetDialog = () => {
     setIsDialogOpen(false);
     setEditing(null);
     setCreatedItem(null);
     setForm({ ...defaultForm });
+  };
+
+  const closeDialog = async () => {
+    if (createdItem) {
+      const ok = await confirm({
+        title: tf("confirmClosePendingTitle"),
+        description: tf("confirmClosePendingDescription"),
+        confirmText: tc("confirm"),
+        cancelText: tc("cancel"),
+        tone: "danger",
+      });
+      if (!ok) return;
+    }
+    resetDialog();
   };
 
   const setFieldValue = (name: keyof TForm & string, value: unknown) => {
@@ -134,7 +150,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
       if (editing) {
         await api.put(`${endpoint}/${editing.id}`, payload);
         showSuccess(t("toast.updateSuccess"));
-        closeDialog();
+        resetDialog();
         await fetchData();
       } else if (createdItem) {
         // Retry bind cho item đã tạo trước đó
@@ -144,7 +160,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
           await fetchData();
         } else {
           showSuccess(t("toast.createSuccess"));
-          closeDialog();
+          resetDialog();
           await fetchData();
         }
       } else {
@@ -159,7 +175,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
           await fetchData(); // Refresh list phía sau dialog
         } else {
           showSuccess(t("toast.createSuccess"));
-          closeDialog();
+          resetDialog();
           await fetchData();
         }
       }
@@ -295,7 +311,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
               <h2 className="font-semibold text-foreground">
                 {editing ? t("dialog.editTitle") : t("dialog.createTitle")}
               </h2>
-              <Button onClick={closeDialog} variant="ghost" size="sm">
+              <Button onClick={() => void closeDialog()} variant="ghost" size="sm">
                 {t("actions.close")}
               </Button>
             </div>
@@ -342,7 +358,7 @@ export default function MasterDataCrudPage<TItem extends { id: string; rowVersio
                 </label>
               ))}
               <div className="md:col-span-2 flex justify-end gap-3 pt-3 border-t border-border">
-                <Button type="button" onClick={closeDialog} variant="outline">
+                <Button type="button" onClick={() => void closeDialog()} variant="outline">
                   {t("actions.cancel")}
                 </Button>
                 <Button type="submit" disabled={saving}>{saving ? t("actions.saving") : t("actions.save")}</Button>

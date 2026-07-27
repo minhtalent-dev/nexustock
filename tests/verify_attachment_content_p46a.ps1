@@ -39,8 +39,11 @@ try {
         if ($panelContent -notlike "*useConfirmDialog*") {
             throw "EntityAttachmentsPanel does not use useConfirmDialog!"
         }
-        if ($panelContent -notlike "*files.delete*" -or $panelContent -notlike "*files.upload*") {
-            throw "EntityAttachmentsPanel is missing files.delete or files.upload permission checks!"
+        if ($panelContent -notlike "*files.delete*" -or $panelContent -notlike "*files.upload*" -or $panelContent -notlike "*files.read*") {
+            throw "EntityAttachmentsPanel is missing files.read, files.delete or files.upload permission checks!"
+        }
+        if ($panelContent -notlike '*fileInputRef.current.value = ""*') {
+            throw "EntityAttachmentsPanel does not reset the file input!"
         }
 
         $previewPath = "frontend\src\features\files\attachment-preview-dialog.tsx"
@@ -62,6 +65,24 @@ try {
         $crudContent = Get-Content $crudPath -Raw
         if ($crudContent -notlike "*createdItem*") {
             throw "MasterDataCrudPage does not use createdItem state!"
+        }
+        if ($crudContent -notlike "*confirmClosePendingTitle*" -or $crudContent -notlike "*if (createdItem)*") {
+            throw "MasterDataCrudPage does not guard closing a pending create session!"
+        }
+
+        $productsPath = "frontend\src\app\master-data\products\page.tsx"
+        $productsContent = Get-Content $productsPath -Raw
+        if ($productsContent -notlike "*pendingOwnerEntityId*" -or $productsContent -notlike "*ownerId === pendingOwnerEntityId*") {
+            throw "ProductsPage does not enforce pending attachment ownership!"
+        }
+
+        $contentTestsPath = "tests\Nexustock.MasterData.IntegrationTests\FilesAttachmentContentTests.cs"
+        $contentTests = Get-Content $contentTestsPath -Raw
+        if ($contentTests -notlike '*Assert.Single(response.Headers.GetValues("X-Content-Type-Options"))*' -or $contentTests -notlike '*response.Headers.GetValues("Cache-Control")*') {
+            throw "Attachment content tests do not assert security header values!"
+        }
+        if ($contentTests -notlike '*disposition=attachment*' -or $contentTests -notlike '*ReadAsByteArrayAsync*') {
+            throw "Attachment content tests do not cover authenticated download bytes!"
         }
 
         $qcReadServicePath = "backend\modules\Nexustock.Modules.Qc\Services\QcAttachmentReadService.cs"
@@ -101,7 +122,7 @@ try {
     # Step 3: Run Frontend Self-Test
     Invoke-Gate "Frontend Partial-Bind Self-Test" {
         Set-Location "frontend"
-        node --experimental-strip-types src/features/files/bind-pending-attachments.self-test.ts
+        node --no-warnings --experimental-strip-types src/features/files/bind-pending-attachments.self-test.ts
         Set-Location ".."
     }
 

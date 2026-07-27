@@ -56,7 +56,9 @@
       "noPermissionDelete": "Quyền xóa bị hạn chế.",
       "removePendingBtn": "Gỡ bỏ",
       "retryBtn": "Thử lại",
-      "bindFailed": "Một số tài liệu chưa được liên kết thành công. Vui lòng bấm lưu để thử lại."
+      "bindFailed": "Một số tài liệu chưa được liên kết thành công. Vui lòng bấm lưu để thử lại.",
+      "confirmClosePendingTitle": "Bỏ phiên thử lại tài liệu?",
+      "confirmClosePendingDescription": "Bản ghi đã được tạo nhưng vẫn còn tài liệu đang chờ liên kết. Đóng lúc này sẽ bỏ phiên thử lại hiện tại."
     }
   }
 }

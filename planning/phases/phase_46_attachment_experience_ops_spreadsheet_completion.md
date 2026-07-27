@@ -21,6 +21,7 @@
 | 2026-07-24 | Xác minh root cause URL `/uploads` mở trên frontend origin gây 404 |
 | 2026-07-24 | Tách execution thành P46A–P46E; bổ sung pending cleanup, QC compatibility, permission/column/batch contracts và zero-gap acceptance |
 | 2026-07-25 | `rp4` + `rp5`: xác nhận P46A hoàn thành; static/parity/build Release/browser UAT pass; umbrella P46 tiếp tục mở cho P46B–P46E |
+| 2026-07-27 | Tái xác nhận P46A: strict gate 21/21, Release build 0 lỗi/0 cảnh báo, UAT video được lưu; umbrella P46 vẫn mở đúng phạm vi |
 
 
 ### Quyết định khóa
@@ -31,7 +32,7 @@
 | Content transport | API có JWT/RBAC/tenant, fetch blob, object URL được revoke |
 | Storage | Đọc qua `IObjectStorageProvider.OpenReadAsync`; không phụ thuộc physical `/uploads` |
 | Download | Content endpoint với `disposition=attachment` |
-| Thumbnail | WebP/JPEG, max edge 256 px; lỗi thumb không fail upload gốc |
+| Thumbnail | JPEG quality 82, max edge 256 px, key `{originalStorageKey}.thumb.jpg`; lỗi thumb không fail upload gốc |
 | PDF thumbnail | Không bắt buộc; browser PDF preview |
 | OCR | Ngoài DoD; stretch only |
 | Spreadsheet | CSV/XLSX, preview/commit, cap 5.000 dòng, idempotent |
@@ -47,9 +48,9 @@
 
 | Phase | Phạm vi | Gate |
 |---|---|---|
-| [P46A](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) | Auth content API · sửa `/uploads` 404 · preview/download · pending cleanup · QC compat. | ✅ Done — `rp4` + `rp5` xác nhận 2026-07-25; 6 P43 types và browser UAT pass |
+| [P46A](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) | Auth content API · sửa `/uploads` 404 · preview/download · pending cleanup · QC compat. | ✅ Done — tái xác nhận `rp4` + `rp5` 2026-07-27; strict gate 21/21, Release build sạch, browser UAT + video pass |
 
-| [P46B](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46b_thumbnail_full_attachment_coverage.md) | Thumbnail lifecycle + 6 extended handlers/UI | 12/12 attachment types pass |
+| [P46B](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46b_thumbnail_full_attachment_coverage.md) | Thumbnail lifecycle + 6 extended handlers/UI | ✅ **100% Execution Ready** (`rp3` 2026-07-27) · chờ thực thi; 12/12 attachment types pass |
 | [P46C](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46c_master_spreadsheet_full_ops_exports.md) | Master IE 4 regression + Ops export 12 | 4/4 IE và 12/12 exports pass CSV/XLSX |
 | [P46D](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46d_package_operational_line_imports.md) | Package IE + Inbound/Stocktake line imports | Batch ownership/TTL/concurrency/idempotency pass |
 | [P46E](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46e_rf_full_acceptance.md) | RF camera + DBM + zero-gap acceptance | P43/P44/P45 traceability 100% có evidence |
@@ -237,32 +238,34 @@ Keys: preview, download, metadata, confirm delete, unsupported preview, load con
 
 ### Database
 
-```sql
-ALTER TABLE file_attachments
-ADD COLUMN thumbnail_key varchar(512) NULL;
-```
-
-Down:
+Migration nullable, backward-compatible theo EF/PostgreSQL naming hiện hành:
 
 ```sql
-ALTER TABLE file_attachments DROP COLUMN thumbnail_key;
+ALTER TABLE files.file_attachments
+  ADD COLUMN "ThumbnailKey" varchar(512) NULL,
+  ADD COLUMN "ObjectsPurgedAt" timestamp with time zone NULL;
+ALTER TABLE files.file_pending_uploads
+  ADD COLUMN "ThumbnailKey" varchar(512) NULL;
 ```
+
+`ObjectsPurgedAt` là durable marker: chỉ set sau khi original và thumbnail required đã delete hoặc NotFound. Down migration drop đúng ba cột sau khi generation/backfill đã tắt và purge backlog bằng 0.
 
 ### `ThumbnailService` **NEW**
 
-- Chỉ JPG/PNG/WebP.
-- Max edge 256 px, giữ aspect ratio.
-- Output WebP/JPEG theo dependency ảnh đã có; nếu chưa có, khóa lựa chọn trước execution.
-- Thumbnail failure chỉ warning, không fail upload gốc.
-- Lưu cùng provider và tenant prefix.
+- Magic-byte allowlist JPG/PNG/WebP; MIME/extension không phải nguồn quyết định.
+- Identify trước decode; chặn >12.000 px mỗi chiều hoặc >40 MP; timeout 10 giây và cancellation xuyên suốt.
+- Auto-orient, resize Max 256 không upscale, strip EXIF/IPTC/XMP/ICC.
+- Output cố định JPEG quality 82, `image/jpeg`; key `{originalStorageKey}.thumb.jpg`.
+- Thumbnail failure chỉ warning, không fail upload gốc; không log key/path/signed URL.
 
 ### Lifecycle
 
-- Upload ảnh tạo thumb.
-- Delete xóa object gốc + thumb.
-- Storage migrate copy/purge cả hai.
-- Backfill có batch limit, không block startup.
-- Tránh orphan khi upload/bind/migrate fail.
+- Pending upload sở hữu original + thumbnail trước bind; attachment nhận ownership trong cùng commit bind.
+- Pending TTL chỉ mark `PURGED` khi cả hai object đã delete/NotFound; lỗi giữ `PENDING` để retry.
+- Soft delete attachment thử purge ngay; worker durable retry các row `DeletedAt != null && ObjectsPurgedAt == null`.
+- Storage migrate copy + verify đủ original/thumbnail required trước provider cutover; source purge xử lý cả hai.
+- Backfill delay 45 giây, batch 50, deterministic key, conditional update, race-safe đa instance.
+- Rollback tắt generation/backfill nhưng giữ purge worker tới khi backlog bằng 0.
 
 ### File validation
 
@@ -576,8 +579,8 @@ EP4/EP5 bắt đầu sau EP1. EP6 có thể phát triển sau EP0 nhưng merge s
 
 | Vai trò | Kết luận | Ngày |
 |---|---|---|
-| JARVIS | **100% Scope Mapped · 95% Execution Ready** — tách P46A–P46E, zero-gap gate khóa tại P46E | 2026-07-24 |
-| FOUNDER | ☐ Proceed P46A `/18` · ☐ Hold · ☐ Yêu cầu chỉnh plan | — |
+| JARVIS | Umbrella **100% Scope Mapped · 95% Execution Ready**; riêng P46B **100% Execution Ready** sau `rp3`; zero-gap gate vẫn khóa tại P46E | 2026-07-27 |
+| FOUNDER | ☑ P46A Done · ☑ P46B plan approved/ready · ☐ Proceed execution P46B · ☐ P46C/P46D · ☐ Hold | 2026-07-27 |
 
 Điểm phải resolve trong EP0 từng child phase: dependency xử lý ảnh, entity/table path thật, permission name thật và mapping cột từ schema thật. Đây là verification trước code, không phải scope mở.
 
