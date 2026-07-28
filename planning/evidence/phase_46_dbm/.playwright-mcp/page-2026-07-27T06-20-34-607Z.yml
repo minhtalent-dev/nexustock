@@ -1,0 +1,4 @@
+- generic [active] [ref=f2e1]:
+  - generic [ref=f2e2]: Đang kiểm tra bảo mật...
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f2e11] [cursor=pointer]

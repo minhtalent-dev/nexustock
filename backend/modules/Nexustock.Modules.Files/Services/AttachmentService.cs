@@ -14,13 +14,15 @@ public interface IAttachmentService
     Task<IReadOnlyList<AttachmentDto>> ListAsync(string entityType, Guid entityId, CancellationToken ct);
     Task DeleteAsync(Guid id, CancellationToken ct);
     Task<AttachmentContent> OpenContentAsync(Guid id, string disposition, CancellationToken ct);
+    Task<AttachmentContent> OpenThumbnailAsync(Guid id, CancellationToken ct);
 }
 
 public sealed class AttachmentService : IAttachmentService
 {
     private static readonly HashSet<string> AllowedEntityTypes = new(StringComparer.OrdinalIgnoreCase)
     {
-        "PRODUCT", "QC_RESULT", "INBOUND_ORDER", "SHIPMENT", "STOCKTAKE", "RMA_REQUEST"
+        "PRODUCT", "QC_RESULT", "INBOUND_ORDER", "SHIPMENT", "STOCKTAKE", "RMA_REQUEST",
+        "LOT", "EXCEPTION", "LPN", "WAVE", "PUTAWAY_PROPOSAL", "CROSS_DOCK_CANDIDATE"
     };
 
     private readonly FilesDbContext _db;
@@ -28,6 +30,7 @@ public sealed class AttachmentService : IAttachmentService
     private readonly InventoryDbContext _inventory;
     private readonly IObjectStorageResolver _resolver;
     private readonly FileStorageService _storage;
+    private readonly IAttachmentObjectPurgeService _purgeService;
     private readonly IEnumerable<IEntityExistenceHandler> _existenceHandlers;
     private readonly IEnumerable<IAttachmentLifecycleObserver> _observers;
     private readonly ILogger<AttachmentService> _logger;
@@ -38,6 +41,7 @@ public sealed class AttachmentService : IAttachmentService
         InventoryDbContext inventory,
         IObjectStorageResolver resolver,
         FileStorageService storage,
+        IAttachmentObjectPurgeService purgeService,
         IEnumerable<IEntityExistenceHandler> existenceHandlers,
         IEnumerable<IAttachmentLifecycleObserver> observers,
         ILogger<AttachmentService> logger)
@@ -47,6 +51,7 @@ public sealed class AttachmentService : IAttachmentService
         _inventory = inventory;
         _resolver = resolver;
         _storage = storage;
+        _purgeService = purgeService;
         _existenceHandlers = existenceHandlers;
         _observers = observers;
         _logger = logger;
@@ -118,7 +123,8 @@ public sealed class AttachmentService : IAttachmentService
             PublicUrl = pending?.LegacyUrl ?? "",
             PendingUploadId = request.UploadId,
             CreatedAt = DateTimeOffset.UtcNow,
-            CreatedBy = user
+            CreatedBy = user,
+            ThumbnailKey = pending?.ThumbnailKey
         };
 
         if (pending != null)
@@ -201,13 +207,11 @@ public sealed class AttachmentService : IAttachmentService
 
         try
         {
-            var settings = await _storage.GetOrCreateSettingsAsync(ct);
-            var provider = _resolver.ResolveByProviderId(row.Provider, settings);
-            await provider.DeleteAsync(row.StorageKey, ct);
+            await _purgeService.PurgeAttachmentFilesAsync(row.Id, ct);
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "files.delete.object_failed id={Id} provider={Provider}", row.Id, row.Provider);
+            _logger.LogWarning(ex, "Synchronous files purge failed for attachment {Id}, deferred to background worker", row.Id);
         }
     }
 
@@ -249,6 +253,42 @@ public sealed class AttachmentService : IAttachmentService
         }
     }
 
+    public async Task<AttachmentContent> OpenThumbnailAsync(Guid id, CancellationToken ct)
+    {
+        var row = await _db.FileAttachments.FirstOrDefaultAsync(a => a.Id == id && a.DeletedAt == null, ct);
+        if (row == null)
+            throw new FileDomainException("ATTACHMENT_NOT_FOUND", "Attachment not found", 404);
+
+        if (string.IsNullOrWhiteSpace(row.ThumbnailKey))
+            throw new FileDomainException("THUMBNAIL_NOT_FOUND", "Thumbnail not found for this attachment", 404);
+
+        var settings = await _storage.GetOrCreateSettingsAsync(ct);
+        var provider = _resolver.ResolveByProviderId(row.Provider, settings);
+
+        try
+        {
+            var stream = await provider.OpenReadAsync(row.ThumbnailKey, ct);
+            _logger.LogInformation("files.attachment.view_thumbnail id={Id} provider={Provider}", row.Id, row.Provider);
+
+            var rawInput = $"{row.Id:N}:{row.ThumbnailKey}";
+            var inputBytes = System.Text.Encoding.UTF8.GetBytes(rawInput);
+            var hashBytes = System.Security.Cryptography.SHA256.HashData(inputBytes);
+            var etag = $"\"{Convert.ToHexString(hashBytes).ToLowerInvariant()}\"";
+
+            var thumbName = Path.GetFileNameWithoutExtension(row.FileName) + ".thumb.jpg";
+            return new AttachmentContent(stream, "image/jpeg", thumbName, etag);
+        }
+        catch (FileNotFoundException)
+        {
+            throw new FileDomainException("ATTACHMENT_CONTENT_NOT_FOUND", "Thumbnail file missing from storage provider", 404);
+        }
+        catch (Exception ex) when (ex is not FileDomainException)
+        {
+            _logger.LogError(ex, "Failed to open read stream for thumbnail {Id}", id);
+            throw new FileDomainException("STORAGE_PROVIDER_ERROR", "Storage provider read error", 503);
+        }
+    }
+
 
     private static AttachmentDto ToDto(FileAttachment a)
     {
@@ -269,8 +309,10 @@ public sealed class AttachmentService : IAttachmentService
             previewKind = "download";
         }
 
+        var thumbnailUrl = !string.IsNullOrWhiteSpace(a.ThumbnailKey) ? $"/api/files/attachments/{a.Id}/thumbnail" : null;
+
         return new AttachmentDto(
             a.Id, a.EntityType, a.EntityId, a.FileName, a.ContentType, a.SizeBytes,
-            a.Kind, a.Provider, previewKind, contentUrl, downloadUrl, null, a.CreatedAt);
+            a.Kind, a.Provider, previewKind, contentUrl, downloadUrl, thumbnailUrl, a.CreatedAt);
     }
 }

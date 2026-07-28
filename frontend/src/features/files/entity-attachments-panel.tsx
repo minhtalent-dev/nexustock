@@ -1,7 +1,5 @@
 "use client";
 
-
-
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -19,6 +17,7 @@ import {
   type UploadResult,
 } from "@/features/files/api";
 import { AttachmentPreviewDialog } from "@/features/files/attachment-preview-dialog";
+import { AttachmentThumbnail } from "./attachment-thumbnail";
 
 type Props = {
   entityType: string;
@@ -167,22 +166,25 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
           const isPreviewable = item.kind === "IMAGE" || item.contentType.startsWith("image/") || item.contentType === "application/pdf" || item.fileName.toLowerCase().endsWith(".pdf");
           return (
             <li key={item.id} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2 text-sm bg-card">
-              <div className="min-w-0 flex-1">
-                <button
-                  type="button"
-                  onClick={() => (isPreviewable ? setPreviewItem(item) : void onDownload(item))}
-                  className="font-medium text-left truncate text-primary hover:underline block max-w-full text-xs sm:text-sm"
-                >
-                  {item.fileName}
-                </button>
-                <div className="text-[10px] text-muted-foreground mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
-                  <span>{item.contentType}</span>
-                  <span>•</span>
-                  <span>{(item.sizeBytes / 1024).toFixed(1)} KB</span>
-                  <span>•</span>
-                  <span>{item.provider}</span>
-                  <span>•</span>
-                  <span>{new Date(item.createdAt).toLocaleString()}</span>
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <AttachmentThumbnail item={item} />
+                <div className="min-w-0 flex-1">
+                  <button
+                    type="button"
+                    onClick={() => (isPreviewable ? setPreviewItem(item) : void onDownload(item))}
+                    className="font-medium text-left truncate text-primary hover:underline block max-w-full text-xs sm:text-sm"
+                  >
+                    {item.fileName}
+                  </button>
+                  <div className="text-[10px] text-muted-foreground mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
+                    <span>{item.contentType}</span>
+                    <span>•</span>
+                    <span>{(item.sizeBytes / 1024).toFixed(1)} KB</span>
+                    <span>•</span>
+                    <span>{item.provider}</span>
+                    <span>•</span>
+                    <span>{new Date(item.createdAt).toLocaleString()}</span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-1 flex-shrink-0">

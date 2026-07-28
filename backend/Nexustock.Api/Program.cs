@@ -241,6 +241,6 @@ static string ToServiceStatus(HealthStatus status) => status switch
     _ => "unhealthy"
 };
 
-internal partial class Program { }
+public partial class Program { }
 // Reload trigger for Phase 46A secure content API
 

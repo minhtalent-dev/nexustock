@@ -17,6 +17,8 @@ public class FileAttachment
     public string? CreatedBy { get; set; }
     public Guid? PendingUploadId { get; set; }
     public DateTimeOffset? DeletedAt { get; set; }
+    public string? ThumbnailKey { get; set; }
+    public DateTimeOffset? ObjectsPurgedAt { get; set; }
 }
 
 public class FileStorageSettings

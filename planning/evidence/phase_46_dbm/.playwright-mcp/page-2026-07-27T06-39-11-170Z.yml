@@ -1,0 +1,181 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e15]:
+    - complementary [ref=f3e16]:
+      - link "Nexustock WMS" [ref=f3e17] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f3e18]: Nexustock
+        - generic [ref=f3e19]: WMS
+      - group "Chế độ nhóm sidebar" [ref=f3e20]:
+        - button "Modules" [ref=f3e21]
+        - button "Vận hành" [ref=f3e22]
+      - generic [ref=f3e23]:
+        - generic [ref=f3e24]:
+          - button "Tổng quan" [ref=f3e25]
+          - navigation [ref=f3e28]:
+            - link "Trang chủ" [ref=f3e29] [cursor=pointer]:
+              - /url: /
+            - link "Sức khỏe hệ thống" [ref=f3e33] [cursor=pointer]:
+              - /url: /health-ui
+        - generic [ref=f3e36]:
+          - button "Vật tư & Đơn vị" [ref=f3e37]
+          - navigation [ref=f3e39]:
+            - link "Vật tư" [ref=f3e40] [cursor=pointer]:
+              - /url: /master-data/products
+            - link "Đơn vị tính" [ref=f3e45] [cursor=pointer]:
+              - /url: /master-data/uoms
+            - link "Nhập dữ liệu" [ref=f3e52] [cursor=pointer]:
+              - /url: /master-data/import
+        - generic [ref=f3e56]:
+          - button "Kho bãi & Kệ" [ref=f3e57]
+          - navigation [ref=f3e59]:
+            - link "Nhà kho" [ref=f3e60] [cursor=pointer]:
+              - /url: /master-data/warehouses
+            - link "Vùng kho" [ref=f3e64] [cursor=pointer]:
+              - /url: /master-data/zones
+            - link "Vị trí kệ" [ref=f3e67] [cursor=pointer]:
+              - /url: /master-data/locations
+        - generic [ref=f3e71]:
+          - button "Đối tác & Nghiệp vụ" [ref=f3e72]
+          - navigation [ref=f3e74]:
+            - link "Đối tác" [ref=f3e75] [cursor=pointer]:
+              - /url: /master-data/partners
+            - link "Mã lý do" [ref=f3e81] [cursor=pointer]:
+              - /url: /master-data/reasons
+        - generic [ref=f3e85]:
+          - button "Nhập kho" [ref=f3e86]
+          - navigation [ref=f3e88]:
+            - link "Phiếu nhập hàng" [ref=f3e89] [cursor=pointer]:
+              - /url: /admin/inbound
+            - link "Tra cứu lô hàng" [ref=f3e93] [cursor=pointer]:
+              - /url: /admin/lots
+            - link "Kiểm định chất lượng" [ref=f3e97] [cursor=pointer]:
+              - /url: /admin/qc
+            - link "Cất hàng tự động" [ref=f3e101] [cursor=pointer]:
+              - /url: /admin/putaway
+        - generic [ref=f3e105]:
+          - button "Xuất kho" [ref=f3e106]
+          - navigation [ref=f3e108]:
+            - link "Đơn xuất kho" [ref=f3e109] [cursor=pointer]:
+              - /url: /admin/outbound
+            - link "Phân bổ giữ hàng" [ref=f3e115] [cursor=pointer]:
+              - /url: /admin/allocation
+            - link "Lấy hàng Wave" [ref=f3e120] [cursor=pointer]:
+              - /url: /admin/waves
+            - link "Cross-docking" [ref=f3e125] [cursor=pointer]:
+              - /url: /admin/cross-docking
+            - link "Trả hàng (RMA)" [ref=f3e128] [cursor=pointer]:
+              - /url: /admin/rma
+        - generic [ref=f3e134]:
+          - button "Tồn kho" [ref=f3e135]
+          - navigation [ref=f3e137]:
+            - link "Hàng tồn kho" [ref=f3e138] [cursor=pointer]:
+              - /url: /admin/inventory
+            - link "Kiểm kê chu kỳ" [ref=f3e142] [cursor=pointer]:
+              - /url: /admin/inventory/stocktakes
+            - link "Sự cố vận hành" [ref=f3e147] [cursor=pointer]:
+              - /url: /admin/exceptions
+            - link "Bổ sung hàng" [ref=f3e150] [cursor=pointer]:
+              - /url: /admin/replenishment
+            - link "Quản lý Pallet (LPN)" [ref=f3e156] [cursor=pointer]:
+              - /url: /admin/lpn
+        - generic [ref=f3e161]:
+          - button "Lao động & Năng suất" [ref=f3e162]
+          - navigation [ref=f3e164]:
+            - link "Labor Dashboard" [ref=f3e165] [cursor=pointer]:
+              - /url: /admin/labor
+            - link "Lượt làm việc (Timer)" [ref=f3e168] [cursor=pointer]:
+              - /url: /admin/labor/sessions
+            - link "Task interleaving" [ref=f3e172] [cursor=pointer]:
+              - /url: /admin/task-interleaving
+        - generic [ref=f3e177]:
+          - button "Tích hợp ERP" [ref=f3e178]
+          - navigation [ref=f3e180]:
+            - link "Nhật ký tích hợp" [ref=f3e181] [cursor=pointer]:
+              - /url: /admin/integrations/messages
+            - link "Ánh xạ dữ liệu" [ref=f3e185] [cursor=pointer]:
+              - /url: /admin/integrations/mappings
+            - link "Import tích hợp" [ref=f3e191] [cursor=pointer]:
+              - /url: /admin/integrations/import
+            - link "Webhook Subscriptions" [ref=f3e195] [cursor=pointer]:
+              - /url: /admin/webhooks/subscriptions
+            - link "Webhook Deliveries" [ref=f3e200] [cursor=pointer]:
+              - /url: /admin/webhooks/deliveries
+        - generic [ref=f3e204]:
+          - button "Hệ thống & Quyền" [ref=f3e205]
+          - navigation [ref=f3e207]:
+            - link "Người dùng" [ref=f3e208] [cursor=pointer]:
+              - /url: /admin/users
+            - link "Vai trò & Quyền" [ref=f3e211] [cursor=pointer]:
+              - /url: /admin/roles
+            - link "Cấu hình luật" [ref=f3e215] [cursor=pointer]:
+              - /url: /admin/rules
+            - link "Nhật ký hệ thống" [ref=f3e217] [cursor=pointer]:
+              - /url: /admin/audit
+            - link "Lưu trữ file" [ref=f3e221] [cursor=pointer]:
+              - /url: /admin/settings/storage
+            - link "Local Agent" [ref=f3e224] [cursor=pointer]:
+              - /url: /admin/local-agent
+            - link "Readiness" [ref=f3e227] [cursor=pointer]:
+              - /url: /admin/readiness
+            - link "Cutover" [ref=f3e231] [cursor=pointer]:
+              - /url: /admin/cutover
+      - button "SA System Administrator" [ref=f3e237]:
+        - generic [ref=f3e238]: SA
+        - generic [ref=f3e240]: System Administrator
+    - main [ref=f3e244]:
+      - navigation "breadcrumb" [ref=f3e245]:
+        - list [ref=f3e246]:
+          - listitem [ref=f3e247]:
+            - link "Trang chủ" [ref=f3e248] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f3e249]
+          - listitem [ref=f3e252]:
+            - link "Admin" [ref=f3e253] [cursor=pointer]:
+              - /url: /admin
+          - listitem [ref=f3e254]
+          - listitem [ref=f3e257]:
+            - link "Lots" [disabled] [ref=f3e258]
+      - generic [ref=f3e259]:
+        - generic [ref=f3e260]:
+          - heading "Tra cứu lô hàng" [level=1] [ref=f3e261]
+          - paragraph [ref=f3e265]: Tra cứu thông tin ngày sản xuất, hạn sử dụng và trạng thái QC của lô hàng thực tế.
+        - generic [ref=f3e268]:
+          - 'textbox "Nhập số lô hàng (ví dụ: LOT-...)" [ref=f3e269]': LOT-UAT-P46B-001
+          - button "Tìm kiếm" [ref=f3e270]
+        - generic [ref=f3e272]:
+          - generic [ref=f3e273]: Kết quả tra cứu
+          - table [ref=f3e277]:
+            - rowgroup [ref=f3e278]:
+              - row [ref=f3e279]:
+                - columnheader "Số lô hàng" [ref=f3e280]
+                - columnheader "Vật tư" [ref=f3e281]
+                - columnheader "Ngày sản xuất" [ref=f3e282]
+                - columnheader "Hạn sử dụng" [ref=f3e283]
+                - columnheader "Trạng thái QC" [ref=f3e284]
+            - rowgroup [ref=f3e285]:
+              - row [ref=f3e286] [cursor=pointer]:
+                - cell [ref=f3e287]:
+                  - link "LOT-UAT-P46B-001" [ref=f3e288]:
+                    - /url: /admin/genealogy/LOT-UAT-P46B-001
+                - cell [ref=f3e289]:
+                  - generic [ref=f3e290]:
+                    - paragraph [ref=f3e291]: Vật tư kiểm thử đính kèm
+                    - paragraph [ref=f3e292]: PROD-001
+                - cell "27/7/2026" [ref=f3e293]
+                - cell "27/7/2027" [ref=f3e294]
+                - cell "Chưa xác định" [ref=f3e295]
+        - generic [ref=f3e297]:
+          - generic [ref=f3e298]:
+            - generic [ref=f3e299]:
+              - heading "Tài liệu đính kèm" [level=3] [ref=f3e300]
+              - paragraph [ref=f3e301]: Ảnh (jpeg/png/webp) và PDF tối đa 10 MB
+            - generic [ref=f3e302] [cursor=pointer]: Tải tệp lên
+          - list [ref=f3e304]:
+            - listitem [ref=f3e305]: Chưa có tài liệu nào
+  - region "Notifications alt+T":
+    - list:
+      - listitem [ref=f3e306]:
+        - button "Close toast" [ref=f3e307] [cursor=pointer]
+        - generic [ref=f3e314]: Entity type is not allowed
+  - button "Open Next.js Dev Tools" [ref=f3e11] [cursor=pointer]
+  - alert [ref=f3e271]

@@ -13,6 +13,7 @@ import { resolveApiError } from "@/lib/api-error-i18n";
 import { getHttpErrorPayload } from "@/lib/http-error";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { MapPin, Search, RefreshCw, Layers, CheckCircle2, XCircle } from "lucide-react";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface InventoryBalance {
   id: string;
@@ -460,6 +461,10 @@ export default function PutawayPage() {
                       </Table>
                     </div>
                   </div>
+
+                  {selectedCandidate && selectedCandidate.proposalId !== "00000000-0000-0000-0000-000000000000" && (
+                    <EntityAttachmentsPanel entityType="PUTAWAY_PROPOSAL" entityId={selectedCandidate.proposalId} />
+                  )}
 
                   {selectedCandidate && (
                     <div className="flex justify-between items-center bg-zinc-850 p-4 border border-border rounded-lg mt-4 bg-background/20">

@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { RefreshCw, ArrowLeft, Play, LayoutGrid, CheckSquare, Layers } from "lucide-react";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface WaveItemDetail {
   id: string;
@@ -217,6 +218,10 @@ export default function WaveDetailPage({ params }: { params: Promise<{ id: strin
           </CardContent>
         </Card>
       </div>
+
+      {wave.id && (
+        <EntityAttachmentsPanel entityType="WAVE" entityId={wave.id} />
+      )}
 
       <div className="flex flex-col gap-4">
         <h2 className="text-base font-bold text-muted-foreground">{t("pickTasksTitle")}</h2>

@@ -33,12 +33,18 @@ public sealed class FileStorageService : IFileStorageService
 
     private readonly FilesDbContext _db;
     private readonly IObjectStorageResolver _resolver;
+    private readonly IThumbnailService _thumbnailService;
     private readonly ILogger<FileStorageService> _logger;
 
-    public FileStorageService(FilesDbContext db, IObjectStorageResolver resolver, ILogger<FileStorageService> logger)
+    public FileStorageService(
+        FilesDbContext db,
+        IObjectStorageResolver resolver,
+        IThumbnailService thumbnailService,
+        ILogger<FileStorageService> logger)
     {
         _db = db;
         _resolver = resolver;
+        _thumbnailService = thumbnailService;
         _logger = logger;
     }
 
@@ -84,13 +90,15 @@ public sealed class FileStorageService : IFileStorageService
         var settings = await GetOrCreateSettingsAsync(ct);
         var provider = _resolver.Resolve(settings);
 
+        byte[] header = new byte[12];
+        int bytesRead = 0;
+
         try
         {
-            await using var stream = file.OpenReadStream();
+            var stream = file.OpenReadStream();
             
             // Magic byte validation tối thiểu cho an toàn upload
-            var header = new byte[8];
-            var bytesRead = await stream.ReadAsync(header.AsMemory(0, 8), ct);
+            bytesRead = await stream.ReadAsync(header.AsMemory(0, 12), ct);
             stream.Position = 0; // Rewind stream sau khi đọc magic-bytes
             
             if (bytesRead >= 3 && ext == ".jpg" && (header[0] != 0xFF || header[1] != 0xD8 || header[2] != 0xFF))
@@ -99,6 +107,8 @@ public sealed class FileStorageService : IFileStorageService
                 throw new FileDomainException("FILE_CONTENT_MISMATCH", "PNG header mismatch");
             if (bytesRead >= 4 && ext == ".pdf" && (header[0] != 0x25 || header[1] != 0x50 || header[2] != 0x44 || header[3] != 0x46)) // %PDF
                 throw new FileDomainException("FILE_CONTENT_MISMATCH", "PDF header mismatch");
+            if (bytesRead >= 12 && ext == ".webp" && (header[0] != 0x52 || header[1] != 0x49 || header[2] != 0x46 || header[3] != 0x46 || header[8] != 0x57 || header[9] != 0x45 || header[10] != 0x42 || header[11] != 0x50))
+                throw new FileDomainException("FILE_CONTENT_MISMATCH", "WebP header mismatch");
 
             await provider.PutAsync(key, stream, contentType, ct);
         }
@@ -110,6 +120,24 @@ public sealed class FileStorageService : IFileStorageService
         {
             _logger.LogError(ex, "Storage put failed for provider {Provider}", provider.ProviderId);
             throw new FileDomainException("STORAGE_PROVIDER_ERROR", "Storage provider error", 503);
+        }
+
+        string? thumbKey = null;
+        if (_thumbnailService.CanGenerate(contentType, header))
+        {
+            try
+            {
+                thumbKey = _thumbnailService.BuildKey(key);
+                var origStream = file.OpenReadStream();
+                using var thumbStream = await _thumbnailService.GenerateAsync(origStream, ct);
+                await provider.PutAsync(thumbKey, thumbStream, "image/jpeg", ct);
+            }
+            catch (Exception ex)
+            {
+                // Thumbnail fail không fail upload gốc
+                _logger.LogWarning(ex, "Thumbnail generation failed for provider {Provider}. Main upload will proceed.", provider.ProviderId);
+                thumbKey = null;
+            }
         }
 
         var url = provider.BuildPublicUrl(key, settings.PublicBaseUrl);
@@ -130,7 +158,8 @@ public sealed class FileStorageService : IFileStorageService
             Status = "PENDING",
             CreatedAt = DateTimeOffset.UtcNow,
             CreatedBy = user,
-            ExpiresAt = expiresAt
+            ExpiresAt = expiresAt,
+            ThumbnailKey = thumbKey
         };
 
         _db.FilePendingUploads.Add(pending);
@@ -142,9 +171,15 @@ public sealed class FileStorageService : IFileStorageService
         {
             var detail = ex.InnerException?.Message ?? ex.Message;
             _logger.LogError(ex, "Failed to persist pending upload record: {Detail}", detail);
+            
+            // Dọn dẹp cả hai file khi lưu DB fail
             try
             {
                 await provider.DeleteAsync(key, ct);
+                if (thumbKey != null)
+                {
+                    await provider.DeleteAsync(thumbKey, ct);
+                }
             }
             catch (Exception deleteEx)
             {

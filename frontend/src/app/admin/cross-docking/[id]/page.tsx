@@ -15,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { ArrowLeft, CheckCircle, XCircle, Clock } from "lucide-react";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface EventDto {
   id: string;
@@ -197,6 +198,10 @@ export default function CandidateDetailPage() {
             <XCircle className="w-4 h-4 mr-1" /> {t("reject")}
           </Button>
         </div>
+      )}
+
+      {candidate.id && (
+        <EntityAttachmentsPanel entityType="CROSS_DOCK_CANDIDATE" entityId={candidate.id} />
       )}
 
       <Card>

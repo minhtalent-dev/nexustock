@@ -62,6 +62,9 @@ namespace Nexustock.Modules.Files.Migrations
                         .HasMaxLength(16)
                         .HasColumnType("character varying(16)");
 
+                    b.Property<DateTimeOffset?>("ObjectsPurgedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid?>("PendingUploadId")
                         .HasColumnType("uuid");
 
@@ -85,6 +88,10 @@ namespace Nexustock.Modules.Files.Migrations
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ThumbnailKey")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
 
                     b.HasKey("Id");
 
@@ -160,6 +167,10 @@ namespace Nexustock.Modules.Files.Migrations
 
                     b.Property<Guid>("TenantId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("ThumbnailKey")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
 
                     b.HasKey("Id");
 

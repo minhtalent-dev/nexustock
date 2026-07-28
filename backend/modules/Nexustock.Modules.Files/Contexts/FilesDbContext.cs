@@ -50,6 +50,8 @@ public class FilesDbContext : DbContext
             entity.Property(e => e.StorageKey).HasMaxLength(512).IsRequired();
             entity.Property(e => e.PublicUrl).HasMaxLength(1024).IsRequired();
             entity.Property(e => e.CreatedBy).HasMaxLength(128);
+            entity.Property(e => e.ThumbnailKey).HasMaxLength(512);
+            entity.Property(e => e.ObjectsPurgedAt);
             entity.HasIndex(e => new { e.TenantId, e.EntityType, e.EntityId })
                 .HasDatabaseName("ix_file_attachments_entity")
                 .HasFilter("\"DeletedAt\" IS NULL");
@@ -67,6 +69,7 @@ public class FilesDbContext : DbContext
             entity.Property(e => e.LegacyUrl).HasMaxLength(1024).IsRequired();
             entity.Property(e => e.Status).HasMaxLength(32).IsRequired();
             entity.Property(e => e.CreatedBy).HasMaxLength(128);
+            entity.Property(e => e.ThumbnailKey).HasMaxLength(512);
             entity.HasIndex(e => new { e.TenantId, e.Status, e.ExpiresAt }).HasDatabaseName("ix_file_pending_uploads_tenant_status_exp");
             entity.HasIndex(e => new { e.TenantId, e.StorageKey }).IsUnique().HasDatabaseName("ix_file_pending_uploads_tenant_key");
             entity.HasIndex(e => e.AttachmentId).IsUnique().HasFilter("\"AttachmentId\" IS NOT NULL").HasDatabaseName("ix_file_pending_uploads_attachment");

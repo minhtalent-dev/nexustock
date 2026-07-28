@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast } from "@/lib/toast";
 import { Search, Tag, AlertCircle } from "lucide-react";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface LotResponseDto {
   id: string;
@@ -35,6 +36,7 @@ export default function LotsPage() {
   const [lots, setLots] = useState<LotResponseDto[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [selectedLotId, setSelectedLotId] = useState<string | null>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +47,7 @@ export default function LotsPage() {
 
     setLoading(true);
     setSearched(true);
+    setSelectedLotId(null);
     try {
       const res = await api.get<LotResponseDto[]>(`/lots/${searchLotNo.trim()}`);
       setLots(res.data);
@@ -130,9 +133,15 @@ export default function LotsPage() {
                   </TableRow>
                 ) : (
                   lots.map((l) => (
-                    <TableRow key={l.id} className="border-b border-border/50 hover:bg-card/20">
+                    <TableRow
+                      key={l.id}
+                      onClick={() => setSelectedLotId(l.id)}
+                      className={`border-b border-border/50 cursor-pointer transition-colors ${
+                        selectedLotId === l.id ? "bg-indigo-500/10 hover:bg-indigo-500/15" : "hover:bg-card/20"
+                      }`}
+                    >
                       <TableCell className="text-foreground font-semibold">
-                        <Link href={`/admin/genealogy/${l.lotNo}`} className="text-indigo-400 hover:underline">
+                        <Link href={`/admin/genealogy/${l.lotNo}`} className="text-indigo-400 hover:underline" onClick={(e) => e.stopPropagation()}>
                           {l.lotNo}
                         </Link>
                       </TableCell>
@@ -156,6 +165,10 @@ export default function LotsPage() {
             </Table>
           </CardContent>
         </Card>
+      )}
+
+      {selectedLotId && (
+        <EntityAttachmentsPanel entityType="LOT" entityId={selectedLotId} />
       )}
     </PageShell>
   );

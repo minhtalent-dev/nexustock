@@ -1,11 +1,21 @@
-using Microsoft.AspNetCore.Mvc.Testing;
+using System;
+using System.Net.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Nexustock.Modules.MasterData.Contexts;
 using Nexustock.Modules.Identity.Contexts;
+using Nexustock.Modules.MasterData.Contexts;
 using Nexustock.Modules.Files.Contexts;
 using Nexustock.Modules.Qc.Contexts;
 using Nexustock.Modules.Inventory.Contexts;
+using Nexustock.Modules.Exceptions.Contexts;
+using Nexustock.Modules.Lpn.Contexts;
+using Nexustock.Modules.Wave.Contexts;
+using Nexustock.Modules.Putaway.Contexts;
+using Nexustock.Modules.CrossDocking.Contexts;
+using Nexustock.Modules.Readiness.Contexts;
+using Xunit;
+
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Nexustock.MasterData.IntegrationTests;
 
@@ -13,19 +23,27 @@ namespace Nexustock.MasterData.IntegrationTests;
 /// Test nền integration test với WebApplicationFactory.
 /// Dùng in-memory database để không phụ thuộc môi trường thật.
 /// </summary>
-public class IntegrationTestBase : IDisposable
+public class IntegrationTestBase : IClassFixture<CustomWebApplicationFactory>, IDisposable
 {
-    private readonly CustomWebApplicationFactory _factory;
+    protected readonly CustomWebApplicationFactory Factory;
     private readonly IServiceScope _scope;
     protected readonly IServiceProvider Services;
     protected readonly HttpClient Client;
     protected readonly FakeUserPermissionService PermissionService;
 
-    protected IntegrationTestBase()
+    private static readonly CustomWebApplicationFactory SharedFactory = new();
+
+    // Constructor cho các class test cũ (không tham số) -> sử dụng SharedFactory
+    protected IntegrationTestBase() : this(SharedFactory)
     {
-        _factory = new CustomWebApplicationFactory();
-        PermissionService = _factory.PermissionService;
-        _scope = _factory.Services.CreateScope();
+    }
+
+    // Constructor cho các class test mới (nhận factory từ xUnit)
+    protected IntegrationTestBase(CustomWebApplicationFactory factory)
+    {
+        Factory = factory;
+        PermissionService = factory.PermissionService;
+        _scope = factory.Services.CreateScope();
         Services = _scope.ServiceProvider;
 
         // Đảm bảo DB được tạo
@@ -36,24 +54,24 @@ public class IntegrationTestBase : IDisposable
         EnsureCreated<InventoryDbContext>();
         EnsureCreated<Nexustock.Modules.Inbound.Contexts.InboundDbContext>();
         EnsureCreated<Nexustock.Modules.Rma.Contexts.RmaDbContext>();
+        EnsureCreated<ExceptionsDbContext>();
+        EnsureCreated<LpnDbContext>();
+        EnsureCreated<WaveDbContext>();
+        EnsureCreated<PutawayDbContext>();
+        EnsureCreated<CrossDockingDbContext>();
+        EnsureCreated<ReadinessDbContext>();
 
-        Client = _factory.CreateClient();
+        Client = factory.CreateClient();
     }
-
-
 
     private void EnsureCreated<TContext>() where TContext : DbContext
     {
         var db = Services.GetRequiredService<TContext>();
-        db.Database.EnsureDeleted();
         db.Database.EnsureCreated();
     }
 
     public void Dispose()
     {
         _scope.Dispose();
-        Client.Dispose();
-        _factory.Dispose();
     }
 }
-

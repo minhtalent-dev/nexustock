@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { RefreshCw, Layers, Plus, ArrowRight, ClipboardList, Settings, X, LogIn } from "lucide-react";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface Lpn {
   id: string;
@@ -474,6 +475,8 @@ export default function LpnPage() {
                   )}
                 </CardContent>
               </Card>
+
+              <EntityAttachmentsPanel entityType="LPN" entityId={selectedLpn.id} />
             </>
           ) : (
             <div className="bg-card border border-border rounded-lg p-16 text-center text-muted-foreground text-xs flex flex-col items-center justify-center gap-2">

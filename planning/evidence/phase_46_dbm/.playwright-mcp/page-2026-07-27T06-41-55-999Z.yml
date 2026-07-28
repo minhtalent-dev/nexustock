@@ -1,0 +1,256 @@
+- generic [ref=f3e1]:
+  - generic [ref=f3e15]:
+    - complementary [ref=f3e16]:
+      - link [ref=f3e343] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f3e18]: Nexustock
+        - generic [ref=f3e19]: WMS
+      - group [ref=f3e344]:
+        - button [ref=f3e345]: Modules
+        - button [ref=f3e346]: Vận hành
+      - generic [ref=f3e23]:
+        - generic [ref=f3e24]:
+          - button [ref=f3e347]:
+            - generic [ref=f3e26]: Tổng quan
+          - navigation [ref=f3e28]:
+            - link [ref=f3e348] [cursor=pointer]:
+              - /url: /
+              - text: Trang chủ
+            - link [ref=f3e349] [cursor=pointer]:
+              - /url: /health-ui
+              - text: Sức khỏe hệ thống
+        - generic [ref=f3e36]:
+          - button [ref=f3e350]:
+            - generic [ref=f3e38]: Vật tư & Đơn vị
+          - navigation [ref=f3e39]:
+            - link [ref=f3e351] [cursor=pointer]:
+              - /url: /master-data/products
+              - text: Vật tư
+            - link [ref=f3e352] [cursor=pointer]:
+              - /url: /master-data/uoms
+              - text: Đơn vị tính
+            - link [ref=f3e353] [cursor=pointer]:
+              - /url: /master-data/import
+              - text: Nhập dữ liệu
+        - generic [ref=f3e56]:
+          - button [ref=f3e354]:
+            - generic [ref=f3e58]: Kho bãi & Kệ
+          - navigation [ref=f3e59]:
+            - link [ref=f3e355] [cursor=pointer]:
+              - /url: /master-data/warehouses
+              - text: Nhà kho
+            - link [ref=f3e356] [cursor=pointer]:
+              - /url: /master-data/zones
+              - text: Vùng kho
+            - link [ref=f3e357] [cursor=pointer]:
+              - /url: /master-data/locations
+              - text: Vị trí kệ
+        - generic [ref=f3e71]:
+          - button [ref=f3e358]:
+            - generic [ref=f3e73]: Đối tác & Nghiệp vụ
+          - navigation [ref=f3e74]:
+            - link [ref=f3e359] [cursor=pointer]:
+              - /url: /master-data/partners
+              - text: Đối tác
+            - link [ref=f3e360] [cursor=pointer]:
+              - /url: /master-data/reasons
+              - text: Mã lý do
+        - generic [ref=f3e85]:
+          - button [ref=f3e361]:
+            - generic [ref=f3e87]: Nhập kho
+          - navigation [ref=f3e88]:
+            - link [ref=f3e362] [cursor=pointer]:
+              - /url: /admin/inbound
+              - text: Phiếu nhập hàng
+            - link [ref=f3e363] [cursor=pointer]:
+              - /url: /admin/lots
+              - text: Tra cứu lô hàng
+            - link [ref=f3e364] [cursor=pointer]:
+              - /url: /admin/qc
+              - text: Kiểm định chất lượng
+            - link [ref=f3e365] [cursor=pointer]:
+              - /url: /admin/putaway
+              - text: Cất hàng tự động
+        - generic [ref=f3e105]:
+          - button [ref=f3e366]:
+            - generic [ref=f3e107]: Xuất kho
+          - navigation [ref=f3e108]:
+            - link [ref=f3e367] [cursor=pointer]:
+              - /url: /admin/outbound
+              - text: Đơn xuất kho
+            - link [ref=f3e368] [cursor=pointer]:
+              - /url: /admin/allocation
+              - text: Phân bổ giữ hàng
+            - link [ref=f3e369] [cursor=pointer]:
+              - /url: /admin/waves
+              - text: Lấy hàng Wave
+            - link [ref=f3e370] [cursor=pointer]:
+              - /url: /admin/cross-docking
+              - text: Cross-docking
+            - link [ref=f3e371] [cursor=pointer]:
+              - /url: /admin/rma
+              - text: Trả hàng (RMA)
+        - generic [ref=f3e134]:
+          - button [ref=f3e372]:
+            - generic [ref=f3e136]: Tồn kho
+          - navigation [ref=f3e137]:
+            - link [ref=f3e373] [cursor=pointer]:
+              - /url: /admin/inventory
+              - text: Hàng tồn kho
+            - link [ref=f3e374] [cursor=pointer]:
+              - /url: /admin/inventory/stocktakes
+              - text: Kiểm kê chu kỳ
+            - link [ref=f3e375] [cursor=pointer]:
+              - /url: /admin/exceptions
+              - text: Sự cố vận hành
+            - link [ref=f3e376] [cursor=pointer]:
+              - /url: /admin/replenishment
+              - text: Bổ sung hàng
+            - link [ref=f3e377] [cursor=pointer]:
+              - /url: /admin/lpn
+              - text: Quản lý Pallet (LPN)
+        - generic [ref=f3e161]:
+          - button [ref=f3e378]:
+            - generic [ref=f3e163]: Lao động & Năng suất
+          - navigation [ref=f3e164]:
+            - link [ref=f3e379] [cursor=pointer]:
+              - /url: /admin/labor
+              - text: Labor Dashboard
+            - link [ref=f3e380] [cursor=pointer]:
+              - /url: /admin/labor/sessions
+              - text: Lượt làm việc (Timer)
+            - link [ref=f3e381] [cursor=pointer]:
+              - /url: /admin/task-interleaving
+              - text: Task interleaving
+        - generic [ref=f3e177]:
+          - button [ref=f3e382]:
+            - generic [ref=f3e179]: Tích hợp ERP
+          - navigation [ref=f3e180]:
+            - link [ref=f3e383] [cursor=pointer]:
+              - /url: /admin/integrations/messages
+              - text: Nhật ký tích hợp
+            - link [ref=f3e384] [cursor=pointer]:
+              - /url: /admin/integrations/mappings
+              - text: Ánh xạ dữ liệu
+            - link [ref=f3e385] [cursor=pointer]:
+              - /url: /admin/integrations/import
+              - text: Import tích hợp
+            - link [ref=f3e386] [cursor=pointer]:
+              - /url: /admin/webhooks/subscriptions
+              - text: Webhook Subscriptions
+            - link [ref=f3e387] [cursor=pointer]:
+              - /url: /admin/webhooks/deliveries
+              - text: Webhook Deliveries
+        - generic [ref=f3e204]:
+          - button [ref=f3e388]:
+            - generic [ref=f3e206]: Hệ thống & Quyền
+          - navigation [ref=f3e207]:
+            - link [ref=f3e389] [cursor=pointer]:
+              - /url: /admin/users
+              - text: Người dùng
+            - link [ref=f3e390] [cursor=pointer]:
+              - /url: /admin/roles
+              - text: Vai trò & Quyền
+            - link [ref=f3e391] [cursor=pointer]:
+              - /url: /admin/rules
+              - text: Cấu hình luật
+            - link [ref=f3e392] [cursor=pointer]:
+              - /url: /admin/audit
+              - text: Nhật ký hệ thống
+            - link [ref=f3e393] [cursor=pointer]:
+              - /url: /admin/settings/storage
+              - text: Lưu trữ file
+            - link [ref=f3e394] [cursor=pointer]:
+              - /url: /admin/local-agent
+              - text: Local Agent
+            - link [ref=f3e395] [cursor=pointer]:
+              - /url: /admin/readiness
+              - text: Readiness
+            - link [ref=f3e396] [cursor=pointer]:
+              - /url: /admin/cutover
+              - text: Cutover
+      - button [ref=f3e397]:
+        - generic [ref=f3e238]: SA
+        - generic [ref=f3e240]: System Administrator
+    - main [ref=f3e244]:
+      - navigation [ref=f3e398]:
+        - list [ref=f3e246]:
+          - listitem [ref=f3e247]:
+            - link [ref=f3e399] [cursor=pointer]:
+              - /url: /
+              - text: Trang chủ
+          - listitem [ref=f3e249]
+          - listitem [ref=f3e252]:
+            - link [ref=f3e400] [cursor=pointer]:
+              - /url: /admin
+              - text: Admin
+          - listitem [ref=f3e254]
+          - listitem [ref=f3e257]:
+            - link [disabled] [ref=f3e401]: Lots
+      - generic [ref=f3e259]:
+        - generic [ref=f3e260]:
+          - heading [level=1] [ref=f3e402]: Tra cứu lô hàng
+          - paragraph [ref=f3e265]: Tra cứu thông tin ngày sản xuất, hạn sử dụng và trạng thái QC của lô hàng thực tế.
+        - generic [ref=f3e268]:
+          - textbox [ref=f3e403]:
+            - /placeholder: "Nhập số lô hàng (ví dụ: LOT-...)"
+            - text: LOT-UAT-P46B-001
+          - button [ref=f3e404]: Tìm kiếm
+        - generic [ref=f3e272]:
+          - generic [ref=f3e273]: Kết quả tra cứu
+          - table [ref=f3e277]:
+            - rowgroup [ref=f3e278]:
+              - row [ref=f3e405]:
+                - columnheader [ref=f3e406]: Số lô hàng
+                - columnheader [ref=f3e407]: Vật tư
+                - columnheader [ref=f3e408]: Ngày sản xuất
+                - columnheader [ref=f3e409]: Hạn sử dụng
+                - columnheader [ref=f3e410]: Trạng thái QC
+            - rowgroup [ref=f3e285]:
+              - row [ref=f3e411] [cursor=pointer]:
+                - cell [ref=f3e412]:
+                  - link [ref=f3e413]:
+                    - /url: /admin/genealogy/LOT-UAT-P46B-001
+                    - text: LOT-UAT-P46B-001
+                - cell [ref=f3e414]:
+                  - generic [ref=f3e290]:
+                    - paragraph [ref=f3e291]: Vật tư kiểm thử đính kèm
+                    - paragraph [ref=f3e292]: PROD-001
+                - cell [ref=f3e415]: 27/7/2026
+                - cell [ref=f3e416]: 27/7/2027
+                - cell [ref=f3e417]:
+                  - generic [ref=f3e296]: Chưa xác định
+        - generic [ref=f3e297]:
+          - generic [ref=f3e298]:
+            - generic [ref=f3e299]:
+              - heading [level=3] [ref=f3e418]: Tài liệu đính kèm
+              - paragraph [ref=f3e301]: Ảnh (jpeg/png/webp) và PDF tối đa 10 MB
+            - generic [ref=f3e302] [cursor=pointer]: Tải tệp lên
+          - list [ref=f3e304]:
+            - listitem [ref=f3e316]:
+              - generic [ref=f3e319]:
+                - button [ref=f3e420]: phase46b_upload_source.png
+                - generic [ref=f3e321]:
+                  - generic [ref=f3e322]: image/png
+                  - generic [ref=f3e323]: •
+                  - generic [ref=f3e324]: 81.4 KB
+                  - generic [ref=f3e325]: •
+                  - generic [ref=f3e326]: LOCAL
+                  - generic [ref=f3e327]: •
+                  - generic [ref=f3e328]: 7/27/2026, 1:41:23 PM
+              - generic [ref=f3e329]:
+                - button [ref=f3e421]: Xem trước
+                - button [ref=f3e422]: Tải xuống
+                - button [ref=f3e423]: Xóa
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f3e11] [cursor=pointer]
+  - alert [ref=f3e271]
+  - dialog [ref=f3e427]:
+    - heading "phase46b_upload_source.png" [level=2] [ref=f3e429]
+    - img "phase46b_upload_source.png" [ref=f3e431]
+    - generic [ref=f3e432]:
+      - generic [ref=f3e433]: IMAGE · 81.4 KB
+      - generic [ref=f3e434]:
+        - button "Tải xuống" [active] [ref=f3e435]
+        - button "Đóng" [ref=f3e436]
+    - button "Close" [ref=f3e437]

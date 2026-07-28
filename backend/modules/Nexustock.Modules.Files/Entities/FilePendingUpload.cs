@@ -18,4 +18,5 @@ public class FilePendingUpload
     public DateTimeOffset? BoundAt { get; set; }
     public DateTimeOffset? PurgedAt { get; set; }
     public Guid? AttachmentId { get; set; }
+    public string? ThumbnailKey { get; set; }
 }

@@ -48,16 +48,57 @@ public sealed class PendingUploadCleanupService : IPendingUploadCleanupService
             try
             {
                 var provider = _resolver.ResolveByProviderId(row.Provider, settings);
-                await provider.DeleteAsync(row.StorageKey, ct);
+                bool originalDeleted = false;
+                bool thumbnailDeleted = false;
 
-                row.Status = "PURGED";
-                row.PurgedAt = DateTimeOffset.UtcNow;
-                cleanedCount++;
+                // 1. Delete original
+                try
+                {
+                    await provider.DeleteAsync(row.StorageKey, ct);
+                    originalDeleted = true;
+                }
+                catch (FileNotFoundException)
+                {
+                    originalDeleted = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to delete original for expired pending upload {Id} via provider {Provider}", row.Id, row.Provider);
+                }
+
+                // 2. Delete thumbnail
+                if (string.IsNullOrWhiteSpace(row.ThumbnailKey))
+                {
+                    thumbnailDeleted = true;
+                }
+                else
+                {
+                    try
+                    {
+                        await provider.DeleteAsync(row.ThumbnailKey, ct);
+                        thumbnailDeleted = true;
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        thumbnailDeleted = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to delete thumbnail for expired pending upload {Id} via provider {Provider}", row.Id, row.Provider);
+                    }
+                }
+
+                // Chỉ mark PURGED nếu cả hai hoàn thành thành công
+                if (originalDeleted && thumbnailDeleted)
+                {
+                    row.Status = "PURGED";
+                    row.PurgedAt = DateTimeOffset.UtcNow;
+                    cleanedCount++;
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to purge storage object for expired pending upload {Id} with provider {Provider}", row.Id, row.Provider);
-                // Keep status PENDING to retry next time
+                _logger.LogError(ex, "Unexpected error purging storage objects for expired pending upload {Id}", row.Id);
             }
         }
 

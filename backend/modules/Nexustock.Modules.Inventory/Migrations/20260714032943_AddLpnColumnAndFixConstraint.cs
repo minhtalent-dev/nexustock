@@ -10,6 +10,12 @@ namespace Nexustock.Modules.Inventory.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<Guid>(
+                name: "lpn_id",
+                table: "inventories",
+                type: "uuid",
+                nullable: true);
+
             // Drop constraint cũ (4 cột, không có lpn_id) nếu còn tồn tại trong DB dev/test.
             migrationBuilder.Sql("DROP INDEX IF EXISTS uq_inventories_tenant_item_lot_location;");
 
@@ -24,6 +30,10 @@ namespace Nexustock.Modules.Inventory.Migrations
         {
             migrationBuilder.DropIndex(
                 name: "uq_inventories_tenant_item_lot_location_lpn",
+                table: "inventories");
+
+            migrationBuilder.DropColumn(
+                name: "lpn_id",
                 table: "inventories");
 
             migrationBuilder.CreateIndex(

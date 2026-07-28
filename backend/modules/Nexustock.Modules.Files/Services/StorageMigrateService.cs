@@ -257,10 +257,13 @@ public sealed class StorageMigrateService : IStorageMigrateService
                 // Chỉ xóa trên source nếu object còn (key giữ nguyên trên target)
                 if (await src.ExistsAsync(att.StorageKey, ct))
                     await src.DeleteAsync(att.StorageKey, ct);
+
+                if (!string.IsNullOrWhiteSpace(att.ThumbnailKey) && await src.ExistsAsync(att.ThumbnailKey, ct))
+                    await src.DeleteAsync(att.ThumbnailKey, ct);
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Purge source failed for {Key}", att.StorageKey);
+                _logger.LogWarning(ex, "Purge source failed for attachment {AttachmentId} in migrate job {JobId} via provider {Provider}", att.Id, job.Id, job.SourceProvider);
             }
         }
 

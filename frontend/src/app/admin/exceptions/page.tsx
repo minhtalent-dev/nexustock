@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { AlertCircle, UserCheck, ShieldAlert, CheckCircle2, History, Loader2 } from "lucide-react";
+import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface ExceptionDto {
   id: string;
@@ -326,6 +327,8 @@ export default function ExceptionsPage() {
                   </Button>
                 </div>
               )}
+
+              <EntityAttachmentsPanel entityType="EXCEPTION" entityId={selectedException.id} />
 
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold flex items-center gap-1.5">

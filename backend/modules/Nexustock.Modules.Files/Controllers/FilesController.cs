@@ -135,6 +135,39 @@ public class FilesController : ControllerBase
         }
     }
 
+    [HttpGet("attachments/{id:guid}/thumbnail")]
+    public async Task<IActionResult> GetThumbnail(Guid id)
+    {
+        if (!await HasAsync("files.read")) return Forbid();
+
+        try
+        {
+            var content = await _attachments.OpenThumbnailAsync(id, HttpContext.RequestAborted);
+            
+            var requestETag = Request.Headers.IfNoneMatch.ToString();
+            if (!string.IsNullOrWhiteSpace(content.ETag) && requestETag == content.ETag)
+            {
+                return StatusCode(304);
+            }
+
+            Response.Headers["X-Content-Type-Options"] = "nosniff";
+            Response.Headers["Cache-Control"] = "private, max-age=3600";
+            if (!string.IsNullOrWhiteSpace(content.ETag))
+            {
+                Response.Headers["ETag"] = content.ETag;
+            }
+
+            return new FileStreamResult(content.Stream, content.ContentType)
+            {
+                EnableRangeProcessing = content.Stream.CanSeek
+            };
+        }
+        catch (FileDomainException ex)
+        {
+            return StatusCode(ex.StatusCode, new { error = ex.ErrorCode, message = ex.Message });
+        }
+    }
+
     [HttpDelete("attachments/{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {

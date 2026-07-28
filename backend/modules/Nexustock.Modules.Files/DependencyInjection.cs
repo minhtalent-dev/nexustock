@@ -28,8 +28,17 @@ public static class DependencyInjection
         services.AddScoped<IFileStorageSettingsService, FileStorageSettingsService>();
         services.AddScoped<IStorageMigrateService, StorageMigrateService>();
         services.AddScoped<IPendingUploadCleanupService, PendingUploadCleanupService>();
+        
+        // Thumbnail & Purge lifecycle DI
+        services.Configure<ThumbnailOptions>(configuration.GetSection("Files:Thumbnails"));
+        services.AddScoped<IThumbnailService, ThumbnailService>();
+        services.AddScoped<IAttachmentObjectPurgeService, AttachmentObjectPurgeService>();
+        services.AddScoped<IThumbnailBackfillService, ThumbnailBackfillService>();
+        
         services.AddHostedService<StorageMigrateWorker>();
         services.AddHostedService<PendingUploadCleanupWorker>();
+        services.AddHostedService<AttachmentObjectPurgeWorker>();
+        services.AddHostedService<ThumbnailBackfillWorker>();
 
         services.Configure<FormOptions>(o =>
         {

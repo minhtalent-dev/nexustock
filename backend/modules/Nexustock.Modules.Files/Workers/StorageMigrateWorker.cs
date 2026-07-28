@@ -211,7 +211,7 @@ public sealed class StorageMigrateWorker : BackgroundService
             job.Id, job.Status, job.SuccessCount, job.SkipCount, job.FailCount);
     }
 
-    private static async Task<MigrateItemResult> MigrateOneAsync(
+    internal static async Task<MigrateItemResult> MigrateOneAsync(
         IObjectStorageResolver resolver,
         FileStorageSettings settings,
         IObjectStorageProvider dst,
@@ -220,7 +220,8 @@ public sealed class StorageMigrateWorker : BackgroundService
         CancellationToken ct)
     {
         if (string.Equals(att.Provider, job.TargetProvider, StringComparison.OrdinalIgnoreCase)
-            && await dst.ExistsAsync(att.StorageKey, ct))
+            && await dst.ExistsAsync(att.StorageKey, ct)
+            && (string.IsNullOrWhiteSpace(att.ThumbnailKey) || await dst.ExistsAsync(att.ThumbnailKey, ct)))
             return MigrateItemResult.Skip;
 
         var sourceId = string.IsNullOrWhiteSpace(job.SourceProvider) ? att.Provider : job.SourceProvider;
@@ -231,6 +232,7 @@ public sealed class StorageMigrateWorker : BackgroundService
             throw new InvalidOperationException("MIGRATE_SOURCE_CONFIG_INVALID");
         }
 
+        // 1. Copy original file
         await using var raw = await src.OpenReadAsync(att.StorageKey, ct);
         Stream content = raw;
         MemoryStream? buffer = null;
@@ -256,10 +258,37 @@ public sealed class StorageMigrateWorker : BackgroundService
         if (!await dst.ExistsAsync(att.StorageKey, ct))
             throw new InvalidOperationException("MIGRATE_VERIFY_FAILED");
 
+        // 2. Copy thumbnail file if exists
+        if (!string.IsNullOrWhiteSpace(att.ThumbnailKey))
+        {
+            await using var thumbRaw = await src.OpenReadAsync(att.ThumbnailKey, ct);
+            Stream thumbContent = thumbRaw;
+            MemoryStream? thumbBuffer = null;
+            if (!thumbRaw.CanSeek)
+            {
+                thumbBuffer = new MemoryStream();
+                await thumbRaw.CopyToAsync(thumbBuffer, ct);
+                thumbBuffer.Position = 0;
+                thumbContent = thumbBuffer;
+            }
+
+            try
+            {
+                await dst.PutAsync(att.ThumbnailKey, thumbContent, "image/jpeg", ct);
+            }
+            finally
+            {
+                if (thumbBuffer != null) await thumbBuffer.DisposeAsync();
+            }
+
+            if (!await dst.ExistsAsync(att.ThumbnailKey, ct))
+                throw new InvalidOperationException("MIGRATE_THUMBNAIL_VERIFY_FAILED");
+        }
+
         att.Provider = job.TargetProvider;
         att.PublicUrl = dst.BuildPublicUrl(att.StorageKey, settings.PublicBaseUrl);
         return MigrateItemResult.Success;
     }
 
-    private enum MigrateItemResult { Success, Skip }
+    internal enum MigrateItemResult { Success, Skip }
 }

@@ -65,8 +65,26 @@ public class ImportsControllerTests : IntegrationTestBase
     [Fact]
     public async Task ExportErrors_Items_ReturnsOnlyInvalidRows()
     {
-        // SP001 xuất hiện 2 lần → dòng thứ hai sẽ bị lỗi trùng mã trong file
-        var csv = "code,name,baseUomCode,trackingPolicy,shelfLifeDays,minStock\nSP001,Test,PCS,NONE,0,10\nSP001,Duplicate,PCS,NONE,0,10\nNEW_EXPORT_OK,Valid,PCS,NONE,0,10";
+        var uniqueCode = $"VALID_{Guid.NewGuid():N}";
+        using (var scope = Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<MasterDataDbContext>();
+            if (!await db.Uoms.AnyAsync(x => x.Code == "PCS"))
+            {
+                db.Uoms.Add(new Nexustock.Modules.MasterData.Entities.Uom
+                {
+                    Id = Guid.NewGuid(),
+                    TenantId = db.CurrentTenantId,
+                    Code = "PCS",
+                    Name = "Piece",
+                    IsActive = true
+                });
+                await db.SaveChangesAsync();
+            }
+        }
+
+        // SP001 xuất hiện 2 lần; dòng thứ hai lỗi trùng mã trong file.
+        var csv = $"code,name,baseUomCode,trackingPolicy,shelfLifeDays,minStock\nSP001,Test,PCS,NONE,0,10\nSP001,Duplicate,PCS,NONE,0,10\n{uniqueCode},Valid,PCS,NONE,0,10";
         using var content = new MultipartFormDataContent();
         var fileContent = new ByteArrayContent(Encoding.UTF8.GetBytes(csv));
         fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("text/csv");
@@ -84,7 +102,7 @@ public class ImportsControllerTests : IntegrationTestBase
 
         var exportedCsv = await exportResponse.Content.ReadAsStringAsync();
         Assert.Contains("SP001", exportedCsv);
-        Assert.DoesNotContain("NEW_EXPORT_OK", exportedCsv);
+        Assert.DoesNotContain(uniqueCode, exportedCsv);
     }
 
     [Fact]

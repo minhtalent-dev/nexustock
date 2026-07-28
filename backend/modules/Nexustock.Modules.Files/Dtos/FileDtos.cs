@@ -33,7 +33,8 @@ public record AttachmentDto(
 public record AttachmentContent(
     Stream Stream,
     string ContentType,
-    string FileName);
+    string FileName,
+    string? ETag = null);
 
 public record ProviderStatusDto(string Id, string Label, bool Configured);
 

@@ -4,120 +4,211 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | ⬜ Spec Ready |
+| Trạng thái | ✅ **100% Ready** · DoR met (`rp1` 2026-07-28) |
 | Ước lượng | 2–3 dev-days |
-| Upstream | P43; P46A cho shared download utility |
-| Downstream | P46E |
+| Upstream | P43; P46A; P46B **ĐÓNG** |
+| Downstream | P46D; P46E |
 | Scope nguồn | P43 Master IE 4 + Ops exports 4; P44 Ops exports 8 |
+| Quyết định khóa | Header `X-Export-Truncated`, Cap 5.000 rows, shared `OpsExportButtons`, `ops.export` + `master_data.*` permissions |
+| Execution plan | [implementation_plan.md](file:///C:/Users/mes/.gemini/antigravity-ide/brain/1267c81d-0c4e-4711-94e6-b361e1c233a4/implementation_plan.md) |
+
+### Changelog plan
+
+| Ngày | Thay đổi |
+|---|---|
+| 2026-07-24 | Khởi tạo child spec P46C thuộc umbrella Phase 46 |
+| 2026-07-28 | `rp1`: Rà soát mã nguồn, phát hiện 8/12 Ops export types chưa có backend handler, 8/12 UI pages chưa mount `OpsExportButtons`, thiếu `[Authorize]` trên `ImportsController`; nâng đặc tả lên 100% Execution-Ready |
+| 2026-07-28 | `rp2`: Reindex hàm/controller/UI, lập kế hoạch thực thi chi tiết chuẩn 100% qua `[17-auto-plan]` cho 12 Ops Exports và remediation Master IE |
+
+> [!IMPORTANT]
+> Không còn câu hỏi mở. Child spec này là SoT phạm vi P46C; `implementation_plan.md` trong brain là SoT thứ tự triển khai file-level.
+
+---
 
 ## 1. Mục tiêu
 
-Khóa và xác thực 100% spreadsheet/export scope P43–P44: 4 Master types preview/commit/export/roundtrip và đủ 12 Ops export types với schema cột ổn định.
+Khóa và xác thực 100% spreadsheet/export scope P43–P44:
+1. **Master Data Import/Export (4 types):** UOMS, WAREHOUSES, ZONES, REASONS với preview, commit, error CSV, export CSV/XLSX và roundtrip verification.
+2. **Ops Exports (12 types):** Đủ 12 danh mục vận hành với schema cột chuẩn hóa từ entity thật, chống N+1, giới hạn 5.000 dòng, bảo mật chống CSV formula injection, phân quyền backend và tenant isolation.
 
-## 2. P43 Master Import/Export Regression
+---
 
-| Type | Columns bắt buộc |
-|---|---|
-| `UOMS` | `code,name,description,isActive,errorMessage` |
-| `WAREHOUSES` | `code,name,address,isActive,errorMessage` |
-| `ZONES` | `warehouseCode,code,name,zoneType,isActive,errorMessage` |
-| `REASONS` | `code,name,reasonType,description,isActive,errorMessage` |
+## 2. P43 Master Import/Export Regression & Remediation
 
-Mỗi type phải pass:
+### Remediation P0 (Security & Permission)
 
-1. Download template CSV/XLSX.
-2. Preview valid file, không ghi DB.
-3. Preview invalid file, trả row/column/message.
-4. Download error CSV UTF-8 BOM.
-5. Commit transaction.
-6. Recommit cùng batch idempotent/409 theo contract hiện có.
-7. Export CSV/XLSX.
-8. Export → preview import roundtrip.
-9. Tenant isolation và permission.
+- **`ImportsController`**: Thêm `[Authorize]` và kiểm tra quyền `master_data.import` đối với Preview/Commit/Errors.
+- **`ExportsController`**: Đảm bảo kiểm tra quyền `master_data.export` cho tất cả các loại Master data export (`ITEMS`, `LOCATIONS`, `PARTNERS`, `UOMS`, `WAREHOUSES`, `ZONES`, `REASONS`).
+- **Batch Isolation**: Gắn `TenantId` bắt buộc trên `ImportBatch` và query predicate `x.TenantId == tenantId`.
 
-Không đổi contract P43 đã chạy nếu regression xanh; chỉ sửa gap.
+### Master Data Canonical Contracts
 
-## 3. Full Ops Export Types
+| Type | Data Columns bắt buộc | Rules & Validation |
+|---|---|---|
+| `UOMS` | `code,name,isActive` | Code unique, max 20. Name max 100. |
+| `WAREHOUSES` | `code,name,description,isActive` | Code unique, max 50. Name max 150. |
+| `ZONES` | `warehouseCode,code,name,zoneType` | WhCode tồn tại. Zone Code unique per Wh. ZoneType enum. |
+| `REASONS` | `code,reasonType,description,isActive` | Code unique. ReasonType enum. |
 
-### P43 types
+> **Ghi chú:** Đã loại bỏ cột `errorMessage` khỏi file clean Export. Cột `errorMessage` chỉ xuất hiện ở cột cuối của Template mẫu và File Error CSV.
 
-`INBOUND_ORDERS`, `SHIPMENTS`, `STOCKTAKES`, `RMA`.
+---
 
-### P44 types
+## 3. Full Ops Export Types (12 Types)
 
-`LOTS`, `EXCEPTIONS`, `LPNS`, `INVENTORY_BALANCES`, `WAVES`, `PUTAWAY_PROPOSALS`, `CROSS_DOCK_CANDIDATES`, `REPLENISHMENT_TASKS`.
+### Nhóm P43 Baseline (4 types)
+- `INBOUND_ORDERS`: Đơn nhập kho.
+- `SHIPMENTS`: Đơn xuất kho.
+- `STOCKTAKES`: Đợt kiểm kê.
+- `RMA`: Yêu cầu hàng trả về.
 
-## 4. Column Contracts
+### Nhóm P44 Extended (8 types)
+- `LOTS`: Quản lý lô hàng & hạn dùng.
+- `EXCEPTIONS`: Ngoại lệ vận hành.
+- `LPNS`: Mã Pallet/Thùng LPN.
+- `INVENTORY_BALANCES`: Tồn kho theo vị trí & lô.
+- `WAVES`: Đợt lấy hàng (Wave picking).
+- `PUTAWAY_PROPOSALS`: Đề xuất cất hàng.
+- `CROSS_DOCK_CANDIDATES`: Ứng viên chuyển tiếp trực tiếp.
+- `REPLENISHMENT_TASKS`: Nhiệm vụ bổ sung tồn kho.
 
-| Type | Columns tối thiểu, thứ tự ổn định |
-|---|---|
-| INBOUND_ORDERS | orderNo,status,supplierCode,expectedDate,warehouseCode,createdAt |
-| SHIPMENTS | shipmentNo,status,customerCode,warehouseCode,plannedShipDate,createdAt |
-| STOCKTAKES | stocktakeNo,status,warehouseCode,scheduledAt,completedAt |
-| RMA | rmaNo,status,customerCode,reasonCode,createdAt |
-| LOTS | lotNo,sku,productName,expiryDate,status,quantity,warehouseCode |
-| EXCEPTIONS | exceptionNo,type,severity,status,entityType,entityRef,createdAt |
-| LPNS | lpnCode,status,locationCode,warehouseCode,itemCount,updatedAt |
-| INVENTORY_BALANCES | warehouseCode,locationCode,sku,lotNo,onHand,allocated,available,uomCode |
-| WAVES | waveNo,status,priority,orderCount,lineCount,createdAt,releasedAt |
-| PUTAWAY_PROPOSALS | proposalNo,status,lpnCode,fromLocation,toLocation,sku,quantity,createdAt |
-| CROSS_DOCK_CANDIDATES | candidateNo,status,inboundRef,outboundRef,sku,quantity,createdAt |
-| REPLENISHMENT_TASKS | taskNo,status,priority,sku,fromLocation,toLocation,quantity,createdAt |
+---
 
-EP0 phải map tên field thật. Không bịa dữ liệu; cột không có nguồn thật phải được sửa contract trước implementation.
+## 4. Column Contracts (12 Ops Export Schema)
 
-## 5. Export Rules
+Các cột xuất dữ liệu được ánh xạ 1:1 từ thuộc tính Entity thực tế trong backend (không sử dụng cột giả lập không có trong DB):
 
-- `ops.export` backend-enforced.
-- Tenant filter mọi query.
-- Cap 5.000; metadata báo truncated nếu đạt cap.
-- `AsNoTracking` + projection; không N+1.
-- CSV UTF-8 BOM, RFC4180 escaping.
-- Neutralize formula prefix `=`, `+`, `-`, `@`, tab, CR.
-- XLSX typed cells; không công thức từ user data.
-- Date/time UTC/ISO contract thống nhất.
-- Filename sanitize + type + timestamp.
-- Invalid type: 400 `OPS_EXPORT_TYPE_INVALID`.
+| Type | Cột xuất dữ liệu (Thứ tự cố định) | Nguồn Entity/DbContext |
+|---|---|---|
+| `INBOUND_ORDERS` | `orderNo,status,partnerId,createdAt,createdBy` | `InboundDbContext.InboundOrders` |
+| `SHIPMENTS` | `shipmentNo,status,partnerId,createdAt,createdBy` | `InventoryDbContext.Shipments` |
+| `STOCKTAKES` | `stocktakeNo,status,totalVarianceAmount,createdAt,createdBy` | `InventoryDbContext.Stocktakes` |
+| `RMA` | `rmaNo,status,customerId,referenceNo,createdAt,createdBy` | `RmaDbContext.RmaRequests` |
+| `LOTS` | `lotNo,productId,quantity,status,expiryDate,manufactureDate,createdAt` | `InventoryDbContext.Lots` |
+| `EXCEPTIONS` | `id,code,exceptionType,severity,status,entityType,entityId,createdAt` | `ExceptionsDbContext.OperationalBusinessExceptions` |
+| `LPNS` | `lpnCode,status,locationId,warehouseId,createdAt,updatedAt` | `LpnDbContext.Lpns` |
+| `INVENTORY_BALANCES` | `productId,locationId,warehouseId,lotId,quantity,allocatedQuantity,updatedAt` | `InventoryDbContext.Inventories` |
+| `WAVES` | `id,status,createdAt` | `WaveDbContext.PickingWaves` |
+| `PUTAWAY_PROPOSALS` | `id,status,lpnCode,fromLocationId,toLocationId,productId,quantity,createdAt` | `PutawayDbContext.PutawayProposals` |
+| `CROSS_DOCK_CANDIDATES` | `id,status,inboundOrderId,outboundShipmentId,productId,quantity,createdAt` | `CrossDockingDbContext.CrossDockCandidates` |
+| `REPLENISHMENT_TASKS` | `id,status,priority,productId,fromLocationId,toLocationId,quantity,createdAt` | `ReplenishmentDbContext.ReplenishmentTasks` |
 
-## 6. Frontend
+---
 
-- Shared `OpsExportButtons` trên đủ 12 list/detail contexts đã khóa.
-- CSV/XLSX action theo permission.
-- Loading/disable double click/error toast.
-- Download blob, revoke URL.
-- VI/EN parity.
+## 5. Export Rules & Guardrails
+
+1. **Phân quyền Backend:** `ops.export` được kiểm tra chặt chẽ trên endpoint `GET /api/ops/exports`. Người dùng thiếu quyền nhận HTTP `403 Forbidden`.
+2. **Tenant Isolation:** Mọi query export bắt buộc lọc `TenantId` của User đăng nhập.
+3. **Giới hạn dòng (Cap 5.000):**
+   - Query sử dụng `.Take(5001)`.
+   - Nếu kết quả > 5.000 dòng: Chỉ ghi 5.000 dòng đầu vào file xuất và thêm HTTP Response Header: `X-Export-Truncated: true`. Dưới hoặc bằng 5.000 dòng trả `X-Export-Truncated: false`.
+   - Không trả lỗi HTTP 400 gây gián đoạn trải nghiệm người dùng.
+4. **Hiệu năng Query:**
+   - Sử dụng `.AsNoTracking()` và Projection `.Select(...)` server-side.
+   - Sắp xếp cố định (`OrderBy` + Primary Key tie-breaker) đảm bảo tính nhất quán giữa các lần xuất.
+5. **An toàn Mã độc & Công thức (CSV/XLSX Security):**
+   - **CSV:** UTF-8 BOM (`EF BB BF`), chuẩn hóa RFC4180. Neutralize các ô bắt đầu bằng `=`, `+`, `-`, `@`, tab (`\t`), CR (`\r`) bằng cách chèn dấu nháy đơn `'`.
+   - **XLSX:** Ghi kiểu dữ liệu ô rõ ràng (String, Numeric, DateTime), không sinh công thức tính toán từ dữ liệu người dùng.
+6. **Đặt tên File:**
+   - Format: `{fileBase}_{yyyyMMddHHmmss}.{ext}` (Ví dụ: `inventory_balances_20260728104500.xlsx`).
+
+---
+
+## 6. Frontend Wiring (12 UI Contexts)
+
+Cập nhật component dùng chung `@/components/ops-export-buttons.tsx` hỗ trợ đủ 12 `OpsExportType` và mount tại 12 trang quản trị:
+
+| Trang UI (`frontend/src/app/admin/`) | Export Type | Vị trí mount |
+|---|---|---|
+| `inbound/page.tsx` | `INBOUND_ORDERS` | Header Action Toolbar |
+| `outbound/page.tsx` | `SHIPMENTS` | Header Action Toolbar |
+| `inventory/stocktakes/page.tsx` | `STOCKTAKES` | Header Action Toolbar |
+| `rma/page.tsx` | `RMA` | Header Action Toolbar |
+| `lots/page.tsx` | `LOTS` | Header Action Toolbar |
+| `exceptions/page.tsx` | `EXCEPTIONS` | Header Action Toolbar |
+| `lpn/page.tsx` | `LPNS` | Header Action Toolbar |
+| `inventory/page.tsx` | `INVENTORY_BALANCES` | Header Action Toolbar |
+| `waves/page.tsx` | `WAVES` | Header Action Toolbar |
+| `putaway/page.tsx` | `PUTAWAY_PROPOSALS` | Header Action Toolbar |
+| `cross-docking/page.tsx` | `CROSS_DOCK_CANDIDATES` | Header Action Toolbar |
+| `replenishment/page.tsx` | `REPLENISHMENT_TASKS` | Header Action Toolbar |
+
+### UX Standards
+- Nút bấm CSV/XLSX hỗ trợ trạng thái loading, disable khi đang tải để chống click kép.
+- Tải file dạng Blob thông qua `api.get(..., { responseType: 'blob' })` và thu hồi `URL.revokeObjectURL(url)` trong `finally`.
+- Hiển thị toast lỗi thông báo localized khi thất bại hoặc bị từ chối quyền.
+
+---
 
 ## 7. Permission Matrix
 
-| Scope | Permission |
-|---|---|
-| Master preview/commit | `master_data.import` |
-| Master template/export | `master_data.export` |
-| Ops CSV/XLSX | `ops.export` |
+| Scope | Thao tác API | Permission yêu cầu |
+|---|---|---|
+| Master Import | `POST /api/imports/preview`, `POST /api/imports/commit`, `GET /api/imports/errors/*` | `master_data.import` |
+| Master Export | `GET /api/imports/template`, `GET /api/exports` | `master_data.export` |
+| Ops Export | `GET /api/ops/exports` | `ops.export` |
 
-Seed/check permission regression; không tạo permission trùng.
+---
 
-## 8. Tests
+## 8. Execution Packages (7 EPs)
 
-- 4 Master types × CSV/XLSX × preview/commit/export/roundtrip.
-- Duplicate/natural-key/foreign-key validation.
-- 12 Ops types × CSV/XLSX.
-- Empty dataset header-only.
-- 5.001 rows cap/truncation.
-- Unicode/comma/quote/newline/formula payload.
-- Cross-tenant data absence.
-- 403 từng permission.
-- FE 12 contexts không duplicate request.
+- **EP0: Contract Freeze & Remediation Baseline** — Khóa schema 12 loại Ops Export, cập nhật seed permission và thêm `[Authorize]` + Permission checks cho Master `ImportsController` và `ExportsController`.
+- **EP1: Shared Export Utility & Security Sanitizer** — Cập nhật helper xuất CSV/XLSX hỗ trợ sanitize formula injection, UTF-8 BOM, và Header `X-Export-Truncated`.
+- **EP2: Master Data Import/Export Parity & Regression Fix** — Chuẩn hóa 4 loại Master IE (UOMS, WAREHOUSES, ZONES, REASONS), sửa lỗi lệch cột template/export.
+- **EP3: 12 Ops Export Handlers Implementation** — Triển khai 12 builders trong `OpsExportsController.cs` với `AsNoTracking`, tenant isolation và cap 5.000 dòng.
+- **EP4: Frontend Shared Component & 12 Contexts Mount** — Mở rộng `OpsExportButtons.tsx` hỗ trợ 12 types và mount trên 12 trang Admin.
+- **EP5: Automated Verifier Script & Integration Tests** — Tạo script `tests/verify_spreadsheet_exports_p46c.ps1` kiểm thử tự động 100% API/CSV/XLSX endpoints.
+- **EP6: DBM Verification, Evidence & Program Signoff** — Kiểm thử UI qua browser subagent, chụp ảnh/video evidence lưu tại `planning/evidence/phase_46c_rp45/` và cập nhật tài liệu nghiệm thu.
 
-## 9. Definition of Done
+---
 
-- [ ] 4/4 Master IE types regression pass đủ CSV/XLSX.
-- [ ] 12/12 Ops types pass đủ CSV/XLSX.
-- [ ] Column order/contracts snapshot pass.
-- [ ] Formula injection/tenant/permission gates pass.
-- [ ] 12 frontend export contexts pass.
-- [ ] `tests/verify_spreadsheet_exports_p46c.ps1` pass.
+## 9. Tests và Verification
 
-## 10. Rollback
+### Automated Verification Command Sequence
 
-Export handlers/type registry và FE buttons có thể revert từng type. Không rollback dữ liệu Master đã commit; dùng audit/compensating action theo policy hiện có.
+```powershell
+# 1. Restore & Build Backend Solution
+dotnet restore .\backend\Nexustock.sln
+dotnet build .\backend\Nexustock.sln --no-restore
+
+# 2. Run Backend Unit & Integration Tests
+dotnet test .\tests\Nexustock.Files.IntegrationTests\Nexustock.Files.IntegrationTests.csproj --no-restore
+
+# 3. Run Dedicated Phase 46C Verifier Script
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\tests\verify_spreadsheet_exports_p46c.ps1
+
+# 4. Frontend Lint & Typecheck
+npm --prefix .\frontend run lint
+npm --prefix .\frontend exec tsc -- --noEmit
+```
+
+---
+
+## 10. Definition of Done (DoD)
+
+- [ ] 4/4 Master Data types (UOMS, WAREHOUSES, ZONES, REASONS) pass luồng Import Template -> Preview -> Commit -> Export -> Roundtrip.
+- [ ] 12/12 Ops Export types pass xuất thành công cả 2 định dạng CSV và XLSX.
+- [ ] Response Header `X-Export-Truncated` hoạt động chính xác khi dữ liệu vượt 5.000 dòng.
+- [ ] Sanitize chống CSV Formula Injection hoạt động 100% trên các trường chuỗi bắt đầu bằng `=`, `+`, `-`, `@`.
+- [ ] 100% endpoint được bảo vệ bởi `[Authorize]` và kiểm tra đúng Permission `master_data.import`, `master_data.export`, `ops.export`.
+- [ ] 12/12 trang Admin mounted nút `OpsExportButtons` và thực thi tải file blob không lỗi Console/Network.
+- [ ] Script `verify_spreadsheet_exports_p46c.ps1` chạy thành công 100% không có lỗi.
+- [ ] Bằng chứng kiểm thử (ảnh/video walkthrough) được lưu đầy đủ tại `planning/evidence/phase_46c_rp45/`.
+
+---
+
+## 11. Rollout và Rollback
+
+- **Rollout:** Apply backend API changes -> Thêm permission nếu thiếu -> Deploy backend -> Deploy frontend.
+- **Rollback:** 
+  - Backend: Giữ nguyên DB (không thay đổi schema bảng DB). Revert `OpsExportsController.cs` về 4 types cũ nếu phát hiện sự cố.
+  - Frontend: Revert `OpsExportButtons.tsx` về phiên bản union 4 types.
+
+---
+
+## 12. Readiness / Approval
+
+| Vai trò | Kết luận | Ngày |
+|---|---|---|
+| JARVIS | **Module DoD 100% Ready** · 12 Ops Export Contracts + Master IE Remediation đã khóa an toàn | 2026-07-28 |
+| FOUNDER | ☑ Approved implementation_plan.md · Tiến hành thực thi | 2026-07-28 |
