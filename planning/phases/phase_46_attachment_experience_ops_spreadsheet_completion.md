@@ -26,6 +26,7 @@
 | 2026-07-27 | P46B remediation PASS: strict automated gates + browser evidence hoàn tất; P46B đóng lại Module DoD 100%, umbrella vẫn mở đến P46E |
 | 2026-07-28 | `rp1`: Phase 46C đạt 100% Execution-Ready; khóa 12 Ops export contracts, phân quyền P0, EPs và DoD |
 | 2026-07-28 | `rp2`: Reindex mã nguồn hàm/controller/UI, lập kế hoạch thực thi chi tiết chuẩn 100% qua `[17-auto-plan]` cho Phase 46C |
+| 2026-07-28 | Phase 46C đóng 100%: strict verifier PASS, 76/76 integration tests, frontend typecheck/lint sạch; umbrella tiếp tục chờ P46D/P46E |
 
 ### Quyết định khóa
 
@@ -54,7 +55,7 @@
 | [P46A](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46a_secure_attachment_content_preview.md) | Auth content API · sửa `/uploads` 404 · preview/download · pending cleanup · QC compat. | ✅ Done — tái xác nhận `rp4` + `rp5` 2026-07-27; strict gate 21/21, Release build sạch, browser UAT + video pass |
 
 | [P46B](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46b_thumbnail_full_attachment_coverage.md) | Thumbnail lifecycle + 6 extended handlers/UI | ✅ **Hoàn thành** — remediation `rp4` + `rp5` PASS; strict automated gates và browser evidence đầy đủ |
-| [P46C](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46c_master_spreadsheet_full_ops_exports.md) | Master IE 4 regression + Ops export 12 | ✅ **100% Ready** · DoR met (`rp1` 2026-07-28) |
+| [P46C](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46c_master_spreadsheet_full_ops_exports.md) | Master IE 4 regression + Ops export 12 | ✅ **Hoàn thành** — strict verifier PASS; 76/76 integration tests; Master RBAC + 12 Ops export UI/Backend |
 | [P46D](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46d_package_operational_line_imports.md) | Package IE + Inbound/Stocktake line imports | Batch ownership/TTL/concurrency/idempotency pass |
 | [P46E](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46e_rf_full_acceptance.md) | RF camera + DBM + zero-gap acceptance | P43/P44/P45 traceability 100% có evidence |
 
@@ -532,7 +533,7 @@ Regression:
 - [ ] Tenant/RBAC/delete gates pass.
 - [ ] Thumbnail lifecycle pass.
 - [ ] 12 attachment entity types pass.
-- [ ] 12 ops export types CSV/XLSX pass.
+- [x] 12 ops export types CSV/XLSX pass — P46C strict verifier, 76/76 integration tests.
 - [ ] Package IE roundtrip pass.
 - [ ] Inbound + Stocktake line import idempotent pass.
 - [ ] RF camera/file fallback pass.
@@ -582,8 +583,8 @@ EP4/EP5 bắt đầu sau EP1. EP6 có thể phát triển sau EP0 nhưng merge s
 
 | Vai trò | Kết luận | Ngày |
 |---|---|---|
-| JARVIS | Umbrella **100% Scope Mapped · 95% Execution Ready**; P46A và P46B Done; zero-gap gate vẫn khóa tại P46E | 2026-07-27 |
-| FOUNDER | ☑ P46A Done · ☑ P46B Done · ☐ Proceed P46C/P46D · ☐ Hold | 2026-07-27 |
+| JARVIS | Umbrella **100% Scope Mapped**; P46A/P46B/P46C Done; zero-gap gate vẫn khóa tại P46E | 2026-07-28 |
+| FOUNDER | ☑ P46A Done · ☑ P46B Done · ☑ P46C Done · ☐ Proceed P46D · ☐ Hold | 2026-07-28 |
 
 Điểm phải resolve trong EP0 từng child phase: dependency xử lý ảnh, entity/table path thật, permission name thật và mapping cột từ schema thật. Đây là verification trước code, không phải scope mở.
 

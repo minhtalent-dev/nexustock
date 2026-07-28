@@ -104,6 +104,7 @@ public static class DatabaseSeeder
         ("files.storage.manage", "Quản lý cấu hình lưu trữ file", "Files"),
         ("files.storage.migrate.purge", "Xóa file nguồn sau khi migrate storage", "Files"),
         ("master_data.export", "Xuất danh mục master data", "MasterData"),
+        ("master_data.import", "Nhập danh mục master data", "MasterData"),
         ("ops.export", "Xuất dữ liệu vận hành", "Ops")
     };
 

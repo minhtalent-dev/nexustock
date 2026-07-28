@@ -13,6 +13,7 @@ import { resolveApiError } from "@/lib/api-error-i18n";
 import { getHttpErrorPayload } from "@/lib/http-error";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { MapPin, Search, RefreshCw, Layers, CheckCircle2, XCircle } from "lucide-react";
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface InventoryBalance {
@@ -287,12 +288,15 @@ export default function PutawayPage() {
 
   return (
     <PageShell className="gap-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-3">
-          <MapPin className="h-6 w-6 text-emerald-500" />
-          {t("title")}
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-3">
+            <MapPin className="h-6 w-6 text-emerald-500" />
+            {t("title")}
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
+        </div>
+        <OpsExportButtons type="PUTAWAY_PROPOSALS" />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">

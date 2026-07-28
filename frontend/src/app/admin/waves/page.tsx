@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 import { RefreshCw, Layers, PlusCircle, ArrowRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -139,6 +140,7 @@ export default function WavesPage() {
           <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex gap-2">
+          <OpsExportButtons type="WAVES" />
           <Button
             onClick={handleToggleCreateForm}
             className="bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-2 h-9 text-xs px-4"

@@ -46,6 +46,7 @@ public sealed class TestAuthHandler : AuthenticationHandler<AuthenticationScheme
         var claims = new[]
         {
             new Claim("sub", TestAuthConstants.UserId),
+            new Claim(ClaimTypes.NameIdentifier, TestAuthConstants.UserId),
             new Claim("tenantId", TestAuthConstants.TenantId),
             new Claim(ClaimTypes.Name, "Test User"),
             new Claim(ClaimTypes.Email, "testuser@example.com")

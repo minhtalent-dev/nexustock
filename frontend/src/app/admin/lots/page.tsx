@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast } from "@/lib/toast";
 import { Search, Tag, AlertCircle } from "lucide-react";
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface LotResponseDto {
@@ -76,12 +77,15 @@ export default function LotsPage() {
 
   return (
     <PageShell className="gap-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-          <Tag className="h-6 w-6 text-emerald-500" />
-          {t("title")}
-        </h1>
-        <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+            <Tag className="h-6 w-6 text-emerald-500" />
+            {t("title")}
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
+        </div>
+        <OpsExportButtons type="LOTS" />
       </div>
 
       <Card className="bg-card border-border/80">

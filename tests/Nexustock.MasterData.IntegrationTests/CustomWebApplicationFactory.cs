@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.EntityFrameworkCore.InMemory.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Nexustock.Modules.MasterData.Contexts;
@@ -49,6 +51,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             ReplaceDbContext<PutawayDbContext>(services);
             ReplaceDbContext<CrossDockingDbContext>(services);
             ReplaceDbContext<ReadinessDbContext>(services);
+            ReplaceDbContext<Nexustock.Modules.Replenishment.Contexts.ReplenishmentDbContext>(services);
 
             // Đăng ký Fake Services
             services.RemoveAll<IUserPermissionService>();
@@ -107,7 +110,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         services.RemoveAll<DbContextOptions<TContext>>();
         services.RemoveAll<TContext>();
         services.AddDbContext<TContext>(options =>
-            options.UseInMemoryDatabase(_dbName, _dbRoot));
+            options.UseInMemoryDatabase(_dbName, _dbRoot)
+                .ConfigureWarnings(warnings => warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
     }
 }
 

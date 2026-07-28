@@ -700,12 +700,12 @@ public class ImportService : IImportService
 
     private static string EscapeCsvField(string field)
     {
-        if (string.IsNullOrEmpty(field)) return "";
-        if (field.Contains(",") || field.Contains("\"") || field.Contains("\n") || field.Contains("\r"))
+        var sanitized = SpreadsheetReader.SanitizeFormula(field);
+        if (sanitized.Contains(",") || sanitized.Contains("\"") || sanitized.Contains("\n") || sanitized.Contains("\r"))
         {
-            return "\"" + field.Replace("\"", "\"\"") + "\"";
+            return "\"" + sanitized.Replace("\"", "\"\"") + "\"";
         }
-        return field;
+        return sanitized;
     }
 }
 

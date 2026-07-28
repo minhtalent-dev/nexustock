@@ -60,6 +60,7 @@ public class IntegrationTestBase : IClassFixture<CustomWebApplicationFactory>, I
         EnsureCreated<PutawayDbContext>();
         EnsureCreated<CrossDockingDbContext>();
         EnsureCreated<ReadinessDbContext>();
+        EnsureCreated<Nexustock.Modules.Replenishment.Contexts.ReplenishmentDbContext>();
 
         Client = factory.CreateClient();
     }

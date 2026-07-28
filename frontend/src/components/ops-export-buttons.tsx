@@ -1,14 +1,32 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
 import { showError } from "@/lib/toast";
 import { getHttpErrorMessage } from "@/lib/http-error";
 
-type OpsExportType = "INBOUND_ORDERS" | "SHIPMENTS" | "STOCKTAKES" | "RMA";
+export type OpsExportType =
+  | "INBOUND_ORDERS"
+  | "SHIPMENTS"
+  | "STOCKTAKES"
+  | "RMA"
+  | "LOTS"
+  | "EXCEPTIONS"
+  | "LPNS"
+  | "INVENTORY_BALANCES"
+  | "WAVES"
+  | "PUTAWAY_PROPOSALS"
+  | "CROSS_DOCK_CANDIDATES"
+  | "REPLENISHMENT_TASKS";
 
 export function OpsExportButtons({ type }: { type: OpsExportType }) {
+  const [loadingFormat, setLoadingFormat] = useState<"csv" | "xlsx" | null>(null);
+
   const download = async (format: "csv" | "xlsx") => {
+    if (loadingFormat) return;
+    setLoadingFormat(format);
+    let url = "";
     try {
       const res = await api.get(`/ops/exports`, {
         params: { type, format },
@@ -18,26 +36,52 @@ export function OpsExportButtons({ type }: { type: OpsExportType }) {
         type:
           format === "xlsx"
             ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            : "text/csv",
+            : "text/csv;charset=utf-8;",
       });
-      const url = URL.createObjectURL(blob);
+      url = URL.createObjectURL(blob);
+      const disposition = res.headers["content-disposition"] as string | undefined;
+      const encodedName = disposition?.match(/filename\*=UTF-8''([^;]+)/i)?.[1];
+      const quotedName = disposition?.match(/filename="([^"]+)"/i)?.[1];
+      const fileName = encodedName
+        ? decodeURIComponent(encodedName)
+        : quotedName ?? `${type.toLowerCase()}.${format}`;
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${type.toLowerCase()}.${format}`;
+      a.download = fileName;
+      document.body.appendChild(a);
       a.click();
-      URL.revokeObjectURL(url);
+      document.body.removeChild(a);
     } catch (err: unknown) {
       showError(getHttpErrorMessage(err, "Export failed"));
+    } finally {
+      if (url) {
+        URL.revokeObjectURL(url);
+      }
+      setLoadingFormat(null);
     }
   };
 
   return (
     <div className="flex gap-2">
-      <Button type="button" variant="outline" size="sm" onClick={() => void download("csv")}>
-        Export CSV
+      <Button
+        id={`ops-export-${type.toLowerCase()}-csv`}
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={loadingFormat !== null}
+        onClick={() => void download("csv")}
+      >
+        {loadingFormat === "csv" ? "Exporting..." : "Export CSV"}
       </Button>
-      <Button type="button" variant="outline" size="sm" onClick={() => void download("xlsx")}>
-        Export Excel
+      <Button
+        id={`ops-export-${type.toLowerCase()}-xlsx`}
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={loadingFormat !== null}
+        onClick={() => void download("xlsx")}
+      >
+        {loadingFormat === "xlsx" ? "Exporting..." : "Export Excel"}
       </Button>
     </div>
   );

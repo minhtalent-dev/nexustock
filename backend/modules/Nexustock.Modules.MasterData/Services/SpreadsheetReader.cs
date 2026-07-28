@@ -41,11 +41,23 @@ public static class SpreadsheetReader
         return sb.ToString();
     }
 
+    public static string SanitizeFormula(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return value ?? "";
+        if (value.StartsWith("=") || value.StartsWith("+") || value.StartsWith("-") ||
+            value.StartsWith("@") || value.StartsWith("\t") || value.StartsWith("\r"))
+        {
+            return "'" + value;
+        }
+        return value;
+    }
+
     private static string EscapeCsv(string value)
     {
-        if (value.Contains('"') || value.Contains(',') || value.Contains('\n') || value.Contains('\r'))
-            return $"\"{value.Replace("\"", "\"\"")}\"";
-        return value;
+        var sanitized = SanitizeFormula(value);
+        if (sanitized.Contains('"') || sanitized.Contains(',') || sanitized.Contains('\n') || sanitized.Contains('\r'))
+            return $"\"{sanitized.Replace("\"", "\"\"")}\"";
+        return sanitized;
     }
 
     public static byte[] WriteXlsx(IReadOnlyList<string[]> rows)
@@ -55,7 +67,10 @@ public static class SpreadsheetReader
         for (var r = 0; r < rows.Count; r++)
         {
             for (var c = 0; c < rows[r].Length; c++)
-                ws.Cell(r + 1, c + 1).Value = rows[r][c];
+            {
+                var val = SanitizeFormula(rows[r][c] ?? "");
+                ws.Cell(r + 1, c + 1).Value = val;
+            }
         }
         using var ms = new MemoryStream();
         wb.SaveAs(ms);

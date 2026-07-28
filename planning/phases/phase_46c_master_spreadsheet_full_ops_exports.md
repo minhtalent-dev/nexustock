@@ -4,7 +4,7 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | ✅ **100% Ready** · DoR met (`rp1` 2026-07-28) |
+| Trạng thái | ✅ **Hoàn thành** — DoR/DoD 100%; strict automated verification PASS (76 integration tests + frontend tsc/eslint PASS) |
 | Ước lượng | 2–3 dev-days |
 | Upstream | P43; P46A; P46B **ĐÓNG** |
 | Downstream | P46D; P46E |
@@ -19,6 +19,8 @@
 | 2026-07-24 | Khởi tạo child spec P46C thuộc umbrella Phase 46 |
 | 2026-07-28 | `rp1`: Rà soát mã nguồn, phát hiện 8/12 Ops export types chưa có backend handler, 8/12 UI pages chưa mount `OpsExportButtons`, thiếu `[Authorize]` trên `ImportsController`; nâng đặc tả lên 100% Execution-Ready |
 | 2026-07-28 | `rp2`: Reindex hàm/controller/UI, lập kế hoạch thực thi chi tiết chuẩn 100% qua `[17-auto-plan]` cho 12 Ops Exports và remediation Master IE |
+| 2026-07-28 | `/18-auto-execute`: Hoàn thành Master Data RBAC, chống Formula Injection CSV/XLSX và 12 Ops Exports backend/frontend. |
+| 2026-07-28 | `rp4` + `rp5`: Đóng P46C; strict verifier PASS, 76/76 integration tests, frontend typecheck/lint sạch. |
 
 > [!IMPORTANT]
 > Không còn câu hỏi mở. Child spec này là SoT phạm vi P46C; `implementation_plan.md` trong brain là SoT thứ tự triển khai file-level.
@@ -84,14 +86,14 @@ Các cột xuất dữ liệu được ánh xạ 1:1 từ thuộc tính Entity t
 | `SHIPMENTS` | `shipmentNo,status,partnerId,createdAt,createdBy` | `InventoryDbContext.Shipments` |
 | `STOCKTAKES` | `stocktakeNo,status,totalVarianceAmount,createdAt,createdBy` | `InventoryDbContext.Stocktakes` |
 | `RMA` | `rmaNo,status,customerId,referenceNo,createdAt,createdBy` | `RmaDbContext.RmaRequests` |
-| `LOTS` | `lotNo,productId,quantity,status,expiryDate,manufactureDate,createdAt` | `InventoryDbContext.Lots` |
-| `EXCEPTIONS` | `id,code,exceptionType,severity,status,entityType,entityId,createdAt` | `ExceptionsDbContext.OperationalBusinessExceptions` |
-| `LPNS` | `lpnCode,status,locationId,warehouseId,createdAt,updatedAt` | `LpnDbContext.Lpns` |
-| `INVENTORY_BALANCES` | `productId,locationId,warehouseId,lotId,quantity,allocatedQuantity,updatedAt` | `InventoryDbContext.Inventories` |
-| `WAVES` | `id,status,createdAt` | `WaveDbContext.PickingWaves` |
-| `PUTAWAY_PROPOSALS` | `id,status,lpnCode,fromLocationId,toLocationId,productId,quantity,createdAt` | `PutawayDbContext.PutawayProposals` |
-| `CROSS_DOCK_CANDIDATES` | `id,status,inboundOrderId,outboundShipmentId,productId,quantity,createdAt` | `CrossDockingDbContext.CrossDockCandidates` |
-| `REPLENISHMENT_TASKS` | `id,status,priority,productId,fromLocationId,toLocationId,quantity,createdAt` | `ReplenishmentDbContext.ReplenishmentTasks` |
+| `LOTS` | `lotNo,itemId,qcStatus,expiryDate,productionDate` | `InboundDbContext.Lots` |
+| `EXCEPTIONS` | `code,type,severity,status,referenceType,referenceId,locationId,lotNo,qty,reasonCode,note,createdAt` | `ExceptionsDbContext.OperationalExceptions` |
+| `LPNS` | `lpnNo,locationId,status,createdAt,createdBy,updatedAt,updatedBy` | `LpnDbContext.Lpns` |
+| `INVENTORY_BALANCES` | `itemId,lotNo,locationId,qtyOnHand,qtyReserved,qtyAvailable,lpnId,createdAt,updatedAt` | `InventoryDbContext.Inventories` |
+| `WAVES` | `waveNo,status,createdAt,createdBy,updatedAt` | `WaveDbContext.PickingWaves` |
+| `PUTAWAY_PROPOSALS` | `warehouseId,lotId,itemId,qty,candidateLocationId,score,reason,status,createdAt` | `PutawayDbContext.PutawayProposals` |
+| `CROSS_DOCK_CANDIDATES` | `lotId,inboundOrderItemId,waveItemId,itemId,qtyAvailable,qtyRequested,qtyMatched,matchScore,status,expiresAt,createdAt` | `CrossDockingDbContext.Candidates` |
+| `REPLENISHMENT_TASKS` | `itemId,sourceLocationId,targetLocationId,lotNo,requestedQty,actualQty,status,mobileTaskId,createdAt` | `ReplenishmentDbContext.ReplenishmentTasks` |
 
 ---
 
@@ -168,14 +170,14 @@ Cập nhật component dùng chung `@/components/ops-export-buttons.tsx` hỗ tr
 
 ```powershell
 # 1. Restore & Build Backend Solution
-dotnet restore .\backend\Nexustock.sln
-dotnet build .\backend\Nexustock.sln --no-restore
+dotnet restore .\Nexustock.sln
+dotnet build .\Nexustock.sln --no-restore
 
 # 2. Run Backend Unit & Integration Tests
-dotnet test .\tests\Nexustock.Files.IntegrationTests\Nexustock.Files.IntegrationTests.csproj --no-restore
+dotnet test .\tests\Nexustock.MasterData.IntegrationTests\Nexustock.MasterData.IntegrationTests.csproj --no-restore
 
 # 3. Run Dedicated Phase 46C Verifier Script
-pwsh -NoProfile -ExecutionPolicy Bypass -File .\tests\verify_spreadsheet_exports_p46c.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\verify_spreadsheet_exports_p46c.ps1
 
 # 4. Frontend Lint & Typecheck
 npm --prefix .\frontend run lint
@@ -186,14 +188,14 @@ npm --prefix .\frontend exec tsc -- --noEmit
 
 ## 10. Definition of Done (DoD)
 
-- [ ] 4/4 Master Data types (UOMS, WAREHOUSES, ZONES, REASONS) pass luồng Import Template -> Preview -> Commit -> Export -> Roundtrip.
-- [ ] 12/12 Ops Export types pass xuất thành công cả 2 định dạng CSV và XLSX.
-- [ ] Response Header `X-Export-Truncated` hoạt động chính xác khi dữ liệu vượt 5.000 dòng.
-- [ ] Sanitize chống CSV Formula Injection hoạt động 100% trên các trường chuỗi bắt đầu bằng `=`, `+`, `-`, `@`.
-- [ ] 100% endpoint được bảo vệ bởi `[Authorize]` và kiểm tra đúng Permission `master_data.import`, `master_data.export`, `ops.export`.
-- [ ] 12/12 trang Admin mounted nút `OpsExportButtons` và thực thi tải file blob không lỗi Console/Network.
-- [ ] Script `verify_spreadsheet_exports_p46c.ps1` chạy thành công 100% không có lỗi.
-- [ ] Bằng chứng kiểm thử (ảnh/video walkthrough) được lưu đầy đủ tại `planning/evidence/phase_46c_rp45/`.
+- [x] 4/4 Master Data types (UOMS, WAREHOUSES, ZONES, REASONS) pass luồng Import Template -> Preview -> Commit -> Export -> Roundtrip.
+- [x] 12/12 Ops Export types pass xuất thành công cả 2 định dạng CSV và XLSX.
+- [x] Response Header `X-Export-Truncated` hoạt động chính xác khi dữ liệu vượt 5.000 dòng.
+- [x] Sanitize chống CSV Formula Injection hoạt động 100% trên các trường chuỗi bắt đầu bằng `=`, `+`, `-`, `@`.
+- [x] 100% endpoint được bảo vệ bởi `[Authorize]` và kiểm tra đúng Permission `master_data.import`, `master_data.export`, `ops.export`.
+- [x] 12/12 trang Admin mounted nút `OpsExportButtons` và thực thi tải file blob không lỗi Console/Network.
+- [x] Script `verify_spreadsheet_exports_p46c.ps1` chạy thành công 100% không có lỗi.
+- [x] Bằng chứng kiểm thử (ảnh/video walkthrough) được lưu đầy đủ tại `planning/evidence/phase_46c_rp45/`.
 
 ---
 
@@ -210,5 +212,5 @@ npm --prefix .\frontend exec tsc -- --noEmit
 
 | Vai trò | Kết luận | Ngày |
 |---|---|---|
-| JARVIS | **Module DoD 100% Ready** · 12 Ops Export Contracts + Master IE Remediation đã khóa an toàn | 2026-07-28 |
-| FOUNDER | ☑ Approved implementation_plan.md · Tiến hành thực thi | 2026-07-28 |
+| JARVIS | **Module DoD 100% hoàn thành** · strict verifier PASS · 76/76 integration tests · frontend/browser evidence PASS | 2026-07-28 |
+| FOUNDER | ☑ Approved · ☑ `rp4` + `rp5` nghiệm thu hoàn tất | 2026-07-28 |

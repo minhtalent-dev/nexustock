@@ -1,26 +1,41 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Text;
+using Nexustock.Modules.Identity.Services;
 using Nexustock.Modules.MasterData.Services;
 
 namespace Nexustock.Modules.MasterData.Controllers;
 
 /// <summary>Controller quản lý import dữ liệu master data (CSV + xlsx).</summary>
+[Authorize]
 [ApiController]
 [Route("api/imports")]
 [Produces("application/json")]
 public class ImportsController : ControllerBase
 {
     private readonly IImportService _importService;
+    private readonly IUserPermissionService _permissionService;
 
-    public ImportsController(IImportService importService)
+    public ImportsController(IImportService importService, IUserPermissionService permissionService)
     {
         _importService = importService;
+        _permissionService = permissionService;
+    }
+
+    private async Task<bool> CheckPermissionAsync(string permission)
+    {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdClaim, out var userId)) return false;
+        return await _permissionService.HasPermissionAsync(userId, permission);
     }
 
     [HttpGet("template")]
-    public IActionResult GetTemplate([FromQuery] string type, [FromQuery] string format = "csv")
+    public async Task<IActionResult> GetTemplate([FromQuery] string type, [FromQuery] string format = "csv")
     {
+        if (!await CheckPermissionAsync("master_data.export"))
+            return Forbid();
+
         try
         {
             var csv = _importService.GetTemplateCsv(type);
@@ -46,6 +61,9 @@ public class ImportsController : ControllerBase
     [RequestSizeLimit(12 * 1024 * 1024)]
     public async Task<IActionResult> Preview([FromQuery] string type, IFormFile file)
     {
+        if (!await CheckPermissionAsync("master_data.import"))
+            return Forbid();
+
         if (file == null || file.Length == 0)
             return BadRequest(new { error = "Không tìm thấy file." });
 
@@ -78,6 +96,9 @@ public class ImportsController : ControllerBase
     [HttpPost("commit")]
     public async Task<IActionResult> Commit([FromBody] CommitImportRequest request)
     {
+        if (!await CheckPermissionAsync("master_data.import"))
+            return Forbid();
+
         var result = await _importService.CommitImportAsync(request.BatchId, HttpContext.RequestAborted);
         return Ok(result);
     }
@@ -86,6 +107,9 @@ public class ImportsController : ControllerBase
     [Produces("text/csv")]
     public async Task<IActionResult> ExportErrors(Guid batchId)
     {
+        if (!await CheckPermissionAsync("master_data.import"))
+            return Forbid();
+
         var csv = await _importService.ExportErrorCsvAsync(batchId, HttpContext.RequestAborted);
         if (csv == null)
             return NotFound(new { error = "Không tìm thấy batch hoặc batch không có lỗi." });

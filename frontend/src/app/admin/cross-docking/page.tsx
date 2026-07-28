@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Skeleton } from "@/components/ui/skeleton";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 import { RefreshCw, Search, Zap } from "lucide-react";
 
 interface CandidateDto {
@@ -126,6 +127,7 @@ export default function CrossDockingPage() {
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <div className="flex gap-2">
+          <OpsExportButtons type="CROSS_DOCK_CANDIDATES" />
           <Button variant="outline" size="sm" onClick={fetchCandidates}>
             <RefreshCw className="w-4 h-4 mr-1" /> {tc("refresh")}
           </Button>

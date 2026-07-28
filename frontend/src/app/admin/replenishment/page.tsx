@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 import { RefreshCw, Play, Layers, ClipboardList, CheckCircle, Settings, Plus, X } from "lucide-react";
 
 interface ReplenishmentRule {
@@ -243,6 +244,7 @@ export default function ReplenishmentPage() {
           <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-3">
+          <OpsExportButtons type="REPLENISHMENT_TASKS" />
           <Button
             onClick={handleRunEngine}
             disabled={runningEngine}

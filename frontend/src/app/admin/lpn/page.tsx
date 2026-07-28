@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { RefreshCw, Layers, Plus, ArrowRight, ClipboardList, Settings, X, LogIn } from "lucide-react";
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface Lpn {
@@ -272,7 +273,8 @@ export default function LpnPage() {
           </h1>
           <p className="text-xs text-muted-foreground mt-1">{t("subtitle")}</p>
         </div>
-        <div>
+        <div className="flex items-center gap-2">
+          <OpsExportButtons type="LPNS" />
           <Button
             onClick={fetchLpns}
             variant="outline"

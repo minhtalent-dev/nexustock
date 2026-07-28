@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
 import { AlertCircle, UserCheck, ShieldAlert, CheckCircle2, History, Loader2 } from "lucide-react";
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
 
 interface ExceptionDto {
@@ -187,6 +188,7 @@ export default function ExceptionsPage() {
           <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
+        <OpsExportButtons type="EXCEPTIONS" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">

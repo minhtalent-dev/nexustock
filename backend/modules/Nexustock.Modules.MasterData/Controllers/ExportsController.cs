@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Nexustock.Modules.Identity.Services;
 using Nexustock.Modules.MasterData.Contexts;
 using Nexustock.Modules.MasterData.Services;
 using System.Text;
@@ -14,15 +15,23 @@ public class ExportsController : ControllerBase
 {
     private const int MaxRows = 5000;
     private readonly MasterDataDbContext _db;
+    private readonly IUserPermissionService _permissionService;
 
-    public ExportsController(MasterDataDbContext db)
+    public ExportsController(MasterDataDbContext db, IUserPermissionService permissionService)
     {
         _db = db;
+        _permissionService = permissionService;
     }
 
     [HttpGet]
     public async Task<IActionResult> Export([FromQuery] string type, [FromQuery] string format = "csv")
     {
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdClaim, out var userId) || !await _permissionService.HasPermissionAsync(userId, "master_data.export"))
+        {
+            return Forbid();
+        }
+
         var t = (type ?? "").Trim().ToUpperInvariant();
         var fmt = (format ?? "csv").Trim().ToLowerInvariant();
         if (fmt is not ("csv" or "xlsx"))
@@ -65,7 +74,7 @@ public class ExportsController : ControllerBase
 
     private async Task<List<string[]>> BuildItemsAsync()
     {
-        var items = await _db.Products.Include(p => p.BaseUom).OrderBy(p => p.Code).Take(MaxRows + 1).ToListAsync();
+        var items = await _db.Products.AsNoTracking().Include(p => p.BaseUom).OrderBy(p => p.Code).ThenBy(p => p.Id).Take(MaxRows + 1).ToListAsync();
         var rows = new List<string[]> { new[] { "code", "name", "baseUomCode", "isActive" } };
         rows.AddRange(items.Select(p => new[]
         {
@@ -77,8 +86,10 @@ public class ExportsController : ControllerBase
     private async Task<List<string[]>> BuildLocationsAsync()
     {
         var items = await _db.StorageLocations
+            .AsNoTracking()
             .Include(l => l.Zone)!.ThenInclude(z => z!.Warehouse)
             .OrderBy(l => l.Code)
+            .ThenBy(l => l.Id)
             .Take(MaxRows + 1)
             .ToListAsync();
         var rows = new List<string[]>
@@ -100,7 +111,7 @@ public class ExportsController : ControllerBase
 
     private async Task<List<string[]>> BuildPartnersAsync()
     {
-        var items = await _db.Partners.OrderBy(p => p.Code).Take(MaxRows + 1).ToListAsync();
+        var items = await _db.Partners.AsNoTracking().OrderBy(p => p.Code).ThenBy(p => p.Id).Take(MaxRows + 1).ToListAsync();
         var rows = new List<string[]> { new[] { "code", "name", "partnerType", "address", "taxCode" } };
         rows.AddRange(items.Select(p => new[]
         {
@@ -111,7 +122,7 @@ public class ExportsController : ControllerBase
 
     private async Task<List<string[]>> BuildUomsAsync()
     {
-        var items = await _db.Uoms.OrderBy(u => u.Code).Take(MaxRows + 1).ToListAsync();
+        var items = await _db.Uoms.AsNoTracking().OrderBy(u => u.Code).ThenBy(u => u.Id).Take(MaxRows + 1).ToListAsync();
         var rows = new List<string[]> { new[] { "code", "name", "isActive" } };
         rows.AddRange(items.Select(u => new[]
         {
@@ -122,7 +133,7 @@ public class ExportsController : ControllerBase
 
     private async Task<List<string[]>> BuildWarehousesAsync()
     {
-        var items = await _db.Warehouses.OrderBy(w => w.Code).Take(MaxRows + 1).ToListAsync();
+        var items = await _db.Warehouses.AsNoTracking().OrderBy(w => w.Code).ThenBy(w => w.Id).Take(MaxRows + 1).ToListAsync();
         var rows = new List<string[]> { new[] { "code", "name", "description", "isActive" } };
         rows.AddRange(items.Select(w => new[]
         {
@@ -133,7 +144,7 @@ public class ExportsController : ControllerBase
 
     private async Task<List<string[]>> BuildZonesAsync()
     {
-        var items = await _db.StorageZones.Include(z => z.Warehouse).OrderBy(z => z.Code).Take(MaxRows + 1).ToListAsync();
+        var items = await _db.StorageZones.AsNoTracking().Include(z => z.Warehouse).OrderBy(z => z.Code).ThenBy(z => z.Id).Take(MaxRows + 1).ToListAsync();
         var rows = new List<string[]> { new[] { "warehouseCode", "code", "name", "zoneType" } };
         rows.AddRange(items.Select(z => new[]
         {
@@ -144,7 +155,7 @@ public class ExportsController : ControllerBase
 
     private async Task<List<string[]>> BuildReasonsAsync()
     {
-        var items = await _db.ReasonCodes.OrderBy(r => r.Code).Take(MaxRows + 1).ToListAsync();
+        var items = await _db.ReasonCodes.AsNoTracking().OrderBy(r => r.Code).ThenBy(r => r.Id).Take(MaxRows + 1).ToListAsync();
         var rows = new List<string[]> { new[] { "code", "reasonType", "description", "isActive" } };
         rows.AddRange(items.Select(r => new[]
         {

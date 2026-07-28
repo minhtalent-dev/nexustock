@@ -12,6 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
+import { OpsExportButtons } from "@/components/ops-export-buttons";
 import { MoveInventoryDialog } from "@/features/inventory/components/move-dialog";
 import { LockLocationDialog } from "@/features/inventory/components/lock-dialog";
 import {
@@ -167,10 +168,13 @@ export default function InventoryPage() {
           <Boxes className="h-6 w-6 text-primary" />
           {t("title")}
         </h1>
-        <Button onClick={fetchBalances} variant="outline" className="gap-2">
-          <RefreshCw className="h-4 w-4" />
-          {tc("refresh")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <OpsExportButtons type="INVENTORY_BALANCES" />
+          <Button onClick={fetchBalances} variant="outline" className="gap-2">
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            {tc("refresh")}
+          </Button>
+        </div>
       </div>
 
       <Card>
