@@ -15,9 +15,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
-import { ArrowLeft, CheckCircle2, AlertTriangle, Plus, ShieldAlert } from "lucide-react";
+import { ArrowLeft, CheckCircle2, AlertTriangle, Plus, ShieldAlert, FileSpreadsheet } from "lucide-react";
 
 import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
+import { OperationalImportDialog } from "@/components/operational-import-dialog";
 
 interface InboundOrderResponseDto {
   id: string;
@@ -61,6 +62,7 @@ export default function ReceivePage() {
   const [loading, setLoading] = useState(true);
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InboundOrderItemResponseDto | null>(null);
   const [lotNo, setLotNo] = useState("");
   const [receivedQty, setReceivedQty] = useState(0);
@@ -174,20 +176,28 @@ export default function ReceivePage() {
 
   return (
     <PageShell className="gap-6">
-      <div className="flex items-center gap-4">
-        <Link href="/admin/inbound">
-          <Button variant="ghost" className="h-9 w-9 p-0 border border-border hover:bg-zinc-850 text-muted-foreground hover:text-foreground">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
-            {t("receiveTitle", { orderNo: order.orderNo })}
-          </h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            {t("receiveSubtitle", { partner: order.partnerName, status: order.status })}
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/admin/inbound">
+            <Button variant="ghost" className="h-9 w-9 p-0 border border-border hover:bg-zinc-850 text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-3">
+              {t("receiveTitle", { orderNo: order.orderNo })}
+            </h1>
+            <p className="text-xs text-muted-foreground mt-1">
+              {t("receiveSubtitle", { partner: order.partnerName, status: order.status })}
+            </p>
+          </div>
         </div>
+        {(order.status === "Draft" || order.status === "Open") && (
+          <Button onClick={() => setIsImportOpen(true)} className="bg-emerald-600 hover:bg-emerald-500 text-white gap-2 text-sm">
+            <FileSpreadsheet className="h-4 w-4" />
+            Nhập dòng (CSV/Excel)
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -377,6 +387,17 @@ export default function ReceivePage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <OperationalImportDialog
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        title={`Nhập dòng đơn nhập hàng ${order.orderNo}`}
+        description="Nhập danh sách mã SKU, ĐVT, số lượng dự kiến và dung sai từ file CSV hoặc XLSX."
+        previewUrl={`/inbound/${orderId}/lines/import/preview`}
+        commitUrl={`/inbound/${orderId}/lines/import/commit`}
+        errorUrl={`/inbound/${orderId}/lines/import/errors`}
+        onSuccess={fetchOrderDetails}
+      />
     </PageShell>
   );
 }

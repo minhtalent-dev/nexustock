@@ -45,6 +45,7 @@ public static class DependencyInjection
 
         // Register Inbound Services
         services.AddScoped<ITenantProvider, TenantProvider>();
+        services.AddScoped<IInboundLineImportService, InboundLineImportService>();
 
         return services;
     }

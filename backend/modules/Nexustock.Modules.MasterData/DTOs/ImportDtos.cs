@@ -9,7 +9,9 @@ public sealed record ImportResultDto(
     int SuccessRows,
     int ErrorRows,
     IReadOnlyList<ImportRowErrorDto> Errors,
-    string? ErrorCsvContent
+    string? ErrorCsvContent,
+    Guid? TargetId = null,
+    DateTimeOffset? ExpiresAt = null
 );
 
 public sealed record ImportRowErrorDto(

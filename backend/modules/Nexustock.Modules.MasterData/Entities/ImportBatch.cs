@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Nexustock.Modules.MasterData.Entities;
@@ -38,6 +38,31 @@ public class ImportBatch
     [MaxLength(100)]
     [Column("created_by")]
     public string? CreatedBy { get; set; }
+
+    [MaxLength(255)]
+    [Column("file_name")]
+    public string? FileName { get; set; }
+
+    [MaxLength(64)]
+    [Column("file_hash")]
+    public string? FileHash { get; set; }
+
+    [Column("target_id")]
+    public Guid? TargetId { get; set; }
+
+    [Column("expires_at")]
+    public DateTimeOffset? ExpiresAt { get; set; }
+
+    [MaxLength(100)]
+    [Column("committed_by")]
+    public string? CommittedBy { get; set; }
+
+    [Column("committed_at")]
+    public DateTimeOffset? CommittedAt { get; set; }
+
+    [ConcurrencyCheck]
+    [Column("row_version")]
+    public int RowVersion { get; set; } = 1;
 
     [ForeignKey("TenantId")]
     public virtual Tenant? Tenant { get; set; }

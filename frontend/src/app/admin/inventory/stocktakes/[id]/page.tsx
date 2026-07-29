@@ -15,8 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { resolveApiError } from "@/lib/api-error-i18n";
 import { showApiErrorToast, showSuccess } from "@/lib/toast";
-import { AlertCircle, ArrowLeft, Check, Lock, Play, Send } from "lucide-react";
+import { AlertCircle, ArrowLeft, Check, Lock, Play, Send, FileSpreadsheet } from "lucide-react";
 import { EntityAttachmentsPanel } from "@/features/files/entity-attachments-panel";
+import { OperationalImportDialog } from "@/components/operational-import-dialog";
 
 interface StocktakeItem {
   id: string;
@@ -69,6 +70,7 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
   const [reasonCode, setReasonCode] = useState("ADJ-COUNT");
   const [remarks, setRemarks] = useState("");
   const [approveModalOpen, setApproveModalOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchDetails = useCallback(async () => {
@@ -201,10 +203,16 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
           )}
 
           {stocktake.status === "Counting" && (
-            <Button onClick={() => setApproveModalOpen(true)} disabled={actionLoading} className="gap-2">
-              <Send className="h-4 w-4" />
-              {t("submitVariance")}
-            </Button>
+            <>
+              <Button onClick={() => setIsImportOpen(true)} className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white">
+                <FileSpreadsheet className="h-4 w-4" />
+                Nhập đếm (CSV/Excel)
+              </Button>
+              <Button onClick={() => setApproveModalOpen(true)} disabled={actionLoading} className="gap-2">
+                <Send className="h-4 w-4" />
+                {t("submitVariance")}
+              </Button>
+            </>
           )}
 
           {stocktake.status.startsWith("Pending_") && (
@@ -424,6 +432,17 @@ export default function StocktakeDetailPage({ params }: { params: Promise<{ id: 
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <OperationalImportDialog
+        open={isImportOpen}
+        onOpenChange={setIsImportOpen}
+        title={`Nhập kết quả đếm đợt ${stocktake.stocktakeNo}`}
+        description="Nhập kết quả đếm kiểm kê từ file CSV hoặc XLSX."
+        previewUrl={`/stocktakes/${id}/lines/import/preview`}
+        commitUrl={`/stocktakes/${id}/lines/import/commit`}
+        errorUrl={`/stocktakes/${id}/lines/import/errors`}
+        onSuccess={fetchDetails}
+      />
     </PageShell>
   );
 }

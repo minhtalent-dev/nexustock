@@ -4,7 +4,8 @@
 
 | Mục | Giá trị |
 |---|---|
-| Trạng thái | ⬜ Spec Ready |
+| Trạng thái | ✅ Done — tái nghiệm thu `rp4`/`rp5` ngày 2026-07-29 |
+| Bằng chứng | Strict verifier PASS · 84/84 integration tests · TypeScript/ESLint PASS |
 | Ước lượng | 3–4 dev-days |
 | Upstream | P43 spreadsheet foundation |
 | Downstream | P46E |
@@ -73,31 +74,32 @@ Roundtrip CSV/XLSX bắt buộc.
 ## 4. Inbound ASN Line Import
 
 ```http
-POST /api/inbound/{orderId}/lines/import/preview
-POST /api/inbound/{orderId}/lines/import/commit
+POST /api/inbound/{id}/lines/import/preview
+POST /api/inbound/{id}/lines/import/commit
+GET  /api/inbound/{id}/lines/import/errors/{batchId}
 ```
 
 Template v1:
 
 ```text
-lineNo,sku,qty,lotNo,uomCode,errorMessage
+sku,uomCode,expectedQty,tolerance,errorMessage
 ```
 
 Validation:
 
-- Inbound order tồn tại trong tenant và trạng thái cho phép sửa.
-- SKU/Product/UOM tồn tại, active.
-- Qty > 0; precision đúng UOM.
-- Lot required/format theo product policy.
-- Duplicate line trong file được phát hiện.
-- Không ghi đè line đã received.
-- Commit all-or-nothing; audit batch ID trên kết quả nếu schema cho phép.
+- Inbound order tồn tại trong tenant và trạng thái `Draft|Open`.
+- SKU/Product/UOM tồn tại, active; UOM thuộc Base UOM hoặc Package UOM hợp lệ của Product.
+- `expectedQty > 0`; `tolerance >= 0`.
+- Duplicate `(sku,uomCode)` trong file bị chặn.
+- Không sửa/xóa line đã có `receivedQty > 0`.
+- Commit atomic qua transaction.
 
 ## 5. Stocktake Count Line Import
 
 ```http
-POST /api/stocktakes/{stocktakeId}/lines/import/preview
-POST /api/stocktakes/{stocktakeId}/lines/import/commit
+POST /api/stocktakes/{id}/lines/import/preview
+POST /api/stocktakes/{id}/lines/import/commit
+GET  /api/stocktakes/{id}/lines/import/errors/{batchId}
 ```
 
 Template v1:
@@ -108,25 +110,25 @@ lineNo,locationCode,sku,lotNo,countQty,uomCode,errorMessage
 
 Validation:
 
-- Stocktake tồn tại trong tenant và open/counting.
-- Location/Product/UOM/Lot tồn tại.
-- countQty >= 0 và precision hợp lệ.
-- Duplicate natural key trong file bị chặn.
-- Chặn commit sau close/cancel/freeze transition.
-- Không tự post adjustment ngoài workflow stocktake hiện có.
+- Stocktake tồn tại trong tenant và trạng thái `Counting`.
+- Location thuộc Zone của Stocktake (nếu zoneId có giá trị); Product/Location/Lot hợp lệ.
+- `uomCode` bắt buộc khớp Base UOM của Product.
+- `countQty >= 0`; zero count hợp lệ.
+- Duplicate `(locationCode,sku,lotNo)` trong file bị chặn.
+- Cập nhật/tạo `StocktakeItem` với `status = Counted`; không tạo `StockAdjustment`.
 
 ## 6. Permissions
 
-EP0 phải resolve tên permission thật trước code. Contract mục tiêu:
+Permissions thật trong hệ thống:
 
 | Hành động | Permission |
 |---|---|
 | Package preview/commit | `master_data.import` |
-| Package export | `master_data.export` |
-| Inbound line preview/commit | `inbound.lines.import` hoặc permission inbound import hiện hữu |
-| Stocktake count preview/commit | permission stocktake count/import hiện hữu |
+| Package template/export | `master_data.export` |
+| Inbound line preview/commit | `Inbound.Orders.Create` |
+| Stocktake count preview/commit | `Inventory.CycleCount.Count` |
 
-Không seed permission mới nếu permission tương đương đã tồn tại. Backend enforce; UI chỉ phản ánh.
+Backend enforce via UserPermissionService; UI kiểm tra theo quyền tương ứng.
 
 ## 7. Frontend
 
@@ -167,13 +169,13 @@ Row errors có `rowNumber`, `column`, `code`, `message`.
 
 ## 10. Definition of Done
 
-- [ ] Package IE CSV/XLSX roundtrip pass.
-- [ ] Inbound line import preview/commit pass.
-- [ ] Stocktake count import preview/commit pass.
-- [ ] Batch TTL/ownership/concurrency/idempotency pass.
-- [ ] Permission/tenant/state gates pass.
-- [ ] Error CSV và UI wizard pass.
-- [ ] `tests/verify_package_line_imports_p46d.ps1` pass.
+- [x] Package IE CSV/XLSX roundtrip pass.
+- [x] Inbound line import preview/commit pass.
+- [x] Stocktake count import preview/commit pass.
+- [x] Batch TTL/ownership/concurrency/idempotency pass.
+- [x] Permission/tenant/state gates pass.
+- [x] Error CSV và UI wizard pass.
+- [x] `tests/verify_package_line_imports_p46d.ps1` pass.
 
 ## 11. Rollback
 

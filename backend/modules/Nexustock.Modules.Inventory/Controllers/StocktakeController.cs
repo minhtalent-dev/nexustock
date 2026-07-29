@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Nexustock.Modules.Inventory.Contexts;
@@ -23,17 +25,20 @@ public class StocktakeController : ControllerBase
     private readonly MasterDataDbContext _masterContext;
     private readonly ITenantProvider _tenantProvider;
     private readonly IUserPermissionService _permissionService;
+    private readonly IStocktakeCountImportService _countImportService;
 
     public StocktakeController(
         InventoryDbContext context,
         MasterDataDbContext masterContext,
         ITenantProvider tenantProvider,
-        IUserPermissionService permissionService)
+        IUserPermissionService permissionService,
+        IStocktakeCountImportService countImportService)
     {
         _context = context;
         _masterContext = masterContext;
         _tenantProvider = tenantProvider;
         _permissionService = permissionService;
+        _countImportService = countImportService;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -511,5 +516,63 @@ public class StocktakeController : ControllerBase
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    [HttpPost("{id:guid}/lines/import/preview")]
+    [RequestSizeLimit(12 * 1024 * 1024)]
+    public async Task<IActionResult> PreviewCountImport(Guid id, IFormFile file)
+    {
+        if (!await HasPermissionAsync("Inventory.CycleCount.Count"))
+            return Forbid();
+
+        if (file == null || file.Length == 0)
+            return BadRequest(new { error = "Không tìm thấy file." });
+
+        var username = User.Identity?.Name ?? "SYSTEM";
+        await using var stream = file.OpenReadStream();
+        var result = await _countImportService.PreviewImportAsync(id, file.ContentType, stream, file.FileName, username, HttpContext.RequestAborted);
+        if (string.Equals(result.ErrorCsvContent, "IMPORT_TOO_LARGE", StringComparison.Ordinal))
+            return BadRequest(new { error = "IMPORT_ROW_LIMIT_EXCEEDED", message = "Import exceeds 5000 data rows." });
+        if (string.Equals(result.ErrorCsvContent, "IMPORT_TEMPLATE_VERSION_UNSUPPORTED", StringComparison.Ordinal))
+            return BadRequest(new { error = "IMPORT_TEMPLATE_VERSION_UNSUPPORTED" });
+        if (!result.Success && result.BatchId == Guid.Empty)
+            return Conflict(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("{id:guid}/lines/import/commit")]
+    public async Task<IActionResult> CommitCountImport(Guid id, [FromBody] MasterData.DTOs.CommitImportRequest request)
+    {
+        if (!await HasPermissionAsync("Inventory.CycleCount.Count"))
+            return Forbid();
+
+        var username = User.Identity?.Name ?? "SYSTEM";
+        var result = await _countImportService.CommitImportAsync(id, request.BatchId, username, HttpContext.RequestAborted);
+        if (result.Success) return Ok(result);
+
+        return result.ErrorCsvContent switch
+        {
+            "IMPORT_BATCH_NOT_FOUND" => NotFound(result),
+            "IMPORT_BATCH_EXPIRED" or "IMPORT_BATCH_HAS_ERRORS" or "IMPORT_BATCH_ALREADY_COMMITTED" or
+                "IMPORT_TARGET_MISMATCH" or "IMPORT_TARGET_STATE_INVALID" => Conflict(result),
+            _ => BadRequest(result)
+        };
+    }
+
+    [HttpGet("{id:guid}/lines/import/errors/{batchId:guid}")]
+    [Produces("text/csv")]
+    public async Task<IActionResult> ExportCountImportErrors(Guid id, Guid batchId)
+    {
+        if (!await HasPermissionAsync("Inventory.CycleCount.Count"))
+            return Forbid();
+
+        var username = User.Identity?.Name ?? "SYSTEM";
+        var csv = await _countImportService.ExportErrorCsvAsync(id, batchId, username, HttpContext.RequestAborted);
+        if (csv == null)
+            return NotFound(new { error = "Không tìm thấy batch hoặc batch không có lỗi." });
+
+        var bom = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv)).ToArray();
+        return File(bom, "text/csv", $"errors_{batchId}.csv");
     }
 }

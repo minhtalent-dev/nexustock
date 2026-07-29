@@ -203,7 +203,8 @@
         "uomsTitle": "UOMS file structure (UOMs):",
         "warehousesTitle": "WAREHOUSES file structure (Warehouses):",
         "zonesTitle": "ZONES file structure (Zones):",
-        "reasonsTitle": "REASONS file structure (Reasons):"
+        "reasonsTitle": "REASONS file structure (Reasons):",
+        "packagesTitle": "PACKAGES file structure (Package definitions):"
       },
       "fields": {
         "importType": "Master data type",
@@ -216,7 +217,8 @@
         "uoms": "Unit of measures (UOMS)",
         "warehouses": "Warehouses (WAREHOUSES)",
         "zones": "Zones (ZONES)",
-        "reasons": "Reason codes (REASONS)"
+        "reasons": "Reason codes (REASONS)",
+        "packages": "Package definitions (PACKAGES)"
       },
       "actions": {
         "preview": "Upload for check (Preview)",

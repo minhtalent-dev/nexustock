@@ -50,6 +50,7 @@ public class ExportsController : ControllerBase
                 "WAREHOUSES" => (await BuildWarehousesAsync(), "warehouses"),
                 "ZONES" => (await BuildZonesAsync(), "zones"),
                 "REASONS" => (await BuildReasonsAsync(), "reasons"),
+                "PACKAGES" => (await BuildPackagesAsync(), "packages"),
                 _ => throw new ArgumentException("EXPORT_TYPE_INVALID")
             };
         }
@@ -160,6 +161,34 @@ public class ExportsController : ControllerBase
         rows.AddRange(items.Select(r => new[]
         {
             r.Code, r.ReasonType, r.Description, r.IsActive ? "true" : "false"
+        }));
+        return rows;
+    }
+
+    private async Task<List<string[]>> BuildPackagesAsync()
+    {
+        var items = await _db.Packages
+            .AsNoTracking()
+            .Include(p => p.Product)
+            .Include(p => p.Uom)
+            .OrderBy(p => p.Product!.Code)
+            .ThenBy(p => p.Uom!.Code)
+            .ThenBy(p => p.Id)
+            .Take(MaxRows + 1)
+            .ToListAsync();
+
+        var rows = new List<string[]>
+        {
+            new[] { "productCode", "packageName", "barcode", "uomCode", "conversionFactor", "isActive" }
+        };
+        rows.AddRange(items.Select(p => new[]
+        {
+            p.Product?.Code ?? "",
+            p.PackageName,
+            p.Barcode ?? "",
+            p.Uom?.Code ?? "",
+            p.ConversionFactor.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture),
+            p.IsActive ? "true" : "false"
         }));
         return rows;
     }

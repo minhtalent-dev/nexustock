@@ -25,6 +25,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\backend\Nexustock.Api\Nexustock.Api.csproj" />
     <ProjectReference Include="..\..\backend\modules\Nexustock.Modules.MasterData\Nexustock.Modules.MasterData.csproj" />
+    <ProjectReference Include="..\..\backend\modules\Nexustock.Modules.Inbound\Nexustock.Modules.Inbound.csproj" />
+    <ProjectReference Include="..\..\backend\modules\Nexustock.Modules.Inventory\Nexustock.Modules.Inventory.csproj" />
   </ItemGroup>
 
 </Project>

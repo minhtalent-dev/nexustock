@@ -9,20 +9,22 @@ namespace Nexustock.Modules.MasterData.Services;
 
 public interface IImportService
 {
-    Task<ImportResultDto> PreviewImportAsync(string importType, string csvContent, CancellationToken cancellationToken);
-    Task<ImportResultDto> PreviewImportAsync(string importType, IReadOnlyList<string[]> rows, CancellationToken cancellationToken);
-    Task<ImportResultDto> CommitImportAsync(Guid batchId, CancellationToken cancellationToken);
-    Task<string?> ExportErrorCsvAsync(Guid batchId, CancellationToken cancellationToken);
+    Task<ImportResultDto> PreviewImportAsync(string importType, string csvContent, string username, CancellationToken cancellationToken);
+    Task<ImportResultDto> PreviewImportAsync(string importType, IReadOnlyList<string[]> rows, string username, CancellationToken cancellationToken);
+    Task<ImportResultDto> CommitImportAsync(Guid batchId, string username, CancellationToken cancellationToken);
+    Task<string?> ExportErrorCsvAsync(Guid batchId, string username, CancellationToken cancellationToken);
     string GetTemplateCsv(string importType);
 }
 
 public class ImportService : IImportService
 {
     private readonly MasterDataDbContext _db;
+    private readonly IImportBatchCoordinator _batchCoordinator;
 
-    public ImportService(MasterDataDbContext db)
+    public ImportService(MasterDataDbContext db, IImportBatchCoordinator batchCoordinator)
     {
         _db = db;
+        _batchCoordinator = batchCoordinator;
     }
 
     public string GetTemplateCsv(string importType)
@@ -51,17 +53,20 @@ public class ImportService : IImportService
             "REASONS" => "code,reasonType,description,isActive,errorMessage\n" +
                          "ADJ-COUNT,ADJUSTMENT,Điều chỉnh sau kiểm kê,TRUE,\n" +
                          "RMA-DEFECT,RMA,Hàng trả lại bị lỗi,TRUE,",
+            "PACKAGES" => "productCode,packageName,barcode,uomCode,conversionFactor,isActive,errorMessage\n" +
+                          "SP001,Hộp 10 cái,BAR-BOX-01,BOX,10,TRUE,\n" +
+                          "SP001,Thùng 100 cái,BAR-CTN-01,CTN,100,TRUE,",
             _ => throw new ArgumentException("Loại import không hợp lệ.")
         };
     }
 
-    public async Task<ImportResultDto> PreviewImportAsync(string importType, string csvContent, CancellationToken cancellationToken)
+    public async Task<ImportResultDto> PreviewImportAsync(string importType, string csvContent, string username, CancellationToken cancellationToken)
     {
         var rawRows = CsvParser.Parse(csvContent);
-        return await PreviewImportAsync(importType, rawRows, cancellationToken);
+        return await PreviewImportAsync(importType, rawRows, username, cancellationToken);
     }
 
-    public async Task<ImportResultDto> PreviewImportAsync(string importType, IReadOnlyList<string[]> rows, CancellationToken cancellationToken)
+    public async Task<ImportResultDto> PreviewImportAsync(string importType, IReadOnlyList<string[]> rows, string username, CancellationToken cancellationToken)
     {
         var type = importType.Trim().ToUpperInvariant();
         if (rows.Count <= 1)
@@ -86,10 +91,11 @@ public class ImportService : IImportService
             Id = batchId,
             TenantId = tenantId,
             ImportType = type,
-            Status = "VALIDATED",
+            Status = type == "PACKAGES" ? "PREVIEWED" : "VALIDATED",
             TotalRows = dataRows.Count,
             CreatedAt = DateTimeOffset.UtcNow,
-            CreatedBy = "SYSTEM"
+            CreatedBy = username,
+            ExpiresAt = type == "PACKAGES" ? DateTimeOffset.UtcNow.AddHours(24) : null
         };
 
         var errors = new List<ImportRowErrorDto>();
@@ -103,9 +109,14 @@ public class ImportService : IImportService
         var existingLocationCodes = await _db.StorageLocations.Select(x => x.Code).ToListAsync(cancellationToken);
         var existingPartnerCodes = await _db.Partners.Select(x => x.Code).ToListAsync(cancellationToken);
         var existingReasonCodes = await _db.ReasonCodes.Select(x => x.Code).ToListAsync(cancellationToken);
+        var existingProductsMap = await _db.Products.ToDictionaryAsync(x => x.Code.ToUpperInvariant(), x => x.IsActive, cancellationToken);
+        var existingUomsMap = await _db.Uoms.ToDictionaryAsync(x => x.Code.ToUpperInvariant(), x => x.IsActive, cancellationToken);
+        var existingPackageBarcodes = (await _db.Packages.Where(x => !string.IsNullOrEmpty(x.Barcode)).Select(x => x.Barcode!).ToListAsync(cancellationToken)).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var existingProductBarcodes = (await _db.Products.Where(x => !string.IsNullOrEmpty(x.Barcode)).Select(x => x.Barcode!).ToListAsync(cancellationToken)).ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         // Keep track of codes within the file to check for duplicates
         var seenCodes = new HashSet<string>();
+        var seenBarcodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         for (int i = 0; i < dataRows.Count; i++)
         {
@@ -377,6 +388,80 @@ public class ImportService : IImportService
                     errorMsg.Append("Mô tả lý do không được để trống và tối đa 255 ký tự. ");
                 }
             }
+            else if (type == "PACKAGES")
+            {
+                var productCode = GetVal(row, header, "productCode")?.ToUpperInvariant();
+                var packageName = GetVal(row, header, "packageName");
+                var barcode = GetVal(row, header, "barcode");
+                var uomCode = GetVal(row, header, "uomCode")?.ToUpperInvariant();
+                var factorStr = GetVal(row, header, "conversionFactor");
+
+                if (string.IsNullOrWhiteSpace(productCode) || !existingProductsMap.TryGetValue(productCode, out var isProdActive))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Mã sản phẩm '{productCode}' không tồn tại trong hệ thống. ");
+                }
+                else if (!isProdActive)
+                {
+                    isValid = false;
+                    errorMsg.Append($"Sản phẩm '{productCode}' đang bị khóa (không hoạt động). ");
+                }
+
+                if (string.IsNullOrWhiteSpace(packageName) || packageName.Length > 100)
+                {
+                    isValid = false;
+                    errorMsg.Append("Tên quy cách đóng gói không được để trống và tối đa 100 ký tự. ");
+                }
+
+                if (string.IsNullOrWhiteSpace(uomCode) || !existingUomsMap.TryGetValue(uomCode, out var isUomActive))
+                {
+                    isValid = false;
+                    errorMsg.Append($"Đơn vị tính '{uomCode}' không tồn tại trong hệ thống. ");
+                }
+                else if (!isUomActive)
+                {
+                    isValid = false;
+                    errorMsg.Append($"Đơn vị tính '{uomCode}' đang bị khóa (không hoạt động). ");
+                }
+
+                if (!string.IsNullOrWhiteSpace(productCode) && !string.IsNullOrWhiteSpace(uomCode))
+                {
+                    var comboKey = $"{productCode}_{uomCode}";
+                    if (seenCodes.Contains(comboKey))
+                    {
+                        isValid = false;
+                        errorMsg.Append($"Quy cách đóng gói cho sản phẩm '{productCode}' và ĐVT '{uomCode}' bị trùng lặp trong file. ");
+                    }
+                    else
+                    {
+                        seenCodes.Add(comboKey);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(barcode))
+                {
+                    if (barcode.Length > 100)
+                    {
+                        isValid = false;
+                        errorMsg.Append("Mã vạch tối đa 100 ký tự. ");
+                    }
+                    else if (existingPackageBarcodes.Contains(barcode) || existingProductBarcodes.Contains(barcode) || seenBarcodes.Contains(barcode))
+                    {
+                        isValid = false;
+                        errorMsg.Append($"Mã vạch '{barcode}' đã tồn tại trong hệ thống hoặc trùng trong file. ");
+                    }
+                    else
+                    {
+                        seenBarcodes.Add(barcode);
+                    }
+                }
+
+                if (string.IsNullOrWhiteSpace(factorStr) || !decimal.TryParse(factorStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var factor) || factor <= 0)
+                {
+                    isValid = false;
+                    errorMsg.Append("Hệ số quy đổi phải là số lớn hơn 0. ");
+                }
+            }
             else
             {
                 isValid = false;
@@ -420,7 +505,7 @@ public class ImportService : IImportService
         );
     }
 
-    public async Task<ImportResultDto> CommitImportAsync(Guid batchId, CancellationToken cancellationToken)
+    public async Task<ImportResultDto> CommitImportAsync(Guid batchId, string username, CancellationToken cancellationToken)
     {
         var batch = await _db.ImportBatches
             .IgnoreQueryFilters() // Cần tìm batch bất kể filter tenant khi xử lý hệ thống
@@ -428,22 +513,36 @@ public class ImportService : IImportService
 
         if (batch is null)
         {
-            return new ImportResultDto(false, batchId, "UNKNOWN", "FAILED", 0, 0, 0, new List<ImportRowErrorDto>(), "Không tìm thấy phiên nhập dữ liệu.");
+            return new ImportResultDto(false, batchId, "UNKNOWN", "FAILED", 0, 0, 0, new List<ImportRowErrorDto>(), "IMPORT_BATCH_NOT_FOUND");
         }
 
-        if (batch.Status != "VALIDATED")
+        if (batch.ImportType == "PACKAGES")
         {
-            return new ImportResultDto(false, batchId, batch.ImportType, batch.Status, batch.TotalRows, batch.SuccessRows, batch.ErrorRows, new List<ImportRowErrorDto>(), $"Phiên nhập dữ liệu ở trạng thái '{batch.Status}' không thể duyệt.");
+            var claim = await _batchCoordinator.ClaimBatchForCommitAsync(
+                batchId, _db.CurrentTenantId, "PACKAGES", null, username, cancellationToken);
+            if (claim.Status != BatchClaimStatus.Success)
+            {
+                return new ImportResultDto(false, batchId, batch.ImportType, claim.Batch?.Status ?? "FAILED",
+                    claim.Batch?.TotalRows ?? 0, claim.Batch?.SuccessRows ?? 0, claim.Batch?.ErrorRows ?? 0,
+                    new List<ImportRowErrorDto>(), claim.ErrorMessage);
+            }
+            batch = claim.Batch!;
         }
-
-        if (batch.ErrorRows > 0)
+        else
         {
-            return new ImportResultDto(false, batchId, batch.ImportType, batch.Status, batch.TotalRows, batch.SuccessRows, batch.ErrorRows, new List<ImportRowErrorDto>(), "Không thể duyệt phiên nhập dữ liệu có lỗi.");
-        }
+            if (batch.Status != "VALIDATED")
+            {
+                return new ImportResultDto(false, batchId, batch.ImportType, batch.Status, batch.TotalRows, batch.SuccessRows, batch.ErrorRows, new List<ImportRowErrorDto>(), $"Phiên nhập dữ liệu ở trạng thái '{batch.Status}' không thể duyệt.");
+            }
 
-        // Lock batch
-        batch.Status = "PROCESSING";
-        await _db.SaveChangesAsync(cancellationToken);
+            if (batch.ErrorRows > 0)
+            {
+                return new ImportResultDto(false, batchId, batch.ImportType, batch.Status, batch.TotalRows, batch.SuccessRows, batch.ErrorRows, new List<ImportRowErrorDto>(), "Không thể duyệt phiên nhập dữ liệu có lỗi.");
+            }
+
+            batch.Status = "PROCESSING";
+            await _db.SaveChangesAsync(cancellationToken);
+        }
 
         var rows = await _db.ImportBatchRows
             .Where(x => x.BatchId == batchId && x.IsValid)
@@ -641,12 +740,67 @@ public class ImportService : IImportService
                     await _db.ReasonCodes.AddAsync(reason, cancellationToken);
                 }
             }
+            else if (batch.ImportType == "PACKAGES")
+            {
+                var products = await _db.Products.ToDictionaryAsync(x => x.Code, x => x.Id, cancellationToken);
+                var uoms = await _db.Uoms.ToDictionaryAsync(x => x.Code, x => x.Id, cancellationToken);
+                var existingPkgs = await _db.Packages.ToListAsync(cancellationToken);
+                var pkgMap = existingPkgs.ToDictionary(x => $"{x.ProductId}_{x.UomId}", x => x);
+
+                foreach (var row in rows)
+                {
+                    var map = JsonSerializer.Deserialize<Dictionary<string, string>>(row.RawData!)!;
+                    var productCode = map["productCode"].Trim().ToUpperInvariant();
+                    var packageName = map["packageName"].Trim();
+                    var barcode = map.TryGetValue("barcode", out var bc) && !string.IsNullOrWhiteSpace(bc) ? bc.Trim() : null;
+                    var uomCode = map["uomCode"].Trim().ToUpperInvariant();
+                    var factor = map.TryGetValue("conversionFactor", out var fs) && decimal.TryParse(fs, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var f) ? f : 1.0000m;
+                    var isActiveVal = !map.TryGetValue("isActive", out var ia) || !bool.TryParse(ia, out var active) || active;
+
+                    var productId = products[productCode];
+                    var uomId = uoms[uomCode];
+                    var comboKey = $"{productId}_{uomId}";
+
+                    if (pkgMap.TryGetValue(comboKey, out var existingPkg))
+                    {
+                        existingPkg.PackageName = packageName;
+                        existingPkg.Barcode = barcode;
+                        existingPkg.ConversionFactor = factor;
+                        existingPkg.IsActive = isActiveVal;
+                        existingPkg.UpdatedAt = DateTimeOffset.UtcNow;
+                        existingPkg.UpdatedBy = batch.CreatedBy ?? "SYSTEM";
+                        existingPkg.RowVersion++;
+                    }
+                    else
+                    {
+                        var newPkg = new Package
+                        {
+                            Id = Guid.NewGuid(),
+                            TenantId = batch.TenantId,
+                            ProductId = productId,
+                            PackageName = packageName,
+                            Barcode = barcode,
+                            UomId = uomId,
+                            ConversionFactor = factor,
+                            IsActive = isActiveVal,
+                            CreatedAt = DateTimeOffset.UtcNow,
+                            CreatedBy = batch.CreatedBy ?? "SYSTEM",
+                            RowVersion = 1
+                        };
+                        await _db.Packages.AddAsync(newPkg, cancellationToken);
+                        pkgMap[comboKey] = newPkg;
+                    }
+                }
+            }
 
             await _db.SaveChangesAsync(cancellationToken);
-            await tx.CommitAsync(cancellationToken);
 
             batch.Status = "COMMITTED";
+            batch.CommittedAt = DateTimeOffset.UtcNow;
+            batch.CommittedBy = username;
+            batch.RowVersion++;
             await _db.SaveChangesAsync(cancellationToken);
+            await tx.CommitAsync(cancellationToken);
 
             return new ImportResultDto(true, batchId, batch.ImportType, batch.Status, batch.TotalRows, batch.SuccessRows, batch.ErrorRows, new List<ImportRowErrorDto>(), null);
         }
@@ -661,8 +815,13 @@ public class ImportService : IImportService
         }
     }
 
-    public async Task<string?> ExportErrorCsvAsync(Guid batchId, CancellationToken cancellationToken)
+    public async Task<string?> ExportErrorCsvAsync(Guid batchId, string username, CancellationToken cancellationToken)
     {
+        var batch = await _db.ImportBatches.FirstOrDefaultAsync(x =>
+            x.Id == batchId && x.TenantId == _db.CurrentTenantId && x.CreatedBy == username,
+            cancellationToken);
+        if (batch is null) return null;
+
         var rows = await _db.ImportBatchRows
             .Where(x => x.BatchId == batchId && !x.IsValid)
             .OrderBy(x => x.RowIndex)

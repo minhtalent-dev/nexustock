@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -28,6 +30,7 @@ public class InboundController : ControllerBase
     private readonly IUserPermissionService _permissionService;
     private readonly IInventoryService _inventoryService;
     private readonly InventoryDbContext _inventoryContext;
+    private readonly IInboundLineImportService _lineImportService;
 
     public InboundController(
         InboundDbContext context, 
@@ -35,7 +38,8 @@ public class InboundController : ControllerBase
         Services.ITenantProvider tenantProvider,
         IUserPermissionService permissionService,
         IInventoryService inventoryService,
-        InventoryDbContext inventoryContext)
+        InventoryDbContext inventoryContext,
+        IInboundLineImportService lineImportService)
     {
         _context = context;
         _masterContext = masterContext;
@@ -43,6 +47,7 @@ public class InboundController : ControllerBase
         _permissionService = permissionService;
         _inventoryService = inventoryService;
         _inventoryContext = inventoryContext;
+        _lineImportService = lineImportService;
     }
 
     private Guid GetTenantId() => _tenantProvider.TenantId;
@@ -328,5 +333,63 @@ public class InboundController : ControllerBase
             await transaction.RollbackAsync();
             throw;
         }
+    }
+
+    [HttpPost("/api/inbound/{id:guid}/lines/import/preview")]
+    [RequestSizeLimit(12 * 1024 * 1024)]
+    public async Task<IActionResult> PreviewLineImport(Guid id, IFormFile file)
+    {
+        if (!await HasPermissionAsync("Inbound.Orders.Create"))
+            return Forbid();
+
+        if (file == null || file.Length == 0)
+            return BadRequest(new { error = "Không tìm thấy file." });
+
+        var username = User.Identity?.Name ?? "SYSTEM";
+        await using var stream = file.OpenReadStream();
+        var result = await _lineImportService.PreviewImportAsync(id, file.ContentType, stream, file.FileName, username, HttpContext.RequestAborted);
+        if (string.Equals(result.ErrorCsvContent, "IMPORT_TOO_LARGE", StringComparison.Ordinal))
+            return BadRequest(new { error = "IMPORT_ROW_LIMIT_EXCEEDED", message = "Import exceeds 5000 data rows." });
+        if (string.Equals(result.ErrorCsvContent, "IMPORT_TEMPLATE_VERSION_UNSUPPORTED", StringComparison.Ordinal))
+            return BadRequest(new { error = "IMPORT_TEMPLATE_VERSION_UNSUPPORTED" });
+        if (!result.Success && result.BatchId == Guid.Empty)
+            return Conflict(result);
+
+        return Ok(result);
+    }
+
+    [HttpPost("/api/inbound/{id:guid}/lines/import/commit")]
+    public async Task<IActionResult> CommitLineImport(Guid id, [FromBody] MasterData.DTOs.CommitImportRequest request)
+    {
+        if (!await HasPermissionAsync("Inbound.Orders.Create"))
+            return Forbid();
+
+        var username = User.Identity?.Name ?? "SYSTEM";
+        var result = await _lineImportService.CommitImportAsync(id, request.BatchId, username, HttpContext.RequestAborted);
+        if (result.Success) return Ok(result);
+
+        return result.ErrorCsvContent switch
+        {
+            "IMPORT_BATCH_NOT_FOUND" => NotFound(result),
+            "IMPORT_BATCH_EXPIRED" or "IMPORT_BATCH_HAS_ERRORS" or "IMPORT_BATCH_ALREADY_COMMITTED" or
+                "IMPORT_TARGET_MISMATCH" or "IMPORT_TARGET_STATE_INVALID" => Conflict(result),
+            _ => BadRequest(result)
+        };
+    }
+
+    [HttpGet("/api/inbound/{id:guid}/lines/import/errors/{batchId:guid}")]
+    [Produces("text/csv")]
+    public async Task<IActionResult> ExportLineImportErrors(Guid id, Guid batchId)
+    {
+        if (!await HasPermissionAsync("Inbound.Orders.Create"))
+            return Forbid();
+
+        var username = User.Identity?.Name ?? "SYSTEM";
+        var csv = await _lineImportService.ExportErrorCsvAsync(id, batchId, username, HttpContext.RequestAborted);
+        if (csv == null)
+            return NotFound(new { error = "Không tìm thấy batch hoặc batch không có lỗi." });
+
+        var bom = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv)).ToArray();
+        return File(bom, "text/csv", $"errors_{batchId}.csv");
     }
 }

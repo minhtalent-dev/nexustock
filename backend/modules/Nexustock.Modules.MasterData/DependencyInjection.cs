@@ -36,6 +36,7 @@ public static class DependencyInjection
         services.AddScoped<ILookupMasterDataService, LookupMasterDataService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IImportService, ImportService>();
+        services.AddScoped<IImportBatchCoordinator, ImportBatchCoordinator>();
 
         return services;
     }

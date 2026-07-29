@@ -203,7 +203,8 @@
         "uomsTitle": "Cấu trúc file UOMS (Đơn vị tính):",
         "warehousesTitle": "Cấu trúc file WAREHOUSES (Nhà kho):",
         "zonesTitle": "Cấu trúc file ZONES (Vùng kho):",
-        "reasonsTitle": "Cấu trúc file REASONS (Lý do):"
+        "reasonsTitle": "Cấu trúc file REASONS (Lý do):",
+        "packagesTitle": "Cấu trúc file PACKAGES (Quy cách đóng gói):"
       },
       "fields": {
         "importType": "Loại master data",
@@ -216,7 +217,8 @@
         "uoms": "Đơn vị tính (UOMS)",
         "warehouses": "Nhà kho (WAREHOUSES)",
         "zones": "Vùng kho (ZONES)",
-        "reasons": "Lý do (REASONS)"
+        "reasons": "Lý do (REASONS)",
+        "packages": "Quy cách đóng gói (PACKAGES)"
       },
       "actions": {
         "preview": "Tải lên kiểm tra (Preview)",

@@ -104,6 +104,14 @@ public class MasterDataDbContext : DbContext
             entity.HasIndex(e => e.Code).IsUnique().HasDatabaseName("uq_permissions_code");
         });
 
+        modelBuilder.Entity<ImportBatch>(entity =>
+        {
+            entity.HasIndex(e => new { e.TenantId, e.ImportType, e.TargetId, e.FileHash, e.CreatedBy, e.ExpiresAt })
+                .HasDatabaseName("idx_import_batches_lookup");
+            entity.HasIndex(e => new { e.TenantId, e.Status, e.ExpiresAt })
+                .HasDatabaseName("idx_import_batches_status_expiry");
+        });
+
         // --- Seed Data ---
         var defaultTenantId = Guid.Parse("00000000-0000-0000-0000-000000000001");
         

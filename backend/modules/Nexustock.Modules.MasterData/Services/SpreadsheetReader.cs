@@ -52,7 +52,7 @@ public static class SpreadsheetReader
         return value;
     }
 
-    private static string EscapeCsv(string value)
+    public static string EscapeCsv(string value)
     {
         var sanitized = SanitizeFormula(value);
         if (sanitized.Contains('"') || sanitized.Contains(',') || sanitized.Contains('\n') || sanitized.Contains('\r'))

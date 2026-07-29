@@ -68,13 +68,14 @@ public class ImportsController : ControllerBase
             return BadRequest(new { error = "Không tìm thấy file." });
 
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
+        var username = User.Identity?.Name ?? "SYSTEM";
         try
         {
             if (ext == ".xlsx")
             {
                 await using var stream = file.OpenReadStream();
                 var rows = SpreadsheetReader.ReadSheetRows(stream);
-                var result = await _importService.PreviewImportAsync(type, rows, HttpContext.RequestAborted);
+                var result = await _importService.PreviewImportAsync(type, rows, username, HttpContext.RequestAborted);
                 if (string.Equals(result.ErrorCsvContent, "IMPORT_TOO_LARGE", StringComparison.Ordinal))
                     return BadRequest(new { error = "IMPORT_TOO_LARGE", message = "Import exceeds 5000 data rows." });
                 return Ok(result);
@@ -82,7 +83,7 @@ public class ImportsController : ControllerBase
 
             using var reader = new StreamReader(file.OpenReadStream());
             var csvContent = await reader.ReadToEndAsync();
-            var csvResult = await _importService.PreviewImportAsync(type, csvContent, HttpContext.RequestAborted);
+            var csvResult = await _importService.PreviewImportAsync(type, csvContent, username, HttpContext.RequestAborted);
             if (string.Equals(csvResult.ErrorCsvContent, "IMPORT_TOO_LARGE", StringComparison.Ordinal))
                 return BadRequest(new { error = "IMPORT_TOO_LARGE", message = "Import exceeds 5000 data rows." });
             return Ok(csvResult);
@@ -99,8 +100,17 @@ public class ImportsController : ControllerBase
         if (!await CheckPermissionAsync("master_data.import"))
             return Forbid();
 
-        var result = await _importService.CommitImportAsync(request.BatchId, HttpContext.RequestAborted);
-        return Ok(result);
+        var username = User.Identity?.Name ?? "SYSTEM";
+        var result = await _importService.CommitImportAsync(request.BatchId, username, HttpContext.RequestAborted);
+        if (result.Success) return Ok(result);
+
+        return result.ErrorCsvContent switch
+        {
+            "IMPORT_BATCH_NOT_FOUND" => NotFound(result),
+            "IMPORT_BATCH_EXPIRED" or "IMPORT_BATCH_HAS_ERRORS" or "IMPORT_BATCH_ALREADY_COMMITTED" or
+                "IMPORT_TARGET_MISMATCH" or "IMPORT_TARGET_STATE_INVALID" => Conflict(result),
+            _ => BadRequest(result)
+        };
     }
 
     [HttpGet("errors/{batchId}")]
@@ -110,7 +120,8 @@ public class ImportsController : ControllerBase
         if (!await CheckPermissionAsync("master_data.import"))
             return Forbid();
 
-        var csv = await _importService.ExportErrorCsvAsync(batchId, HttpContext.RequestAborted);
+        var username = User.Identity?.Name ?? "SYSTEM";
+        var csv = await _importService.ExportErrorCsvAsync(batchId, username, HttpContext.RequestAborted);
         if (csv == null)
             return NotFound(new { error = "Không tìm thấy batch hoặc batch không có lỗi." });
 

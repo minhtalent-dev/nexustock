@@ -112,6 +112,10 @@ export default function ImportPage() {
           <span className="font-semibold text-foreground block mb-1">{t("help.reasonsTitle")}</span>
           <code>code, reasonType, description, isActive</code>
         </div>
+        <div className="bg-card border border-border p-4 rounded-lg text-xs text-muted-foreground">
+          <span className="font-semibold text-foreground block mb-1">{t("help.packagesTitle")}</span>
+          <code>productCode, packageName, barcode, uomCode, conversionFactor</code>
+        </div>
       </div>
 
       <div className="bg-card border border-border p-6 rounded-lg">
@@ -133,6 +137,7 @@ export default function ImportPage() {
                 <option value="WAREHOUSES">{t("options.warehouses")}</option>
                 <option value="ZONES">{t("options.zones")}</option>
                 <option value="REASONS">{t("options.reasons")}</option>
+                <option value="PACKAGES">{t("options.packages")}</option>
               </select>
             </div>
             <div className="flex-1">
