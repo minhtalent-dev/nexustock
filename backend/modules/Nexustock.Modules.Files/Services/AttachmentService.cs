@@ -25,6 +25,11 @@ public sealed class AttachmentService : IAttachmentService
         "LOT", "EXCEPTION", "LPN", "WAVE", "PUTAWAY_PROPOSAL", "CROSS_DOCK_CANDIDATE"
     };
 
+    private static readonly HashSet<string> AllowedSources = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "RF_CAMERA", "FILE_PICKER"
+    };
+
     private readonly FilesDbContext _db;
     private readonly MasterDataDbContext _masterData;
     private readonly InventoryDbContext _inventory;
@@ -62,6 +67,14 @@ public sealed class AttachmentService : IAttachmentService
         var entityType = request.EntityType.Trim().ToUpperInvariant();
         if (!AllowedEntityTypes.Contains(entityType))
             throw new FileDomainException("ENTITY_TYPE_NOT_ALLOWED", "Entity type is not allowed");
+
+        string? normalizedSource = null;
+        if (!string.IsNullOrWhiteSpace(request.Source))
+        {
+            normalizedSource = request.Source.Trim().ToUpperInvariant();
+            if (!AllowedSources.Contains(normalizedSource))
+                throw new FileDomainException("ATTACHMENT_SOURCE_NOT_ALLOWED", "Attachment source is not allowed", 400);
+        }
 
         FilePendingUpload? pending = null;
         if (request.UploadId.HasValue)
@@ -155,6 +168,12 @@ public sealed class AttachmentService : IAttachmentService
                 }
             }
             throw;
+        }
+
+        if (normalizedSource == "RF_CAMERA")
+        {
+            _logger.LogInformation("files.rf.uploaded attachmentId={AttachmentId} entityType={EntityType} entityId={EntityId} provider={Provider} sizeBytes={SizeBytes}",
+                attachmentId, entityType, request.EntityId, row.Provider, row.SizeBytes);
         }
 
         // Gọi observers sau khi commit thành công

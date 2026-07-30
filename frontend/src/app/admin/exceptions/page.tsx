@@ -330,7 +330,7 @@ export default function ExceptionsPage() {
                 </div>
               )}
 
-              <EntityAttachmentsPanel entityType="EXCEPTION" entityId={selectedException.id} />
+              <EntityAttachmentsPanel entityType="EXCEPTION" entityId={selectedException.id} enableRfCapture={true} />
 
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold flex items-center gap-1.5">

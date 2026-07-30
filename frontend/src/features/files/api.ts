@@ -1,4 +1,7 @@
 import api from "@/lib/api";
+import { type AttachmentUploadSource } from "./rf-upload-validation";
+
+export type { AttachmentUploadSource };
 
 export type UploadResult = {
   uploadId: string;
@@ -50,6 +53,7 @@ export async function bindAttachment(payload: {
   uploadId: string;
   entityType: string;
   entityId: string;
+  source?: AttachmentUploadSource;
 }): Promise<AttachmentItem> {
   const res = await api.post<AttachmentItem>("/files/attachments", payload);
   return res.data;

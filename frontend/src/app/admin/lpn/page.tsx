@@ -478,7 +478,7 @@ export default function LpnPage() {
                 </CardContent>
               </Card>
 
-              <EntityAttachmentsPanel entityType="LPN" entityId={selectedLpn.id} />
+              <EntityAttachmentsPanel entityType="LPN" entityId={selectedLpn.id} enableRfCapture={true} />
             </>
           ) : (
             <div className="bg-card border border-border rounded-lg p-16 text-center text-muted-foreground text-xs flex flex-col items-center justify-center gap-2">

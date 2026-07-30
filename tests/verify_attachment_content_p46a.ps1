@@ -42,8 +42,10 @@ try {
         if ($panelContent -notlike "*files.delete*" -or $panelContent -notlike "*files.upload*" -or $panelContent -notlike "*files.read*") {
             throw "EntityAttachmentsPanel is missing files.read, files.delete or files.upload permission checks!"
         }
-        if ($panelContent -notlike '*fileInputRef.current.value = ""*') {
-            throw "EntityAttachmentsPanel does not reset the file input!"
+        $rfPath = "frontend\src\features\files\rf-camera-upload.tsx"
+        $rfContent = if (Test-Path $rfPath) { Get-Content $rfPath -Raw } else { "" }
+        if ($panelContent -notlike '*fileInputRef.current.value = ""*' -and $rfContent -notlike '*cameraInputRef.current.value = ""*') {
+            throw "File input reset is missing!"
         }
 
         $previewPath = "frontend\src\features\files\attachment-preview-dialog.tsx"

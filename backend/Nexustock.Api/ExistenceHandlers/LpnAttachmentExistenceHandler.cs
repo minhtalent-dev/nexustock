@@ -21,8 +21,15 @@ public class LpnAttachmentExistenceHandler : IEntityExistenceHandler
     public async Task<bool> ExistsAsync(Guid entityId, CancellationToken ct)
     {
         var tenantClaim = _httpContextAccessor.HttpContext?.User?.FindFirst("tenantId")?.Value;
-        if (string.IsNullOrEmpty(tenantClaim) || !Guid.TryParse(tenantClaim, out var tenantId))
-            return false;
+        Guid tenantId;
+        if (!string.IsNullOrEmpty(tenantClaim) && Guid.TryParse(tenantClaim, out var parsedTenantId))
+        {
+            tenantId = parsedTenantId;
+        }
+        else
+        {
+            tenantId = _dbContext.CurrentTenantId;
+        }
 
         return await _dbContext.Lpns
             .AsNoTracking()

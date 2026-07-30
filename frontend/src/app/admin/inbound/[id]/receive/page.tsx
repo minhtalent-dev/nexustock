@@ -269,7 +269,7 @@ export default function ReceivePage() {
           </Card>
         </div>
         <div className="lg:col-span-1">
-          <EntityAttachmentsPanel entityType="INBOUND_ORDER" entityId={orderId} />
+          <EntityAttachmentsPanel entityType="INBOUND_ORDER" entityId={orderId} enableRfCapture={true} />
         </div>
       </div>
 

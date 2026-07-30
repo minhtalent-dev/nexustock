@@ -13,7 +13,8 @@ public record UploadResultDto(
 public record BindAttachmentRequest(
     Guid? UploadId,
     string EntityType,
-    Guid EntityId);
+    Guid EntityId,
+    string? Source = null);
 
 public record AttachmentDto(
     Guid Id,

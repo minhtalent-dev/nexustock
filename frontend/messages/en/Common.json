@@ -58,7 +58,16 @@
       "retryBtn": "Retry",
       "bindFailed": "Some documents could not be linked successfully. Please save again to retry.",
       "confirmClosePendingTitle": "Discard attachment retry?",
-      "confirmClosePendingDescription": "The record was created, but some attachments are still pending. Closing now discards this retry session."
+      "confirmClosePendingDescription": "The record was created, but some attachments are still pending. Closing now discards this retry session.",
+      "takePhotoBtn": "Take photo",
+      "chooseFileBtn": "Choose file",
+      "offlineWarning": "You are offline. Uploading is disabled until internet connection is restored.",
+      "fileTooLarge": "File exceeds the maximum allowed size of 10 MB.",
+      "invalidCameraImage": "Camera capture must be a valid image (JPEG, PNG, WebP).",
+      "unsupportedType": "Unsupported file type. Only JPEG, PNG, WebP, and PDF files are allowed.",
+      "localPreviewAlt": "Selected image preview",
+      "sourceCamera": "Camera",
+      "sourceFile": "File"
     }
   }
 }

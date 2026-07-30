@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { showError, showSuccess } from "@/lib/toast";
@@ -14,26 +14,34 @@ import {
   listAttachments,
   uploadFile,
   type AttachmentItem,
+  type AttachmentUploadSource,
   type UploadResult,
 } from "@/features/files/api";
 import { AttachmentPreviewDialog } from "@/features/files/attachment-preview-dialog";
 import { AttachmentThumbnail } from "./attachment-thumbnail";
+import { RfCameraUpload } from "./rf-camera-upload";
 
 type Props = {
   entityType: string;
   entityId: string | null;
   pendingUploads?: UploadResult[];
   onPendingChange?: (items: UploadResult[]) => void;
+  enableRfCapture?: boolean;
 };
 
-export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = [], onPendingChange }: Props) {
+export function EntityAttachmentsPanel({
+  entityType,
+  entityId,
+  pendingUploads = [],
+  onPendingChange,
+  enableRfCapture = false,
+}: Props) {
   const t = useTranslations("Common.files");
   const tc = useTranslations("Common.actions");
   const ts = useTranslations("Common.states");
 
   const { hasPermission } = useAuth();
   const confirm = useConfirmDialog();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const canRead = hasPermission("files.read");
   const canUpload = hasPermission("files.upload");
@@ -67,30 +75,30 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
     return () => clearTimeout(timer);
   }, [refresh]);
 
-  const onFile = async (file: File | null) => {
-    if (!file || !canUpload) return;
+  const onFileUpload = async (file: File, source: AttachmentUploadSource): Promise<boolean> => {
+    if (!file || !canUpload) return false;
     setUploading(true);
     try {
       const uploaded = await uploadFile(file);
       if (!entityId) {
         onPendingChange?.([...pendingUploads, uploaded]);
         showSuccess(t("toastUploaded"));
-        return;
+        return true;
       }
       await bindAttachment({
         uploadId: uploaded.uploadId,
         entityType,
         entityId,
+        source,
       });
       showSuccess(t("toastSaved"));
       await refresh();
+      return true;
     } catch (err: unknown) {
       showError(getHttpErrorMessage(err, t("uploadFailed")));
+      return false;
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     }
   };
 
@@ -136,32 +144,25 @@ export function EntityAttachmentsPanel({ entityType, entityId, pendingUploads = 
   }
 
   return (
-    <div className="space-y-3 rounded-lg border border-border bg-card/40 p-4 font-sans">
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-card/40 p-4 font-sans">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-foreground">{t("attachments")}</h3>
           <p className="text-xs text-muted-foreground">{t("hint")}</p>
         </div>
-        {canUpload && (
-          <label className="inline-flex cursor-pointer">
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              accept=".jpg,.jpeg,.png,.webp,.pdf"
-              disabled={uploading}
-              onChange={(e) => void onFile(e.target.files?.[0] ?? null)}
-            />
-            <span className="inline-flex h-8 items-center rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors">
-              {uploading ? t("uploading") : t("uploadBtn")}
-            </span>
-          </label>
-        )}
       </div>
+
+      {canUpload && (
+        <RfCameraUpload
+          uploading={uploading}
+          enableRfCapture={enableRfCapture}
+          onUpload={onFileUpload}
+        />
+      )}
 
       {loading ? <p className="text-xs text-muted-foreground">{ts("loading")}</p> : null}
 
-      <ul className="space-y-2">
+      <ul className="flex flex-col gap-2">
         {items.map((item) => {
           const isPreviewable = item.kind === "IMAGE" || item.contentType.startsWith("image/") || item.contentType === "application/pdf" || item.fileName.toLowerCase().endsWith(".pdf");
           return (

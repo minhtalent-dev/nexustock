@@ -1,0 +1,90 @@
+﻿[
+    {
+        "id":  "G01_STATIC_RF",
+        "name":  "Static RF Contract \u0026 Opt-in Assertions",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  29,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G01_STATIC_RF.log"
+    },
+    {
+        "id":  "G02_I18N_PARITY",
+        "name":  "EN/VI Common.files Parity",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  43,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G02_I18N_PARITY.log"
+    },
+    {
+        "id":  "G03_SELF_TEST",
+        "name":  "RF Upload Validation Self-Test (Node)",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  102,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G03_SELF_TEST.log"
+    },
+    {
+        "id":  "G04_FE_TYPECHECK_LINT",
+        "name":  "Frontend TypeScript Typecheck \u0026 ESLint",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  12422,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G04_FE_TYPECHECK_LINT.log"
+    },
+    {
+        "id":  "G05_BE_BUILD",
+        "name":  "Backend Solution Build (Release)",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  20030,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G05_BE_BUILD.log"
+    },
+    {
+        "id":  "G06_BE_TESTS",
+        "name":  "Phase46E Integration Tests",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  31761,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G06_BE_TESTS.log"
+    },
+    {
+        "id":  "G07_REGRESSION_P43",
+        "name":  "P43 Regression Verifier",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  305,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G07_REGRESSION_P43.log"
+    },
+    {
+        "id":  "G08_REGRESSION_P46A",
+        "name":  "P46A Regression Verifier",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  29417,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G08_REGRESSION_P46A.log"
+    },
+    {
+        "id":  "G09_REGRESSION_P46B",
+        "name":  "P46B Regression Verifier",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  320,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G09_REGRESSION_P46B.log"
+    },
+    {
+        "id":  "G10_REGRESSION_P46C",
+        "name":  "P46C Regression Verifier",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  40376,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G10_REGRESSION_P46C.log"
+    },
+    {
+        "id":  "G11_REGRESSION_P46D",
+        "name":  "P46D Regression Verifier",
+        "status":  "PASSED",
+        "exitCode":  0,
+        "durationMs":  39835,
+        "logPath":  "planning/evidence/phase_46_dbm/gate_G11_REGRESSION_P46D.log"
+    }
+]
