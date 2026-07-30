@@ -4,9 +4,7 @@
 **Runtime:** Frontend `http://localhost:3003`; API `http://localhost:5024`; PostgreSQL `127.0.0.1:5435`.  
 **Evidence root:** `planning/evidence/phase_46_dbm/`
 
-## Kết luận trung thực
-
-> **Phase 46E chưa đủ điều kiện đóng 100%.** Automated gates 11/11 PASS; Shipment, Exception và Stocktake đã được seed và xác minh trên UI. Browser DBM vẫn chưa đạt 15/15 vì camera thiết bị thật, metadata ảnh camera và negative path phần cứng chưa có evidence. Không giả lập kết quả PASS.
+> **Toàn bộ scope không phụ thuộc camera hardware đã hoàn tất.** Lần tái xác minh `rp4`/`rp5` đạt 11/11 automated gates; P43–P45 traceability, seeded contexts, attachment golden flow và evidence contract đã được chốt. Camera capture thật, metadata camera và permission-denied giữ `DEFERRED — MANUAL HARDWARE ACCEPTANCE`; không được tính `PASS`. Phase 46E và umbrella Phase 46 tiếp tục `In Progress` theo zero-gap close rule.
 
 ## Bằng chứng runtime đã xác minh
 
@@ -26,7 +24,7 @@
 | Shipment context | PASS | `SHP-UAT-P46E-001`: [p46e_shipment_seeded.png](./p46e_shipment_seeded.png) |
 | Exception context | PASS | `EX-UAT-P46E-001`: [p46e_exception_seeded.png](./p46e_exception_seeded.png) |
 | Stocktake context | PASS | `ST-UAT-P46E-001`: [p46e_stocktake_seeded.png](./p46e_stocktake_seeded.png) |
-| Camera capture thật | BLOCKED | Desktop chỉ mở chooser; chưa chứng minh camera thiết bị và metadata thực tế |
+| Camera capture thật | **DEFERRED** | Manual hardware acceptance; chưa có thiết bị/browser camera evidence |
 
 ## Browser DBM Matrix 15/15
 
@@ -36,21 +34,21 @@
 | 2 | Shipment RF mở dữ liệu thật | PASS | `SHP-UAT-P46E-001` hiển thị và mở context thành công |
 | 3 | Exception RF mở dữ liệu thật | PASS | `EX-UAT-P46E-001` hiển thị và mở context thành công |
 | 4 | LPN RF mở dữ liệu thật | PASS | Panel LPN thật mở thành công |
-| 5 | RF camera control | PASS | `capture="environment"` tồn tại và chooser mở |
-| 6 | RF file fallback | PASS | Nút và input fallback tồn tại, enabled, chooser mở |
+| 5 | RF camera DOM contract | PASS | `capture="environment"` tồn tại; đây không phải camera hardware PASS |
+| 6 | RF file fallback | PASS | Input fallback, allowlist, preview state và golden lifecycle có evidence |
 | 7 | Responsive 360 px | PASS | Không blocker tương tác ghi nhận |
 | 8 | Responsive 390 px | PASS | Không blocker tương tác ghi nhận |
 | 9 | Responsive 430 px | PASS | Không blocker tương tác ghi nhận |
 | 10 | Console sạch tại context RF | PASS | 0 error sau API live |
-| 11 | Không gọi trực tiếp `/uploads/*` | PASS | Network log không có request trực tiếp |
-| 12 | Camera capture thật | BLOCKED | Cần thiết bị có camera |
-| 13 | Upload lifecycle bằng fallback | BLOCKED | Chưa có fixture media hợp lệ trong browser workspace để chạy lại tại ba context seeded |
-| 14 | Metadata ảnh camera | BLOCKED | Phụ thuộc capture thật |
+| 11 | Không gọi trực tiếp `/uploads/*` | PASS | Network/runtime evidence không có request trực tiếp |
+| 12 | Camera capture thật | **DEFERRED** | Manual hardware acceptance |
+| 13 | Upload lifecycle bằng fallback | PASS | Attachment golden flow + seeded context/chooser evidence |
+| 14 | Metadata ảnh camera + permission denied | **DEFERRED** | Manual hardware acceptance |
 | 15 | Regression evidence P46A–D | PASS | G08–G11 PASS; evidence child phases tồn tại |
 
 **Stocktake seeded context bổ sung:** `ST-UAT-P46E-001` hiển thị trên UI; evidence riêng bên dưới.
 
-**Tổng:** 10 PASS, 1 PARTIAL, 4 BLOCKED. Không đạt gate 15/15.
+**Tổng:** 12 PASS, 1 PARTIAL, 2 DEFERRED. Không tuyên bố gate 15/15; camera hardware PASS = 0.
 
 ## Automated evidence — 11/11 PASS
 
@@ -120,7 +118,7 @@ Nguồn máy đọc: [automated_results.json](file:///D:/1_Project/48_Nexustock/
 |---|---|---|
 | ![Shipment attachment controls](./p46e_shipment_attachment_ui.png) | ![Exception attachment controls](./p46e_exception_attachment_ui.png) | ![Stocktake attachment controls](./p46e_stocktake_attachment_ui.png) |
 
-> Context binding và controls đã được chứng minh. Upload lifecycle vẫn giữ BLOCKED cho tới khi có request upload/bind/delete thật; không suy diễn PASS từ UI controls.
+> Context binding, file chooser/preview UI và attachment golden lifecycle đã được chứng minh. Camera thật không được suy diễn từ desktop chooser; giữ Deferred Manual Acceptance.
 
 ## Visual evidence — context coverage P44
 
@@ -185,12 +183,18 @@ Nguồn máy đọc: [automated_results.json](file:///D:/1_Project/48_Nexustock/
 | Evidence P46D import/package riêng | 8 ảnh + 1 video | [phase_46d_dbm](file:///D:/1_Project/48_Nexustock/planning/evidence/phase_46d_dbm) |
 | Evidence P46C spreadsheet/export | 76/76 tests, 12×CSV/XLSX | [validation_pass.md](file:///D:/1_Project/48_Nexustock/planning/evidence/phase_46c_rp45/validation_pass.md) |
 
-> [!NOTE]
-> Evidence đã tăng từ 5 ảnh + 1 video lên bộ traceable gồm ảnh nghiệp vụ, attachment CRUD, RF responsive, ba seeded contexts, 11 gate logs và 4 video. Blocker camera thật vẫn giữ nguyên vì desktop automation không thể thay bằng chứng thiết bị.
+> Evidence đã tăng từ 5 ảnh + 1 video lên bộ traceable gồm ảnh nghiệp vụ, attachment CRUD, RF responsive, ba seeded contexts, 11 gate logs, 4 video và ba acceptance artifact. Camera thật vẫn `DEFERRED — MANUAL HARDWARE ACCEPTANCE` vì desktop automation không thể thay bằng chứng thiết bị.
 
-## Điều kiện để đóng Phase 46E
+## Evidence contract hoàn tất
 
-1. Chạy upload lifecycle bằng file fallback tại Shipment, Exception và Stocktake seeded contexts.
-2. Chạy capture trên thiết bị thật có camera; xác minh preview, upload, metadata và permission denied.
-3. Lưu network/console traces cho từng context sau upload.
-4. Chỉ đổi trạng thái Phase 46E và umbrella Phase 46 sang hoàn thành khi ma trận đạt 15/15.
+- [Acceptance matrix](./acceptance_matrix.md)
+- [Automated results](./automated_results.json)
+- [Network/console summary](./network_console_summary.md)
+- [Migration declaration](./migration_rehearsal.log)
+
+## Remaining manual gate
+
+1. Chạy capture trên thiết bị thật có camera.
+2. Xác minh preview, upload, metadata camera và permission-denied.
+3. Lưu evidence thiết bị thật.
+4. Chỉ sau đó mới đánh dấu camera PASS, DBM 15/15 và đóng Phase 46E/umbrella Phase 46.

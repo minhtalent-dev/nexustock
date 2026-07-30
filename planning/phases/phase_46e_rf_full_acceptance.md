@@ -4,11 +4,11 @@
 
 | Mục | Giá trị |
 |---|---|
-| **Mức sẵn sàng** | **100% Execution-Ready (`rp1` 2026-07-29)** |
-| **Trạng thái** | 🟦 Ready for Execution |
+| **Mức sẵn sàng** | **Non-hardware acceptance hoàn tất (`rp4`/`rp5` 2026-07-30)** |
+| **Trạng thái** | 🔄 **In Progress — Deferred Manual Hardware Acceptance** |
 | **Ước lượng** | 2–3 dev-days |
 | **Upstream** | P46A · P46B · P46C · P46D — đều đã đóng |
-| **Kết quả** | Đóng umbrella P46 và toàn bộ gap P43–P45 |
+| **Kết quả** | 11/11 automated PASS; camera thật chưa được nghiệm thu |
 | **Scope nguồn** | P45 RF capture + full regression/DBM/evidence |
 | **Migration mới** | Không |
 | **Dependency mới** | Không |
@@ -21,6 +21,8 @@
 | 2026-07-29 | `rp1`: reindex RF/mobile, Files API/service, bốn entity context và strict verifier P46A–P46D; khóa execution plan 100% ready |
 | 2026-07-29 | Khóa shared RF component, camera/file fallback, client/server validation, structured observability, acceptance aggregator và zero-gap evidence contract |
 | 2026-07-29 | Xác nhận không tạo bốn route mobile mới; RF action chạy responsive tại bốn màn nghiệp vụ đã có entity ID thật |
+| 2026-07-30 | `rp4`/`rp5`: strict verifier 11/11 PASS; P43–P45 acceptance matrix, network/console summary và migration declaration hoàn tất |
+| 2026-07-30 | FOUNDER khóa camera capture, metadata và permission-denied là `Deferred Manual Acceptance`; không tuyên bố camera gate PASS hoặc DBM 15/15 |
 
 > [!IMPORTANT]
 > **Kết luận `rp1`: Phase 46E đạt 100% execution-ready.** Không cần migration DB, dependency mới, API upload mới hoặc offline blob queue. Production diff tập trung vào component attachment dùng chung, bind-source validation, observability, i18n, test/verifier và evidence acceptance.
@@ -215,33 +217,33 @@ Không sửa page nếu reindex khi execute xác nhận shared component đã đ
 
 ### 7.1 P43 — Core
 
-- [ ] Master IE: UOMS CSV/XLSX preview/commit/export/roundtrip.
-- [ ] Master IE: WAREHOUSES CSV/XLSX preview/commit/export/roundtrip.
-- [ ] Master IE: ZONES CSV/XLSX preview/commit/export/roundtrip.
-- [ ] Master IE: REASONS CSV/XLSX preview/commit/export/roundtrip.
-- [ ] Attachments: PRODUCT/QC_RESULT/INBOUND_ORDER/SHIPMENT/STOCKTAKE/RMA_REQUEST.
-- [ ] QC dual-write/legacy fallback.
-- [ ] Pending upload/bind/cleanup.
-- [ ] Ops exports: INBOUND_ORDERS/SHIPMENTS/STOCKTAKES/RMA CSV/XLSX.
-- [ ] Permission `ops.export` + `files.*` regression.
+- [x] Master IE: UOMS CSV/XLSX preview/commit/export/roundtrip — [acceptance](../evidence/phase_46_dbm/acceptance_matrix.md).
+- [x] Master IE: WAREHOUSES CSV/XLSX preview/commit/export/roundtrip — [acceptance](../evidence/phase_46_dbm/acceptance_matrix.md).
+- [x] Master IE: ZONES CSV/XLSX preview/commit/export/roundtrip — [acceptance](../evidence/phase_46_dbm/acceptance_matrix.md).
+- [x] Master IE: REASONS CSV/XLSX preview/commit/export/roundtrip — [acceptance](../evidence/phase_46_dbm/acceptance_matrix.md).
+- [x] Attachments: PRODUCT/QC_RESULT/INBOUND_ORDER/SHIPMENT/STOCKTAKE/RMA_REQUEST — [acceptance](../evidence/phase_46_dbm/acceptance_matrix.md).
+- [x] QC dual-write/legacy fallback — G08 PASS.
+- [x] Pending upload/bind/cleanup — G06/G08 PASS.
+- [x] Ops exports: INBOUND_ORDERS/SHIPMENTS/STOCKTAKES/RMA CSV/XLSX — G10 PASS.
+- [x] Permission `ops.export` + `files.*` regression — G07/G10 PASS.
 
 ### 7.2 P44 — Extended
 
-- [ ] Attachment handlers/UI: LOT/EXCEPTION/LPN/WAVE/PUTAWAY_PROPOSAL/CROSS_DOCK_CANDIDATE.
-- [ ] Exports: LOTS/EXCEPTIONS/LPNS/INVENTORY_BALANCES/WAVES/PUTAWAY_PROPOSALS/CROSS_DOCK_CANDIDATES/REPLENISHMENT_TASKS.
-- [ ] Sáu fake IDs và cross-tenant attempts bị chặn.
+- [x] Attachment handlers/UI: LOT/EXCEPTION/LPN/WAVE/PUTAWAY_PROPOSAL/CROSS_DOCK_CANDIDATE — G09 + browser evidence.
+- [x] Exports: LOTS/EXCEPTIONS/LPNS/INVENTORY_BALANCES/WAVES/PUTAWAY_PROPOSALS/CROSS_DOCK_CANDIDATES/REPLENISHMENT_TASKS — G10 PASS.
+- [x] Sáu fake IDs và cross-tenant attempts bị chặn — G06/G09 PASS.
 
 ### 7.3 P45 — Completion
 
-- [ ] PACKAGES CSV/XLSX preview/commit/export/roundtrip.
-- [ ] Inbound ASN line preview/commit/idempotency.
-- [ ] Stocktake count line preview/commit/idempotency.
-- [ ] RF camera + file fallback.
-- [ ] Thumbnail generation/lifecycle/backfill.
-- [ ] Provider-safe preview/download; không UI request `/uploads`.
-- [ ] OCR được ghi rõ out-of-scope có chủ đích theo P45.
+- [x] PACKAGES CSV/XLSX preview/commit/export/roundtrip — G11 PASS.
+- [x] Inbound ASN line preview/commit/idempotency — G11 PASS.
+- [x] Stocktake count line preview/commit/idempotency — G11 PASS.
+- [ ] RF camera + file fallback — file fallback/DOM contract PASS; camera thật `DEFERRED — MANUAL HARDWARE ACCEPTANCE`.
+- [x] Thumbnail generation/lifecycle/backfill — G09 PASS.
+- [x] Provider-safe preview/download; không UI request `/uploads` — G08/G09 + network summary.
+- [x] OCR được ghi rõ out-of-scope có chủ đích theo P45.
 
-Mỗi checkbox chỉ được tick khi có đường dẫn evidence thật trong `acceptance_matrix.md`.
+Traceability chi tiết: [acceptance_matrix.md](../evidence/phase_46_dbm/acceptance_matrix.md).
 
 ---
 
@@ -436,13 +438,14 @@ Walkthrough phải link evidence thật; mô tả suông không đủ để đó
 
 **Exit gate:** Automated gate 100% pass; không skip không hợp lệ.
 
-### EP5 — DBM 15/15 + Evidence
+### EP5 — DBM + Evidence
 
-- Chạy Browser DBM matrix.
-- Kiểm thử camera thật/file fallback, permission/error/network/console/cross-tenant.
-- Lưu ảnh, video, status evidence và migration rehearsal.
+- [x] Hoàn tất Browser DBM cho toàn bộ case không phụ thuộc camera hardware.
+- [x] Kiểm thử file fallback, validation, network/console/cross-tenant bằng browser + automated evidence.
+- [x] Lưu ảnh, video, acceptance matrix, network/console summary và migration declaration.
+- [ ] Camera capture, metadata và permission-denied trên thiết bị thật — `DEFERRED — MANUAL HARDWARE ACCEPTANCE`.
 
-**Exit gate:** DBM 15/15, camera thật có evidence, console/network sạch.
+**Exit gate:** Non-hardware acceptance hoàn tất; DBM 15/15 chưa đạt và không được tuyên bố cho tới manual hardware acceptance.
 
 ### EP6 — Zero-Gap Close
 
@@ -505,21 +508,21 @@ Chỉ cập nhật trạng thái Done sau EP6.
 
 ## 14. Definition of Done
 
-- [ ] RF camera/file fallback pass bốn contexts.
-- [ ] Camera thật có evidence.
-- [ ] Cancel/deny/offline/oversize/bad MIME/retry pass.
-- [ ] Automated gate 100% pass.
-- [ ] P41/P43 và P46A–P46D regression pass.
-- [ ] Frontend typecheck/lint và EN/VI parity pass.
-- [ ] Backend build + `Phase46E` integration tests pass.
-- [ ] Browser DBM matrix 15/15 pass.
-- [ ] Traceability P43 100% pass.
-- [ ] Traceability P44 100% pass.
-- [ ] Traceability P45 100% pass.
-- [ ] Evidence ảnh/video/API/results/network/console/migration đầy đủ.
-- [ ] Gap inventory `Open = 0`, `Fail = 0`.
-- [ ] README/CHANGELOG/master plan/umbrella cập nhật.
-- [ ] P46E và umbrella Phase 46 chuyển `✅ Done` đúng close rules.
+- [ ] RF camera/file fallback pass bốn contexts — file fallback/contract PASS; camera hardware Deferred.
+- [ ] Camera thật có evidence — `DEFERRED — MANUAL HARDWARE ACCEPTANCE`.
+- [ ] Cancel/deny/offline/oversize/bad MIME/retry pass — automated negative paths PASS; hardware deny Deferred.
+- [x] Automated gate 100% pass — 11/11, không skip.
+- [x] P41/P43 và P46A–P46D regression pass.
+- [x] Frontend typecheck/lint và EN/VI parity pass.
+- [x] Backend build + `Phase46E` integration tests pass.
+- [ ] Browser DBM matrix 15/15 pass — 12 PASS, 1 PARTIAL, 2 Deferred.
+- [x] Traceability P43 100% pass.
+- [x] Traceability P44 100% pass.
+- [ ] Traceability P45 — mọi non-hardware scope PASS; camera hardware Deferred.
+- [x] Evidence ảnh/video/API/results/network/console/migration cho non-hardware scope đầy đủ.
+- [x] Gap inventory `Fail = 0`, `Open không owner = 0`; hardware deferred = 3.
+- [x] Master plan/umbrella cập nhật trạng thái trung thực; README/CHANGELOG chờ phase Done.
+- [ ] P46E và umbrella Phase 46 chuyển `✅ Done` — chờ manual hardware acceptance.
 
 ---
 

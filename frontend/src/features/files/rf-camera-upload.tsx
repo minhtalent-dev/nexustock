@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
-import { Camera, Upload, AlertTriangle, RefreshCw, X, Check } from "lucide-react";
+import { Camera, Upload, AlertTriangle, ImageIcon, Trash2 } from "lucide-react";
 import {
   validateRfUpload,
   type AttachmentUploadSource,
@@ -239,7 +239,7 @@ export function RfCameraUpload({
                 ) : (
                   <>
                     <Upload className="h-3.5 w-3.5" />
-                    <span>{tc("upload")}</span>
+                    <span>{t("uploadBtn")}</span>
                   </>
                 )}
               </Button>
