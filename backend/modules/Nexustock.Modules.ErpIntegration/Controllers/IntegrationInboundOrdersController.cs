@@ -114,8 +114,9 @@ public class IntegrationInboundOrdersController : ControllerBase
         try
         {
             // Verify if order already exists in WMS
-            var orderNo = dto.InboundOrder?.EBELN;
-            if (string.IsNullOrWhiteSpace(orderNo))
+            var inboundOrder = dto.InboundOrder;
+            var orderNo = inboundOrder?.EBELN;
+            if (inboundOrder is null || string.IsNullOrWhiteSpace(orderNo))
             {
                 throw new ArgumentException("EBELN (orderNo) is required.");
             }
@@ -131,8 +132,8 @@ public class IntegrationInboundOrdersController : ControllerBase
                 return UnprocessableEntity(new { errorCode = "validation.orderAlreadyProcessed", message = "Order already exists in WMS." });
             }
 
-            var partnerCode = dto.InboundOrder.LIFNR;
-            var warehouseCode = dto.InboundOrder.WERKS;
+            var partnerCode = inboundOrder.LIFNR;
+            var warehouseCode = inboundOrder.WERKS;
 
             var partnerId = await _mappingService.ResolvePartnerAsync(tenantId, extSystem, partnerCode);
             var warehouseId = await _mappingService.ResolveWarehouseAsync(tenantId, extSystem, warehouseCode); // Validates existence
@@ -152,7 +153,7 @@ public class IntegrationInboundOrdersController : ControllerBase
             };
 
             var items = new List<InboundOrderItem>();
-            foreach (var item in dto.InboundOrder.Items ?? Enumerable.Empty<ErpInboundOrderItemDto>())
+            foreach (var item in inboundOrder.Items ?? Enumerable.Empty<ErpInboundOrderItemDto>())
             {
                 var itemId = await _mappingService.ResolveItemAsync(tenantId, extSystem, item.MATNR);
                 var uomId = await _mappingService.ResolveUomAsync(tenantId, extSystem, item.MEINS);

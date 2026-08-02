@@ -23,6 +23,8 @@
 | 2026-07-29 | Xác nhận không tạo bốn route mobile mới; RF action chạy responsive tại bốn màn nghiệp vụ đã có entity ID thật |
 | 2026-07-30 | `rp4`/`rp5`: strict verifier 11/11 PASS; P43–P45 acceptance matrix, network/console summary và migration declaration hoàn tất |
 | 2026-07-30 | FOUNDER khóa camera capture, metadata và permission-denied là `Deferred Manual Acceptance`; không tuyên bố camera gate PASS hoặc DBM 15/15 |
+| 2026-07-31 | Tái chạy `rp4`/`rp5`: 11/11 gates PASS; P46D regression 85/85 tests; frontend typecheck/lint sạch sau khi sửa key upload i18n |
+| 2026-08-02 | Strict verifier tái sinh evidence sạch: 11/11 gates PASS; full integration suite 85/85; Release rebuild toàn solution 0 warning/0 error và mọi module xuất đúng `bin/Release`; camera hardware giữ Deferred |
 
 > [!IMPORTANT]
 > **Kết luận `rp1`: Phase 46E đạt 100% execution-ready.** Không cần migration DB, dependency mới, API upload mới hoặc offline blob queue. Production diff tập trung vào component attachment dùng chung, bind-source validation, observability, i18n, test/verifier và evidence acceptance.
@@ -511,10 +513,10 @@ Chỉ cập nhật trạng thái Done sau EP6.
 - [ ] RF camera/file fallback pass bốn contexts — file fallback/contract PASS; camera hardware Deferred.
 - [ ] Camera thật có evidence — `DEFERRED — MANUAL HARDWARE ACCEPTANCE`.
 - [ ] Cancel/deny/offline/oversize/bad MIME/retry pass — automated negative paths PASS; hardware deny Deferred.
-- [x] Automated gate 100% pass — 11/11, không skip.
+- [x] Automated gate 100% pass — tái xác minh 2026-08-02: 11/11, không skip; full integration suite 85/85; typecheck/lint sạch.
 - [x] P41/P43 và P46A–P46D regression pass.
 - [x] Frontend typecheck/lint và EN/VI parity pass.
-- [x] Backend build + `Phase46E` integration tests pass.
+- [x] Backend Release rebuild 0 warning/0 error, mọi module xuất đúng `bin/Release`; `Phase46E` integration tests pass.
 - [ ] Browser DBM matrix 15/15 pass — 12 PASS, 1 PARTIAL, 2 Deferred.
 - [x] Traceability P43 100% pass.
 - [x] Traceability P44 100% pass.

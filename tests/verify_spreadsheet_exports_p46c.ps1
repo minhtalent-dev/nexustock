@@ -6,7 +6,7 @@ Write-Host "PHASE 46C VERIFIER - Master & Ops Exports" -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 
 Write-Host "`n[1/3] Building solution..." -ForegroundColor Yellow
-dotnet build Nexustock.sln --no-restore --configuration Release
+dotnet build Nexustock.sln --no-restore --configuration Release -m:1
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Build failed!"
     exit 1
@@ -14,7 +14,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "  -> Solution build PASS" -ForegroundColor Green
 
 Write-Host "`n[2/3] Running integration tests..." -ForegroundColor Yellow
-dotnet test .\tests\Nexustock.MasterData.IntegrationTests\Nexustock.MasterData.IntegrationTests.csproj --no-restore --configuration Release
+dotnet test .\tests\Nexustock.MasterData.IntegrationTests\Nexustock.MasterData.IntegrationTests.csproj --no-build --no-restore --configuration Release -m:1
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Integration tests failed!"
     exit 1
@@ -31,7 +31,7 @@ try {
     }
     Write-Host "  -> Frontend TypeScript check PASS" -ForegroundColor Green
 
-    npm run lint
+    npm run lint -- --max-warnings 0
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Frontend lint failed!"
         exit 1

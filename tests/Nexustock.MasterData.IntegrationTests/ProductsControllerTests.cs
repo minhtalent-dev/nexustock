@@ -6,6 +6,10 @@ namespace Nexustock.MasterData.IntegrationTests;
 
 public class ProductsControllerTests : IntegrationTestBase
 {
+    public ProductsControllerTests(CustomWebApplicationFactory factory) : base(factory)
+    {
+    }
+
     [Fact]
     public async Task GetProducts_ReturnsPagedResult()
     {

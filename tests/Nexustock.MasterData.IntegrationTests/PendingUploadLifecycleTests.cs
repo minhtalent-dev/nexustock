@@ -19,6 +19,10 @@ public class PendingUploadLifecycleTests : IntegrationTestBase
 {
     private static readonly Guid TestTenantId = Guid.Parse(TestAuthConstants.TenantId);
 
+    public PendingUploadLifecycleTests(CustomWebApplicationFactory factory) : base(factory)
+    {
+    }
+
     [Fact]
     public async Task PendingUpload_CleanedAfterExpiry_OrphanPurged()
     {

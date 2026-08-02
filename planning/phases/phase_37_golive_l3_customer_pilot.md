@@ -4,9 +4,9 @@
 
 | Mục | Giá trị |
 |---|---|
-| **Mức hiện tại** | **✅ Module DoD / Pilot 100%** (`rp4`+`rp5` 2026-07-22 · dbm 21/0 · verify_l3 12/0) · `PILOT_READY_CONDITIONAL` |
+| **Mức hiện tại** | **✅ Module DoD / Pilot 100%** (`rp4`+`rp5` 2026-07-22 · dbm 21/0 · verify_l3 12/0) · `PILOT_READY_ACCEPTED_CONDITIONAL` |
 | **Trước execute** | 100% Ready (`rp1`+`rp2`+`rp3`) |
-| **Trạng thái triển khai** | ✅ **ĐÓNG tài liệu** — §23–§26 · chờ FOUNDER ký `uat_signoff.md` (PASS*) |
+| **Trạng thái triển khai** | ✅ **ĐÓNG tài liệu** — §23–§26 · FOUNDER ký chấp nhận PASS* ngày 2026-08-02 |
 | **Dev-days** | **5–8** (1 Dev + FOUNDER ký UAT) |
 | **Critical Path** | Sau P36; mở khóa bán/pilot có điều kiện |
 | **Port verify API** | `http://localhost:5024/api` (`$env:NEXUSTOCK_API_URL`) |
@@ -299,10 +299,10 @@ Rollback trigger: Sev-1 không khắc phục trong 2h → restore backup theo ru
 - [x] Rollback rehearsal documented (RTO ~15 · PASS* `RESTORE_SKIPPED_SAFE`)  
 - [x] Cutover + hypercare docs trong `planning/evidence/phase_37/`  
 - [x] `ac_pack_status.json` cập nhật  
-- [~] FOUNDER ký `uat_signoff.md` (chờ chữ ký)  
+- [x] FOUNDER ký `uat_signoff.md` — chấp nhận PASS* ngày 2026-08-02
 - [x] `verify_l3_pilot_smoke.ps1` PASS  
 
-**Verdict P37:** **`PILOT_READY_CONDITIONAL`**
+**Verdict P37:** **`PILOT_READY_ACCEPTED_CONDITIONAL`**
 
 ---
 
@@ -587,11 +587,11 @@ GET /api/outbound/shipments   (Bearer B)
 | EP2 | Cutover + freeze/unfreeze **200** |
 | EP3 | Rollback **PASS*** `RESTORE_SKIPPED_SAFE` |
 | EP4 | `uat_signoff.md` PASS/PASS* |
-| EP6 | **PILOT_READY_CONDITIONAL** · `ac_pack_status.json` |
+| EP6 | **PILOT_READY_ACCEPTED_CONDITIONAL** · `ac_pack_status.json` |
 
 **Self-heal:** seed root path; product serial fallback; `LOC-L3-DEST` capacity.
 
-**FOUNDER:** ký chấp nhận PASS* trên `uat_signoff.md` trước production rộng.
+**FOUNDER:** đã ký chấp nhận PASS* trên `uat_signoff.md` ngày 2026-08-02; production rộng vẫn theo cutover runbook.
 
 ---
 
@@ -609,7 +609,7 @@ GET /api/outbound/shipments   (Bearer B)
 
 **Post-DBM UI:** fix `asChild` → `render` trên mobile/stocktakes — badge Next.js **"1 Issue"** hết · walkthrough cập nhật shot 05/07.
 
-**Verdict sau DBM:** **`PILOT_READY_CONDITIONAL`** — kỹ thuật 100%; chờ FOUNDER ký.
+**Verdict sau DBM:** **`PILOT_READY_ACCEPTED_CONDITIONAL`** — kỹ thuật 100%; FOUNDER đã ký PASS* ngày 2026-08-02.
 
 ---
 
@@ -651,7 +651,7 @@ Reindex disk vs scope §2 + DoD §14 + EP0–EP6; nếu FAIL=0 → đóng tài l
 
 ### 25.5 Verdict `rp4`
 
-**PASS** — đóng tài liệu kỹ thuật. Verdict vận hành giữ **`PILOT_READY_CONDITIONAL`** (FOUNDER ký `[~]`).
+**PASS** — đóng tài liệu kỹ thuật. Verdict vận hành **`PILOT_READY_ACCEPTED_CONDITIONAL`**; FOUNDER đã ký PASS* ngày 2026-08-02.
 
 ---
 
@@ -664,7 +664,7 @@ Reindex độc lập cùng matrix §25.2–25.3 → **FILE_FAIL=0**.
 
 | ID | Item | Status |
 |---|---|---|
-| FOUNDER-SIGN | Ký `uat_signoff.md` PASS* | **OPEN** (không block Module DoD kỹ thuật) |
+| FOUNDER-SIGN | Ký `uat_signoff.md` PASS* | **CLOSED** — FOUNDER chấp nhận 2026-08-02 |
 | PACK-SKIP | Pack `WEIGHT_SOURCE_INVALID` | Documented SKIP OK |
 | RESTORE-STAR | `RESTORE_SKIPPED_SAFE` | Documented PASS* |
 | OOS-DBM | Browser evidence | **CLOSED** §24 |

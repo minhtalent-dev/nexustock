@@ -22,6 +22,10 @@ public class FilesAttachmentContentTests : IntegrationTestBase
 {
     private static readonly Guid TestTenantId = Guid.Parse(TestAuthConstants.TenantId);
 
+    public FilesAttachmentContentTests(CustomWebApplicationFactory factory) : base(factory)
+    {
+    }
+
     [Fact]
     public async Task GetContent_ProviderFailure_Returns503()
     {

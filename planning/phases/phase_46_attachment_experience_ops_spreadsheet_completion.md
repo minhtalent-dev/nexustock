@@ -31,6 +31,8 @@
 | 2026-07-29 | Phase 46D tái nghiệm thu `rp4`/`rp5`: strict verifier PASS, 84/84 integration tests, frontend typecheck/lint sạch; bổ sung bằng chứng owner/TTL/target/error/recommit và atomic batch status |
 | 2026-07-30 | Phase 46E hoàn tất toàn bộ non-hardware acceptance: strict verifier 11/11 PASS, P43/P44 traceability 100%, P45 chỉ còn camera hardware deferred |
 | 2026-07-30 | Umbrella giữ `In Progress`; không tuyên bố camera PASS hoặc DBM 15/15 trước manual hardware acceptance |
+| 2026-07-31 | Tái nghiệm thu `rp4`/`rp5`: 11/11 gates PASS; P46D regression tăng lên 85/85; FE typecheck/lint sạch; camera gate không đổi |
+| 2026-08-02 | Remediation cuối: full integration suite 85/85 PASS; strict verifier 11/11 PASS; Release rebuild mọi module đồng nhất, 0 warning/0 error; camera hardware tiếp tục Deferred |
 
 ### Quyết định khóa
 
@@ -60,8 +62,8 @@
 
 | [P46B](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46b_thumbnail_full_attachment_coverage.md) | Thumbnail lifecycle + 6 extended handlers/UI | ✅ **Hoàn thành** — remediation `rp4` + `rp5` PASS; strict automated gates và browser evidence đầy đủ |
 | [P46C](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46c_master_spreadsheet_full_ops_exports.md) | Master IE 4 regression + Ops export 12 | ✅ **Hoàn thành** — strict verifier PASS; 76/76 integration tests; Master RBAC + 12 Ops export UI/Backend |
-| [P46D](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46d_package_operational_line_imports.md) | Package IE + Inbound/Stocktake line imports | ✅ **Hoàn thành** — tái nghiệm thu strict verifier PASS; 84/84 integration tests; Package IE + Inbound/Stocktake line import wizard/Backend |
-| [P46E](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46e_rf_full_acceptance.md) | RF camera + DBM + zero-gap acceptance | 🔄 Non-hardware acceptance hoàn tất; 11/11 automated PASS; camera hardware `Deferred Manual Acceptance`, chưa đóng |
+| [P46D](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46d_package_operational_line_imports.md) | Package IE + Inbound/Stocktake line imports | ✅ **Hoàn thành** — tái nghiệm thu strict verifier PASS; 85/85 integration tests; Package IE + Inbound/Stocktake line import wizard/Backend |
+| [P46E](file:///d:/1_Project/48_Nexustock/planning/phases/phase_46e_rf_full_acceptance.md) | RF camera + DBM + zero-gap acceptance | 🔄 Non-hardware acceptance hoàn tất; tái xác minh 2026-08-02 đạt 11/11 automated PASS, integration 85/85 và Release rebuild sạch; camera hardware `Deferred Manual Acceptance`, chưa đóng |
 
 ---
 
@@ -538,10 +540,10 @@ Regression:
 - [x] Thumbnail lifecycle pass.
 - [x] 12 attachment entity types pass.
 - [x] 12 ops export types CSV/XLSX pass — P46C strict verifier, 76/76 integration tests.
-- [x] Package IE roundtrip pass — P46D strict verifier, 84/84 integration tests.
+- [x] Package IE roundtrip pass — P46D strict verifier, 85/85 integration tests.
 - [x] Inbound + Stocktake line import idempotent pass — owner/TTL/target/error/recommit và atomic batch status đã nghiệm thu.
 - [ ] RF camera/file fallback pass — fallback/DOM contract PASS; camera hardware `Deferred Manual Acceptance`.
-- [x] VI/EN parity, lint/typecheck/regression pass — P46E 11/11 automated gates.
+- [x] VI/EN parity, lint/typecheck/regression pass — tái xác minh P46E 2026-07-31 đạt 11/11 automated gates, lint 0 warning.
 - [ ] DBM 15/15 — non-hardware evidence hoàn tất; camera capture/metadata/deny deferred.
 - [ ] Gap inventory P43–P45 — `Fail = 0`, không open vô chủ; còn hardware deferred.
 - [x] Master plan cập nhật trạng thái non-hardware hoàn tất, camera chưa PASS.
@@ -587,8 +589,8 @@ EP4/EP5 bắt đầu sau EP1. EP6 có thể phát triển sau EP0 nhưng merge s
 
 | Vai trò | Kết luận | Ngày |
 |---|---|---|
-| JARVIS | Umbrella non-hardware scope hoàn tất; P46A–P46D Done; P46E 11/11 automated PASS; zero-gap gate còn camera hardware deferred | 2026-07-30 |
-| FOUNDER | ☑ P46A Done · ☑ P46B Done · ☑ P46C Done · ☑ P46D Done · ☑ P46E non-hardware done · ☐ Camera manual acceptance | 2026-07-30 |
+| JARVIS | Umbrella non-hardware scope tái xác minh 100% ngày 2026-07-31; P46A–P46D Done; P46E 11/11 automated PASS; zero-gap gate còn camera hardware deferred | 2026-07-31 |
+| FOUNDER | ☑ P46A Done · ☑ P46B Done · ☑ P46C Done · ☑ P46D Done · ☑ P46E non-hardware done · ☐ Camera manual acceptance | 2026-07-31 |
 
 Điểm phải resolve trong EP0 từng child phase: dependency xử lý ảnh, entity/table path thật, permission name thật và mapping cột từ schema thật. Đây là verification trước code, không phải scope mở.
 

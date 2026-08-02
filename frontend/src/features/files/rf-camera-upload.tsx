@@ -27,7 +27,6 @@ export function RfCameraUpload({
   onUpload,
 }: RfCameraUploadProps) {
   const t = useTranslations("Common.files");
-  const tc = useTranslations("Common.actions");
 
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fallbackInputRef = useRef<HTMLInputElement | null>(null);

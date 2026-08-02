@@ -41,16 +41,16 @@ namespace Nexustock.MasterData.IntegrationTests;
 
 public class AttachmentThumbnailTests : IntegrationTestBase
 {
-    private readonly IThumbnailService _thumbnailService;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly IEnumerable<IEntityExistenceHandler> _handlers;
-
-    public AttachmentThumbnailTests()
+    public AttachmentThumbnailTests(CustomWebApplicationFactory factory) : base(factory)
     {
         _thumbnailService = Services.GetRequiredService<IThumbnailService>();
         _httpContextAccessor = Services.GetRequiredService<IHttpContextAccessor>();
         _handlers = Services.GetServices<IEntityExistenceHandler>();
     }
+
+    private readonly IThumbnailService _thumbnailService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IEnumerable<IEntityExistenceHandler> _handlers;
 
     private async Task<byte[]> CreateTestImageBytesAsync(int width = 100, int height = 100)
     {

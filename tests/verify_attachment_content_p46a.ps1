@@ -131,7 +131,7 @@ try {
     # Step 4: Frontend Lint Gate
     Invoke-Gate "Frontend Lint Gate" {
         Set-Location "frontend"
-        npm run lint
+        npm run lint -- --max-warnings 0
         Set-Location ".."
     }
 
@@ -144,21 +144,12 @@ try {
 
     # Step 6: Backend Integration Tests compilation
     Invoke-Gate "Backend Integration Tests Compilation" {
-        dotnet build tests/Nexustock.MasterData.IntegrationTests -c Release
+        dotnet build tests/Nexustock.MasterData.IntegrationTests -c Release --no-restore -m:1
     }
 
     # Step 7: Run Backend Integration Tests
     Invoke-Gate "Backend Integration Tests Execution" {
-        dotnet test tests/Nexustock.MasterData.IntegrationTests -c Release --no-build --filter "Category=Phase46A" --logger "trx;LogFileName=phase46a-tests.trx"
-    }
-
-    # Step 8: Save Evidence
-    Invoke-Gate "Export Test Evidence" {
-        $evidenceDir = "planning\evidence\phase_46a_rp45"
-        if (-not (Test-Path $evidenceDir)) {
-            New-Item -ItemType Directory -Path $evidenceDir -Force | Out-Null
-        }
-        Copy-Item "tests\Nexustock.MasterData.IntegrationTests\TestResults\phase46a-tests.trx" -Destination "$evidenceDir\phase46a-tests.trx" -Force
+        dotnet test tests/Nexustock.MasterData.IntegrationTests -c Release --no-build --no-restore -m:1 --filter "Category=Phase46A"
     }
 
     Write-Host "`n=== [SUCCESS] All Phase 46A Automated Checks Passed! ===" -ForegroundColor Green

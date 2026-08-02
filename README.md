@@ -18,34 +18,34 @@ Dự án Hệ thống quản lý kho hàng (WMS) xây dựng theo kiến trúc M
 * /docker — Các Dockerfile đóng gói và docker-compose môi trường production.
 * /scripts — Các kịch bản sao lưu DB, phục hồi, và rollback dự phòng.
 * /tests — Các kịch bản tự động kiểm thử hệ thống (Health Check, Backup/Restore, Rollback).
-* /planning — Spec kỹ thuật và tài liệu nghiệp vụ từng Phase. Nghiệm thu nền generic L2: `planning/ACCEPTANCE_L2_GENERIC_WMS_FOUNDATION.md` (P0 toàn vẹn tồn kho đã đóng Phase 36; P37 pilot `PILOT_READY_CONDITIONAL`).
+* /planning — Spec kỹ thuật và tài liệu nghiệp vụ từng Phase. Nghiệm thu nền generic L2: `planning/ACCEPTANCE_L2_GENERIC_WMS_FOUNDATION.md` (P0 toàn vẹn tồn kho đã đóng Phase 36; P37 pilot `PILOT_READY_ACCEPTED_CONDITIONAL` — FOUNDER đã ký PASS*; production rộng vẫn theo cutover runbook).
 
 
 ## 🛠️ Hướng dẫn khởi chạy nhanh (First-Run)
 
 ### 1. Khởi chạy Docker local (DB & Redis)
-` ash
+```bash
 docker compose up -d
-`
+```
 
 ### 2. Thiết lập Environment
 Sao chép cấu hình mẫu:
-`ash
+```bash
 cp .env.example .env
-`
+```
 
 ### 3. Chạy Backend
-`ash
+```bash
 cd backend/Nexustock.Api
 dotnet run
-`
+```
 API Host sẽ chạy tại cổng http://localhost:5024.
 
 ### 4. Chạy Frontend
-` ash
+```bash
 cd frontend
 npm run dev
-`
+```
 Giao diện sẽ chạy tại cổng `http://localhost:3003`.
 
 ## 🌐 Ngôn ngữ giao diện (Language)
@@ -61,7 +61,7 @@ Giao diện sẽ chạy tại cổng `http://localhost:3003`.
 * **Kiểm định chất lượng (Phase 34):** `/admin/qc` hỗ trợ lọc/aging/lịch sử; cổng chặn move/pick khi lô chưa Release; `/mobile/qc` bật bằng công tắc `FF_MOBILE_QC`.
 * **Điều hướng thanh bên (Phase 35):** chuyển Modules ↔ Ops (Nhập / Xuất / Quản kho); ghi nhớ lựa chọn trên máy; cùng đường dẫn trang.
 * **Toàn vẹn tồn kho (Phase 36):** cấp phát lấy hàng một quy tắc; chặn tồn âm; chuyển hàng offline không vượt số khả dụng.
-* **Cổng pilot (Phase 37):** bộ kiểm thử vận hành + biên bản nghiệm thu; khóa/mở ghi khi cắt chuyển; trạng thái sẵn sàng pilot có điều kiện (chờ ký chấp nhận).
+* **Cổng pilot (Phase 37):** bộ kiểm thử vận hành + biên bản nghiệm thu; khóa/mở ghi khi cắt chuyển; trạng thái sẵn sàng pilot có điều kiện đã được FOUNDER chấp nhận; production rộng vẫn theo cutover runbook.
 * **Giao diện thống nhất (Phase 38):** cùng khung trang, màu hệ thống và trạng thái trống/tải/lỗi trên quản trị và thiết bị cầm tay.
 * **Giao diện sáng / tối (Phase 39 — ĐÓNG):** mặc định theo máy; chọn Hệ thống / Sáng / Tối; lựa chọn được ghi nhớ trên trình duyệt.
 * **Form popup CRUD (Phase 40):** ô nhập/chọn trong cửa sổ tạo–sửa đủ rộng, không cắt chữ.
@@ -72,16 +72,20 @@ Giao diện sẽ chạy tại cổng `http://localhost:3003`.
 * **Readiness Probe**: GET http://localhost:5024/health/ready (Kiểm tra kết nối DB và Redis)
 * **Health Dashboard UI**: `http://localhost:3003/health-ui` (Giao diện giám sát thời gian thực)
 
-## 🔒 Tài khoản quản trị mặc định
-Sau khi khởi chạy Backend lần đầu, cơ sở dữ liệu sẽ tự động được migrate và seed tài khoản admin:
-* **Email**: `admin@nexustock.com`
-* **Mật khẩu**: `AdminSecret123!`
-Tài khoản này được gán vai trò `Admin` và sở hữu đầy đủ quyền truy cập hệ thống.
+## 🔒 Tài khoản quản trị local
+Sau khi khởi chạy Backend lần đầu, cơ sở dữ liệu tự động migrate và seed tài khoản quản trị theo cấu hình môi trường. Không lưu thông tin đăng nhập thật trong tài liệu hoặc Git.
+
+Thiết lập biến môi trường phát triển theo `.env.example`, sau đó đổi mật khẩu ngay khi triển khai ngoài máy local.
  
-## 🧪 Xác thực Phase 46A (Secure Content Preview)
-Để chạy toàn bộ cổng xác thực tự động (Static code inspection, Translation keys parity, Backend integration tests compilation & execution, Frontend lint & typecheck):
+## 🧪 Xác thực Phase 46A và Phase 46E
+Chạy cổng xác thực nội dung đính kèm an toàn:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\tests\verify_attachment_content_p46a.ps1
 ```
-Kết quả kiểm thử cùng log chi tiết sẽ được tự động xuất ra thư mục `planning/evidence/phase_46a_rp45`.
+Kết quả cùng log chi tiết được xuất vào `planning/evidence/phase_46a_rp45`.
 
+Chạy nghiệm thu tự động tổng Phase 46E:
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\verify_rf_acceptance_p46e.ps1
+```
+Kết quả máy đọc được lưu tại `planning/evidence/phase_46_dbm/automated_results.json`. Nghiệm thu camera trên thiết bị thật đang hoãn để kiểm tra thủ công; kết quả tự động không thay thế cổng phần cứng này.

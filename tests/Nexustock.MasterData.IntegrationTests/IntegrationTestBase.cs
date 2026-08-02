@@ -31,14 +31,7 @@ public class IntegrationTestBase : IClassFixture<CustomWebApplicationFactory>, I
     protected readonly HttpClient Client;
     protected readonly FakeUserPermissionService PermissionService;
 
-    private static readonly CustomWebApplicationFactory SharedFactory = new();
-
-    // Constructor cho các class test cũ (không tham số) -> sử dụng SharedFactory
-    protected IntegrationTestBase() : this(SharedFactory)
-    {
-    }
-
-    // Constructor cho các class test mới (nhận factory từ xUnit)
+    // Mỗi test class nhận fixture riêng từ xUnit để cô lập host và InMemory DB.
     protected IntegrationTestBase(CustomWebApplicationFactory factory)
     {
         Factory = factory;

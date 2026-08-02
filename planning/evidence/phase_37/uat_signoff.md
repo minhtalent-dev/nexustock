@@ -27,4 +27,4 @@
 | Vai trò | Ký | Ngày |
 |---|---|---|
 | JARVIS (kỹ thuật) | **PASS*** smoke 12/0 · freeze/unfreeze 200 | 2026-07-22 |
-| FOUNDER | ☐ Chấp nhận PASS* · ☐ Yêu cầu restore/pack thật | ____ |
+| FOUNDER | ☒ Chấp nhận PASS* · ☐ Yêu cầu restore/pack thật | 2026-08-02 |

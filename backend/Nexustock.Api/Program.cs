@@ -71,13 +71,14 @@ try
     builder.Services.AddNexustockModules(builder.Configuration);
 
     var defaultConn = builder.Configuration.GetConnectionString("Default");
-    if (!string.IsNullOrEmpty(defaultConn))
+    var enableHangfire = !builder.Environment.IsEnvironment("Test") && !string.IsNullOrEmpty(defaultConn);
+    if (enableHangfire)
     {
         builder.Services.AddHangfire(config => config
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()
             .UseRecommendedSerializerSettings()
-            .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(defaultConn)));
+            .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(defaultConn!)));
         builder.Services.AddHangfireServer();
     }
 
@@ -175,7 +176,7 @@ try
     app.MapHealthChecks("/health/ready", new HealthCheckOptions { AllowCachingResponses = false });
     app.MapControllers();
 
-    if (!string.IsNullOrEmpty(builder.Configuration.GetConnectionString("Default")))
+    if (enableHangfire)
     {
         app.UseHangfireDashboard("/admin/hangfire", new DashboardOptions
         {

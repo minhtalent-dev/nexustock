@@ -6,6 +6,10 @@ namespace Nexustock.MasterData.IntegrationTests;
 
 public class AuthControllerTests : IntegrationTestBase
 {
+    public AuthControllerTests(CustomWebApplicationFactory factory) : base(factory)
+    {
+    }
+
     [Fact]
     public async Task Register_And_Login_Should_Succeed()
     {

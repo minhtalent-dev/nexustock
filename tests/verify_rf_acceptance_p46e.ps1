@@ -23,9 +23,14 @@ function Record-Gate($gateId, $gateName, $scriptBlock) {
     $logPath = Join-Path $evidenceDir "gate_${gateId}.log"
     
     try {
+        $LASTEXITCODE = 0
         $output = & $scriptBlock 2>&1 | Out-String
+        $nativeExitCode = $LASTEXITCODE
         Write-Host $output
         [System.IO.File]::WriteAllText($logPath, $output, [System.Text.Encoding]::UTF8)
+        if ($nativeExitCode -ne 0) {
+            throw "Native command failed with exit code $nativeExitCode`n$output"
+        }
 
         $duration = [math]::Round(((Get-Date) - $startTime).TotalMilliseconds)
         Write-Host ">>> Gate $gateId PASSED (${duration}ms)" -ForegroundColor Green
@@ -133,7 +138,7 @@ Record-Gate "G04_FE_TYPECHECK_LINT" "Frontend TypeScript Typecheck & ESLint" {
     Set-Location (Join-Path $root "frontend")
     try {
         npx tsc --noEmit
-        npm run lint
+        npm run lint -- --max-warnings 0
     } finally {
         Set-Location $root
     }
@@ -141,12 +146,12 @@ Record-Gate "G04_FE_TYPECHECK_LINT" "Frontend TypeScript Typecheck & ESLint" {
 
 # 5. Backend Solution Build
 Record-Gate "G05_BE_BUILD" "Backend Solution Build (Release)" {
-    dotnet build .\Nexustock.sln --configuration Release
+    dotnet build .\Nexustock.sln --configuration Release --no-restore --warnaserror -m:1
 }
 
 # 6. Backend Integration Tests Phase46E
 Record-Gate "G06_BE_TESTS" "Phase46E Integration Tests" {
-    dotnet test tests/Nexustock.MasterData.IntegrationTests/Nexustock.MasterData.IntegrationTests.csproj --filter "Category=Phase46E" -c Release
+    dotnet test tests/Nexustock.MasterData.IntegrationTests/Nexustock.MasterData.IntegrationTests.csproj --filter "Category=Phase46E" -c Release --no-build --no-restore -m:1
 }
 
 # 7. Regression Verification (P43, P46A, P46B, P46C, P46D)

@@ -22,6 +22,10 @@ namespace Nexustock.MasterData.IntegrationTests;
 [Trait("Category", "Phase46E")]
 public class RfAttachmentAcceptanceTests : IntegrationTestBase
 {
+    public RfAttachmentAcceptanceTests(CustomWebApplicationFactory factory) : base(factory)
+    {
+    }
+
     private static readonly Guid TestTenantId = Guid.Parse(TestAuthConstants.TenantId);
 
     [Fact]

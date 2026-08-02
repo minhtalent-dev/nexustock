@@ -20,7 +20,7 @@ public class FileStorageMigrateController : ControllerBase
         _permissions = permissions;
     }
 
-    private async Task<(bool ok, Guid userId)> TryUserAsync()
+    private (bool ok, Guid userId) TryUser()
     {
         var userId = User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrWhiteSpace(userId) || !Guid.TryParse(userId, out var id)) return (false, Guid.Empty);
@@ -29,13 +29,13 @@ public class FileStorageMigrateController : ControllerBase
 
     private async Task<bool> HasManageAsync()
     {
-        var (ok, id) = await TryUserAsync();
+        var (ok, id) = TryUser();
         return ok && await _permissions.HasPermissionAsync(id, "files.storage.manage");
     }
 
     private async Task<bool> HasPurgeAsync()
     {
-        var (ok, id) = await TryUserAsync();
+        var (ok, id) = TryUser();
         return ok && await _permissions.HasPermissionAsync(id, "files.storage.migrate.purge");
     }
 

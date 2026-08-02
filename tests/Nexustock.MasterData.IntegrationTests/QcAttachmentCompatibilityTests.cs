@@ -16,6 +16,10 @@ namespace Nexustock.MasterData.IntegrationTests;
 [Trait("Category", "Phase46A")]
 public class QcAttachmentCompatibilityTests : IntegrationTestBase
 {
+    public QcAttachmentCompatibilityTests(CustomWebApplicationFactory factory) : base(factory)
+    {
+    }
+
     private static readonly Guid TestTenantId = Guid.Parse(TestAuthConstants.TenantId);
 
     [Fact]

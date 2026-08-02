@@ -1,5 +1,17 @@
 # Lịch sử cập nhật dự án
 
+## Phiên bản 1.5.3 - Tăng độ ổn định và hoàn tất phê duyệt pilot
+*Ngày cập nhật: 02/08/2026*
+
+### Cải tiến & Sửa lỗi
+- **Tăng độ ổn định dịch vụ**: Khắc phục các cảnh báo tiềm ẩn khi xử lý dữ liệu nhập và thao tác chuyển vùng lưu trữ.
+- **Kiểm tra phát hành nghiêm ngặt hơn**: Quy trình xác thực tự động nay dừng ngay khi phát hiện cảnh báo, giúp giảm rủi ro trước khi triển khai.
+- **Kiểm thử ổn định hơn**: Cô lập dữ liệu giữa các nhóm kiểm thử, loại bỏ kết quả sai do trạng thái từ lượt chạy trước.
+- **Xác thực phát hành sạch**: Toàn bộ 85 kịch bản tích hợp và 11 cổng nghiệm thu tự động đã hoàn tất thành công, không có cảnh báo xây dựng.
+- **Nghiệm thu camera minh bạch**: Phần mềm và phương án tải tệp dự phòng đã được xác thực; camera trên thiết bị thật vẫn chờ nghiệm thu thủ công.
+- **Hoàn tất phê duyệt pilot**: Biên bản nghiệm thu có điều kiện đã được xác nhận; việc triển khai rộng vẫn tuân theo quy trình cắt chuyển.
+- **Bảo mật tài liệu khởi chạy**: Loại bỏ thông tin đăng nhập mặc định khỏi hướng dẫn và chuẩn hóa các lệnh cài đặt.
+
 ## Phiên bản 1.5.2 - Hoàn tất nghiệm thu và sửa lỗi giao diện đính kèm (Phase 46A)
 *Ngày cập nhật: 25/07/2026*
 
