@@ -1,91 +1,158 @@
-# Nexustock — WMS Modular Monolith
+# Nexustock — Enterprise Modular Monolith Warehouse Management System
 
-Dự án Hệ thống quản lý kho hàng (WMS) xây dựng theo kiến trúc Modular Monolith chuẩn sản xuất.
+Nexustock is an enterprise-grade, production-ready Warehouse Management System (WMS) built on a modern Modular Monolith architecture. It provides high-performance, real-time inventory control, end-to-end inbound/outbound fulfillment, quality inspection, material genealogy, labor tracking, and hardware integration.
 
-## 🚀 Công nghệ sử dụng
-* **Backend**: .NET 8.0 (C# Web API, Entity Framework Core)
-* **Database**: PostgreSQL (Operational Storage)
-* **Caching**: Redis (Optional)
-* **Frontend**: Next.js 16.2 (App Router, Tailwind CSS, Webpack)
+---
 
-## 📁 Cấu trúc Monorepo
-* /backend — Trọng tâm dịch vụ Web API.
-  * /backend/Nexustock.Api — Composition Root, DI, Middleware, Health Check.
-  * /backend/modules — Các phân hệ lõi: Identity, MasterData, Inbound, Inventory, Outbound, RF/Mobile Scan, Exceptions, Rules, Putaway, Allocation, Replenishment, Lpn, Serial, Rma, Wave, MaterialGenealogy (Phả hệ vật tư - Phase 19), LocalAgent (Nền tảng kết nối thiết bị ngoại vi và WebSocket Local Agent - Phase 20), Webhook (Cơ chế gửi tin Webhook tin cậy và xử lý hàng đợi lỗi - Phase 24), Observability (Giám sát vận hành và cơ chế kiểm soát tính năng Feature Flags - Phase 25/26), LaborTracking (Giám sát hiệu suất làm việc và KPI nhân công - Phase 28), TaskInterleaving (Gợi ý việc tối ưu - Phase 29), Readiness (Cổng sẵn sàng vận hành và cutover freeze - Phase 30), Files (đính kèm + Storage Hub + migrate hàng loạt provider - Phase 41/42), Files Security & Preview (bảo mật tệp tin đính kèm và xem trước tài liệu an toàn - Phase 46/46A).
-* /local-agent — Dịch vụ chạy ngầm cục bộ kết nối thiết bị ngoại vi (cân điện tử, máy in tem nhãn) trên Windows.
-* /frontend — Giao diện quản trị Next.js.
-  * /health-ui — Bảng điều khiển kiểm tra sức khỏe hệ thống.
-* /docker — Các Dockerfile đóng gói và docker-compose môi trường production.
-* /scripts — Các kịch bản sao lưu DB, phục hồi, và rollback dự phòng.
-* /tests — Các kịch bản tự động kiểm thử hệ thống (Health Check, Backup/Restore, Rollback).
-* /planning — Spec kỹ thuật và tài liệu nghiệp vụ từng Phase. Nghiệm thu nền generic L2: `planning/ACCEPTANCE_L2_GENERIC_WMS_FOUNDATION.md` (P0 toàn vẹn tồn kho đã đóng Phase 36; P37 pilot `PILOT_READY_ACCEPTED_CONDITIONAL` — FOUNDER đã ký PASS*; production rộng vẫn theo cutover runbook).
+## 🏛️ Architecture & Tech Stack
 
+- **Backend**: .NET 8.0 (C# Web API, Entity Framework Core 8, MediatR / CQRS pattern)
+- **Frontend**: Next.js 16.2 (App Router, React 19, Tailwind CSS, Lucide Icons)
+- **Database**: PostgreSQL 16 (Operational Relational Storage)
+- **Cache & Message Broker**: Redis 7 (Distributed Caching, Lock Manager, Pub/Sub)
+- **Background Jobs**: Hangfire (Scheduled Tasks, Queue Processing, Data Sync)
+- **Hardware Integration**: LocalAgent (WebSocket Bridge for Industrial Scales, Barcode Scanners, ZPL Label Printers)
+- **Observability**: OpenTelemetry, Serilog, Structured Logging, Prometheus/Grafana ready
 
-## 🛠️ Hướng dẫn khởi chạy nhanh (First-Run)
+---
 
-### 1. Khởi chạy Docker local (DB & Redis)
+## 📦 Core Modules
+
+- **Identity & Access Management**: Role-based access control (RBAC), multi-warehouse tenancy, JWT authentication.
+- **Master Data**: Warehouses, zones, aisles, racks, bins, SKUs, units of measure (UoM), partners, and CSV batch import.
+- **Inbound Management**: Advanced Shipping Notices (ASN), Purchase Orders (PO), dock receiving, cross-docking, and blind receiving.
+- **Inventory Control**: Real-time multi-location balances, stock adjustments, cycle counts, stock movements, and zero-negative stock enforcement.
+- **Putaway & Rules Engine**: Configurable ABC velocity rules, zone affinity, dimensional/weight constraints, and optimized location suggestions.
+- **Allocation & Wave Picking**: Multi-order batch allocation, zone picking, cluster picking, and pick path optimization.
+- **Outbound Fulfillment**: Sales order processing, packing, cartonization, shipping manifest, and carrier integration.
+- **Quality Control (QC / IQC)**: Lot hold/release workflows, sampling plans, inspection checklists, and quarantine management.
+- **RMA (Return Merchandise Authorization)**: Customer/vendor returns, inspection, restocking, and scrap disposition.
+- **LPN (License Plate Number) & Serial Tracking**: Pallet/tote identification, containerization, and unit-level serial traceability.
+- **Material Genealogy**: Comprehensive forward/backward lot lineage, transformation history, and recall trace analysis.
+- **Labor Tracking & Task Interleaving**: Operator productivity monitoring, standard hour benchmarks, and interleaved move-to-pick recommendations.
+- **Readiness & Cutover**: System pre-flight checklist, cutover data freeze gates, and rollback runbook enforcement.
+- **Webhooks & ERP Integration**: Outbox-pattern reliable webhook delivery, exponential backoff retries, and RESTful ERP connectors.
+- **Storage & Files Hub**: Multi-provider secure attachment management (S3 / Local / MinIO) with safe document preview.
+
+---
+
+## 📐 Architecture Topology
+
+```
++-----------------------------------------------------------------------------------+
+|                                 Client Layer                                      |
+|  +---------------------------+  +---------------------------+  +---------------+  |
+|  | Web Admin (Next.js App)   |  | RF / Mobile Handheld Scan |  | Health UI     |  |
+|  +---------------------------+  +---------------------------+  +---------------+  |
++----------------------------------------+------------------------------------------+
+                                         | HTTP / REST / WebSocket
+                                         v
++-----------------------------------------------------------------------------------+
+|                        Nexustock Modular Monolith (.NET 8)                        |
+|                                                                                   |
+|  [ API Host / Gateway / Auth Middleware / Global Exception Handling / Health ]    |
+|                                                                                   |
+|  +------------------+  +------------------+  +------------------+                 |
+|  | Identity Module  |  | MasterData Module|  | Inbound Module   |                 |
+|  +------------------+  +------------------+  +------------------+                 |
+|  +------------------+  +------------------+  +------------------+                 |
+|  | Inventory Module |  | Putaway & Alloc  |  | Outbound Module  |                 |
+|  +------------------+  +------------------+  +------------------+                 |
+|  +------------------+  +------------------+  +------------------+                 |
+|  | QC & RMA Module  |  | LPN & Serial     |  | Genealogy Module |                 |
+|  +------------------+  +------------------+  +------------------+                 |
+|  +------------------+  +------------------+  +------------------+                 |
+|  | Labor & Tasks    |  | Webhooks Engine  |  | Files Hub & Sec  |                 |
+|  +------------------+  +------------------+  +------------------+                 |
++-------------------+--------------------+--------------------+---------------------+
+                    |                    |                    |
+                    v                    v                    v
+           +-----------------+  +-----------------+  +-----------------+
+           |  PostgreSQL 16  |  |     Redis 7     |  |    LocalAgent   |
+           |  (Primary DB)   |  | (Cache / Lock)  |  | (Hardware WSS)  |
+           +-----------------+  +-----------------+  +-----------------+
+                                                              |
+                                                    +---------+---------+
+                                                    |                   |
+                                                    v                   v
+                                             [ZPL Printers]      [Digital Scales]
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Node.js 20+ / npm](https://nodejs.org/)
+- [Docker & Docker Compose](https://www.docker.com/)
+
+### 1. Start Infrastructure (PostgreSQL & Redis)
 ```bash
 docker compose up -d
 ```
 
-### 2. Thiết lập Environment
-Sao chép cấu hình mẫu:
+### 2. Configure Environment
+Copy development environment template:
 ```bash
 cp .env.example .env
 ```
 
-### 3. Chạy Backend
+### 3. Run Backend Service
 ```bash
 cd backend/Nexustock.Api
 dotnet run
 ```
-API Host sẽ chạy tại cổng http://localhost:5024.
+API Host will listen on `http://localhost:5024`.
 
-### 4. Chạy Frontend
+### 4. Run Frontend Application
 ```bash
 cd frontend
+npm install
 npm run dev
 ```
-Giao diện sẽ chạy tại cổng `http://localhost:3003`.
+Web client will be available at `http://localhost:3003`.
 
-## 🌐 Ngôn ngữ giao diện (Language)
-* Mặc định: **Tiếng Việt**.
-* Hỗ trợ: **Tiếng Việt / English**.
-* Đổi ngôn ngữ bằng nút **VI | EN** trên sidebar, trang đăng nhập, trang sức khỏe hệ thống và **ứng dụng cầm tay**.
-* Lựa chọn được ghi nhớ qua cookie (không đổi đường dẫn URL).
-* Kho chuỗi giao diện tách theo nhóm chức năng: `frontend/messages/vi|en/{TênNhóm}.json` (ví dụ `Common.json`, `Admin.json`, `Mobile.json`). Khi tải trang, hệ thống gộp các nhóm lại.
-* Quy tắc tên file: trùng tên nhóm (PascalCase). Quy tắc khóa mới: nhóm theo mục đích (`page`, `actions`, `fields`, `columns`, `status`, `toast`, `errors`, `dialog`) + camelCase.
-* Thêm nhóm mới: tạo cặp file VI/EN và đăng ký trong bộ nạp ngôn ngữ (4 chỗ: catalog-modules, load-messages, merge helper, verify).
-* Nhóm **MasterData** đã có: danh mục nền tảng (vật tư, UoM, kho, vùng, vị trí, đối tác, lý do, nhập CSV) hỗ trợ VI/EN.
-* Nhóm **Mobile** đã có: 7 màn cầm tay + vỏ shell + màn QC tùy chọn; nhóm **Errors** đủ mã lỗi ổn định cho toast có nhãn mã + nội dung (gồm mã chặn lô chưa đạt kiểm định).
-* **Kiểm định chất lượng (Phase 34):** `/admin/qc` hỗ trợ lọc/aging/lịch sử; cổng chặn move/pick khi lô chưa Release; `/mobile/qc` bật bằng công tắc `FF_MOBILE_QC`.
-* **Điều hướng thanh bên (Phase 35):** chuyển Modules ↔ Ops (Nhập / Xuất / Quản kho); ghi nhớ lựa chọn trên máy; cùng đường dẫn trang.
-* **Toàn vẹn tồn kho (Phase 36):** cấp phát lấy hàng một quy tắc; chặn tồn âm; chuyển hàng offline không vượt số khả dụng.
-* **Cổng pilot (Phase 37):** bộ kiểm thử vận hành + biên bản nghiệm thu; khóa/mở ghi khi cắt chuyển; trạng thái sẵn sàng pilot có điều kiện đã được FOUNDER chấp nhận; production rộng vẫn theo cutover runbook.
-* **Giao diện thống nhất (Phase 38):** cùng khung trang, màu hệ thống và trạng thái trống/tải/lỗi trên quản trị và thiết bị cầm tay.
-* **Giao diện sáng / tối (Phase 39 — ĐÓNG):** mặc định theo máy; chọn Hệ thống / Sáng / Tối; lựa chọn được ghi nhớ trên trình duyệt.
-* **Form popup CRUD (Phase 40):** ô nhập/chọn trong cửa sổ tạo–sửa đủ rộng, không cắt chữ.
-* **Milestone 5**: **59/59** trang Web VI/EN, **0 backlog** localization product.
+### 5. Run LocalAgent (Hardware Bridge - Optional)
+```bash
+cd local-agent
+dotnet run
+```
+LocalAgent WebSocket runs on `ws://localhost:5088`.
 
-## 🩺 Endpoints kiểm tra sức khỏe
-* **Liveness Probe**: GET http://localhost:5024/health/live (Trả về 200 OK nếu API Host sống)
-* **Readiness Probe**: GET http://localhost:5024/health/ready (Kiểm tra kết nối DB và Redis)
-* **Health Dashboard UI**: `http://localhost:3003/health-ui` (Giao diện giám sát thời gian thực)
+---
 
-## 🔒 Tài khoản quản trị local
-Sau khi khởi chạy Backend lần đầu, cơ sở dữ liệu tự động migrate và seed tài khoản quản trị theo cấu hình môi trường. Không lưu thông tin đăng nhập thật trong tài liệu hoặc Git.
+## 🩺 API & Health Check Endpoints
 
-Thiết lập biến môi trường phát triển theo `.env.example`, sau đó đổi mật khẩu ngay khi triển khai ngoài máy local.
- 
-## 🧪 Xác thực Phase 46A và Phase 46E
-Chạy cổng xác thực nội dung đính kèm an toàn:
+| Endpoint | Description | Expected Status |
+|---|---|---|
+| `GET /health/live` | Liveness probe verifying API process state | `200 OK` |
+| `GET /health/ready` | Readiness probe verifying PostgreSQL & Redis connectivity | `200 OK` |
+| `GET /swagger` | Swagger UI / OpenAPI specification documentation | `200 OK` |
+| `GET /health-ui` | Real-time system monitoring dashboard (Frontend) | `200 OK` |
+
+---
+
+## 🧪 Testing & Verification Suite
+
+Run full integration and unit test suite:
+```bash
+dotnet test Nexustock.sln
+```
+
+Run attachment security and storage verification:
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\tests\verify_attachment_content_p46a.ps1
 ```
-Kết quả cùng log chi tiết được xuất vào `planning/evidence/phase_46a_rp45`.
 
-Chạy nghiệm thu tự động tổng Phase 46E:
+Run end-to-end RF/Mobile operational acceptance verification:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\verify_rf_acceptance_p46e.ps1
 ```
-Kết quả máy đọc được lưu tại `planning/evidence/phase_46_dbm/automated_results.json`. Nghiệm thu camera trên thiết bị thật đang hoãn để kiểm tra thủ công; kết quả tự động không thay thế cổng phần cứng này.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+
